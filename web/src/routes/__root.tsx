@@ -6,8 +6,10 @@ import { Sidebar } from '@/components/sidebar'
 const RootLayout = () => (
   <>
     <Navbar />
-    <Sidebar/>
-    <Outlet />
+    <div className='flex flex-row'>
+      <Sidebar/>
+      <Outlet />
+    </div>
     <TanStackRouterDevtools />
   </>
 )

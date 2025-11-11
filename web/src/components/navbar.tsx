@@ -1,16 +1,22 @@
 import { ChevronRight, User } from 'lucide-react'
 
+export function Logo() {
+  return (
+    <div className="flex items-center space-x-2">
+      <span className="font-semibold text-lg">Secure</span>
+      <span className="font-semibold text-lg text-purple-600">Learning</span>
+    </div>
+  )
+}
+
 export function Navbar() {
   return (
-    <nav className="w-full border-b bg-white">
-      <div className="container mx-auto px-6 py-3">
-        <div className="flex items-center justify-between">
+    <nav className="h-[5vh] w-screen border-b bg-white">
+      <div className="w-full container px-3 py-3">
+        <div className="w-[100vw] px-10 flex items-center justify-between">
           {/* Logo/Brand with Breadcrumb */}
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <span className="font-semibold text-lg">Secure</span>
-              <span className="font-semibold text-lg text-purple-600">Learning</span>
-            </div>
+            <Logo />
             <ChevronRight className="h-4 w-4 text-gray-400" />
             <div className="flex items-center space-x-2 text-sm">
               <a 

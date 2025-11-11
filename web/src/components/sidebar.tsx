@@ -1,10 +1,14 @@
 import { LayoutDashboard, Megaphone, FileText, Users, BarChart3, Settings, AlertCircle } from 'lucide-react'
+import { Sidebar as SidebarIcon } from 'lucide-react';
 
 export function Sidebar() {
   return (
-    <aside className="w-64 h-screen bg-gray-50 border-r border-gray-200 flex flex-col">
+    <aside className="w-[20vh] h-[95vh] bg-gray-50 border-r border-gray-200 flex flex-col">
 
       {/* Navigation Menu */}
+      <aside className='h-[1vh] flex justify-end p-2'>
+        <SidebarIcon />
+      </aside>
       <nav className="flex-1 px-3 py-4">
         <ul className="space-y-1">
           <li>
