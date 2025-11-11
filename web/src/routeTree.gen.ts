@@ -9,12 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as NewProductRouteImport } from './routes/new-product'
+import { Route as UserGroupsRouteImport } from './routes/user-groups'
+import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as StatisticsRouteImport } from './routes/statistics'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ReportRouteImport } from './routes/report'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
+import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
+import { Route as CampaignsIdRouteImport } from './routes/campaigns/[id]'
 
-const NewProductRoute = NewProductRouteImport.update({
-  id: '/new-product',
-  path: '/new-product',
+const UserGroupsRoute = UserGroupsRouteImport.update({
+  id: '/user-groups',
+  path: '/user-groups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatisticsRoute = StatisticsRouteImport.update({
+  id: '/statistics',
+  path: '/statistics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +55,153 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
+  id: '/campaigns/new-campaign',
+  path: '/campaigns/new-campaign',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsIdRoute = CampaignsIdRouteImport.update({
+  id: '/campaigns/id',
+  path: '/campaigns/id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/new-product': typeof NewProductRoute
+  '/dashboard': typeof DashboardRoute
+  '/report': typeof ReportRoute
+  '/settings': typeof SettingsRoute
+  '/statistics': typeof StatisticsRoute
+  '/templates': typeof TemplatesRoute
+  '/user-groups': typeof UserGroupsRoute
+  '/campaigns/id': typeof CampaignsIdRoute
+  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns': typeof CampaignsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/new-product': typeof NewProductRoute
+  '/dashboard': typeof DashboardRoute
+  '/report': typeof ReportRoute
+  '/settings': typeof SettingsRoute
+  '/statistics': typeof StatisticsRoute
+  '/templates': typeof TemplatesRoute
+  '/user-groups': typeof UserGroupsRoute
+  '/campaigns/id': typeof CampaignsIdRoute
+  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns': typeof CampaignsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/new-product': typeof NewProductRoute
+  '/dashboard': typeof DashboardRoute
+  '/report': typeof ReportRoute
+  '/settings': typeof SettingsRoute
+  '/statistics': typeof StatisticsRoute
+  '/templates': typeof TemplatesRoute
+  '/user-groups': typeof UserGroupsRoute
+  '/campaigns/id': typeof CampaignsIdRoute
+  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/': typeof CampaignsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/new-product'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/report'
+    | '/settings'
+    | '/statistics'
+    | '/templates'
+    | '/user-groups'
+    | '/campaigns/id'
+    | '/campaigns/new-campaign'
+    | '/campaigns'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/new-product'
-  id: '__root__' | '/' | '/new-product'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/report'
+    | '/settings'
+    | '/statistics'
+    | '/templates'
+    | '/user-groups'
+    | '/campaigns/id'
+    | '/campaigns/new-campaign'
+    | '/campaigns'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/report'
+    | '/settings'
+    | '/statistics'
+    | '/templates'
+    | '/user-groups'
+    | '/campaigns/id'
+    | '/campaigns/new-campaign'
+    | '/campaigns/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  NewProductRoute: typeof NewProductRoute
+  DashboardRoute: typeof DashboardRoute
+  ReportRoute: typeof ReportRoute
+  SettingsRoute: typeof SettingsRoute
+  StatisticsRoute: typeof StatisticsRoute
+  TemplatesRoute: typeof TemplatesRoute
+  UserGroupsRoute: typeof UserGroupsRoute
+  CampaignsIdRoute: typeof CampaignsIdRoute
+  CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
+  CampaignsIndexRoute: typeof CampaignsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/new-product': {
-      id: '/new-product'
-      path: '/new-product'
-      fullPath: '/new-product'
-      preLoaderRoute: typeof NewProductRouteImport
+    '/user-groups': {
+      id: '/user-groups'
+      path: '/user-groups'
+      fullPath: '/user-groups'
+      preLoaderRoute: typeof UserGroupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistics': {
+      id: '/statistics'
+      path: '/statistics'
+      fullPath: '/statistics'
+      preLoaderRoute: typeof StatisticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +211,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campaigns/': {
+      id: '/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns'
+      preLoaderRoute: typeof CampaignsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns/new-campaign': {
+      id: '/campaigns/new-campaign'
+      path: '/campaigns/new-campaign'
+      fullPath: '/campaigns/new-campaign'
+      preLoaderRoute: typeof CampaignsNewCampaignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns/id': {
+      id: '/campaigns/id'
+      path: '/campaigns/id'
+      fullPath: '/campaigns/id'
+      preLoaderRoute: typeof CampaignsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  NewProductRoute: NewProductRoute,
+  DashboardRoute: DashboardRoute,
+  ReportRoute: ReportRoute,
+  SettingsRoute: SettingsRoute,
+  StatisticsRoute: StatisticsRoute,
+  TemplatesRoute: TemplatesRoute,
+  UserGroupsRoute: UserGroupsRoute,
+  CampaignsIdRoute: CampaignsIdRoute,
+  CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
+  CampaignsIndexRoute: CampaignsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

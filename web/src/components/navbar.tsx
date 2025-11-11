@@ -1,4 +1,5 @@
-import { ChevronRight, User } from 'lucide-react'
+import { ChevronRight, User } from "lucide-react";
+import { useRouterState, Link } from "@tanstack/react-router";
 
 export function Logo() {
   return (
@@ -10,10 +11,26 @@ export function Logo() {
 }
 
 export function Navbar() {
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+
+  // Split the current path into parts (e.g. "/campaigns/new-campaign" → ["campaigns", "new-campaign"])
+  const parts = currentPath.split("/").filter(Boolean);
+
+  // Create formatted breadcrumb names
+  const formattedParts = parts.map(
+    (p) => p.charAt(0).toUpperCase() + p.slice(1).replaceAll("-", " ")
+  );
+
+  // Build breadcrumb paths cumulatively
+  const breadcrumbPaths = parts.map(
+    (_, i) => "/" + parts.slice(0, i + 1).join("/")
+  );
+
   return (
-    <nav className="h-[5vh] w-screen border-b bg-white">
-      <div className="w-full container px-3 py-3">
-        <div className="w-[100vw] px-10 flex items-center justify-between">
+    <nav className="h-[8%] py-2 w-full border-b bg-white rounded-xl">
+      <div className="flex flex-row justify-between h-full mx-auto">
+        <div className="w-[80vw] px-10 flex items-center justify-between">
           {/* Logo/Brand with Breadcrumb */}
           <div className="flex items-center space-x-3">
             <Logo />
@@ -30,18 +47,48 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* User Profile */}
-          <button className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
+          {/* Breadcrumb */}
+          {formattedParts.length > 0 && (
+            <>
+              <ChevronRight className="h-4 w-4 text-gray-400" />
+              <div className="flex items-center text-sm">
+                {formattedParts.map((part, i) => {
+                  const isLast = i === formattedParts.length - 1;
+                  const path = breadcrumbPaths[i];
+                  return (
+                    <div key={i} className="flex items-center">
+                      {!isLast ? (
+                        <Link
+                          to={path}
+                          className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+                        >
+                          {part}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500">{part}</span>
+                      )}
+                      {!isLast && <span className="text-gray-400 mx-2">/</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* User Profile */}
+        <button className="w-[10vw]flex flex row items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
+          <div className="flex flex-col items-end">
             <span className="text-sm font-medium">John Doe</span>
             <span className="text-xs text-gray-500">Admin</span>
-            <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
-              <User className="h-4 w-4 text-white" />
-            </div>
-          </button>
-        </div>
+          </div>
+          <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
+            <User className="h-4 w-4 text-white" />
+          </div>
+        </button>
       </div>
     </nav>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

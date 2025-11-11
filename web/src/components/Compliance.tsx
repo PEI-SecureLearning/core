@@ -31,7 +31,7 @@ function PDFViewer() {
 function ModalOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <div 
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      className="h-full w-full fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div onClick={(e) => e.stopPropagation()}>
@@ -44,7 +44,7 @@ function ModalOverlay({ children, onClose }: { children: React.ReactNode; onClos
 // Modal Container Component
 function ModalContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-[95vh] w-[100vh] bg-white rounded-3xl shadow-2xl w-100% overflow-hidden relative">
+    <div className="h-150 w-200 bg-white rounded-3xl shadow-2xl overflow-hidden relative">
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-50 -mr-16 -mt-16" />
       <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-300 rounded-full blur-3xl opacity-40 -ml-20 -mb-20" />
@@ -66,11 +66,7 @@ function ModalHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-8 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-4 left-4 w-16 h-16 border-2 border-white rounded-full" />
-        <div className="absolute bottom-4 right-4 w-20 h-20 border-2 border-white rounded-full" />
-      </div>
+    <div className="h-[10%] bg-gradient-to-br from-purple-600 to-purple-800 px-4 py-2 relative overflow-hidden">
       <button
         onClick={onClose}
         className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
@@ -79,7 +75,7 @@ function ModalHeader({
       </button>
       <div className="flex items-center gap-3 relative">
         <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
-          <Icon className="w-8 h-8 text-white" />
+          <Icon className="w-6 h-6 text-white" />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-white">{title}</h2>
@@ -93,34 +89,15 @@ function ModalHeader({
 // Terms Content Component
 function TermsContent() {
   return (
-    <div className="h-[70vh] bg-purple-50 rounded-2xl p-6 overflow-y-auto border border-purple-100">
-      <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2 text-base">
+    <div className="bg-purple-50 rounded-2xl p-2 overflow-y-auto border border-purple-100">
+      <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2 text-base sm:text-m md:text-lg lg:text-lg">
         <Sparkles className="w-5 h-5" />
         Terms & Conditions
       </h3>
-      <div className="h-[65vh] text-sm text-purple-800 space-y-2 leading-relaxed">
+      <div className="h-[100%] text-sm text-purple-800 space-y-2 leading-relaxed">
         <PDFViewer></PDFViewer>
       </div>
     </div>
-  );
-}
-
-// Default Terms Component
-function DefaultTerms() {
-  return (
-    <>
-      <p>By using our product management system, you agree to:</p>
-      <ul className="list-disc list-inside space-y-1 ml-2">
-        <li>Maintain accurate product information</li>
-        <li>Comply with data protection regulations</li>
-        <li>Use the system responsibly and ethically</li>
-        <li>Report any security concerns promptly</li>
-        <li>Keep your access credentials secure</li>
-      </ul>
-      <p className="mt-3">
-        This agreement ensures a safe and compliant environment for all users.
-      </p>
-    </>
   );
 }
 
@@ -252,7 +229,7 @@ export default function Index({
         />
         
         {!isAccepted ? (
-          <div className="p-8 space-y-6">
+          <div className="h-[90%] p-2 space-y-6">
             <TermsContent>
             </TermsContent>
 
