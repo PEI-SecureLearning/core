@@ -44,7 +44,7 @@ function ModalOverlay({ children, onClose }: { children: React.ReactNode; onClos
 // Modal Container Component
 function ModalContainer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-150 w-200 bg-white rounded-3xl shadow-2xl overflow-hidden relative">
+    <div className="h-[95dvh] w-[70dvw] bg-white rounded-3xl shadow-2xl overflow-hidden relative">
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-50 -mr-16 -mt-16" />
       <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-300 rounded-full blur-3xl opacity-40 -ml-20 -mb-20" />
@@ -66,7 +66,7 @@ function ModalHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="h-[10%] bg-gradient-to-br from-purple-600 to-purple-800 px-4 py-2 relative overflow-hidden">
+    <div className="bg-gradient-to-br from-purple-600 to-purple-800 px-6 py-4 z-10 relative overflow-hidden">
       <button
         onClick={onClose}
         className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors"
@@ -89,7 +89,7 @@ function ModalHeader({
 // Terms Content Component
 function TermsContent() {
   return (
-    <div className="bg-purple-50 rounded-2xl p-2 overflow-y-auto border border-purple-100">
+    <div className="h-[77%] bg-purple-50 rounded-2xl p-2 overflow-y-auto border border-purple-100">
       <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2 text-base sm:text-m md:text-lg lg:text-lg">
         <Sparkles className="w-5 h-5" />
         Terms & Conditions
@@ -112,7 +112,7 @@ function AgreementCheckbox({
   label: string;
 }) {
   return (
-    <label className="flex items-start gap-3 cursor-pointer group">
+    <label className="py-1 flex items-start gap-3 cursor-pointer group">
       <div className="relative flex-shrink-0 mt-0.5">
         <input
           type="checkbox"
@@ -161,6 +161,7 @@ function AcceptButton({
     </button>
   );
 }
+
 
 // Success State Component
 function SuccessState({ title, message }: { title: string; message: string }) {
@@ -229,19 +230,22 @@ export default function Index({
         />
         
         {!isAccepted ? (
-          <div className="h-[90%] p-2 space-y-6">
+          <div className="h-[84dvh] p-2 space-y-6">
             <TermsContent>
             </TermsContent>
+            
+            <div className='h-[23%]'>
+              <AgreementCheckbox
+                checked={isChecked}
+                onChange={setIsChecked}
+                label={checkboxLabel}
+              />
 
-            <AgreementCheckbox
-              checked={isChecked}
-              onChange={setIsChecked}
-              label={checkboxLabel}
-            />
+              <AcceptButton onClick={handleAccept} disabled={!isChecked}>
+                {acceptButtonText}
+              </AcceptButton>
+            </div>
 
-            <AcceptButton onClick={handleAccept} disabled={!isChecked}>
-              {acceptButtonText}
-            </AcceptButton>
           </div>
         ) : (
           <SuccessState title={successTitle} message={successMessage} />
