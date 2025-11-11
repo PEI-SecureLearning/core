@@ -7,7 +7,7 @@ export function Logo() {
       <span className="font-semibold text-lg">Secure</span>
       <span className="font-semibold text-lg text-purple-600">Learning</span>
     </div>
-  )
+  );
 }
 
 export function Navbar() {
@@ -34,46 +34,37 @@ export function Navbar() {
           {/* Logo/Brand with Breadcrumb */}
           <div className="flex items-center space-x-3">
             <Logo />
-            <ChevronRight className="h-4 w-4 text-gray-400" />
-            <div className="flex items-center space-x-2 text-sm">
-              <a 
-                href="/campaigns" 
-                className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-              >
-                Campaigns
-              </a>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-500">Scheduled Campaigns</span>
-            </div>
+            {formattedParts.length > 0 && (
+              <>
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <div className="flex items-center text-sm">
+                  {formattedParts.map((part, i) => {
+                    const isLast = i === formattedParts.length - 1;
+                    const path = breadcrumbPaths[i];
+                    return (
+                      <div key={i} className="flex items-center">
+                        {!isLast ? (
+                          <Link
+                            to={path}
+                            className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+                          >
+                            {part}
+                          </Link>
+                        ) : (
+                          <span className="text-gray-500">{part}</span>
+                        )}
+                        {!isLast && (
+                          <span className="text-gray-400 mx-2">/</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Breadcrumb */}
-          {formattedParts.length > 0 && (
-            <>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
-              <div className="flex items-center text-sm">
-                {formattedParts.map((part, i) => {
-                  const isLast = i === formattedParts.length - 1;
-                  const path = breadcrumbPaths[i];
-                  return (
-                    <div key={i} className="flex items-center">
-                      {!isLast ? (
-                        <Link
-                          to={path}
-                          className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
-                        >
-                          {part}
-                        </Link>
-                      ) : (
-                        <span className="text-gray-500">{part}</span>
-                      )}
-                      {!isLast && <span className="text-gray-400 mx-2">/</span>}
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
         </div>
 
         {/* User Profile */}
