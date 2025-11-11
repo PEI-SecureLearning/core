@@ -1,24 +1,29 @@
 import { ChevronRight, User } from "lucide-react";
-import { useRouterState } from "@tanstack/react-router";
+import { useRouterState, Link } from "@tanstack/react-router";
 
 export function Navbar() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
-  // Derive the breadcrumb parts from the current path
+  // Split the current path into parts (e.g. "/campaigns/new-campaign" → ["campaigns", "new-campaign"])
   const parts = currentPath.split("/").filter(Boolean);
 
-  // Turn "/campaigns/scheduled" → ["Campaigns", "Scheduled"]
+  // Create formatted breadcrumb names
   const formattedParts = parts.map(
     (p) => p.charAt(0).toUpperCase() + p.slice(1).replaceAll("-", " ")
   );
 
+  // Build breadcrumb paths cumulatively
+  const breadcrumbPaths = parts.map(
+    (_, i) => "/" + parts.slice(0, i + 1).join("/")
+  );
+
   return (
-    <nav className="w-full border-b bg-white px-6 py-3 mx-auto">
+    <nav className="w-full border-b bg-white px-6 py-3">
       <div className="flex items-center justify-between">
-        {/* Logo + Breadcrumb */}
+        {/* Brand + Breadcrumb */}
         <div className="flex items-center space-x-3">
-          {/* Brand */}
+          {/* Logo */}
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-lg">Secure</span>
             <span className="font-semibold text-lg text-purple-600">
@@ -30,22 +35,26 @@ export function Navbar() {
           {formattedParts.length > 0 && (
             <>
               <ChevronRight className="h-4 w-4 text-gray-400" />
-              <div className="flex items-center space-x-2 text-sm">
-                {formattedParts.map((part, i) => (
-                  <span
-                    key={i}
-                    className={`${
-                      i === formattedParts.length - 1
-                        ? "text-gray-500"
-                        : "text-gray-700 hover:text-gray-900 font-medium cursor-pointer"
-                    }`}
-                  >
-                    {part}
-                    {i < formattedParts.length - 1 && (
-                      <span className="text-gray-400 mx-2">/</span>
-                    )}
-                  </span>
-                ))}
+              <div className="flex items-center text-sm">
+                {formattedParts.map((part, i) => {
+                  const isLast = i === formattedParts.length - 1;
+                  const path = breadcrumbPaths[i];
+                  return (
+                    <div key={i} className="flex items-center">
+                      {!isLast ? (
+                        <Link
+                          to={path}
+                          className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+                        >
+                          {part}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500">{part}</span>
+                      )}
+                      {!isLast && <span className="text-gray-400 mx-2">/</span>}
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}

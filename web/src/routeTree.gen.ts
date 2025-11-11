@@ -61,14 +61,14 @@ const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
-  id: '/new-campaign',
-  path: '/new-campaign',
-  getParentRoute: () => CampaignsRoute,
+  id: '/campaigns/new-campaign',
+  path: '/campaigns/new-campaign',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsIdRoute = CampaignsIdRouteImport.update({
-  id: '/id',
-  path: '/id',
-  getParentRoute: () => CampaignsRoute,
+  id: '/campaigns/id',
+  path: '/campaigns/id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -155,6 +155,8 @@ export interface RootRouteChildren {
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
   UserGroupsRoute: typeof UserGroupsRoute
+  CampaignsIdRoute: typeof CampaignsIdRoute
+  CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
 }
 
@@ -218,17 +220,17 @@ declare module '@tanstack/react-router' {
     }
     '/campaigns/new-campaign': {
       id: '/campaigns/new-campaign'
-      path: '/new-campaign'
+      path: '/campaigns/new-campaign'
       fullPath: '/campaigns/new-campaign'
       preLoaderRoute: typeof CampaignsNewCampaignRouteImport
-      parentRoute: typeof CampaignsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/campaigns/id': {
       id: '/campaigns/id'
-      path: '/id'
+      path: '/campaigns/id'
       fullPath: '/campaigns/id'
       preLoaderRoute: typeof CampaignsIdRouteImport
-      parentRoute: typeof CampaignsRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -241,6 +243,8 @@ const rootRouteChildren: RootRouteChildren = {
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
   UserGroupsRoute: UserGroupsRoute,
+  CampaignsIdRoute: CampaignsIdRoute,
+  CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
 }
 export const routeTree = rootRouteImport
