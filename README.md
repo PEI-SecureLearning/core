@@ -65,6 +65,32 @@ project-template/
    - API Documentation: http://localhost/api/docs
    - Health Check: http://localhost/health
 
+### Crazy explicação de run do Belito
+Correr development:
+
+# Start PostgreSQL only
+
+cd deployment
+
+docker compose -f docker-compose.dev.yml up -d
+
+# Database is now accessible at localhost:5432
+
+Then run API and Web locally:
+
+# Terminal 1 - API
+
+cd ../api
+
+uv run fastapi dev src/main.py
+
+# Terminal 2 - Web
+
+cd ../web
+
+npm run dev
+
+
 ### Local Development
 
 For detailed instructions on running each component locally, see:
