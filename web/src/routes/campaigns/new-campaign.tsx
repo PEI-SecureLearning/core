@@ -16,7 +16,7 @@ function RouteComponent() {
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-gray-50 py-10 px-6">
+    <div className="flex flex-col items-center w-full  bg-gray-50 py-10 px-6">
       {/* Step Pipeline */}
       <div className="flex items-center justify-center mb-12 w-full max-w-5xl">
         {steps.map((step, i) => (
