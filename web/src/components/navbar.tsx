@@ -3,9 +3,9 @@ import { useRouterState, Link } from "@tanstack/react-router";
 
 export function Logo() {
   return (
-    <div className="flex items-center space-x-2">
-      <span className="font-semibold text-lg">Secure</span>
-      <span className="font-semibold text-lg text-purple-600">Learning</span>
+    <div className="flex items-center space-x-1 sm:space-x-2">
+      <span className="font-semibold text-sm sm:text-base lg:text-lg whitespace-nowrap">Secure</span>
+      <span className="font-semibold text-sm sm:text-base lg:text-lg text-purple-600 whitespace-nowrap">Learning</span>
     </div>
   );
 }
@@ -29,33 +29,48 @@ export function Navbar() {
 
   return (
     <nav className="h-[8%] py-2 w-full border-b bg-white rounded-xl">
-      <div className="flex flex-row justify-between h-full mx-auto">
-        <div className="w-[80vw] px-10 flex items-center justify-between">
+      <div className="flex flex-row justify-between h-full mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="flex-1 flex items-center justify-between gap-2 lg:gap-4">
           {/* Logo/Brand with Breadcrumb */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
             <Logo />
+            
+            {/* Hide on very small screens */}
+            <ChevronRight className="hidden sm:block h-3 w-3 lg:h-4 lg:w-4 text-gray-400 flex-shrink-0" />
+            
+            {/* Static breadcrumb - hidden on mobile */}
+            <div className="flex items-center space-x-2 text-xs lg:text-sm flex-shrink-0">
+              <a 
+                href="/campaigns" 
+                className="text-gray-700 hover:text-gray-900 font-medium transition-colors whitespace-nowrap"
+              >
+                Campaigns
+              </a>
+              <span className="text-gray-400">/</span>
+              <span className="text-gray-500 truncate">Scheduled Campaigns</span>
+            </div>
+
+            {/* Dynamic Breadcrumb */}
             {formattedParts.length > 0 && (
               <>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-                <div className="flex items-center text-sm">
+                <ChevronRight className="hidden lg:block h-4 w-4 text-gray-400 flex-shrink-0" />
+                <div className="flex items-center text-sm min-w-0">
                   {formattedParts.map((part, i) => {
                     const isLast = i === formattedParts.length - 1;
                     const path = breadcrumbPaths[i];
                     return (
-                      <div key={i} className="flex items-center">
+                      <div key={i} className="flex items-center min-w-0">
                         {!isLast ? (
                           <Link
                             to={path}
-                            className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+                            className="text-gray-700 hover:text-gray-900 font-medium transition-colors truncate"
                           >
                             {part}
                           </Link>
                         ) : (
-                          <span className="text-gray-500">{part}</span>
+                          <span className="text-gray-500 truncate">{part}</span>
                         )}
-                        {!isLast && (
-                          <span className="text-gray-400 mx-2">/</span>
-                        )}
+                        {!isLast && <span className="text-gray-400 mx-2 flex-shrink-0">/</span>}
                       </div>
                     );
                   })}
@@ -64,19 +79,19 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Breadcrumb */}
+          {/* User Profile */}
+          <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
+            {/* User info - hidden on small screens */}
+            <div className="flex flex-col items-end">
+              <span className="text-xs lg:text-sm font-medium whitespace-nowrap">John Doe</span>
+              <span className="text-[10px] lg:text-xs text-gray-500">Admin</span>
+            </div>
+            {/* Avatar - always visible */}
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0">
+              <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+            </div>
+          </button>
         </div>
-
-        {/* User Profile */}
-        <button className="w-[10vw]flex flex row items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
-          <div className="flex flex-col items-end">
-            <span className="text-sm font-medium">John Doe</span>
-            <span className="text-xs text-gray-500">Admin</span>
-          </div>
-          <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center">
-            <User className="h-4 w-4 text-white" />
-          </div>
-        </button>
       </div>
     </nav>
   );

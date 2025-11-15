@@ -34,7 +34,7 @@ export const InteractionChart: React.FC<InteractionChartProps> = ({
           '#6D28D9', // Dark purple for Reported
         ],
         borderColor: '#FFFFFF',
-        borderWidth: 0,
+        borderWidth: 2,
         hoverOffset: 4,
       },
     ],
