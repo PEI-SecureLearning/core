@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UserGroupsRouteImport } from './routes/user-groups'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -17,15 +16,13 @@ import { Route as ReportRouteImport } from './routes/report'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
+import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
+import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
 import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/[id]'
 
-const UserGroupsRoute = UserGroupsRouteImport.update({
-  id: '/user-groups',
-  path: '/user-groups',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -61,9 +58,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsergroupsIndexRoute = UsergroupsIndexRouteImport.update({
+  id: '/usergroups/',
+  path: '/usergroups/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   id: '/campaigns/',
   path: '/campaigns/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsergroupsNewGroupRoute = UsergroupsNewGroupRouteImport.update({
+  id: '/usergroups/new-group',
+  path: '/usergroups/new-group',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsergroupsIdRoute = UsergroupsIdRouteImport.update({
+  id: '/usergroups/$id',
+  path: '/usergroups/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
@@ -85,10 +97,12 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/user-groups': typeof UserGroupsRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/usergroups/$id': typeof UsergroupsIdRoute
+  '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/usergroups': typeof UsergroupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -98,10 +112,12 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/user-groups': typeof UserGroupsRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/usergroups/$id': typeof UsergroupsIdRoute
+  '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/usergroups': typeof UsergroupsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -112,10 +128,12 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/user-groups': typeof UserGroupsRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/usergroups/$id': typeof UsergroupsIdRoute
+  '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns/': typeof CampaignsIndexRoute
+  '/usergroups/': typeof UsergroupsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,10 +145,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/user-groups'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
+    | '/usergroups/$id'
+    | '/usergroups/new-group'
     | '/campaigns'
+    | '/usergroups'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,10 +160,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/user-groups'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
+    | '/usergroups/$id'
+    | '/usergroups/new-group'
     | '/campaigns'
+    | '/usergroups'
   id:
     | '__root__'
     | '/'
@@ -153,10 +175,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/user-groups'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
+    | '/usergroups/$id'
+    | '/usergroups/new-group'
     | '/campaigns/'
+    | '/usergroups/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -167,21 +191,16 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
-  UserGroupsRoute: typeof UserGroupsRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
+  UsergroupsIdRoute: typeof UsergroupsIdRoute
+  UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
+  UsergroupsIndexRoute: typeof UsergroupsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/user-groups': {
-      id: '/user-groups'
-      path: '/user-groups'
-      fullPath: '/user-groups'
-      preLoaderRoute: typeof UserGroupsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/templates': {
       id: '/templates'
       path: '/templates'
@@ -231,11 +250,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/usergroups/': {
+      id: '/usergroups/'
+      path: '/usergroups'
+      fullPath: '/usergroups'
+      preLoaderRoute: typeof UsergroupsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
       fullPath: '/campaigns'
       preLoaderRoute: typeof CampaignsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/usergroups/new-group': {
+      id: '/usergroups/new-group'
+      path: '/usergroups/new-group'
+      fullPath: '/usergroups/new-group'
+      preLoaderRoute: typeof UsergroupsNewGroupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/usergroups/$id': {
+      id: '/usergroups/$id'
+      path: '/usergroups/$id'
+      fullPath: '/usergroups/$id'
+      preLoaderRoute: typeof UsergroupsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/new-campaign': {
@@ -263,10 +303,12 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
-  UserGroupsRoute: UserGroupsRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
+  UsergroupsIdRoute: UsergroupsIdRoute,
+  UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
+  UsergroupsIndexRoute: UsergroupsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
