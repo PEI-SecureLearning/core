@@ -5,6 +5,9 @@ import { cn } from "@/lib/utils";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
 import StepCard from "@/components/campaigns/new-campaign/StepCard";
 import EmailTemplatePicker from "@/components/campaigns/new-campaign/EmailTemplatePicker";
+import LandingPageTemplatePicker from "@/components/campaigns/new-campaign/LandingPageTemplatePicker";
+import TargetGroupSelector from "@/components/campaigns/new-campaign/TargetGroupSelector";
+import CampaignScheduler from "@/components/campaigns/new-campaign/CampaignScheduler";
 
 export const Route = createFileRoute("/campaigns/new-campaign")({
   component: RouteComponent,
@@ -24,9 +27,21 @@ function RouteComponent() {
       label: "Email Template",
       component: EmailTemplatePicker,
     },
-    { name: "page-template", label: "Landing Page", component: null },
-    { name: "target-groups", label: "Target Groups", component: null },
-    { name: "schedule", label: "Schedule & Review", component: null },
+    {
+      name: "page-template",
+      label: "Landing Page",
+      component: LandingPageTemplatePicker,
+    },
+    {
+      name: "target-groups",
+      label: "Target Groups",
+      component: TargetGroupSelector,
+    },
+    {
+      name: "schedule",
+      label: "Schedule & Review",
+      component: CampaignScheduler,
+    },
   ];
   const [currentStep, setCurrentStep] = useState(0);
   const CurrentComponent = steps[currentStep].component;
@@ -59,7 +74,7 @@ function RouteComponent() {
       </div>
 
       {/* Step Content Placeholder */}
-      <div className="flex-1 flex items-center justify-center w-full max-w-3xl bg-white shadow-sm rounded-2xl border min-h-[300px]">
+      <div className="flex-1 flex items-center justify-center w-full max-w-3xl bg-white shadow-sm rounded-2xl border min-h-[300px] p-5">
         {CurrentComponent ? <CurrentComponent /> : null}
       </div>
 

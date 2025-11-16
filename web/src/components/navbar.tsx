@@ -22,8 +22,11 @@ export function Navbar() {
   const parts = currentPath.split("/").filter(Boolean);
 
   // Create formatted breadcrumb names
-  const formattedParts = parts.map(
-    (p) => p.charAt(0).toUpperCase() + p.slice(1).replaceAll("-", " ")
+  const formattedParts = parts.map((p) =>
+    p
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
+      .join(" ")
   );
 
   // Build breadcrumb paths cumulatively

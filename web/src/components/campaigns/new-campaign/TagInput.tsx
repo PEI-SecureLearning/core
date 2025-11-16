@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Plus } from "lucide-react";
 
 interface TagInputProps {
   onAdd: (tag: string) => void;
@@ -22,9 +23,9 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="size-8 cursor- rounded-full bg-purple-600 text-white flex items-center justify-center text-xl hover:bg-purple-700 transition"
+          className="p-1.5 cursor- rounded-full bg-purple-600 text-white flex items-center justify-center text-xl hover:bg-purple-700 transition"
         >
-          +
+          <Plus size={22} />
         </button>
       ) : (
         <div className="relative w-48">

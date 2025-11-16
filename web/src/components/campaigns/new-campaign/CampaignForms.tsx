@@ -18,7 +18,7 @@ function CampaignForms() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full m-5 space-y-5">
+    <form onSubmit={handleSubmit} className="w-full space-y-5">
       {/* Campaign Name */}
       <div className="flex flex-col gap-1">
         <label className="font-medium">
