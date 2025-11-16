@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, type ComponentType } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import CampaignForms from "@/components/new-campaign/campaign-forms";
-import StepCard from "@/components/new-campaign/step-card";
+import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
+import StepCard from "@/components/campaigns/new-campaign/StepCard";
+import EmailTemplatePicker from "@/components/campaigns/new-campaign/EmailTemplatePicker";
 
 export const Route = createFileRoute("/campaigns/new-campaign")({
   component: RouteComponent,
@@ -18,7 +19,11 @@ function RouteComponent() {
 
   const steps: Step[] = [
     { name: "forms", label: "Basic Info", component: CampaignForms },
-    { name: "email-template", label: "Email Template", component: null },
+    {
+      name: "email-template",
+      label: "Email Template",
+      component: EmailTemplatePicker,
+    },
     { name: "page-template", label: "Landing Page", component: null },
     { name: "target-groups", label: "Target Groups", component: null },
     { name: "schedule", label: "Schedule & Review", component: null },
