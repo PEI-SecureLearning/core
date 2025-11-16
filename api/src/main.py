@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI,File,UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.db import init_db
 from src.routers import product
-
+import csv
+import codecs
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,6 +34,16 @@ app.add_middleware(
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "ok"}
+
+
+@app.post("/upload")
+def upload(file: UploadFile = File(...)):
+    csvReader = csv.DictReader(codecs.iterdecode(file.file, 'utf-8'))
+    data = []  # Changed from {} to []
+    for rows in csvReader:             
+        data.append(rows)  # Changed from data[key] = rows
+    file.file.close()
+    return data
 
 # Include routers
 app.include_router(product.router,prefix="/api/products", tags=["products"])

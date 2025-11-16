@@ -1,7 +1,7 @@
 import { useState } from "react";
-import UserGroupsHeader from "@/components/userGroupsHeader"
-import UserGroupsGrid from "@/components/userGroupsGrid";
-import UserGroupsTable from "@/components/userGroupsTable";
+import UserGroupsHeader from "@/components/usergroups/userGroupsHeader"
+import UserGroupsGrid from "@/components/usergroups/userGroupsGrid";
+import UserGroupsTable from "@/components/usergroups/userGroupsTable";
 
 export default function UserGroupsPage() {
     const [view, setView] = useState<'grid' | 'table'>('grid');
