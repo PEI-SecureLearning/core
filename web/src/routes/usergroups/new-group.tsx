@@ -1,3 +1,4 @@
+import NewUserGroup from '@/components/usergroups/userGroupNewGroup'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/usergroups/new-group')({
@@ -5,5 +6,5 @@ export const Route = createFileRoute('/usergroups/new-group')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/usergroups/new-group"!</div>
+  return <NewUserGroup />
 }
