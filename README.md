@@ -196,9 +196,7 @@ To define...
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
+To define...
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -207,10 +205,13 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 <!-- ROADMAP -->
 ## Roadmap
 
-<iframe 
-    src="securelearning.pt/journey" 
-    style="width:100%; height:400px; border:1px solid #ccc; overflow:auto;">
-</iframe>
+| **Current (Q1)**                       | **Next (Q2)**                    | **Future (Q3–Q4)**                     |
+| -------------------------------------- | -------------------------------- | -------------------------------------- |
+| 🔹 Authentication (FastAPI + Keycloak) | 🔸 Phishing Campaign Builder     | 🟢 Machine-learning-based risk scoring |
+| 🔹 User Dashboard (React + Vite)       | 🔸 Role-based Access + Org Units | 🟢 SOC integration (SIEM export)       |
+| 🔹 Dockerized Dev Environment          | 🔸 RabbitMQ Message Pipelines    | 🟢 Mobile-friendly redesign            |
+| 🔹 Basic Reporting                     | 🔸 Nginx Production Deployment   | 🟢 Plugin marketplace                  |
+| 🔹 CI/CD Pipeline Setup                | 🔸 Advanced Analytics            | 🟢 Multi-tenant SaaS mode              |
 
 
 
