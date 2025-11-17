@@ -1,5 +1,7 @@
 import React from 'react';
 
+//this component shows the risk level with a progress bar and an icon - idk how to calculate but there should be an endpoint for it 
+
 interface RiskLevelProps {
   percentage?: number;
   title?: string;
@@ -35,9 +37,9 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
+    <div className={`w-1/3 bg-white rounded-lg shadow-sm border border-gray-200 p-4 ${className}`}>
       {/* Title */}
-      <h3 className="text-sm font-medium text-gray-600 mb-2">
+      <h3 className="text-lg font-medium text-gray-800 mb-6">
         {title}
       </h3>
       
