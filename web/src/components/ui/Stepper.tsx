@@ -82,16 +82,13 @@ export default function Stepper({
   };
 
   return (
-    <div
-      className="flex max-h-full flex-1 flex-col items-center justify-center  "
-      {...rest}
-    >
+    <div className="flex items-center justify-center size-full">
       <div
-        className={`mx-auto w-full max-w-md rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
+        className="size-full rounded-4xl shadow-xl flex flex-col justify-center align-middle p-3"
         style={{ border: "1px solid #222" }}
       >
         <div
-          className={`${stepContainerClassName} flex w-full items-center p-8`}
+          className={`${stepContainerClassName} flex items-center py-4 px-20`}
         >
           {stepsArray.map((_, index) => {
             const stepNumber = index + 1;
@@ -126,19 +123,21 @@ export default function Stepper({
           })}
         </div>
 
-        <StepContentWrapper
-          isCompleted={isCompleted}
-          currentStep={currentStep}
-          direction={direction}
-          className={`space-y-2 px-8 ${contentClassName}`}
-        >
-          {stepsArray[currentStep - 1]}
-        </StepContentWrapper>
+        <div className="flex-1 overflow-hidden relative">
+          <StepContentWrapper
+            isCompleted={isCompleted}
+            currentStep={currentStep}
+            direction={direction}
+            className={`h-full ${contentClassName}`}
+          >
+            {stepsArray[currentStep - 1]}
+          </StepContentWrapper>
+        </div>
 
         {!isCompleted && (
-          <div className={`px-8 pb-8 ${footerClassName}`}>
+          <div className={`p-4 ${footerClassName}`}>
             <div
-              className={`mt-10 flex ${currentStep !== 1 ? "justify-between" : "justify-end"}`}
+              className={`mt-2 flex ${currentStep !== 1 ? "justify-between" : "justify-end"}`}
             >
               {currentStep !== 1 && (
                 <button
@@ -186,12 +185,7 @@ function StepContentWrapper({
   const [parentHeight, setParentHeight] = useState<number>(0);
 
   return (
-    <motion.div
-      style={{ position: "relative", overflow: "hidden" }}
-      animate={{ height: isCompleted ? 0 : parentHeight }}
-      transition={{ type: "spring", duration: 0.4 }}
-      className={className}
-    >
+    <motion.div style={{ position: "relative" }} className={className}>
       <AnimatePresence initial={false} mode="sync" custom={direction}>
         {!isCompleted && (
           <SlideTransition
@@ -235,9 +229,9 @@ function SlideTransition({
       animate="center"
       exit="exit"
       transition={{ duration: 0.4 }}
-      style={{ position: "absolute", left: 0, right: 0, top: 0 }}
+      style={{ position: "absolute", inset: 0, height: "100%" }}
     >
-      {children}
+      <div className="w-full h-full flex justify-center">{children}</div>
     </motion.div>
   );
 }
@@ -262,7 +256,13 @@ interface StepProps {
 }
 
 export function Step({ children }: StepProps) {
-  return <div className="px-8">{children}</div>;
+  return (
+    <div className="w-full h-full flex flex-col items-center px-8 py-4">
+      <div className="flex-1 px-1 max-w-md w-full min-h-0 overflow-auto">
+        {children}
+      </div>
+    </div>
+  );
 }
 
 interface StepIndicatorProps {

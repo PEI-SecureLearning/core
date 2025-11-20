@@ -28,9 +28,9 @@ export default function CampaignScheduler() {
   });
 
   return (
-    <div className="w-full h-full flex flex-col md:flex-row gap-6 overflow-hidden">
+    <div className=" h-full max-w-xl w-full flex justify-center align-middle items-center gap-6 overflow-hidden">
       {/* LEFT PANEL */}
-      <div className="flex flex-col gap-4 w-full md:w-1/3">
+      <div className="flex flex-col gap-4 w-full ">
         <h2 className="text-lg font-medium">Schedule Campaign</h2>
 
         <input

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 interface Group {
   id: number;
@@ -133,7 +134,7 @@ export default function TargetGroupSelector() {
             <li
               key={group.id}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded text-white text-sm font-medium w-fit",
+                "flex justify-between gap-2 px-4 py-2 rounded text-white text-sm font-medium w-full",
                 colorMap[group.color] || "bg-gray-500"
               )}
             >
@@ -143,7 +144,7 @@ export default function TargetGroupSelector() {
                 onClick={() => handleRemove(group.id)}
                 className="ml-2 text-white hover:text-gray-200 font-bold"
               >
-                ×
+                <X />
               </button>
             </li>
           ))}

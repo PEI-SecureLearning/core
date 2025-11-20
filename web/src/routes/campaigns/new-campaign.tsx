@@ -1,9 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type ComponentType } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { type ComponentType } from "react";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
-import StepCard from "@/components/campaigns/new-campaign/StepCard";
 import EmailTemplatePicker from "@/components/campaigns/new-campaign/EmailTemplatePicker";
 import LandingPageTemplatePicker from "@/components/campaigns/new-campaign/LandingPageTemplatePicker";
 import TargetGroupSelector from "@/components/campaigns/new-campaign/TargetGroupSelector";
@@ -44,18 +41,9 @@ function RouteComponent() {
       component: CampaignScheduler,
     },
   ];
-  const [currentStep, setCurrentStep] = useState(0);
-  const CurrentComponent = steps[currentStep].component;
-
-  const nextStep = () =>
-    setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-  const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
   return (
-    <div
-      className="w-full max-h-full
-     flex justify-center items-center align-middle "
-    >
+    <div className="size-full px-15 py-5">
       <Stepper
         initialStep={1}
         onStepChange={(step) => console.log(step)}
