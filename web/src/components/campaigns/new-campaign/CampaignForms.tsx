@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { X } from "lucide-react";
 import TagInput from "./TagInput";
 
 function CampaignForms() {
@@ -18,7 +19,7 @@ function CampaignForms() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-5">
+    <form onSubmit={handleSubmit} className="w-full space-y-5 h-full">
       {/* Campaign Name */}
       <div className="flex flex-col gap-1">
         <label className="font-medium">
@@ -43,9 +44,9 @@ function CampaignForms() {
           required
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="border rounded px-3 py-2"
+          className="border rounded px-3 py-2 resize-none size-a"
           placeholder="Describe your campaign"
-          rows={3}
+          rows={Math.max(3, description.split("\n").length)}
         />
       </div>
 
@@ -59,9 +60,14 @@ function CampaignForms() {
           {tags.map((tag, i) => (
             <div
               key={i}
-              className=" text-center align-middle px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm border border-purple-300"
+              className=" flex gap-2 items-center align-middle text-center pl-3 pr-2 py-1 bg-purple-100 text-purple-700 rounded-full text-sm border border-purple-300"
             >
-              # {tag}
+              <span># {tag}</span>
+              <X
+                onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
+                size={22}
+                className="hover:bg-purple-300 rounded-full"
+              />
             </div>
           ))}
           <TagInput onAdd={(tag) => setTags((prev) => [...prev, tag])} />
