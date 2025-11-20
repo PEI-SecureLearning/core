@@ -39,7 +39,7 @@ function TableRow({ group, onEdit, onDelete }: {
       {/* Group Name with Icon */}
       <td className="px-4 py-4">
         <Link 
-          to={`/user-groups/${group.id}`}
+          to={`/usergroups/${group.id}`}
           className="flex items-center gap-3 hover:text-purple-600 transition-colors"
         >
           <div className={`h-10 w-10 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0`}>
