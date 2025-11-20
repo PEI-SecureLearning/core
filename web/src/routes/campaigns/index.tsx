@@ -8,7 +8,7 @@ function RouteComponent() {
   return (
     <>
       <div>Hello "/campaigns/"!</div>
-      <div>boom</div>
+      <br />
       <Link to="/campaigns/new-campaign">New Campaign</Link>
     </>
   );
