@@ -5,8 +5,12 @@ import { useRouterState, Link } from "@tanstack/react-router";
 export function Logo() {
   return (
     <div className="flex items-center space-x-1 sm:space-x-2">
-      <span className="font-semibold text-sm sm:text-base lg:text-lg whitespace-nowrap">Secure</span>
-      <span className="font-semibold text-sm sm:text-base lg:text-lg text-purple-600 whitespace-nowrap">Learning</span>
+      <span className="font-semibold text-sm sm:text-base lg:text-lg whitespace-nowrap">
+        Secure
+      </span>
+      <span className="font-semibold text-sm sm:text-base lg:text-lg text-purple-600 whitespace-nowrap">
+        Learning
+      </span>
     </div>
   );
 }
@@ -19,8 +23,11 @@ export function Navbar() {
   const parts = currentPath.split("/").filter(Boolean);
 
   // Create formatted breadcrumb names
-  const formattedParts = parts.map(
-    (p) => p.charAt(0).toUpperCase() + p.slice(1).replaceAll("-", " ")
+  const formattedParts = parts.map((p) =>
+    p
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.substring(1))
+      .join(" ")
   );
 
   // Build breadcrumb paths cumulatively
@@ -35,21 +42,6 @@ export function Navbar() {
           {/* Logo/Brand with Breadcrumb */}
           <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
             <Logo />
-
-            {/* Hide on very small screens */}
-            <ChevronRight className="hidden sm:block h-3 w-3 lg:h-4 lg:w-4 text-gray-400 flex-shrink-0" />
-
-            {/* Static breadcrumb - hidden on mobile */}
-            <div className="flex items-center space-x-2 text-xs lg:text-sm flex-shrink-0">
-              <a
-                href="/campaigns"
-                className="text-gray-700 hover:text-gray-900 font-medium transition-colors whitespace-nowrap"
-              >
-                Campaigns
-              </a>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-500 truncate">Scheduled Campaigns</span>
-            </div>
 
             {/* Dynamic Breadcrumb */}
             {formattedParts.length > 0 && (
@@ -71,7 +63,11 @@ export function Navbar() {
                         ) : (
                           <span className="text-gray-500 truncate">{part}</span>
                         )}
-                        {!isLast && <span className="text-gray-400 mx-2 flex-shrink-0">/</span>}
+                        {!isLast && (
+                          <span className="text-gray-400 mx-2 flex-shrink-0">
+                            /
+                          </span>
+                        )}
                       </div>
                     );
                   })}
@@ -84,17 +80,21 @@ export function Navbar() {
           <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
             {/* User info - hidden on small screens */}
             <div className="flex flex-col items-end">
-              <span className="text-xs lg:text-sm font-medium whitespace-nowrap">{keycloak.idTokenParsed?.preferred_username}</span>
-              <span className="text-[10px] lg:text-xs text-gray-500">Admin</span>
-            </div>
+              <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
+                John Doe
+              </span>
+              <span className="text-[10px] lg:text-xs text-gray-500">
+                Admin
+              </span>
+            </div >
             {/* Avatar - always visible */}
-            <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l  bg-gray-700 flex items-center justify-center flex-shrink-0">
+            < div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l  bg-gray-700 flex items-center justify-center flex-shrink-0" >
               <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-            </div>
-          </button>
-        </div>
-      </div>
-    </nav>
+            </div >
+          </button >
+        </div >
+      </div >
+    </nav >
   );
 }
 
