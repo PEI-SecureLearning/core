@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { X, FileText, Check, Sparkles } from 'lucide-react';
+import apiClient from '../helper/header-injector';
+import keycloak from '../keycloak';
 
 // Types
 interface ComplianceAgreementProps {
@@ -30,7 +32,7 @@ function PDFViewer() {
 // Modal Overlay Component
 function ModalOverlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
-    <div 
+    <div
       className="h-full w-full fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
       onClick={onClose}
     >
@@ -54,15 +56,15 @@ function ModalContainer({ children }: { children: React.ReactNode }) {
 }
 
 // Header Component
-function ModalHeader({ 
-  title, 
-  subtitle, 
-  icon: Icon = FileText, 
-  onClose 
-}: { 
-  title: string; 
-  subtitle: string; 
-  icon?: React.ComponentType<{ className?: string }>; 
+function ModalHeader({
+  title,
+  subtitle,
+  icon: Icon = FileText,
+  onClose
+}: {
+  title: string;
+  subtitle: string;
+  icon?: React.ComponentType<{ className?: string }>;
   onClose: () => void;
 }) {
   return (
@@ -102,13 +104,13 @@ function TermsContent() {
 }
 
 // Checkbox Component
-function AgreementCheckbox({ 
-  checked, 
-  onChange, 
-  label 
-}: { 
-  checked: boolean; 
-  onChange: (checked: boolean) => void; 
+function AgreementCheckbox({
+  checked,
+  onChange,
+  label
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
   label: string;
 }) {
   return (
@@ -121,11 +123,10 @@ function AgreementCheckbox({
           className="sr-only"
         />
         <div
-          className={`w-6 h-6 rounded-lg border-2 transition-all ${
-            checked
-              ? 'bg-purple-600 border-purple-600'
-              : 'bg-white border-purple-300 group-hover:border-purple-400'
-          }`}
+          className={`w-6 h-6 rounded-lg border-2 transition-all ${checked
+            ? 'bg-purple-600 border-purple-600'
+            : 'bg-white border-purple-300 group-hover:border-purple-400'
+            }`}
         >
           {checked && (
             <Check className="w-4 h-4 text-white m-0.5" strokeWidth={3} />
@@ -138,24 +139,23 @@ function AgreementCheckbox({
 }
 
 // Accept Button Component
-function AcceptButton({ 
-  onClick, 
-  disabled, 
-  children 
-}: { 
-  onClick: () => void; 
-  disabled: boolean; 
+function AcceptButton({
+  onClick,
+  disabled,
+  children
+}: {
+  onClick: () => void;
+  disabled: boolean;
   children: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full py-3 px-6 rounded-xl font-semibold transition-all transform ${
-        !disabled
-          ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
-          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-      }`}
+      className={`w-full py-3 px-6 rounded-xl font-semibold transition-all transform ${!disabled
+        ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+        }`}
     >
       {children}
     </button>
@@ -207,7 +207,13 @@ export default function Index({
     }
   };
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
+    try {
+      const response = await apiClient.get('/health');
+      console.log(response.data);
+    } catch (error) {
+
+    }
     if (isChecked) {
       setIsAccepted(true);
       if (controlledOnAccept) {
@@ -222,18 +228,18 @@ export default function Index({
   return (
     <ModalOverlay onClose={handleClose}>
       <ModalContainer>
-        <ModalHeader 
-          title={title} 
-          subtitle={subtitle} 
+        <ModalHeader
+          title={title}
+          subtitle={subtitle}
           icon={icon}
-          onClose={handleClose} 
+          onClose={handleClose}
         />
-        
+
         {!isAccepted ? (
           <div className="h-[84dvh] p-2 space-y-6">
             <TermsContent>
             </TermsContent>
-            
+
             <div className='h-[23%]'>
               <AgreementCheckbox
                 checked={isChecked}

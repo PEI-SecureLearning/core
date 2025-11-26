@@ -49,11 +49,11 @@ export default function NewUserGroup() {
     { name: 'teal', class: 'from-teal-400 to-teal-600', bg: 'bg-teal-500' },
   ];
 
-  const filteredUsers = availableUsers.filter(user => 
+  const filteredUsers = availableUsers.filter(user =>
     !selectedMembers.find(m => m.id === user.id) &&
     (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-     user.department.toLowerCase().includes(searchQuery.toLowerCase()))
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.department.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const addMember = (user: Member) => {
@@ -67,7 +67,7 @@ export default function NewUserGroup() {
 
   const handleSubmit = () => {
     if (!groupName || selectedMembers.length === 0) return;
-    
+
     console.log({
       groupName,
       description,
@@ -80,53 +80,53 @@ export default function NewUserGroup() {
 
   return (
     <div className='h-full w-full'>
-        <div className='h-1/12 border-b py-2 px-5'>
-            <h3 className="text-xl font-semibold text-gray-900">Create a new group</h3>
-            <h2 className="text-l font-medium text-gray-700">Set up a new group for your campaigns</h2>
+      <div className='h-1/12 border-b py-2 px-5'>
+        <h3 className="text-xl font-semibold text-gray-900">Create a new group</h3>
+        <h2 className="text-l font-medium text-gray-700">Set up a new group for your campaigns</h2>
 
-        </div>
-        <div className='h-10/12 flex row'>
-            <div className='h-full w-5/6 items-center justify-center px-5 py-5 overflow-y-auto gap-4 space-y-6'>
-                <div className='h-2/3 w-full'>
-                    <BasicInfo
-                        groupName={groupName}
-                        description={description}
-                        selectedColor={selectedColor}
-                        colors={colors}
-                        onGroupNameChange={setGroupName}
-                        onDescriptionChange={setDescription}
-                        onColorSelect={setSelectedColor}
-                    />
-                </div>
-                <div className='h-full w-full'>
-                    <MembersSection
-                    searchQuery={searchQuery}
-                    filteredUsers={filteredUsers}
-                    selectedMembers={selectedMembers}
-                    setSelectedMembers={setSelectedMembers}
-                    selectedColorClass={selectedColorClass}
-                    onSearchChange={setSearchQuery}
-                    onAddMember={addMember}
-                    onRemoveMember={removeMember}
-                    />
-                </div>
-            </div>
-
-            <div className='h-full w-2/6 py-5 px-5'>
-                <Preview groupName={groupName}
-                  selectedColor={selectedColor}
-                  selectedColorClass={selectedColorClass}
-                  selectedMembersCount={selectedMembers.length}
-                  description={description}/>
-            </div>
-        </div>
-        <div className='h-1/12 border-t py-4 bg-gray-50'>
-            <NewGroupFooter 
-              onSubmit={handleSubmit}
+      </div>
+      <div className='h-10/12 flex row'>
+        <div className='h-full w-5/6 items-center justify-center px-5 py-5 overflow-y-auto gap-4 space-y-6'>
+          <div className='h-2/3 w-full'>
+            <BasicInfo
               groupName={groupName}
-              selectedMembersCount={selectedMembers.length}
+              description={description}
+              selectedColor={selectedColor}
+              colors={colors}
+              onGroupNameChange={setGroupName}
+              onDescriptionChange={setDescription}
+              onColorSelect={setSelectedColor}
             />
+          </div>
+          <div className='h-full w-full'>
+            <MembersSection
+              searchQuery={searchQuery}
+              filteredUsers={filteredUsers}
+              selectedMembers={selectedMembers}
+              setSelectedMembers={setSelectedMembers}
+              selectedColorClass={selectedColorClass}
+              onSearchChange={setSearchQuery}
+              onAddMember={addMember}
+              onRemoveMember={removeMember}
+            />
+          </div>
         </div>
+
+        <div className='h-full w-2/6 py-5 px-5'>
+          <Preview groupName={groupName}
+            selectedColor={selectedColor}
+            selectedColorClass={selectedColorClass}
+            selectedMembersCount={selectedMembers.length}
+            description={description} />
+        </div>
+      </div>
+      <div className='h-1/12 border-t py-4 bg-gray-50'>
+        <NewGroupFooter
+          onSubmit={handleSubmit}
+          groupName={groupName}
+          selectedMembersCount={selectedMembers.length}
+        />
+      </div>
     </div>
   );
 }

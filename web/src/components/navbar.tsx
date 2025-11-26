@@ -1,4 +1,5 @@
 import { ChevronRight, User } from "lucide-react";
+import keycloak from "../keycloak";
 import { useRouterState, Link } from "@tanstack/react-router";
 
 export function Logo() {
@@ -85,15 +86,15 @@ export function Navbar() {
               <span className="text-[10px] lg:text-xs text-gray-500">
                 Admin
               </span>
-            </div>
+            </div >
             {/* Avatar - always visible */}
-            <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l  bg-gray-700 flex items-center justify-center flex-shrink-0">
+            < div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l  bg-gray-700 flex items-center justify-center flex-shrink-0" >
               <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-            </div>
-          </button>
-        </div>
-      </div>
-    </nav>
+            </div >
+          </button >
+        </div >
+      </div >
+    </nav >
   );
 }
 
