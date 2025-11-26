@@ -4,7 +4,7 @@ from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.db import init_db
 from src.routers import product
-from src.core.security import valid_access_token
+from src.core.security import valid_resource_access
 import csv
 import codecs
 
@@ -37,10 +37,14 @@ app.add_middleware(
 )
 
 
-@app.get("/health", tags=["Health"], dependencies=[Depends(valid_access_token("User"))])
+# @app.get("/health", tags=["Health"], dependencies=[Depends(valid_access_token("User"))])
+# async def health_check():
+#     return {"status": "ok"}
+
+@app.get("/health", tags=["Health"], 
+    dependencies=[Depends(valid_resource_access("Health Check Endpoint"))])
 async def health_check():
     return {"status": "ok"}
-
 
 @app.post("/upload")
 def upload(file: UploadFile = File(...)):
