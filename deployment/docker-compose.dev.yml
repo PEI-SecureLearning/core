@@ -12,6 +12,14 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+  
+  keycloak:
+    image: keycloak
+    container_name: keycloak
+    volumes:
+      - ./keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
+
+      - ./keycloak/themes:/opt/keycloak/themes:ro
 
 volumes:
   db_data:

@@ -1,10 +1,17 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { ReactKeycloakProvider } from '@react-keycloak/web'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import { Providers } from './lib/providers'
+import keycloak from "./keycloak"
+
+const initOptions = {
+  onLoad: "login-required",
+  pkceMethod: "S256",
+};
 
 // Create a new router instance
 const router = createRouter({ routeTree })
@@ -21,10 +28,12 @@ const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
-    <StrictMode>
-      <Providers>
-        <RouterProvider router={router} />
-      </Providers>
-    </StrictMode>,
+    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
+      <StrictMode>
+        <Providers>
+          <RouterProvider router={router} />
+        </Providers>
+      </StrictMode>,
+    </ReactKeycloakProvider>
   )
 }

@@ -1,4 +1,5 @@
 import { ChevronRight, User } from "lucide-react";
+import keycloak from "../keycloak";
 import { useRouterState, Link } from "@tanstack/react-router";
 
 export function Logo() {
@@ -34,14 +35,14 @@ export function Navbar() {
           {/* Logo/Brand with Breadcrumb */}
           <div className="flex items-center space-x-2 lg:space-x-3 min-w-0 flex-1">
             <Logo />
-            
+
             {/* Hide on very small screens */}
             <ChevronRight className="hidden sm:block h-3 w-3 lg:h-4 lg:w-4 text-gray-400 flex-shrink-0" />
-            
+
             {/* Static breadcrumb - hidden on mobile */}
             <div className="flex items-center space-x-2 text-xs lg:text-sm flex-shrink-0">
-              <a 
-                href="/campaigns" 
+              <a
+                href="/campaigns"
                 className="text-gray-700 hover:text-gray-900 font-medium transition-colors whitespace-nowrap"
               >
                 Campaigns
@@ -83,7 +84,7 @@ export function Navbar() {
           <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
             {/* User info - hidden on small screens */}
             <div className="flex flex-col items-end">
-              <span className="text-xs lg:text-sm font-medium whitespace-nowrap">John Doe</span>
+              <span className="text-xs lg:text-sm font-medium whitespace-nowrap">{keycloak.idTokenParsed?.preferred_username}</span>
               <span className="text-[10px] lg:text-xs text-gray-500">Admin</span>
             </div>
             {/* Avatar - always visible */}
