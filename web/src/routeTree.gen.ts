@@ -17,9 +17,12 @@ import { Route as HelpRouteImport } from './routes/help'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
+import { Route as TenantsIndexRouteImport } from './routes/tenants/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
 import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
 import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
+import { Route as TenantsNewTenantRouteImport } from './routes/tenants/new-tenant'
+import { Route as TenantsIdRouteImport } from './routes/tenants/$id'
 import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/[id]'
 
@@ -63,6 +66,11 @@ const UsergroupsIndexRoute = UsergroupsIndexRouteImport.update({
   path: '/usergroups/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TenantsIndexRoute = TenantsIndexRouteImport.update({
+  id: '/tenants/',
+  path: '/tenants/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   id: '/campaigns/',
   path: '/campaigns/',
@@ -76,6 +84,16 @@ const UsergroupsNewGroupRoute = UsergroupsNewGroupRouteImport.update({
 const UsergroupsIdRoute = UsergroupsIdRouteImport.update({
   id: '/usergroups/$id',
   path: '/usergroups/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TenantsNewTenantRoute = TenantsNewTenantRouteImport.update({
+  id: '/tenants/new-tenant',
+  path: '/tenants/new-tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TenantsIdRoute = TenantsIdRouteImport.update({
+  id: '/tenants/$id',
+  path: '/tenants/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
@@ -99,9 +117,12 @@ export interface FileRoutesByFullPath {
   '/templates': typeof TemplatesRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/tenants/$id': typeof TenantsIdRoute
+  '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/tenants': typeof TenantsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -114,9 +135,12 @@ export interface FileRoutesByTo {
   '/templates': typeof TemplatesRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/tenants/$id': typeof TenantsIdRoute
+  '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/tenants': typeof TenantsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
 }
 export interface FileRoutesById {
@@ -130,9 +154,12 @@ export interface FileRoutesById {
   '/templates': typeof TemplatesRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/tenants/$id': typeof TenantsIdRoute
+  '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns/': typeof CampaignsIndexRoute
+  '/tenants/': typeof TenantsIndexRoute
   '/usergroups/': typeof UsergroupsIndexRoute
 }
 export interface FileRouteTypes {
@@ -147,9 +174,12 @@ export interface FileRouteTypes {
     | '/templates'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
+    | '/tenants/$id'
+    | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
+    | '/tenants'
     | '/usergroups'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -162,9 +192,12 @@ export interface FileRouteTypes {
     | '/templates'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
+    | '/tenants/$id'
+    | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
+    | '/tenants'
     | '/usergroups'
   id:
     | '__root__'
@@ -177,9 +210,12 @@ export interface FileRouteTypes {
     | '/templates'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
+    | '/tenants/$id'
+    | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns/'
+    | '/tenants/'
     | '/usergroups/'
   fileRoutesById: FileRoutesById
 }
@@ -193,9 +229,12 @@ export interface RootRouteChildren {
   TemplatesRoute: typeof TemplatesRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
+  TenantsIdRoute: typeof TenantsIdRoute
+  TenantsNewTenantRoute: typeof TenantsNewTenantRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
   UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
+  TenantsIndexRoute: typeof TenantsIndexRoute
   UsergroupsIndexRoute: typeof UsergroupsIndexRoute
 }
 
@@ -257,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsergroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tenants/': {
+      id: '/tenants/'
+      path: '/tenants'
+      fullPath: '/tenants'
+      preLoaderRoute: typeof TenantsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
@@ -276,6 +322,20 @@ declare module '@tanstack/react-router' {
       path: '/usergroups/$id'
       fullPath: '/usergroups/$id'
       preLoaderRoute: typeof UsergroupsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tenants/new-tenant': {
+      id: '/tenants/new-tenant'
+      path: '/tenants/new-tenant'
+      fullPath: '/tenants/new-tenant'
+      preLoaderRoute: typeof TenantsNewTenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tenants/$id': {
+      id: '/tenants/$id'
+      path: '/tenants/$id'
+      fullPath: '/tenants/$id'
+      preLoaderRoute: typeof TenantsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/new-campaign': {
@@ -305,9 +365,12 @@ const rootRouteChildren: RootRouteChildren = {
   TemplatesRoute: TemplatesRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
+  TenantsIdRoute: TenantsIdRoute,
+  TenantsNewTenantRoute: TenantsNewTenantRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
   UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
+  TenantsIndexRoute: TenantsIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,
 }
 export const routeTree = rootRouteImport
