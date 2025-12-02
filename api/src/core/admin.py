@@ -1,20 +1,28 @@
 import requests
 import json
 from fastapi import HTTPException
+import os
+from dotenv import load_dotenv
 
-#TODO CHANGE TO ENV VARIABLES
-KEYCLOAK_URL = "http://localhost:8080"
-ADMIN_SECRET = "KHiR2RMNFqJLSb653yo2bB18jjGuatq7"          
+load_dotenv()
 
 class Admin():
+    def __init__(self):
+        self.keycloak_url = os.getenv("KEYCLOAK_URL")
+        self.admin_secret = os.getenv("CLIENT_SECRET")
+        
+        if not self.keycloak_url:
+            raise HTTPException(status_code=500, detail="KEYCLOAK_URL environment variable is not set")
+        if not self.admin_secret:
+            raise HTTPException(status_code=500, detail="CLIENT_SECRET environment variable is not set")
 
     def _get_admin_token(self):
-        url = f"{KEYCLOAK_URL}/realms/master/protocol/openid-connect/token"
+        url = f"{self.keycloak_url}/realms/master/protocol/openid-connect/token"
 
         data = {
             'grant_type': 'client_credentials',
-            'client_id': 'admin-cli',  
-            'client_secret': ADMIN_SECRET
+            'client_id': 'SecureLearning-admin',  
+            'client_secret': self.admin_secret
         }
 
         try:
@@ -38,24 +46,51 @@ class Admin():
 
     def create_realm(self,realm_name: str):
         token = self._get_admin_token()
-        url = "http://localhost:8080/admin/realms"
+        url = f"{self.keycloak_url}/admin/realms"
 
         r = requests.post(url, headers={
                                         "Content-Type": "application/json", 
                                         "Authorization": "Bearer {}".format(token)
                                     },
         json={
-            "realm": realm_name,
-            "enabled": True,
-            "displayName": realm_name
-        })
-        
+                "realm": realm_name,
+                "enabled": True,
+                "displayName": realm_name,
+                "clients": [
+                    {
+                        "clientId": "react-app",
+                        "enabled": True,
+                        "publicClient": True,
+                        "redirectUris": ["http://localhost:5173/*"],
+                        "webOrigins": ["http://localhost:5173"],
+                        "standardFlowEnabled": True,
+                        "directAccessGrantsEnabled": True
+                    }
+                ],
+                "users": [
+                    {
+                        "username": "Org_manager",
+                        "enabled": True,
+                        "firstName": "Org",
+                        "lastName": "Manager",
+                        "email": "org_manager@example.com", 
+                        "credentials": [
+                            {
+                                "type": "password",
+                                "value": "1234",
+                                "temporary": True
+                            }
+                        ]
+                    }
+                ]
+            })
+                    
         return r
 
 
     def add_user(self,realm_name: str, username: str, password: str):
         token = self._get_admin_token()
-        url = "http://localhost:8080/auth/admin/realms/" + realm_name + "/test/users"
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/users"
 
         r = requests.post(url, headers={
                                         "Content-Type": "application/json", 

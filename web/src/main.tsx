@@ -7,6 +7,7 @@ import { ReactKeycloakProvider } from '@react-keycloak/web'
 import { routeTree } from './routeTree.gen'
 import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
+import { EmailEntry } from './components/EmailEntry'
 
 const initOptions = {
   onLoad: "login-required",
@@ -26,14 +27,29 @@ declare module '@tanstack/react-router' {
 // Render the app
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(
-    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
+  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  const userRealm = localStorage.getItem('user_realm');
+  const hasValidRealm = isAdminRoute || !!userRealm;
+
+  if (!hasValidRealm) {
+    // If we don't have a realm and aren't on admin, show the email entry page
+    const root = ReactDOM.createRoot(rootElement)
+    root.render(
       <StrictMode>
-        <Providers>
-          <RouterProvider router={router} />
-        </Providers>
-      </StrictMode>,
-    </ReactKeycloakProvider>
-  )
+        {/* We can import EmailEntry here directly */}
+        <EmailEntry />
+      </StrictMode>
+    )
+  } else {
+    const root = ReactDOM.createRoot(rootElement)
+    root.render(
+      <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions}>
+        <StrictMode>
+          <Providers>
+            <RouterProvider router={router} />
+          </Providers>
+        </StrictMode>,
+      </ReactKeycloakProvider>
+    )
+  }
 }

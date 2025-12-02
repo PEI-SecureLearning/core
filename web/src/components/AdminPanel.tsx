@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 
 export function AdminPanel() {
     const { keycloak } = useKeycloak()
-    const [inputValue, setInputValue] = useState('')
+    const [realmName, setRealmName] = useState('')
+    const [domain, setDomain] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -16,17 +17,20 @@ export function AdminPanel() {
         setIsLoading(true)
         try {
             await axios.post(
-                `http://localhost:8000/admin/realm`,
-                null,
+                `http://localhost:8000/api/realms`,
                 {
-                    params: { realm_name: inputValue },
+                    name: realmName,
+                    domain: domain
+                },
+                {
                     headers: {
                         Authorization: `Bearer ${keycloak.token}`,
                     },
                 }
             )
             alert('Realm created successfully!')
-            setInputValue('')
+            setRealmName('')
+            setDomain('')
         } catch (error) {
             console.error('Error creating realm:', error)
             alert('Failed to create realm')
@@ -40,7 +44,7 @@ export function AdminPanel() {
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader>
                     <CardTitle className="text-2xl font-bold">Create Realm</CardTitle>
-                    <CardDescription>Enter the name of the new realm.</CardDescription>
+                    <CardDescription>Enter the name and domain of the new realm.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -49,8 +53,19 @@ export function AdminPanel() {
                             <Input
                                 id="realm-name"
                                 placeholder="Enter realm name..."
-                                value={inputValue}
-                                onChange={(e) => setInputValue(e.target.value)}
+                                value={realmName}
+                                onChange={(e) => setRealmName(e.target.value)}
+                                required
+                                className="w-full"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="domain">Domain</Label>
+                            <Input
+                                id="domain"
+                                placeholder="Enter domain (e.g. company.com)..."
+                                value={domain}
+                                onChange={(e) => setDomain(e.target.value)}
                                 required
                                 className="w-full"
                             />
