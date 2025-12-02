@@ -32,7 +32,13 @@ def create_realm(realm: RealmCreate):
     # Create realm in Keycloak
     admin = Admin()
     try:
-        response = admin.create_realm(realm.name)
+        response = admin.create_realm(
+            realm_name=realm.name,
+            admin_email=realm.adminEmail,
+            user_count=realm.userCount,
+            bundle=realm.bundle,
+            features=realm.features
+        )
         if response.status_code != 201:
             raise HTTPException(status_code=response.status_code, detail=f"Failed to create realm in Keycloak: {response.text}")
     except Exception as e:
