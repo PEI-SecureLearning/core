@@ -3,7 +3,6 @@ from fastapi import FastAPI,Depends,File,UploadFile
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.db import init_db
-from src.routers import product, realm
 from src.core.security import valid_resource_access
 import csv
 import codecs
@@ -56,7 +55,6 @@ def upload(file: UploadFile = File(...)):
     return data
 
 # Include routers
-app.include_router(product.router,prefix="/api/products", tags=["products"])
 app.include_router(realm.router, prefix="/api", tags=["realms"])
 
 
