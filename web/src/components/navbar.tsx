@@ -1,4 +1,5 @@
 import { ChevronRight, User } from "lucide-react";
+import keycloak from "../keycloak";
 import { useRouterState, Link } from "@tanstack/react-router";
 
 export function Logo() {
