@@ -13,8 +13,8 @@ function Index() {
       <div>
         <b>boas pessoal</b>
       </div>
-      <div className="container mx-auto py-8 px-4">        
-          <ComplianceAgreement></ComplianceAgreement>
+      <div className="container mx-auto py-8 px-4">
+        <ComplianceAgreement></ComplianceAgreement>
       </div>
     </div>
 

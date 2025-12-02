@@ -55,3 +55,6 @@ def upload(file: UploadFile = File(...)):
     return data
 
 # Include routers
+app.include_router(realm.router, prefix="/api", tags=["realms"])
+
+
