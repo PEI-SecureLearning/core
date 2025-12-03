@@ -77,17 +77,6 @@ def create_user_in_realm(user: UserCreateRequest, token: str = Depends(oauth_2_s
             detail="Realm mismatch: token realm does not match requested realm.",
         )
 
-    # Enforce that the user email belongs to the tenant domain.
-    allowed_domain = _domain_from_token_or_realm(token)
-    if not allowed_domain:
-        raise HTTPException(status_code=404, detail="Tenant domain not configured for this realm.")
-    email_domain = user.email.split("@")[-1].lower() if "@" in user.email else ""
-    if email_domain != allowed_domain.lower():
-        raise HTTPException(
-            status_code=400,
-            detail=f"Email must belong to tenant domain '{allowed_domain}'.",
-        )
-
     # Generate a one-time password for first login.
     temporary_password = secrets.token_urlsafe(12)
 
