@@ -68,23 +68,23 @@ class Admin():
                 "roles": {
                     "realm": [
                         {
-                            "name": "CUSTOM_ORG_ADMIN",
+                            "name": "ORG_MANAGER",
                             "description": "Custom administrator role for the organization"
                         },
                         {
-                            "name": "ent_managercont",
+                            "name": "CONTENT_MANAGER",
                             "description": "Custom role for read-only access"
                         },
                         {
-                            "name": "Default_user",
+                            "name": "DEFAULT_USER",
                             "description": "Custom role for read-only access"
                         },
                         {
-                            "name": "phishing",
+                            "name": "PHISHING",
                             "description": "Custom role for read-only access"
                         },
                         {
-                            "name": "lms",
+                            "name": "LMS",
                             "description": "Custom role for read-only access"
                         },  
                     ]
@@ -126,7 +126,24 @@ class Admin():
                             }
                         ],
                         "realmRoles": [
-                            "CUSTOM_ORG_ADMIN"
+                            "ORG_MANAGER"
+                        ]
+                    },
+                    {
+                        "username": "User",
+                        "enabled": True,
+                        "firstName": "nome",
+                        "lastName": "sobrenome",
+                        "email": "user@user.com", 
+                        "credentials": [
+                            {
+                                "type": "password",
+                                "value": "1234",
+                                "temporary": True
+                            }
+                        ],
+                        "realmRoles": [
+                            "DEFAULT_USER"
                         ]
                     }
                 ]
