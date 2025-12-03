@@ -4,7 +4,7 @@ import { useKeycloak } from '@react-keycloak/web'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 
-export function AdminPanel() {
+export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
     const [realmName, setRealmName] = useState('')
     const [domain, setDomain] = useState('')

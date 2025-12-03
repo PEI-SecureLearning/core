@@ -44,12 +44,14 @@ class Admin():
         return access_token
 
 
-    def create_realm(self, realm_name: str, admin_email: str, user_count: int, bundle: str | None = None, features: dict | None = None):
+    def create_realm(self, realm_name: str, admin_email: str, user_count: int, domain: str, bundle: str | None = None, features: dict | None = None):
+        print(f"DEBUG: Creating realm '{realm_name}' for admin '{admin_email}' with domain '{domain}'")
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms"
 
         attributes = {
             "userCount": str(user_count),
+            "tenant-domain": domain,
             "bundle": bundle if bundle else "",
             "features": json.dumps(features) if features else ""
         }
@@ -129,6 +131,7 @@ class Admin():
                     }
                 ]
         })             
+        print(f"DEBUG: Keycloak create realm response: {r.status_code} - {r.text}")
         return r
 
 
