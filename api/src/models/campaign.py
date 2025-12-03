@@ -1,38 +1,45 @@
-from typing import Optional, List
+from datetime import datetime
+from typing import Optional
+from sqlmodel import Relationship, SQLModel, Field
 
-from sqlmodel import Field, Relationship, SQLModel
-
-
-class CampaignGroupLink(SQLModel, table=True):
-    """Link table for Campaign-Group many-to-many relationship"""
-    __tablename__ = "campaign_group_link"
-
-    campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id", primary_key=True)
-    group_id: Optional[int] = Field(default=None, foreign_key="group.id", primary_key=True)
+from src.models.email_sending import EmailSending
+from src.models.email_template import EmailTemplate
+from src.models.landing_page_template import LandingPageTemplate
+from src.models.sending_profile import SendingProfile
+from src.models.user_group import UserGroup
 
 
 class Campaign(SQLModel, table=True):
-    """Campaign model for phishing campaigns"""
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    description: str
-    creator_id: int = Field(foreign_key="user.id")
+    description: Optional[str] = None
+    begin_date: datetime
+    end_date: datetime
+    sending_interval: int
+
+    # FKs
+    sending_profile_id: Optional[int] = Field(
+        default=None, foreign_key="sendingprofile.id"
+    )
+    email_template_id: Optional[int] = Field(
+        default=None, foreign_key="emailtemplate.id"
+    )
+    landing_page_template_id: Optional[int] = Field(
+        default=None, foreign_key="landingpagetemplate.id"
+    )
 
     # Relationships
-    creator: "User" = Relationship(back_populates="created_campaigns")
-    groups: List["Group"] = Relationship(back_populates="campaigns", link_model=CampaignGroupLink)
-    schedules: List["EmailSending"] = Relationship(back_populates="campaign")
-    remediation_plan: Optional["RemediationPlan"] = Relationship(back_populates="campaign")
 
+    user_groups: list[UserGroup] = Relationship(
+        back_populates="campaigns", link_model="CampaignUserGroupLink"
+    )
 
-class CampaignCreate(SQLModel):
-    """Schema for creating a campaign"""
-    name: str
-    description: str
-    creator_id: int
+    sending_profile: Optional[SendingProfile] = Relationship(back_populates="campaigns")
 
+    email_template: Optional[EmailTemplate] = Relationship(back_populates="campaigns")
 
-class CampaignUpdate(SQLModel):
-    """Schema for updating a campaign"""
-    name: Optional[str] = None
-    description: Optional[str] = None
+    landing_page_template: Optional[LandingPageTemplate] = Relationship(
+        back_populates="campaigns"
+    )
+
+    email_sendings: list["EmailSending"] = Relationship(back_populates="campaign")
