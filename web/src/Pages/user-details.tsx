@@ -1,42 +1,83 @@
-import { ArrowLeft, Users, Mail, Calendar, Edit, Trash2, UserPlus, Send } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
+import { ArrowLeft, Users, Calendar, Trash2, UserPlus, Send, X } from 'lucide-react';
+import { Link, useParams } from '@tanstack/react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { useKeycloak } from '@react-keycloak/web';
+import { fetchGroups, fetchGroupMembers, addUserToGroup, fetchUsers, removeUserFromGroup } from '@/components/usergroups/api';
 
 interface Member {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+  id?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
   avatar?: string;
 }
 
 export default function UserGroupDetail() {
-  // Hardcoded data
-  const group = {
-    id: "1",
-    name: "Marketing Team",
-    description: "This group includes all members of the marketing department responsible for campaigns, social media, and brand management.",
-    color: "purple",
-    memberCount: 24,
-    createdDate: "January 15, 2024",
-    lastUpdated: "2 days ago",
-  };
+  const params = useParams({ from: "/usergroups/$id" });
+  const groupId = params.id;
+  const { keycloak } = useKeycloak();
 
-  const members: Member[] = [
-    { id: "1", name: "Alice Johnson", email: "alice.johnson@company.com", role: "Team Lead" },
-    { id: "2", name: "Bob Smith", email: "bob.smith@company.com", role: "Marketing Specialist" },
-    { id: "3", name: "Carol White", email: "carol.white@company.com", role: "Content Creator" },
-    { id: "4", name: "David Brown", email: "david.brown@company.com", role: "SEO Specialist" },
-    { id: "5", name: "Emma Davis", email: "emma.davis@company.com", role: "Social Media Manager" },
-    { id: "6", name: "Frank Miller", email: "frank.miller@company.com", role: "Graphic Designer" },
-    { id: "7", name: "Grace Lee", email: "grace.lee@company.com", role: "Marketing Analyst" },
-    { id: "8", name: "Henry Wilson", email: "henry.wilson@company.com", role: "Copywriter" },
-  ];
+  const [groupName, setGroupName] = useState<string>("Group");
+  const [members, setMembers] = useState<Member[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+  const [users, setUsers] = useState<Member[]>([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchUser, setSearchUser] = useState("");
 
-  const recentCampaigns = [
-    { id: "1", name: "Q4 Product Launch", sentDate: "Nov 10, 2024", recipients: 24, status: "Completed" },
-    { id: "2", name: "Holiday Promotion", sentDate: "Nov 5, 2024", recipients: 24, status: "Completed" },
-    { id: "3", name: "Weekly Newsletter", sentDate: "Nov 1, 2024", recipients: 24, status: "Completed" },
-  ];
+  const tokenRealm = useMemo(() => {
+    const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
+    if (!iss) return null;
+    const parts = iss.split("/realms/");
+    return parts[1] ?? null;
+  }, [keycloak.tokenParsed]);
+
+  const realm = tokenRealm || "";
+
+  useEffect(() => {
+    const load = async () => {
+      if (!realm || !groupId) return;
+      setIsLoading(true);
+      try {
+        const [groupsRes, membersRes] = await Promise.all([
+          fetchGroups(realm, keycloak.token || undefined),
+          fetchGroupMembers(realm, groupId, keycloak.token || undefined),
+        ]);
+        const found = (groupsRes.groups || []).find((g) => g.id === groupId);
+        setGroupName(found?.name || groupId);
+        setMembers(membersRes.members || []);
+      } catch (err) {
+        console.error(err);
+        setStatus("Failed to load group details.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [realm, groupId, keycloak.token]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      if (!realm) return;
+      try {
+        const res = await fetchUsers(realm, keycloak.token || undefined);
+        const mapped =
+          (res.users || []).map((u) => ({
+            id: u.id || u.username || "",
+            username: u.username,
+            email: u.email,
+            firstName: u.firstName,
+            lastName: u.lastName,
+          })) || [];
+        setUsers(mapped);
+      } catch (err) {
+        console.error("Failed to load users", err);
+      }
+    };
+    loadUsers();
+  }, [realm, keycloak.token]);
 
   const colorClasses = {
     purple: "from-purple-400 to-purple-600",
@@ -59,17 +100,13 @@ export default function UserGroupDetail() {
                 <Users className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{group.name}</h1>
-                <p className="text-sm text-gray-500">{group.memberCount} members</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{groupName}</h1>
+                <p className="text-sm text-gray-500">{members.length} members</p>
               </div>
             </div>
           </div>
           
           <div className="flex items-center gap-2">
-            <button className="hidden sm:flex items-center gap-2 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Edit className="h-4 w-4" />
-              Edit
-            </button>
             <button className="hidden sm:flex items-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
               <Trash2 className="h-4 w-4" />
               Delete
@@ -90,21 +127,21 @@ export default function UserGroupDetail() {
             {/* Description */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-3">About this group</h2>
-              <p className="text-gray-600 leading-relaxed mb-4">{group.description}</p>
+              <p className="text-gray-600 leading-relaxed mb-4">Group ID: {groupId}</p>
               
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <div>
                     <p className="text-gray-500">Created</p>
-                    <p className="font-medium text-gray-900">{group.createdDate}</p>
+                    <p className="font-medium text-gray-900">{realm || "Unknown"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <div>
                     <p className="text-gray-500">Last Updated</p>
-                    <p className="font-medium text-gray-900">{group.lastUpdated}</p>
+                    <p className="font-medium text-gray-900">N/A</p>
                   </div>
                 </div>
               </div>
@@ -113,19 +150,7 @@ export default function UserGroupDetail() {
             {/* Recent Campaigns */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Campaigns</h2>
-              <div className="space-y-3">
-                {recentCampaigns.map((campaign) => (
-                  <div key={campaign.id} className="pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                    <p className="font-medium text-gray-900 text-sm mb-1">{campaign.name}</p>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{campaign.sentDate}</span>
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full">
-                        {campaign.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="text-sm text-gray-500">No campaign data.</div>
             </div>
           </div>
 
@@ -136,10 +161,16 @@ export default function UserGroupDetail() {
                 <h2 className="text-lg font-semibold text-gray-900">Members</h2>
                 <p className="text-sm text-gray-500 mt-1">{members.length} total members</p>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Member</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm disabled:opacity-60"
+                  onClick={() => setShowAddModal(true)}
+                  disabled={isLoading}
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add</span>
+                </button>
+              </div>
             </div>
 
             {/* Members Table */}
@@ -172,21 +203,39 @@ export default function UserGroupDetail() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                            {member.name.split(' ').map(n => n[0]).join('')}
+                            {(member.firstName || member.username || "U").slice(0, 1)}
                           </div>
-                          <span className="font-medium text-gray-900">{member.name}</span>
+                          <span className="font-medium text-gray-900">{member.username || "Unknown"}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">{member.email}</span>
+                        <span className="text-sm text-gray-600">{member.email || "—"}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                          {member.role}
+                        <span className="text-sm text-gray-600">
+                          {(member.firstName || "") + " " + (member.lastName || "")}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="text-sm text-red-600 hover:text-red-700 font-medium">
+                        <button
+                          className="text-sm text-red-600 hover:text-red-700 font-medium"
+                          disabled={isLoading}
+                          onClick={async () => {
+                            if (!realm || !groupId || !member.id) return;
+                            setIsLoading(true);
+                            setStatus(null);
+                            try {
+                              await removeUserFromGroup(realm, groupId, member.id, keycloak.token || undefined);
+                              const membersRes = await fetchGroupMembers(realm, groupId, keycloak.token || undefined);
+                              setMembers(membersRes.members || []);
+                            } catch (err) {
+                              console.error("Failed to remove member", err);
+                              setStatus("Failed to remove member.");
+                            } finally {
+                              setIsLoading(false);
+                            }
+                          }}
+                        >
                           Remove
                         </button>
                       </td>
@@ -197,7 +246,68 @@ export default function UserGroupDetail() {
             </div>
           </div>
         </div>
+        {status && <div className="text-sm text-gray-600 px-4">{status}</div>}
       </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">Add member</h3>
+              <button onClick={() => setShowAddModal(false)} className="p-1 text-gray-500 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <input
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                placeholder="Search user..."
+                value={searchUser}
+                onChange={(e) => setSearchUser(e.target.value)}
+              />
+              <div className="max-h-64 overflow-y-auto border rounded-md divide-y">
+                {users
+                  .filter((u) => {
+                    const q = searchUser.toLowerCase();
+                    return (
+                      !q ||
+                      (u.username || "").toLowerCase().includes(q) ||
+                      (u.email || "").toLowerCase().includes(q)
+                    );
+                  })
+                  .map((u) => (
+                    <button
+                      key={u.id}
+                      className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
+                      disabled={isLoading}
+                      onClick={async () => {
+                        if (!realm || !groupId || !u.id) return;
+                        setIsLoading(true);
+                        setStatus(null);
+                        try {
+                          await addUserToGroup(realm, groupId, u.id, keycloak.token || undefined);
+                          const membersRes = await fetchGroupMembers(realm, groupId, keycloak.token || undefined);
+                          setMembers(membersRes.members || []);
+                          setShowAddModal(false);
+                        } catch (err) {
+                          console.error("Failed to add member", err);
+                          setStatus("Failed to add member.");
+                        } finally {
+                          setIsLoading(false);
+                        }
+                      }}
+                    >
+                      <div className="truncate">
+                        <div className="font-medium text-gray-900">{u.username || "Unknown"}</div>
+                        <div className="text-xs text-gray-500">{u.email || "—"}</div>
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
