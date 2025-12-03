@@ -3,23 +3,21 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
 interface UserGroupCardProps {
-  id: string;
-  name: string;
-  memberCount: number;
+  id?: string;
+  name?: string;
+  memberCount?: number;
   color?: string;
   lastUpdated?: string;
-  onEdit?: () => void;
   onDelete?: () => void;
 }
 
 export function UserGroupCard({
-  id = "1",
+  id = "group",
   name = "Marketing Team",
-  memberCount = 24,
+  memberCount = 0,
   color = "purple",
   lastUpdated = "2 days ago",
-  onEdit,
-  onDelete
+  onDelete,
 }: UserGroupCardProps) {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -36,7 +34,8 @@ export function UserGroupCard({
 
   return (
     <Link
-      to={`/usergroups/${id}`}
+      to="/usergroups/$id"
+      params={{ id: id || "group" }}
       className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200 block"
     >
       {/* Colorful top decoration */}
@@ -64,22 +63,19 @@ export function UserGroupCard({
             
             {showMenu && (
               <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevent navigation
-                    onEdit?.();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                >
-                  <Edit className="h-3.5 w-3.5" />
-                  Edit
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevent navigation
-                    onDelete?.();
-                    setShowMenu(false);
+            <Link
+              to="/usergroups/$id"
+              params={{ id: id || "group" }}
+              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Edit className="h-3.5 w-3.5" />
+              Edit
+            </Link>
+            <button
+              onClick={(e) => {
+                e.preventDefault(); // Prevent navigation
+                onDelete?.();
+                setShowMenu(false);
                   }}
                   className="w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                 >

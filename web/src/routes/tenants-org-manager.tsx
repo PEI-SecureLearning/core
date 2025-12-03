@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { createFileRoute } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import UsersList from "@/components/tenants/UsersList";
+import AddUserForm from "@/components/tenants/AddUserForm";
+import BulkUserImport from "@/components/tenants/BulkUserImport";
+import type { BulkUser, UserRecord } from "@/components/tenants/types";
 
 export const Route = createFileRoute("/tenants-org-manager")({
   component: TenantOrgManager,
@@ -32,12 +32,15 @@ function TenantOrgManager() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
-  const [bulkUsers, setBulkUsers] = useState<
-    { username: string; name: string; email: string; role: string; status?: string }[]
-  >([]);
+  const [bulkUsers, setBulkUsers] = useState<BulkUser[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  const [isUsersLoading, setIsUsersLoading] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
+  const [groups, setGroups] = useState<{ id?: string; name?: string }[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
 
   const tokenRealm = useMemo(
     () => extractRealmFromToken((keycloak.tokenParsed as { iss?: string } | undefined)?.iss),
@@ -95,7 +98,50 @@ function TenantOrgManager() {
     doLookup();
   }, [tokenDomain, tokenRealm, keycloak.authenticated, keycloak.token]);
 
-  const handleAddUser = async (e: React.FormEvent) => {
+  const fetchUsers = async (targetRealm: string) => {
+    setIsUsersLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`, {
+        headers: {
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.users || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    } finally {
+      setIsUsersLoading(false);
+    }
+  };
+
+  const fetchGroups = async (targetRealm: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+        headers: {
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGroups(data.groups || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch groups", err);
+    }
+  };
+
+  useEffect(() => {
+    const targetRealm = tokenRealm || realm;
+    if (targetRealm) {
+      fetchUsers(targetRealm);
+      fetchGroups(targetRealm);
+    }
+  }, [tokenRealm, realm]);
+
+  const handleAddUser = async (e: FormEvent) => {
     e.preventDefault();
     const targetRealm = tokenRealm || realm || "";
     if (!targetRealm) {
@@ -115,7 +161,14 @@ function TenantOrgManager() {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ realm: targetRealm, username, name, email, role }),
+        body: JSON.stringify({
+          realm: targetRealm,
+          username,
+          name,
+          email,
+          role,
+          group_id: selectedGroupId || undefined,
+        }),
       });
       if (!res.ok) {
         let message = res.statusText;
@@ -136,6 +189,8 @@ function TenantOrgManager() {
       setName("");
       setEmail("");
       setRole("");
+      setSelectedGroupId("");
+      fetchUsers(targetRealm);
     } catch (err) {
       console.error(err);
       setStatus(err instanceof Error ? err.message : "Failed to add user.");
@@ -155,12 +210,13 @@ function TenantOrgManager() {
       });
       if (!res.ok) throw new Error("Failed to upload CSV");
       const data = await res.json();
-      // Expecting CSV columns: username, name, email, role
+      // Expecting CSV columns: username, name, email, role[, group1,group2,...]
       const rows = (data as any[]).map((row) => ({
         username: row.username || "",
         name: row.name || "",
         email: row.email || "",
         role: row.role || "",
+        groups: typeof row.groups === "string" ? row.groups.split(",").map((g: string) => g.trim()).filter(Boolean) : [],
         status: "pending",
       }));
       setBulkUsers(rows);
@@ -177,6 +233,106 @@ function TenantOrgManager() {
       setStatus("Realm not resolved from token or domain. Cannot add users.");
       return;
     }
+    // Cache group names to IDs so we can create missing groups only once per run.
+    const groupIdCache: Record<string, string> = {};
+    groups.forEach((g) => {
+      if (g.name && g.id) groupIdCache[g.name.toLowerCase()] = g.id;
+    });
+
+    const refreshGroups = async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+          headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          setGroups(data.groups || []);
+          return (data.groups as { id?: string; name?: string }[]) || [];
+        }
+      } catch (e) {
+        console.error("Failed to refresh groups", e);
+      }
+      return groups;
+    };
+
+    const ensureGroupExists = async (groupName: string): Promise<string | undefined> => {
+      const key = groupName.trim().toLowerCase();
+      if (!key) return undefined;
+      if (groupIdCache[key]) return groupIdCache[key];
+      // Try to create the group; if it already exists server should return conflict or similar.
+      try {
+        const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+          method: "POST",
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: groupName }),
+        });
+        if (!res.ok) {
+          // If already exists, fetch group list to resolve ID.
+          if (res.status === 409 || res.status === 400) {
+            try {
+              const latest = await refreshGroups();
+              const found = latest.find((g) => g.name?.toLowerCase() === key);
+              if (found?.id) {
+                groupIdCache[key] = found.id;
+                return found.id;
+              }
+            } catch (e) {
+              console.error("Failed to refetch groups after conflict", e);
+            }
+          }
+          return undefined;
+        }
+        const data = await res.json();
+        const newId = data?.id || data?.group?.id;
+        if (newId) {
+          groupIdCache[key] = newId;
+          // Optimistically add to local groups list.
+          setGroups((prev) => [...prev, { id: newId, name: groupName }]);
+          return newId;
+        }
+        // If API doesn't return ID, refetch and resolve by name.
+        const latest = await refreshGroups();
+        const found = latest.find((g) => g.name?.toLowerCase() === key);
+        if (found?.id) {
+          groupIdCache[key] = found.id;
+          return found.id;
+        }
+        return undefined;
+      } catch (err) {
+        console.error("Failed to ensure group", err);
+        return undefined;
+      }
+    };
+
+    const resolveGroupIds = async (groupNames: string[]): Promise<string[]> => {
+      const ids: string[] = [];
+      for (const name of groupNames) {
+        const id = await ensureGroupExists(name);
+        if (id) ids.push(id);
+      }
+      return ids;
+    };
+
+    const fetchUserIdByUsername = async (usernameValue: string): Promise<string | undefined> => {
+      try {
+        const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`, {
+          headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
+        });
+        if (!res.ok) return undefined;
+        const data = await res.json();
+        const found = (data?.users || []).find(
+          (user: { username?: string }) => user.username === usernameValue
+        );
+        return found?.id;
+      } catch (err) {
+        console.error("Failed to resolve user id", err);
+        return undefined;
+      }
+    };
+
     setIsBulkLoading(true);
     setStatus("Creating users...");
     const updated = [...bulkUsers];
@@ -186,6 +342,8 @@ function TenantOrgManager() {
         updated[i] = { ...u, status: "missing fields" };
         continue;
       }
+      const groupIds = u.groups && u.groups.length ? await resolveGroupIds(u.groups) : [];
+      const primaryGroupId = groupIds[0];
       try {
         const res = await fetch(`${API_BASE}/realms/users`, {
           method: "POST",
@@ -193,7 +351,14 @@ function TenantOrgManager() {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ realm: targetRealm, username: u.username, name: u.name, email: u.email, role: u.role }),
+          body: JSON.stringify({
+            realm: targetRealm,
+            username: u.username,
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            group_id: primaryGroupId,
+          }),
         });
         if (!res.ok) {
           const text = await res.text();
@@ -201,7 +366,31 @@ function TenantOrgManager() {
           continue;
         }
         const data = await res.json();
+
+        // Assign user to any remaining groups (including primary, to ensure membership).
+        if (groupIds.length > 0) {
+          const userId = await fetchUserIdByUsername(u.username);
+          if (userId) {
+            for (const gid of groupIds) {
+              try {
+                await fetch(
+                  `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups/${encodeURIComponent(
+                    gid
+                  )}/members/${encodeURIComponent(userId)}`,
+                  {
+                    method: "POST",
+                    headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
+                  }
+                );
+              } catch (assignErr) {
+                console.error("Failed to add user to group", assignErr);
+              }
+            }
+          }
+        }
+
         updated[i] = { ...u, status: `created (temp pwd ${data?.temporary_password ?? "N/A"})` };
+        fetchUsers(targetRealm);
       } catch (err) {
         updated[i] = { ...u, status: "error creating user" };
       }
@@ -209,124 +398,101 @@ function TenantOrgManager() {
     setBulkUsers(updated);
     setIsBulkLoading(false);
     setStatus("Bulk creation finished.");
+    fetchGroups(targetRealm);
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    switch (field) {
+      case "username":
+        setUsername(value);
+        break;
+      case "name":
+        setName(value);
+        break;
+      case "email":
+        setEmail(value);
+        break;
+      case "role":
+        setRole(value);
+        break;
+      case "selectedGroupId":
+        setSelectedGroupId(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!id) return;
+    const targetRealm = tokenRealm || realm || "";
+    if (!targetRealm) {
+      setStatus("Realm not resolved from token or domain. Cannot delete users.");
+      return;
+    }
+    setDeletingIds((prev) => ({ ...prev, [id]: true }));
+    try {
+      const res = await fetch(
+        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users/${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          },
+        }
+      );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || res.statusText);
+      }
+      fetchUsers(targetRealm);
+    } catch (err) {
+      console.error("Failed to delete user", err);
+      setStatus("Failed to delete user. Check permissions.");
+    } finally {
+      setDeletingIds((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    }
   };
 
   return (
     <div className="w-full p-6 flex flex-col gap-6 overflow-y-auto">
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Tenant Manager</h1>
-        <p className="text-sm text-gray-600">
-          You are limited to your tenant realm as determined by your Keycloak domain.
-        </p>
+        <p className="text-sm text-gray-600">You are limited to your tenant realm as determined by your Keycloak domain.</p>
       </div>
 
-      <Card className="shadow-sm border border-gray-100">
-        <CardHeader>
-          <CardTitle className="text-lg">Add User to Realm</CardTitle>
-          <CardDescription>
-            Create a Keycloak user within your tenant realm. Realm is locked to your domain.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-4" onSubmit={handleAddUser}>
-            <div className="space-y-2">
-              <Label htmlFor="name">Full name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="New User"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="user@example.com"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                placeholder="new.user"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Input
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                required
-                placeholder="user / manager / admin"
-              />
-            </div>
-            <Button type="submit" disabled={isLoading || (!tokenRealm && !realm)} className="w-full">
-              {isLoading ? "Saving..." : tokenRealm || realm ? "Add user" : "Realm not resolved"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UsersList
+          realm={tokenRealm || realm || ""}
+          users={users}
+          isLoading={isUsersLoading}
+          deletingIds={deletingIds}
+          onDelete={handleDeleteUser}
+        />
+        <AddUserForm
+          realm={tokenRealm || realm || ""}
+          groups={groups}
+          username={username}
+          name={name}
+          email={email}
+          role={role}
+          selectedGroupId={selectedGroupId}
+          isLoading={isLoading}
+          onChange={handleFieldChange}
+          onSubmit={handleAddUser}
+        />
+      </div>
 
-      <Card className="shadow-sm border border-gray-100">
-        <CardHeader>
-          <CardTitle className="text-lg">Bulk User Registration</CardTitle>
-          <CardDescription>Import a CSV with username,name,email,role columns and create users.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <Label className="font-medium">Import CSV</Label>
-            <div>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files.length > 0) {
-                    handleCsvUpload(e.target.files[0]);
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              onClick={handleBulkCreate}
-              disabled={isBulkLoading || bulkUsers.length === 0 || (!tokenRealm && !realm)}
-            >
-              {isBulkLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              {bulkUsers.length > 0 ? `Create ${bulkUsers.length} users` : "No users imported"}
-            </Button>
-            <div className="text-sm text-gray-600">
-              Realm: {tokenRealm || realm || "not resolved"}
-            </div>
-          </div>
-          {bulkUsers.length > 0 && (
-            <div className="border rounded-md p-3 max-h-64 overflow-y-auto text-sm">
-              <div className="font-semibold mb-2">Imported users</div>
-              <div className="space-y-1">
-                {bulkUsers.map((u, idx) => (
-                  <div key={`${u.email}-${idx}`} className="flex items-center justify-between gap-2">
-                    <div className="truncate">
-                      {u.name} ({u.email}) — {u.role}
-                    </div>
-                    <div className="text-xs text-gray-500 truncate">{u.status || "pending"}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <BulkUserImport
+        bulkUsers={bulkUsers}
+        isBulkLoading={isBulkLoading}
+        onCsvUpload={handleCsvUpload}
+        onBulkCreate={handleBulkCreate}
+      />
 
       {status && (
         <div className="rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">

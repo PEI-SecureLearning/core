@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Users, X, UserPlus, Search } from "lucide-react";
 
 interface Member {
@@ -17,6 +16,7 @@ interface MembersSectionProps {
   onSearchChange: (query: string) => void;
   onAddMember: (user: Member) => void;
   onRemoveMember: (userId: string) => void;
+  onStatus?: (msg: string) => void;
 }
 
 export default function MembersSection({
@@ -28,8 +28,8 @@ export default function MembersSection({
   onSearchChange,
   onAddMember,
   onRemoveMember,
+  onStatus,
 }: MembersSectionProps) {
-
 
   const handleFileSelect = async (file: File) => {
     const formData = new FormData();
@@ -43,11 +43,10 @@ export default function MembersSection({
       if (!res.ok) throw new Error("Failed to upload CSV");
       const data: Member[] = await res.json();
       setSelectedMembers(data)
-      console.log(selectedMembers.length)
-      // Optionally filter immediately based on current search
+      onStatus?.(`Imported ${data.length} users from CSV`);
     } catch (err) {
       console.error(err);
-      alert("Error uploading CSV");
+      onStatus?.("Error uploading CSV");
     }
   };
 
@@ -80,6 +79,7 @@ export default function MembersSection({
           value={searchQuery}
           placeholder="Search by name, email, or department..."
           className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
@@ -90,7 +90,7 @@ export default function MembersSection({
             <button
               key={user.id}
               type="button"
-              onClick={() => handleAddMember(user)}
+              onClick={() => onAddMember(user)}
               className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between transition-colors border-b border-gray-100 last:border-0"
             >
               <div className="flex items-center gap-3 text-left">
@@ -139,7 +139,7 @@ export default function MembersSection({
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleRemoveMember(member.id)}
+                  onClick={() => onRemoveMember(member.id)}
                   className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                 >
                   <X className="h-4 w-4" />
