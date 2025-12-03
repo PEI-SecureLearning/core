@@ -44,9 +44,17 @@ class Admin():
         return access_token
 
 
-    def create_realm(self, realm_name: str, domain: str):
+    def create_realm(self, realm_name: str, admin_email: str, user_count: int, domain: str, bundle: str | None = None, features: dict | None = None):
+        print(f"DEBUG: Creating realm '{realm_name}' for admin '{admin_email}' with domain '{domain}'")
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms"
+
+        attributes = {
+            "userCount": str(user_count),
+            "tenant-domain": domain,
+            "bundle": bundle if bundle else "",
+            "features": json.dumps(features) if features else ""
+        }
 
         r = requests.post(url, headers={
                                         "Content-Type": "application/json", 
@@ -56,8 +64,30 @@ class Admin():
                 "realm": realm_name,
                 "enabled": True,
                 "displayName": realm_name,
-                "attributes": {
-                    "tenant-domain": domain
+                "attributes": attributes,
+                "roles": {
+                    "realm": [
+                        {
+                            "name": "CUSTOM_ORG_ADMIN",
+                            "description": "Custom administrator role for the organization"
+                        },
+                        {
+                            "name": "ent_managercont",
+                            "description": "Custom role for read-only access"
+                        },
+                        {
+                            "name": "Default_user",
+                            "description": "Custom role for read-only access"
+                        },
+                        {
+                            "name": "phishing",
+                            "description": "Custom role for read-only access"
+                        },
+                        {
+                            "name": "lms",
+                            "description": "Custom role for read-only access"
+                        },  
+                    ]
                 },
                 "clients": [
                     {
@@ -68,6 +98,17 @@ class Admin():
                         "webOrigins": ["http://localhost:5173"],
                         "standardFlowEnabled": True,
                         "directAccessGrantsEnabled": True
+                    },
+                    {
+                        "clientId": "api",
+                        "enabled": True,
+                        "publicClient": False,
+                        "redirectUris": ["http://localhost:8000/*"],
+                        "webOrigins": ["http://localhost:8000"],
+                        "implicitFlowEnabled": False,
+                        "directAccessGrantsEnabled": True,
+                        "serviceAccountsEnabled": True,
+                        "authorizationServicesEnabled": True,
                     }
                 ],
                 "users": [
@@ -76,18 +117,21 @@ class Admin():
                         "enabled": True,
                         "firstName": "Org",
                         "lastName": "Manager",
-                        "email": "org_manager@example.com", 
+                        "email": admin_email, 
                         "credentials": [
                             {
                                 "type": "password",
                                 "value": "1234",
                                 "temporary": True
                             }
+                        ],
+                        "realmRoles": [
+                            "CUSTOM_ORG_ADMIN"
                         ]
                     }
                 ]
-            })
-                    
+        })             
+        print(f"DEBUG: Keycloak create realm response: {r.status_code} - {r.text}")
         return r
 
 

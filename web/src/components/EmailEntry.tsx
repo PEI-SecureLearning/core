@@ -24,7 +24,6 @@ export const EmailEntry = () => {
 
             if (realm) {
                 localStorage.setItem('user_realm', realm);
-                // Reload to trigger Keycloak re-initialization with the new realm
                 window.location.reload();
             } else {
                 setError("No organization found for this email.");

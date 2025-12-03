@@ -81,10 +81,11 @@ export function Navbar() {
             {/* User info - hidden on small screens */}
             <div className="flex flex-col items-end">
               <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
-                John Doe
+                {keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'User'}
               </span>
               <span className="text-[10px] lg:text-xs text-gray-500">
-                Admin
+                {keycloak.tokenParsed?.realm_access?.roles?.includes('admin') ? 'Admin' :
+                  keycloak.tokenParsed?.realm_access?.roles?.includes('org_manager') ? 'Manager' : 'User'}
               </span>
             </div>
             {/* Avatar - always visible */}

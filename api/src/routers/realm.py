@@ -39,7 +39,14 @@ def get_realms_by_domain(domain: str):
 def create_realm(realm: RealmCreate):
     # Create realm in Keycloak with tenant-domain attribute
     try:
-        response = admin.create_realm(realm.name, realm.domain)
+        response = admin.create_realm(
+            realm_name=realm.name,
+            admin_email=realm.adminEmail,
+            user_count=realm.userCount,
+            domain=realm.domain,
+            bundle=realm.bundle,
+            features=realm.features
+        )
         if response.status_code != 201:
             raise HTTPException(status_code=response.status_code, detail=f"Failed to create realm in Keycloak: {response.text}")
     except Exception as e:
@@ -64,6 +71,7 @@ def _realm_from_token(access_token: str) -> str | None:
         return parts[1] if len(parts) > 1 else None
     except Exception:
         return None
+        
 def _domain_from_token_or_realm(access_token: str) -> str | None:
     """Get tenant-domain from token or realm info."""
     realm_name = _realm_from_token(access_token)

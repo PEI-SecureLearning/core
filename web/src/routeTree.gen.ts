@@ -24,6 +24,12 @@ import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-
 import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
 import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/[id]'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminTermsRouteImport } from './routes/admin/terms'
+import { Route as AdminLogsRouteImport } from './routes/admin/logs'
+import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
+import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
+import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
 
 const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
   id: '/tenants-org-manager',
@@ -100,10 +106,40 @@ const CampaignsIdRoute = CampaignsIdRouteImport.update({
   path: '/campaigns/id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTermsRoute = AdminTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
+  id: '/tenants/',
+  path: '/tenants/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTenantsNewTenantRoute = AdminTenantsNewTenantRouteImport.update({
+  id: '/tenants/new-tenant',
+  path: '/tenants/new-tenant',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTenantsTenantIdRoute = AdminTenantsTenantIdRouteImport.update({
+  id: '/tenants/$tenantId',
+  path: '/tenants/$tenantId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/report': typeof ReportRoute
@@ -111,16 +147,22 @@ export interface FileRoutesByFullPath {
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/terms': typeof AdminTermsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
+  '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
+  '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/admin/tenants': typeof AdminTenantsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/report': typeof ReportRoute
@@ -128,17 +170,23 @@ export interface FileRoutesByTo {
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/terms': typeof AdminTermsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
+  '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
+  '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/admin/tenants': typeof AdminTenantsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/report': typeof ReportRoute
@@ -146,12 +194,18 @@ export interface FileRoutesById {
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/terms': typeof AdminTermsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/usergroups/': typeof UsergroupsIndexRoute
+  '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
+  '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/admin/tenants/': typeof AdminTenantsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -165,12 +219,18 @@ export interface FileRouteTypes {
     | '/statistics'
     | '/templates'
     | '/tenants-org-manager'
+    | '/admin/logs'
+    | '/admin/terms'
+    | '/admin/users'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
     | '/usergroups'
+    | '/admin/tenants/$tenantId'
+    | '/admin/tenants/new-tenant'
+    | '/admin/tenants'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -182,12 +242,18 @@ export interface FileRouteTypes {
     | '/statistics'
     | '/templates'
     | '/tenants-org-manager'
+    | '/admin/logs'
+    | '/admin/terms'
+    | '/admin/users'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
     | '/usergroups'
+    | '/admin/tenants/$tenantId'
+    | '/admin/tenants/new-tenant'
+    | '/admin/tenants'
   id:
     | '__root__'
     | '/'
@@ -199,17 +265,23 @@ export interface FileRouteTypes {
     | '/statistics'
     | '/templates'
     | '/tenants-org-manager'
+    | '/admin/logs'
+    | '/admin/terms'
+    | '/admin/users'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns/'
     | '/usergroups/'
+    | '/admin/tenants/$tenantId'
+    | '/admin/tenants/new-tenant'
+    | '/admin/tenants/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   HelpRoute: typeof HelpRoute
   ReportRoute: typeof ReportRoute
@@ -332,12 +404,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/terms': {
+      id: '/admin/terms'
+      path: '/terms'
+      fullPath: '/admin/terms'
+      preLoaderRoute: typeof AdminTermsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tenants/': {
+      id: '/admin/tenants/'
+      path: '/tenants'
+      fullPath: '/admin/tenants'
+      preLoaderRoute: typeof AdminTenantsIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tenants/new-tenant': {
+      id: '/admin/tenants/new-tenant'
+      path: '/tenants/new-tenant'
+      fullPath: '/admin/tenants/new-tenant'
+      preLoaderRoute: typeof AdminTenantsNewTenantRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/tenants/$tenantId': {
+      id: '/admin/tenants/$tenantId'
+      path: '/tenants/$tenantId'
+      fullPath: '/admin/tenants/$tenantId'
+      preLoaderRoute: typeof AdminTenantsTenantIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminLogsRoute: typeof AdminLogsRoute
+  AdminTermsRoute: typeof AdminTermsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminTenantsTenantIdRoute: typeof AdminTenantsTenantIdRoute
+  AdminTenantsNewTenantRoute: typeof AdminTenantsNewTenantRoute
+  AdminTenantsIndexRoute: typeof AdminTenantsIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminLogsRoute: AdminLogsRoute,
+  AdminTermsRoute: AdminTermsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminTenantsTenantIdRoute: AdminTenantsTenantIdRoute,
+  AdminTenantsNewTenantRoute: AdminTenantsNewTenantRoute,
+  AdminTenantsIndexRoute: AdminTenantsIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRoute,
   HelpRoute: HelpRoute,
   ReportRoute: ReportRoute,

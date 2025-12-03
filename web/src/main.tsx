@@ -32,11 +32,9 @@ if (!rootElement.innerHTML) {
   const hasValidRealm = isAdminRoute || !!userRealm;
 
   if (!hasValidRealm) {
-    // If we don't have a realm and aren't on admin, show the email entry page
     const root = ReactDOM.createRoot(rootElement)
     root.render(
       <StrictMode>
-        {/* We can import EmailEntry here directly */}
         <EmailEntry />
       </StrictMode>
     )
