@@ -2,7 +2,6 @@ import axios from 'axios';
 import keycloak from '../keycloak';
 
 const apiClient = axios.create({
-    //TODO Change to environment variable
     baseURL: 'http://localhost:8000',
 });
 

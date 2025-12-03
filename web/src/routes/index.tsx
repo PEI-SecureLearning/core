@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import ComplianceAgreement from '@/components/Compliance';
+import { WelcomePage } from '@/components/WelcomePage';
 
 export const Route = createFileRoute('/')({
   component: Index,
@@ -7,16 +7,5 @@ export const Route = createFileRoute('/')({
 
 
 function Index() {
-
-  return (
-    <div>
-      <div>
-        <b>boas pessoal</b>
-      </div>
-      <div className="container mx-auto py-8 px-4">
-        <ComplianceAgreement></ComplianceAgreement>
-      </div>
-    </div>
-
-  )
+  return <WelcomePage />
 }
