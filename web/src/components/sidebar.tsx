@@ -11,6 +11,7 @@ import {
   CircleQuestionMark,
   ChevronLeft,
   ChevronRight,
+  Building2,
 } from "lucide-react";
 
 interface SidebarLinkProps {
@@ -27,6 +28,7 @@ const sidebarLinks: Omit<SidebarLinkProps, 'isCollapsed'>[] = [
   { href: "/usergroups", label: "User groups", icon: Users },
   { href: "/statistics", label: "Statistics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/tenants-org-manager", label: "Tenant Manager", icon: Building2 },
 ];
 
 function SidebarLink({ href, label, icon: Icon, isCollapsed }: SidebarLinkProps) {

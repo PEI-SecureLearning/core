@@ -132,146 +132,276 @@ class Admin():
         return r
 
 
-    def add_user(self,realm_name: str, username: str, password: str):
+    def get_realm(self, realm_name: str) -> dict:
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to retrieve realm information from Keycloak")
+
+
+    def find_realm_by_domain(self, domain: str) -> str | None:
+        """
+        Find a realm that has the given domain stored in its attributes.
+        This relies on realms created with create_realm storing tenant-domain.
+        """
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            realms = r.json()
+            for realm in realms:
+                attrs = realm.get("attributes") or {}
+                tenant_domain = None
+                if isinstance(attrs, dict):
+                    raw = attrs.get("tenant-domain")
+                    if isinstance(raw, list) and raw:
+                        tenant_domain = raw[0]
+                    elif isinstance(raw, str):
+                        tenant_domain = raw
+                if tenant_domain and tenant_domain.lower() == domain.lower():
+                    return realm.get("realm")
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to retrieve realms from Keycloak")
+        return None
+
+
+    def get_domain_for_realm(self, realm_name: str) -> str | None:
+        """Return the tenant-domain attribute for a given realm, if set."""
+        realm_info = self.get_realm(realm_name)
+        attrs = realm_info.get("attributes") or {}
+        if not isinstance(attrs, dict):
+            return None
+        raw = attrs.get("tenant-domain")
+        if isinstance(raw, list) and raw:
+            return raw[0]
+        if isinstance(raw, str):
+            return raw
+        return None
+
+
+    def list_users(self, realm_name: str) -> list[dict]:
+        """List users in a realm (basic fields only)."""
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/users"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to list users from Keycloak")
+
+
+    def delete_user(self, realm_name: str, user_id: str):
+        """Delete a user from a realm."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/{user_id}"
+        try:
+            r = requests.delete(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if r.status_code not in (204, 200):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to delete user in Keycloak")
+
+
+    def list_groups(self, realm_name: str) -> list[dict]:
+        """List groups in a realm."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/groups"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to list groups from Keycloak")
+
+
+    def create_group(self, realm_name: str, name: str):
+        """Create a group in a realm."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/groups"
+        try:
+            r = requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json={"name": name},
+            )
+            r.raise_for_status()
+            return r
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to create group in Keycloak")
+
+    def delete_group(self, realm_name: str, group_id: str):
+        """Delete a group from a realm."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/groups/{group_id}"
+        try:
+            r = requests.delete(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if r.status_code not in (204, 200):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to delete group in Keycloak")
+
+    def update_group(self, realm_name: str, group_id: str, name: str):
+        """Update a group's name."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/groups/{group_id}"
+        try:
+            r = requests.put(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json={"name": name},
+            )
+            if r.status_code not in (204, 200):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to update group in Keycloak")
+
+
+    def add_user_to_group(self, realm_name: str, user_id: str, group_id: str):
+        """Add a user to a group."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/{user_id}/groups/{group_id}"
+        try:
+            r = requests.put(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if r.status_code not in (204, 201):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to add user to group in Keycloak")
+
+    def remove_user_from_group(self, realm_name: str, user_id: str, group_id: str):
+        """Remove a user from a group."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/{user_id}/groups/{group_id}"
+        try:
+            r = requests.delete(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if r.status_code not in (204, 200):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to remove user from group in Keycloak")
+
+
+    def list_group_members(self, realm_name: str, group_id: str) -> list[dict]:
+        """List members of a group."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/groups/{group_id}/members"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.RequestException:
+            raise HTTPException(status_code=500, detail="Failed to list group members from Keycloak")
+
+
+    def add_user(
+        self,
+        realm_name: str,
+        username: str,
+        password: str,
+        *,
+        full_name: str | None = None,
+        email: str | None = None,
+        role: str | None = None,
+    ):
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/users"
+
+        first_name = None
+        last_name = None
+        if full_name:
+            # Simple split to populate Keycloak first/last name fields
+            parts = full_name.strip().split(" ", 1)
+            first_name = parts[0]
+            if len(parts) > 1:
+                last_name = parts[1]
+
+        payload = {
+            "username": username,
+            "enabled": True,
+            "email": email,
+            "firstName": first_name,
+            "lastName": last_name,
+            "attributes": {"role": [role]} if role else {},
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": password,
+                    "temporary": True  # force user to change it on first login
+                }
+            ]
+        }
+
+        # Remove empty attributes so Keycloak is not sent null values
+        payload = {k: v for k, v in payload.items() if v not in (None, {}, [])}
 
         r = requests.post(url, headers={
                                         "Content-Type": "application/json", 
                                         "Authorization": "Bearer {}".format(token)
                                     },
-        json={
-            "username": username,
-            "enabled": True,
-            "credentials": [
-                {
-                    "type": "password",
-                    "value": password,
-                    "temporary": False
-                }
-            ]
-        })
+        json=payload)
         
         return r
-
-    def get_client_uuid(self, realm_name: str, client_id: str):
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients"
-        r = requests.get(url, headers={"Authorization": f"Bearer {token}"}, params={"clientId": client_id})
-        r.raise_for_status()
-        clients = r.json()
-        if not clients:
-            raise HTTPException(status_code=404, detail=f"Client {client_id} not found")
-        return clients[0]['id']
-
-    def get_role_id(self, realm_name: str, role_name: str):
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}/roles/{role_name}"
-        r = requests.get(url, headers={"Authorization": f"Bearer {token}"})
-        if r.status_code == 404:
-            return None
-        r.raise_for_status()
-        return r.json()['id']
-
-    def create_authz_scope(self, realm_name: str, client_uuid: str, scope_name: str):
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients/{client_uuid}/authz/resource-server/scope"
-        r = requests.post(url, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}"
-        }, json={"name": scope_name})
-        return r
-
-    def create_authz_resource(self, realm_name: str, client_uuid: str, resource_name: str, uris: list[str], scopes: list[str]):
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients/{client_uuid}/authz/resource-server/resource"
-        
-        scope_payload = [{"name": s} for s in scopes]
-        
-        r = requests.post(url, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}"
-        }, json={
-            "name": resource_name,
-            "uris": uris,
-            "scopes": scope_payload
-        })
-        return r
-
-    def create_authz_role_policy(self, realm_name: str, client_uuid: str, policy_name: str, roles: list[dict]):
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients/{client_uuid}/authz/resource-server/policy/role"
-        
-        r = requests.post(url, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}"
-        }, json={
-            "name": policy_name,
-            "type": "role",
-            "logic": "POSITIVE",
-            "config": {
-                "roles": json.dumps(roles)
-            }
-        })
-        return r
-
-    def create_authz_permission(self, realm_name: str, client_uuid: str, permission_name: str, resource_name: str, policy_names: list[str], scope_names: list[str] = None):
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients/{client_uuid}/authz/resource-server/permission/scope"
-        
-        payload = {
-            "name": permission_name,
-            "resources": [resource_name],
-            "policies": policy_names,
-        }
-        if scope_names:
-            payload["scopes"] = scope_names
-            
-        r = requests.post(url, headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}"
-        }, json=payload)
-        return r
-
-    def setup_orders_authorization(self, realm_name: str):
-        # 1. Get Client UUID for 'api'
-        client_uuid = self.get_client_uuid(realm_name, "api")
-        
-        # 2. Create Scopes
-        self.create_authz_scope(realm_name, client_uuid, "view")
-        self.create_authz_scope(realm_name, client_uuid, "edit")
-        
-        # 3. Create Resource
-        self.create_authz_resource(
-            realm_name, 
-            client_uuid, 
-            "orders-resource", 
-            ["/api/orders/*"], 
-            ["view", "edit"]
-        )
-        
-        # 4. Create Role Policy (Managers Only)
-        # Using CUSTOM_ORG_ADMIN as the manager role
-        role_id = self.get_role_id(realm_name, "CUSTOM_ORG_ADMIN")
-        if not role_id:
-             print(f"Warning: CUSTOM_ORG_ADMIN role not found in realm {realm_name}.")
-             return
-
-        self.create_authz_role_policy(
-            realm_name, 
-            client_uuid, 
-            "Managers Only", 
-            [{"id": role_id, "required": True}]
-        )
-        
-        # 5. Create Permission
-        self.create_authz_permission(
-            realm_name,
-            client_uuid,
-            "Orders Manager Permission",
-            "orders-resource",
-            ["Managers Only"],
-            ["view", "edit"]
-        )
-        
-        print(f"Orders authorization setup complete for realm {realm_name}")

@@ -3,25 +3,25 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
 interface UserGroup {
-  id: string;
-  name: string;
-  memberCount: number;
+  id?: string;
+  name?: string;
+  memberCount?: number;
   color?: string;
   lastUpdated?: string;
 }
 
 interface UserGroupsTableProps {
   groups?: UserGroup[];
-  onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
 
-function TableRow({ group, onEdit, onDelete }: { 
+function TableRow({ group, onDelete }: { 
   group: UserGroup; 
-  onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
 }) {
   const [showMenu, setShowMenu] = useState(false);
+  const memberCount = group.memberCount ?? 0;
+  const linkId = group.id || "group";
 
   const colorClasses = {
     purple: "bg-purple-100 text-purple-700",
@@ -39,7 +39,8 @@ function TableRow({ group, onEdit, onDelete }: {
       {/* Group Name with Icon */}
       <td className="px-4 py-4">
         <Link 
-          to={`/usergroups/${group.id}`}
+          to="/usergroups/$id"
+          params={{ id: linkId || "group" }}
           className="flex items-center gap-3 hover:text-purple-600 transition-colors"
         >
           <div className={`h-10 w-10 rounded-full ${colorClass} flex items-center justify-center flex-shrink-0`}>
@@ -56,7 +57,7 @@ function TableRow({ group, onEdit, onDelete }: {
         <div className="flex items-center gap-2 text-gray-600">
           <Users className="h-4 w-4" />
           <span className="text-sm">
-            {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
+            {memberCount} {memberCount === 1 ? 'member' : 'members'}
           </span>
         </div>
       </td>
@@ -85,7 +86,8 @@ function TableRow({ group, onEdit, onDelete }: {
 
           {/* View Button */}
           <Link
-            to={`/user-groups/${group.id}`}
+            to="/usergroups/$id"
+            params={{ id: linkId || "group" }}
             className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
           >
             <ChevronRight className="h-4 w-4" />
@@ -105,28 +107,25 @@ function TableRow({ group, onEdit, onDelete }: {
 
             {showMenu && (
               <>
-                {/* Backdrop to close menu */}
                 <div 
                   className="fixed inset-0 z-10" 
                   onClick={() => setShowMenu(false)}
                 />
                 
                 <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit?.(group.id);
-                      setShowMenu(false);
-                    }}
+                  <Link
+                    to="/usergroups/$id"
+                    params={{ id: group.id || "group" }}
                     className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-left"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Edit className="h-3.5 w-3.5" />
                     Edit
-                  </button>
+                  </Link>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete?.(group.id);
+                      onDelete?.(group.id || "group");
                       setShowMenu(false);
                     }}
                     className="w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 text-left"
@@ -144,18 +143,7 @@ function TableRow({ group, onEdit, onDelete }: {
   );
 }
 
-export default function UserGroupsTable({ 
-  groups = [
-    { id: "1", name: "Marketing Team", memberCount: 24, color: "purple", lastUpdated: "2 days ago" },
-    { id: "2", name: "Sales Department", memberCount: 18, color: "blue", lastUpdated: "1 week ago" },
-    { id: "3", name: "Engineering", memberCount: 42, color: "green", lastUpdated: "3 days ago" },
-    { id: "4", name: "HR & Admin", memberCount: 8, color: "pink", lastUpdated: "5 days ago" },
-    { id: "5", name: "Customer Support", memberCount: 15, color: "orange", lastUpdated: "1 day ago" },
-    { id: "6", name: "Product Team", memberCount: 12, color: "teal", lastUpdated: "4 days ago" },
-  ],
-  onEdit,
-  onDelete
-}: UserGroupsTableProps) {
+export default function UserGroupsTable({ groups = [], onDelete }: UserGroupsTableProps) {
   return (
     <div className="w-full bg-white shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
@@ -181,7 +169,6 @@ export default function UserGroupsTable({
               <TableRow
                 key={group.id}
                 group={group}
-                onEdit={onEdit}
                 onDelete={onDelete}
               />
             ))}

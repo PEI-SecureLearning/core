@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TenantsOrgManagerRouteImport } from './routes/tenants-org-manager'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -30,6 +31,11 @@ import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/in
 import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
 import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
 
+const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
+  id: '/tenants-org-manager',
+  path: '/tenants-org-manager',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/tenants-org-manager'
     | '/admin/logs'
     | '/admin/terms'
     | '/admin/users'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/tenants-org-manager'
     | '/admin/logs'
     | '/admin/terms'
     | '/admin/users'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/tenants-org-manager'
     | '/admin/logs'
     | '/admin/terms'
     | '/admin/users'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
+  TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
@@ -286,6 +299,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tenants-org-manager': {
+      id: '/tenants-org-manager'
+      path: '/tenants-org-manager'
+      fullPath: '/tenants-org-manager'
+      preLoaderRoute: typeof TenantsOrgManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/templates': {
       id: '/templates'
       path: '/templates'
@@ -458,6 +478,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
+  TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
