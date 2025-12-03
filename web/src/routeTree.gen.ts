@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TenantsOrgManagerRouteImport } from './routes/tenants-org-manager'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -24,6 +25,11 @@ import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
 import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/[id]'
 
+const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
+  id: '/tenants-org-manager',
+  path: '/tenants-org-manager',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -104,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/campaigns/id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/tenants-org-manager'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
     | '/usergroups/$id'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/tenants-org-manager'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
     | '/usergroups/$id'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/tenants-org-manager'
     | '/campaigns/id'
     | '/campaigns/new-campaign'
     | '/usergroups/$id'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
+  TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
@@ -214,6 +227,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tenants-org-manager': {
+      id: '/tenants-org-manager'
+      path: '/tenants-org-manager'
+      fullPath: '/tenants-org-manager'
+      preLoaderRoute: typeof TenantsOrgManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/templates': {
       id: '/templates'
       path: '/templates'
@@ -324,6 +344,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
+  TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
