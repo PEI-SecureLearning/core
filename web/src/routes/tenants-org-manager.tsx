@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/tenants-org-manager")({
   component: TenantOrgManager,
@@ -31,8 +32,12 @@ function TenantOrgManager() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
+  const [bulkUsers, setBulkUsers] = useState<
+    { username: string; name: string; email: string; role: string; status?: string }[]
+  >([]);
   const [status, setStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
 
   const tokenRealm = useMemo(
     () => extractRealmFromToken((keycloak.tokenParsed as { iss?: string } | undefined)?.iss),
@@ -56,7 +61,6 @@ function TenantOrgManager() {
     // If we already know the realm from the token, prime the UI so the form is usable.
     if (tokenRealm && !realm) {
       setRealm(tokenRealm);
-      setStatus((prev) => prev ?? `Realm pre-filled from token: ${tokenRealm}`);
     }
   }, [tokenRealm, realm]);
 
@@ -140,6 +144,73 @@ function TenantOrgManager() {
     }
   };
 
+  const handleCsvUpload = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    setStatus("Uploading CSV...");
+    try {
+      const res = await fetch(`${API_BASE.replace("/api", "")}/upload`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Failed to upload CSV");
+      const data = await res.json();
+      // Expecting CSV columns: username, name, email, role
+      const rows = (data as any[]).map((row) => ({
+        username: row.username || "",
+        name: row.name || "",
+        email: row.email || "",
+        role: row.role || "",
+        status: "pending",
+      }));
+      setBulkUsers(rows);
+      setStatus(`Imported ${rows.length} users from CSV.`);
+    } catch (err) {
+      console.error(err);
+      setStatus("Error uploading CSV. Ensure columns username,name,email,role are present.");
+    }
+  };
+
+  const handleBulkCreate = async () => {
+    const targetRealm = tokenRealm || realm || "";
+    if (!targetRealm) {
+      setStatus("Realm not resolved from token or domain. Cannot add users.");
+      return;
+    }
+    setIsBulkLoading(true);
+    setStatus("Creating users...");
+    const updated = [...bulkUsers];
+    for (let i = 0; i < updated.length; i++) {
+      const u = updated[i];
+      if (!u.username || !u.name || !u.email || !u.role) {
+        updated[i] = { ...u, status: "missing fields" };
+        continue;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/realms/users`, {
+          method: "POST",
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ realm: targetRealm, username: u.username, name: u.name, email: u.email, role: u.role }),
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          updated[i] = { ...u, status: `error ${res.status}: ${text || res.statusText}` };
+          continue;
+        }
+        const data = await res.json();
+        updated[i] = { ...u, status: `created (temp pwd ${data?.temporary_password ?? "N/A"})` };
+      } catch (err) {
+        updated[i] = { ...u, status: "error creating user" };
+      }
+    }
+    setBulkUsers(updated);
+    setIsBulkLoading(false);
+    setStatus("Bulk creation finished.");
+  };
+
   return (
     <div className="w-full p-6 flex flex-col gap-6 overflow-y-auto">
       <div>
@@ -203,6 +274,57 @@ function TenantOrgManager() {
               {isLoading ? "Saving..." : tokenRealm || realm ? "Add user" : "Realm not resolved"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm border border-gray-100">
+        <CardHeader>
+          <CardTitle className="text-lg">Bulk User Registration</CardTitle>
+          <CardDescription>Import a CSV with username,name,email,role columns and create users.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <Label className="font-medium">Import CSV</Label>
+            <div>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    handleCsvUpload(e.target.files[0]);
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              onClick={handleBulkCreate}
+              disabled={isBulkLoading || bulkUsers.length === 0 || (!tokenRealm && !realm)}
+            >
+              {isBulkLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {bulkUsers.length > 0 ? `Create ${bulkUsers.length} users` : "No users imported"}
+            </Button>
+            <div className="text-sm text-gray-600">
+              Realm: {tokenRealm || realm || "not resolved"}
+            </div>
+          </div>
+          {bulkUsers.length > 0 && (
+            <div className="border rounded-md p-3 max-h-64 overflow-y-auto text-sm">
+              <div className="font-semibold mb-2">Imported users</div>
+              <div className="space-y-1">
+                {bulkUsers.map((u, idx) => (
+                  <div key={`${u.email}-${idx}`} className="flex items-center justify-between gap-2">
+                    <div className="truncate">
+                      {u.name} ({u.email}) — {u.role}
+                    </div>
+                    <div className="text-xs text-gray-500 truncate">{u.status || "pending"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
