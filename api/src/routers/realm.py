@@ -42,9 +42,7 @@ def create_realm(realm: RealmCreate):
         response = admin.create_realm(
             realm_name=realm.name,
             admin_email=realm.adminEmail,
-            user_count=realm.userCount,
             domain=realm.domain,
-            bundle=realm.bundle,
             features=realm.features
         )
         if response.status_code != 201:

@@ -9,8 +9,6 @@ export function CreateTenantPage() {
     const [realmName, setRealmName] = useState('')
     const [domain, setDomain] = useState('')
     const [adminEmail, setAdminEmail] = useState('')
-    const [userCount, setUserCount] = useState('')
-    const [bundle, setBundle] = useState('')
     const [features, setFeatures] = useState({
         phishing: true,
         lms: true
@@ -28,8 +26,6 @@ export function CreateTenantPage() {
                     domain: domain,
                     // Sending extra fields even if backend doesn't support them yet
                     adminEmail,
-                    userCount,
-                    bundle,
                     features
                 },
                 {
@@ -43,8 +39,6 @@ export function CreateTenantPage() {
             setRealmName('')
             setDomain('')
             setAdminEmail('')
-            setUserCount('')
-            setBundle('')
         } catch (error) {
             console.error('Error creating realm:', error)
             alert('Failed to create realm')
@@ -65,10 +59,6 @@ export function CreateTenantPage() {
                     setDomain={setDomain}
                     adminEmail={adminEmail}
                     setAdminEmail={setAdminEmail}
-                    userCount={userCount}
-                    setUserCount={setUserCount}
-                    bundle={bundle}
-                    setBundle={setBundle}
                     features={features}
                     setFeatures={setFeatures}
                     handleSubmit={handleSubmit}
@@ -76,7 +66,6 @@ export function CreateTenantPage() {
 
                 <PreviewPanel
                     realmName={realmName}
-                    bundle={bundle}
                     features={features}
                     isLoading={isLoading}
                     handleSubmit={handleSubmit}

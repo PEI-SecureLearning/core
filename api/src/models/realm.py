@@ -10,6 +10,4 @@ class RealmCreate(SQLModel):
     name: str
     domain: str
     adminEmail: str
-    userCount: int
-    bundle: str | None = None
     features: dict | None = None
