@@ -9,7 +9,6 @@ import {
     Sparkles
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import ComplianceAgreement from "./Compliance";
 
 export const WelcomePage = () => {
     const { keycloak } = useKeycloak();
@@ -114,21 +113,6 @@ export const WelcomePage = () => {
                     </motion.div>
                 </motion.div>
 
-                {/* Compliance Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-                >
-                    <div className="p-6 border-b border-gray-100">
-                        <h2 className="text-xl font-semibold text-gray-900">Compliance & Agreements</h2>
-                        <p className="text-gray-500 mt-1">Please review and accept the latest policies.</p>
-                    </div>
-                    <div className="p-6">
-                        <ComplianceAgreement />
-                    </div>
-                </motion.div>
             </div>
         </div>
     );
