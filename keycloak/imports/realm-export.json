@@ -3075,7 +3075,8 @@
         "standardFlowEnabled": true,
         "directAccessGrantsEnabled": true,
         "attributes": {
-          "post.logout.redirect.uris": "http://localhost:5173/"
+          "post.logout.redirect.uris": "http://localhost:5173",
+          "content.-security-policy": "frame-src 'self'; frame-ancestors 'self' http://localhost:5173; object-src 'none'"
         }
       }
     ]

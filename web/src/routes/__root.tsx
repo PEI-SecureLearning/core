@@ -2,6 +2,7 @@ import { Navbar } from "@/components/navbar";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "@/components/sidebar";
 import { useKeycloak } from "@react-keycloak/web";
+import ComplianceFlow from "@/components/Compliance";
 
 
 const RootLayout = () => (
@@ -12,6 +13,7 @@ const RootLayout = () => (
       <div className="h-[92%] flex flex-row">
         <Sidebar />
         <Outlet />
+        <ComplianceFlow />
       </div>
       {/* <TanStackRouterDevtools /> */}
     </div>

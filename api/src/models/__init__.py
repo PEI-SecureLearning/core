@@ -12,6 +12,7 @@ from .email_sending import EmailSending, EmailSendingCreate, EmailSendingUpdate,
 from .remediation import RemediationPlan, RemediationPlanCreate, RemediationPlanUpdate
 from .module import Module, ModuleCreate, ModuleUpdate
 from .feature import Feature, FeatureCreate, FeatureUpdate
+from .compliance import ComplianceAcceptance
 
 __all__ = [
     # User
@@ -37,4 +38,6 @@ __all__ = [
     "Module", "ModuleCreate", "ModuleUpdate",
     # Feature
     "Feature", "FeatureCreate", "FeatureUpdate",
+    # Compliance
+    "ComplianceAcceptance",
 ]
