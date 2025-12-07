@@ -12,6 +12,7 @@ from src.models import (
     RemediationPlan,
     Module,
     Feature,
+    ComplianceAcceptance,
 )
 
 engine = create_engine(str(settings.PGSQL_DATABASE_URI))
