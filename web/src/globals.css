@@ -117,7 +117,21 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* 2. Constrain the parents */
+html,
+body,
+#root {
+  height: 100%;
+  /* or 100vh */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Stops the main window from scrolling */
 }

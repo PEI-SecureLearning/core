@@ -1,5 +1,6 @@
 from sqlmodel import create_engine, SQLModel
 from src.core.settings import settings
+
 # Import all models so SQLModel knows about them
 from src.models import (
     User,

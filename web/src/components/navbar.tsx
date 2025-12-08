@@ -1,6 +1,7 @@
-import { ChevronRight, User } from "lucide-react";
-import keycloak from "../keycloak";
+import { ChevronRight, User, LogOut } from "lucide-react";
+import { useKeycloak } from "@react-keycloak/web";
 import { useRouterState, Link } from "@tanstack/react-router";
+
 
 export function Logo() {
   return (
@@ -15,12 +16,29 @@ export function Logo() {
   );
 }
 
+
+
 export function Navbar() {
   const routerState = useRouterState();
+  const { keycloak } = useKeycloak();
   const currentPath = routerState.location.pathname;
+  const BASE_URL = 'http://localhost:5173';
 
   // Split the current path into parts (e.g. "/campaigns/new-campaign" → ["campaigns", "new-campaign"])
   const parts = currentPath.split("/").filter(Boolean);
+
+  const handleLogout = async () => {
+    try {
+      await keycloak.logout({
+        // This property corresponds to the post_logout_redirect_uri parameter.
+        redirectUri: BASE_URL,
+      });
+
+      console.log('User has been successfully logged out and redirected.');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   // Create formatted breadcrumb names
   const formattedParts = parts.map((p) =>
@@ -76,22 +94,33 @@ export function Navbar() {
             )}
           </div>
 
-          {/* User Profile */}
-          <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
-            {/* User info - hidden on small screens */}
-            <div className="flex flex-col items-end">
-              <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
-                John Doe
-              </span>
-              <span className="text-[10px] lg:text-xs text-gray-500">
-                Admin
-              </span>
-            </div>
-            {/* Avatar - always visible */}
-            <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l  bg-gray-700 flex items-center justify-center flex-shrink-0">
-              <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
-            </div>
-          </button>
+          {/* User Profile & Logout */}
+          <div className="flex items-center gap-2">
+            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
+              {/* User info - hidden on small screens */}
+              <div className="flex flex-col items-end">
+                <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
+                  {keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'User'}
+                </span>
+                <span className="text-[10px] lg:text-xs text-gray-500">
+                  {keycloak.tokenParsed?.realm_access?.roles?.includes('admin') ? 'Admin' :
+                    keycloak.tokenParsed?.realm_access?.roles?.includes('org_manager') ? 'Manager' : 'User'}
+                </span>
+              </div>
+              {/* Avatar - always visible */}
+              <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l  bg-gray-700 flex items-center justify-center flex-shrink-0">
+                <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleLogout()}
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              title="Sign out"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
     </nav>

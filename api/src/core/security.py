@@ -11,7 +11,7 @@ oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 #TODO CHANGE TO ENV VARIABLES
 AUTH_SERVER_URL = "http://localhost:8080"
-REALM_NAME = "SecureLearning"
+REALM_NAME = "AAAAAA"
 RESOURCE_SERVER_ID = "api-cli" 
 
 

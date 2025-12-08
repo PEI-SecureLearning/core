@@ -1,0 +1,286 @@
+/* ================================
+   Liquid Glass Effects (Simplified)
+   ================================ */
+
+/* Container with frosted glass background */
+.liquid-glass-container {
+    position: relative;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow: hidden;
+    border-radius: 24px;
+    box-shadow:
+        0 8px 32px rgba(147, 51, 234, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    contain: layout style paint;
+}
+
+/* Static background blobs (no animation) */
+.liquid-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.liquid-blob-1 {
+    width: 95%;
+    height: 400px;
+    background: hsl(271, 100%, 90%);
+    top: -100px;
+    right: 10px;
+}
+
+.liquid-blob-2 {
+    width: 20%;
+    height: 95%;
+    background: hsl(271, 100%, 90%);
+    bottom: 0px;
+    left: -20px;
+}
+
+.liquid-blob-3 {
+    width: 95%;
+    height: 50%;
+    background: hsl(271, 100%, 90%);
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Header glass effect */
+.liquid-glass-header {
+    position: relative;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Footer glass effect */
+.liquid-glass-footer {
+    position: relative;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ================================
+   Liquid Glass Card
+   ================================ */
+.liquid-glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(147, 51, 234, 0.08);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.liquid-glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(147, 51, 234, 0.12);
+}
+
+/* ================================
+   Liquid Glass Input
+   ================================ */
+.liquid-glass-input {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.liquid-glass-input:focus {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    outline: none;
+}
+
+.liquid-glass-input::placeholder {
+    color: rgba(107, 114, 128, 0.6);
+}
+
+/* ================================
+   Liquid Glass Button
+   ================================ */
+.liquid-glass-button {
+    background: rgba(147, 51, 234, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+    box-shadow: 0 4px 16px rgba(147, 51, 234, 0.25);
+    cursor: pointer;
+}
+
+.liquid-glass-button:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(147, 51, 234, 0.35);
+    background: rgba(139, 40, 228, 0.95);
+}
+
+.liquid-glass-button:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 8px rgba(147, 51, 234, 0.2);
+}
+
+.liquid-glass-button:disabled {
+    background: rgba(156, 163, 175, 0.6);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.liquid-glass-button-secondary {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 14px;
+    color: #6b21a8;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+    cursor: pointer;
+}
+
+.liquid-glass-button-secondary:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+/* Destructive/Delete button */
+.liquid-glass-button-destructive {
+    background: rgba(239, 68, 68, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+    cursor: pointer;
+}
+
+.liquid-glass-button-destructive:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+    background: rgba(220, 38, 38, 0.95);
+}
+
+.liquid-glass-button-destructive:active:not(:disabled) {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.2);
+}
+
+.liquid-glass-button-destructive:disabled {
+    background: rgba(156, 163, 175, 0.6);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* ================================
+   Custom Purple Scrollbar
+   ================================ */
+.purple-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 85, 247, 0.5) rgba(233, 213, 255, 0.3);
+}
+
+.purple-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.purple-scrollbar::-webkit-scrollbar-track {
+    background: rgba(233, 213, 255, 0.3);
+    border-radius: 8px;
+    margin: 4px;
+}
+
+.purple-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.6);
+    border-radius: 8px;
+}
+
+.purple-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(147, 51, 234, 0.8);
+}
+
+/* ================================
+   Essential Animations Only
+   ================================ */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.3s ease forwards;
+}
+
+.animate-slide-up {
+    opacity: 0;
+    animation: slide-up 0.3s ease forwards;
+}
+
+/* ================================
+   List Items
+   ================================ */
+.liquid-list-item {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 14px;
+    transition: background-color 0.15s ease;
+}
+
+.liquid-list-item:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+/* Avatar - no glow effect */
+.liquid-avatar {
+    position: relative;
+}
+
+/* Member badge - no shimmer */
+.member-badge {
+    position: relative;
+}

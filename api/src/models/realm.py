@@ -9,3 +9,5 @@ class Realm(SQLModel, table=True):
 class RealmCreate(SQLModel):
     name: str
     domain: str
+    adminEmail: str
+    features: dict | None = None
