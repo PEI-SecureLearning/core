@@ -3045,6 +3045,7 @@
     "id": "platform",
     "realm": "platform",
     "enabled": true,
+    "loginTheme": "keycloakify-starter",
     "users": [
       {
         "username": "platform_admin",
