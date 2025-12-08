@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from sqlmodel import Field, SQLModel, Relationship
 
-from src.models.campaign import Campaign
+if TYPE_CHECKING:
+    from src.models.campaign import Campaign
 
 
 class EmailTemplate(SQLModel, table=True):

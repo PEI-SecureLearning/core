@@ -1,12 +1,13 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, SQLModel, Field
 
-from src.models.campaign import Campaign
+if TYPE_CHECKING:
+    from src.models.campaign import Campaign
 
 
 class LandingPageTemplate(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)  # type: ignore
+    id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     content_link: str
 
-    campaigns: list[Campaign] = Relationship(back_populates="landing_page_template")
+    campaigns: list["Campaign"] = Relationship(back_populates="landing_page_template")

@@ -1,8 +1,9 @@
+from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, SQLModel, Field
-from typing import Optional
 
-from src.models.campaign import Campaign
-from src.models.custom_header import CustomHeader
+if TYPE_CHECKING:
+    from src.models.campaign import Campaign
+    from src.models.custom_header import CustomHeader
 
 
 class SendingProfile(SQLModel, table=True):
@@ -18,5 +19,5 @@ class SendingProfile(SQLModel, table=True):
 
     # Relationships
 
-    campaigns: list[Campaign] = Relationship(back_populates="sending_profile")
-    custom_headers: list[CustomHeader] = Relationship(back_populates="profile")
+    campaigns: list["Campaign"] = Relationship(back_populates="sending_profile")
+    custom_headers: list["CustomHeader"] = Relationship(back_populates="profile")

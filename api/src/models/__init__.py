@@ -1,40 +1,41 @@
-from .user import User, UserCreate, UserUpdate, UserGroupLink
-from .tenant import Tenant, TenantCreate, TenantUpdate, TenantFeatureLink
-from .group import Group, GroupCreate, GroupUpdate
-from .campaign import Campaign, CampaignCreate, CampaignUpdate, CampaignGroupLink
-from .content import Content, ContentCreate, ContentUpdate
-from .landing_page import (
-    LandingPageTemplate, LandingPageTemplateCreate, LandingPageTemplateUpdate,
-    LandingPage, LandingPageCreate, LandingPageUpdate
-)
-from .email_template import EmailTemplate, EmailTemplateCreate, EmailTemplateUpdate
-from .email_sending import EmailSending, EmailSendingCreate, EmailSendingUpdate, EmailSendingTemplateLink
-from .remediation import RemediationPlan, RemediationPlanCreate, RemediationPlanUpdate
-from .module import Module, ModuleCreate, ModuleUpdate
-from .feature import Feature, FeatureCreate, FeatureUpdate
+# Import order matters for SQLModel relationships
+# Import link tables and models without relationships first
+from .user_group import CampaignUserGroupLink, UserGroup
+from .realm import Realm, RealmCreate
+from .tenant import Tenant
+from .user import User
+from .custom_header import CustomHeader
+from .sending_profile import SendingProfile
+from .email_template import EmailTemplate
+from .landing_page_template import LandingPageTemplate
+from .campaign import Campaign, CampaignCreate, CampaignStatus
+from .email_sending import EmailSending, EmailSendingCreate
+
 
 __all__ = [
     # User
-    "User", "UserCreate", "UserUpdate", "UserGroupLink",
+    "User",
     # Tenant
-    "Tenant", "TenantCreate", "TenantUpdate", "TenantFeatureLink",
-    # Group
-    "Group", "GroupCreate", "GroupUpdate",
+    "Tenant",
     # Campaign
-    "Campaign", "CampaignCreate", "CampaignUpdate", "CampaignGroupLink",
-    # Content
-    "Content", "ContentCreate", "ContentUpdate",
-    # Landing Page
-    "LandingPageTemplate", "LandingPageTemplateCreate", "LandingPageTemplateUpdate",
-    "LandingPage", "LandingPageCreate", "LandingPageUpdate",
+    "Campaign",
+    "CampaignCreate",
+    "CampaignStatus",
     # Email Template
-    "EmailTemplate", "EmailTemplateCreate", "EmailTemplateUpdate",
+    "EmailTemplate",
     # Email Sending
-    "EmailSending", "EmailSendingCreate", "EmailSendingUpdate", "EmailSendingTemplateLink",
-    # Remediation
-    "RemediationPlan", "RemediationPlanCreate", "RemediationPlanUpdate",
-    # Module
-    "Module", "ModuleCreate", "ModuleUpdate",
-    # Feature
-    "Feature", "FeatureCreate", "FeatureUpdate",
+    "EmailSending",
+    "EmailSendingCreate",
+    # Custom Header
+    "CustomHeader",
+    # Landing Page Template
+    "LandingPageTemplate",
+    # Realm
+    "Realm",
+    "RealmCreate",
+    # Sending Profile
+    "SendingProfile",
+    # User Group
+    "UserGroup",
+    "CampaignUserGroupLink",
 ]
