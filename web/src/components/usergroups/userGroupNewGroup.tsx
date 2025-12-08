@@ -5,6 +5,7 @@ import NewGroupFooter from "./newGroupFooter";
 import Preview from "./newGroupPreview";
 import MembersSection from "./newGroupMembers";
 import { addUserToGroup, createGroup, fetchGroups, fetchUsers } from "./api";
+import "../../css/liquidGlass.css";
 
 interface Member {
   id: string;
@@ -21,9 +22,18 @@ interface Color {
 
 export default function NewUserGroup() {
   const { keycloak } = useKeycloak();
+  const colors: Color[] = [
+    { name: "purple", class: "from-purple-400 to-purple-600", bg: "bg-purple-500" },
+    { name: "blue", class: "from-blue-400 to-blue-600", bg: "bg-blue-500" },
+    { name: "green", class: "from-green-400 to-green-600", bg: "bg-green-500" },
+    { name: "pink", class: "from-pink-400 to-pink-600", bg: "bg-pink-500" },
+    { name: "orange", class: "from-orange-400 to-orange-600", bg: "bg-orange-500" },
+    { name: "teal", class: "from-teal-400 to-teal-600", bg: "bg-teal-500" },
+  ];
+
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedColor, setSelectedColor] = useState("purple");
+  const [selectedColor] = useState(() => colors[Math.floor(Math.random() * colors.length)].name);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [availableUsers, setAvailableUsers] = useState<Member[]>([]);
@@ -37,14 +47,7 @@ export default function NewUserGroup() {
     return parts[1] ?? null;
   }, [keycloak.tokenParsed]);
 
-  const colors: Color[] = [
-    { name: "purple", class: "from-purple-400 to-purple-600", bg: "bg-purple-500" },
-    { name: "blue", class: "from-blue-400 to-blue-600", bg: "bg-blue-500" },
-    { name: "green", class: "from-green-400 to-green-600", bg: "bg-green-500" },
-    { name: "pink", class: "from-pink-400 to-pink-600", bg: "bg-pink-500" },
-    { name: "orange", class: "from-orange-400 to-orange-600", bg: "bg-orange-500" },
-    { name: "teal", class: "from-teal-400 to-teal-600", bg: "bg-teal-500" },
-  ];
+
 
   const filteredUsers = availableUsers.filter(
     (user) =>
@@ -125,25 +128,30 @@ export default function NewUserGroup() {
   const selectedColorClass = colors.find((c) => c.name === selectedColor)?.class || colors[0].class;
 
   return (
-    <div className="h-full w-full">
-      <div className="h-1/12 border-b py-2 px-5">
-        <h3 className="text-xl font-semibold text-gray-900">Create a new group</h3>
-        <h2 className="text-l font-medium text-gray-700">Set up a new group for your campaigns</h2>
+    <div className="liquid-glass-container h-full w-full animate-fade-in">
+      {/* Animated background blobs */}
+      <div className="liquid-blob liquid-blob-1"></div>
+      <div className="liquid-blob liquid-blob-2"></div>
+      <div className="liquid-blob liquid-blob-3"></div>
+
+      {/* Header */}
+      <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-3 px-6 animate-slide-down">
+        <h3 className="text-xl font-semibold text-gray-800 tracking-tight">Create a new group</h3>
+        <h2 className="text-sm font-medium text-gray-600">Set up a new group for your campaigns</h2>
       </div>
-      <div className="h-10/12 flex row">
-        <div className="h-full w-5/6 items-center justify-center px-5 py-5 overflow-y-auto gap-4 space-y-6">
-          <div className="h-2/3 w-full">
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-row gap-4 p-4 min-h-0 overflow-hidden">
+        <div className="h-full w-[65%] purple-scrollbar overflow-y-auto pr-2 space-y-5">
+          <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
             <BasicInfo
               groupName={groupName}
               description={description}
-              selectedColor={selectedColor}
-              colors={colors}
               onGroupNameChange={setGroupName}
               onDescriptionChange={setDescription}
-              onColorSelect={setSelectedColor}
             />
           </div>
-          <div className="h-full w-full">
+          <div className="animate-slide-up" style={{ animationDelay: '0.05s' }}>
             <MembersSection
               searchQuery={searchQuery}
               filteredUsers={filteredUsers}
@@ -158,7 +166,7 @@ export default function NewUserGroup() {
           </div>
         </div>
 
-        <div className="h-full w-2/6 py-5 px-5">
+        <div className="h-full w-[35%] animate-slide-left overflow-hidden" style={{ animationDelay: '0.1s' }}>
           <Preview
             groupName={groupName}
             selectedColor={selectedColor}
@@ -168,7 +176,9 @@ export default function NewUserGroup() {
           />
         </div>
       </div>
-      <div className="h-1/12 border-t py-4 bg-gray-50">
+
+      {/* Footer */}
+      <div className="liquid-glass-footer flex-shrink-0 border-t border-white/20 py-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
         <NewGroupFooter
           onSubmit={handleSubmit}
           groupName={groupName}

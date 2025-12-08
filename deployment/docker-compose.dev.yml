@@ -32,6 +32,7 @@ services:
       - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
       - ../keycloak/themes:/opt/keycloak/themes:ro
       - ../keycloak/imports:/opt/keycloak/data/import:ro
+      - ../keycloak/providers:/opt/keycloak/providers:ro
 
 volumes:
   db_data:

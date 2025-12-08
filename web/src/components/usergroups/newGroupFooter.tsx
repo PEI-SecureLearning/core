@@ -1,7 +1,7 @@
+import { memo } from "react";
 import { Link } from '@tanstack/react-router';
-import {Save} from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 
-// Footer Component
 interface NewGroupFooterProps {
   onSubmit: () => void;
   groupName: string;
@@ -10,27 +10,59 @@ interface NewGroupFooterProps {
   status?: string | null;
 }
 
-
-export default function NewGroupFooter({ onSubmit, groupName, selectedMembersCount, isLoading, status }: NewGroupFooterProps) {
+// Memoized status message
+const StatusMessage = memo(function StatusMessage({ status }: { status: string }) {
   return (
-    <div className="flex flex-col gap-2">
-      {status && <div className="text-sm text-gray-600 px-6">{status}</div>}
-      <div className="flex gap-3 justify-end sticky bottom-0 px-50">
+    <div className="text-sm text-gray-600 px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border border-purple-200/30">
+      <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
+      {status}
+    </div>
+  );
+});
+
+// Main component
+function NewGroupFooter({
+  onSubmit,
+  groupName,
+  selectedMembersCount,
+  isLoading,
+  status
+}: NewGroupFooterProps) {
+  const isDisabled = !groupName || selectedMembersCount === 0 || isLoading;
+
+  return (
+    <div className="flex flex-col gap-3 px-6 relative z-10">
+      {/* Status Message */}
+      {status && <StatusMessage status={status} />}
+
+      {/* Action Buttons */}
+      <div className="flex gap-4 justify-end">
         <Link
           to="/usergroups"
-          className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+          className="liquid-glass-button-secondary px-6 py-2.5 text-sm"
         >
           Cancel
         </Link>
         <button
           onClick={onSubmit}
-          disabled={!groupName || selectedMembersCount === 0 || isLoading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+          disabled={isDisabled}
+          className="liquid-glass-button flex items-center gap-2 px-6 py-2.5 text-sm"
         >
-          <Save className="h-4 w-4" />
-          {isLoading ? "Working..." : "Create Group"}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Working...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              Create Group
+            </>
+          )}
         </button>
       </div>
     </div>
   );
 }
+
+export default memo(NewGroupFooter);
