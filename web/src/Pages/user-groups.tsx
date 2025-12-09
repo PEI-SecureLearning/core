@@ -53,11 +53,24 @@ export default function UserGroupsPage() {
   }, [realm]);
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full animate-[fadeIn_0.4s_ease-out]">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInDelay {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div className="h-1/12 w-full border-b flex items-center px-4 font-semibold text-lg">
         <UserGroupsHeader view={view} setView={setView} />
       </div>
-      <div className="h-11/12 w-full overflow-y-auto p-4 space-y-4">
+      <div
+        className="h-11/12 w-full overflow-y-auto p-4 space-y-4"
+        style={{ animation: 'fadeInDelay 0.5s ease-out 0.1s both' }}
+      >
         {view === "grid" ? (
           <UserGroupsGrid
             groups={groups}
