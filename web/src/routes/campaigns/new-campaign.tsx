@@ -11,14 +11,14 @@ export const Route = createFileRoute("/campaigns/new-campaign")({
   component: RouteComponent,
 });
 
-function RouteComponent() {
-  interface Step {
-    name: string;
-    label: string;
-    component: ComponentType<unknown>;
-  }
+interface StepConfig {
+  name: string;
+  label: string;
+  component: ComponentType<unknown>;
+}
 
-  const steps: Step[] = [
+function RouteComponent() {
+  const steps: StepConfig[] = [
     { name: "forms", label: "Basic Info", component: CampaignForms },
     {
       name: "email-template",
@@ -37,19 +37,20 @@ function RouteComponent() {
     },
     {
       name: "schedule",
-      label: "Schedule & Review",
+      label: "Review",
       component: CampaignScheduler,
     },
   ];
 
   return (
-    <div className="size-full px-15 py-5">
+    <div className="size-full p-6 bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
       <Stepper
         initialStep={1}
-        onStepChange={(step) => console.log(step)}
-        onFinalStepCompleted={() => console.log("completed")}
+        onStepChange={(step) => console.log("Step:", step)}
+        onFinalStepCompleted={() => console.log("Campaign created!")}
         backButtonText="Previous"
         nextButtonText="Next"
+        stepLabels={steps.map(s => s.label)}
       >
         {steps.map((s, i) => (
           <Step key={i}>

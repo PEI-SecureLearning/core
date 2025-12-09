@@ -7,6 +7,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -22,6 +23,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   backButtonText?: string;
   nextButtonText?: string;
   disableStepIndicators?: boolean;
+  stepLabels?: string[];
   renderStepIndicator?: (props: {
     step: number;
     currentStep: number;
@@ -32,8 +34,8 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
 export default function Stepper({
   children,
   initialStep = 1,
-  onStepChange = () => {},
-  onFinalStepCompleted = () => {},
+  onStepChange = () => { },
+  onFinalStepCompleted = () => { },
   stepCircleContainerClassName = "",
   stepContainerClassName = "",
   contentClassName = "",
@@ -43,6 +45,7 @@ export default function Stepper({
   backButtonText = "Back",
   nextButtonText = "Continue",
   disableStepIndicators = false,
+  stepLabels = [],
   renderStepIndicator,
   ...rest
 }: StepperProps) {
@@ -82,17 +85,32 @@ export default function Stepper({
   };
 
   return (
-    <div className="flex items-center justify-center size-full">
+    <div className="flex items-center justify-center size-full animate-[fadeIn_0.4s_ease-out]">
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
       <div
-        className="size-full rounded-4xl shadow-xl flex flex-col justify-center align-middle p-3"
-        style={{ border: "1px solid #222" }}
+        className="size-full rounded-2xl flex flex-col justify-center align-middle overflow-hidden"
+        style={{
+          background: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255, 255, 255, 0.5)',
+          boxShadow: '0 8px 32px rgba(147, 51, 234, 0.08)'
+        }}
       >
+        {/* Step Indicators */}
         <div
-          className={`${stepContainerClassName} flex items-center py-4 px-20`}
+          className={`${stepContainerClassName} flex items-center py-6 px-8 border-b border-slate-200/40`}
+          style={{ background: 'rgba(255, 255, 255, 0.4)' }}
         >
           {stepsArray.map((_, index) => {
             const stepNumber = index + 1;
             const isNotLastStep = index < totalSteps - 1;
+            const label = stepLabels[index] || `Step ${stepNumber}`;
             return (
               <React.Fragment key={stepNumber}>
                 {renderStepIndicator ? (
@@ -107,6 +125,7 @@ export default function Stepper({
                 ) : (
                   <StepIndicator
                     step={stepNumber}
+                    label={label}
                     disableStepIndicators={disableStepIndicators}
                     currentStep={currentStep}
                     onClickStep={(clicked) => {
@@ -123,6 +142,7 @@ export default function Stepper({
           })}
         </div>
 
+        {/* Content Area */}
         <div className="flex-1 overflow-hidden relative">
           <StepContentWrapper
             isCompleted={isCompleted}
@@ -134,30 +154,40 @@ export default function Stepper({
           </StepContentWrapper>
         </div>
 
+        {/* Footer with Navigation */}
         {!isCompleted && (
-          <div className={`p-4 ${footerClassName}`}>
+          <div
+            className={`px-8 py-5 border-t border-slate-200/40 ${footerClassName}`}
+            style={{ background: 'rgba(255, 255, 255, 0.4)' }}
+          >
             <div
-              className={`mt-2 flex ${currentStep !== 1 ? "justify-between" : "justify-end"}`}
+              className={`flex ${currentStep !== 1 ? "justify-between" : "justify-end"} items-center`}
             >
               {currentStep !== 1 && (
                 <button
                   onClick={handleBack}
-                  className={`duration-350 rounded px-2 py-1 transition ${
-                    currentStep === 1
-                      ? "pointer-events-none opacity-50 text-neutral-400"
-                      : "text-neutral-400 hover:text-neutral-700"
-                  }`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-normal text-slate-600 transition-all duration-150 hover:bg-slate-100/60"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.5)',
+                    border: '1px solid rgba(148, 163, 184, 0.2)'
+                  }}
                   {...backButtonProps}
                 >
+                  <ChevronLeft size={16} />
                   {backButtonText}
                 </button>
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="duration-350 flex items-center justify-center rounded-full bg-green-500 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium text-white transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
+                style={{
+                  background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+                  boxShadow: '0 4px 14px rgba(147, 51, 234, 0.25)'
+                }}
                 {...nextButtonProps}
               >
                 {isLastStep ? "Complete" : nextButtonText}
+                {!isLastStep && <ChevronRight size={16} />}
               </button>
             </div>
           </div>
@@ -228,7 +258,7 @@ function SlideTransition({
       initial="enter"
       animate="center"
       exit="exit"
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       style={{ position: "absolute", inset: 0, height: "100%" }}
     >
       <div className="w-full h-full flex justify-center">{children}</div>
@@ -238,15 +268,15 @@ function SlideTransition({
 
 const stepVariants: Variants = {
   enter: (dir: number) => ({
-    x: dir >= 0 ? "-100%" : "100%",
+    x: dir >= 0 ? "80px" : "-80px",
     opacity: 0,
   }),
   center: {
-    x: "0%",
+    x: "0px",
     opacity: 1,
   },
   exit: (dir: number) => ({
-    x: dir >= 0 ? "50%" : "-50%",
+    x: dir >= 0 ? "-40px" : "40px",
     opacity: 0,
   }),
 };
@@ -257,8 +287,8 @@ interface StepProps {
 
 export function Step({ children }: StepProps) {
   return (
-    <div className="w-full h-full flex flex-col items-center px-8 py-4">
-      <div className="flex-1 px-1 max-w-md w-full min-h-0 overflow-auto">
+    <div className="w-full h-full flex flex-col items-center px-8 py-6">
+      <div className="flex-1 px-1 max-w-2xl w-full min-h-0 overflow-auto">
         {children}
       </div>
     </div>
@@ -268,6 +298,7 @@ export function Step({ children }: StepProps) {
 interface StepIndicatorProps {
   step: number;
   currentStep: number;
+  label: string;
   onClickStep: (clicked: number) => void;
   disableStepIndicators?: boolean;
 }
@@ -275,6 +306,7 @@ interface StepIndicatorProps {
 function StepIndicator({
   step,
   currentStep,
+  label,
   onClickStep,
   disableStepIndicators = false,
 }: StepIndicatorProps) {
@@ -294,27 +326,50 @@ function StepIndicator({
   return (
     <motion.div
       onClick={handleClick}
-      className="relative cursor-pointer outline-none focus:outline-none"
+      className="relative cursor-pointer outline-none focus:outline-none flex flex-col items-center gap-2"
       animate={status}
       initial={false}
     >
       <motion.div
         variants={{
-          inactive: { scale: 1, backgroundColor: "#222", color: "#a3a3a3" },
-          active: { scale: 1, backgroundColor: "#5227FF", color: "#5227FF" },
-          complete: { scale: 1, backgroundColor: "#5227FF", color: "#3b82f6" },
+          inactive: {
+            scale: 1,
+            backgroundColor: "rgba(241, 245, 249, 0.8)",
+            borderColor: "rgba(203, 213, 225, 0.6)"
+          },
+          active: {
+            scale: 1.05,
+            backgroundColor: "rgba(147, 51, 234, 1)",
+            borderColor: "rgba(147, 51, 234, 0.3)"
+          },
+          complete: {
+            scale: 1,
+            backgroundColor: "rgba(34, 197, 94, 1)",
+            borderColor: "rgba(34, 197, 94, 0.3)"
+          },
         }}
-        transition={{ duration: 0.3 }}
-        className="flex h-8 w-8 items-center justify-center rounded-full font-semibold"
+        transition={{ duration: 0.2 }}
+        className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2"
+        style={{ boxShadow: status === 'active' ? '0 4px 14px rgba(147, 51, 234, 0.3)' : 'none' }}
       >
         {status === "complete" ? (
-          <CheckIcon className="h-4 w-4 text-black" />
+          <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
         ) : status === "active" ? (
-          <div className="h-3 w-3 rounded-full bg-[#060010]" />
+          <span className="text-white">{step}</span>
         ) : (
-          <span className="text-sm">{step}</span>
+          <span className="text-slate-400">{step}</span>
         )}
       </motion.div>
+      <motion.span
+        className="text-[11px] font-normal whitespace-nowrap tracking-wide"
+        variants={{
+          inactive: { color: "rgb(148, 163, 184)" },
+          active: { color: "rgb(147, 51, 234)" },
+          complete: { color: "rgb(34, 197, 94)" },
+        }}
+      >
+        {label}
+      </motion.span>
     </motion.div>
   );
 }
@@ -324,48 +379,17 @@ interface StepConnectorProps {
 }
 
 function StepConnector({ isComplete }: StepConnectorProps) {
-  const lineVariants: Variants = {
-    incomplete: { width: 0, backgroundColor: "transparent" },
-    complete: { width: "100%", backgroundColor: "#5227FF" },
-  };
-
   return (
-    <div className="relative mx-2 h-0.5 flex-1 overflow-hidden rounded bg-neutral-600">
+    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200/60">
       <motion.div
-        className="absolute left-0 top-0 h-full"
-        variants={lineVariants}
+        className="absolute left-0 top-0 h-full rounded-full"
         initial={false}
-        animate={isComplete ? "complete" : "incomplete"}
-        transition={{ duration: 0.4 }}
+        animate={{
+          width: isComplete ? "100%" : "0%",
+          backgroundColor: isComplete ? "rgb(34, 197, 94)" : "transparent"
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
       />
     </div>
-  );
-}
-
-interface CheckIconProps extends React.SVGProps<SVGSVGElement> {}
-
-function CheckIcon(props: CheckIconProps) {
-  return (
-    <svg
-      {...props}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-    >
-      <motion.path
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{
-          delay: 0.1,
-          type: "tween",
-          ease: "easeOut",
-          duration: 0.3,
-        }}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M5 13l4 4L19 7"
-      />
-    </svg>
   );
 }

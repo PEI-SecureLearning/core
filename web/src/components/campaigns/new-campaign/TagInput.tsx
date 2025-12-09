@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 
 interface TagInputProps {
   onAdd: (tag: string) => void;
@@ -12,9 +12,19 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
   const handleAdd = () => {
     if (!tempTag.trim()) return;
 
-    onAdd(tempTag.trim()); // value has no "#" prefix
+    onAdd(tempTag.trim());
     setTempTag("");
     setAdding(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAdd();
+    } else if (e.key === "Escape") {
+      setTempTag("");
+      setAdding(false);
+    }
   };
 
   return (
@@ -23,14 +33,27 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="p-1.5 cursor- rounded-full bg-purple-600 text-white flex items-center justify-center text-xl hover:bg-purple-700 transition"
+          className="p-2 rounded-full text-white flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95"
+          style={{
+            background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
+            boxShadow: '0 2px 8px rgba(147, 51, 234, 0.3)'
+          }}
         >
-          <Plus size={22} />
+          <Plus size={16} strokeWidth={2.5} />
         </button>
       ) : (
-        <div className="relative w-48">
+        <div
+          className="relative flex items-center rounded-full overflow-hidden"
+          style={{
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(147, 51, 234, 0.3)',
+            boxShadow: '0 2px 8px rgba(147, 51, 234, 0.1)'
+          }}
+        >
           {/* Hashtag prefix */}
-          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">
+          <span className="pl-3 text-purple-500 text-[13px] font-medium">
             #
           </span>
 
@@ -40,18 +63,27 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
             autoFocus
             value={tempTag}
             onChange={(e) => setTempTag(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            className="border rounded px-5 pr-8 py-1 text-sm w-full"
-            placeholder="tag"
+            onKeyDown={handleKeyDown}
+            onBlur={() => {
+              if (!tempTag.trim()) {
+                setAdding(false);
+              }
+            }}
+            className="bg-transparent px-1.5 py-2 text-[13px] text-slate-700 placeholder:text-slate-400 outline-none w-32"
+            placeholder="tag name"
           />
 
           {/* Check button */}
           <button
             type="button"
             onClick={handleAdd}
-            className="absolute right-1 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-800 text-lg"
+            disabled={!tempTag.trim()}
+            className="p-1.5 mr-1 rounded-full transition-all duration-150 disabled:opacity-40"
+            style={{
+              background: tempTag.trim() ? 'rgba(34, 197, 94, 0.9)' : 'rgba(148, 163, 184, 0.3)',
+            }}
           >
-            ✔
+            <Check size={14} strokeWidth={3} className="text-white" />
           </button>
         </div>
       )}

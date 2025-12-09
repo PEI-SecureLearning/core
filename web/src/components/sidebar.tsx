@@ -34,12 +34,12 @@ const adminLinks: SidebarLinkProps[] = [
 
 const userLinks: SidebarLinkProps[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/campaigns", label: "Campaigns", icon: Megaphone, roles: ["CONTENT_MANAGER"] },
-  { href: "/templates", label: "Templates", icon: FileText, roles: ["CONTENT_MANAGER"] },
+  { href: "/campaigns", label: "Campaigns", icon: Megaphone, roles: ["ORG_MANAGER"] },
+  { href: "/templates", label: "Templates", icon: FileText, roles: ["ORG_MANAGER"] },
+  { href: "/tenants-org-manager", label: "Tenant Manager", icon: Building2, roles: ["ORG_MANAGER"] },
   { href: "/usergroups", label: "User groups", icon: Users, roles: ["ORG_MANAGER"] },
   { href: "/statistics", label: "Statistics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/tenants-org-manager", label: "Tenant Manager", icon: Building2, roles: ["ORG_MANAGER"] },
 ];
 
 function SidebarLink({ href, label, icon: Icon, isCollapsed }: SidebarLinkProps & { isCollapsed: boolean }) {

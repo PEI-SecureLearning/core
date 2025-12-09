@@ -61,6 +61,7 @@ class Admin():
         json={
                 "realm": realm_name,
                 "enabled": True,
+                "sslRequired": "NONE",
                 "loginTheme": "keycloakify-starter",
                 "displayName": realm_name,
                 "attributes": attributes,
