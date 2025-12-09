@@ -102,7 +102,7 @@ function TenantOrgManager() {
   const fetchUsers = async (targetRealm: string) => {
     setIsUsersLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`, {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
         },
@@ -120,7 +120,7 @@ function TenantOrgManager() {
 
   const fetchGroups = async (targetRealm: string) => {
     try {
-      const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
         },
@@ -156,14 +156,13 @@ function TenantOrgManager() {
     setStatus(null);
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/realms/users`, {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
         method: "POST",
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          realm: targetRealm,
           username,
           name,
           email,
@@ -242,7 +241,7 @@ function TenantOrgManager() {
 
     const refreshGroups = async () => {
       try {
-        const resp = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+        const resp = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
           headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
         });
         if (resp.ok) {
@@ -262,7 +261,7 @@ function TenantOrgManager() {
       if (groupIdCache[key]) return groupIdCache[key];
       // Try to create the group; if it already exists server should return conflict or similar.
       try {
-        const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
           method: "POST",
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -319,7 +318,7 @@ function TenantOrgManager() {
 
     const fetchUserIdByUsername = async (usernameValue: string): Promise<string | undefined> => {
       try {
-        const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`, {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
           headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
         });
         if (!res.ok) return undefined;
@@ -346,14 +345,13 @@ function TenantOrgManager() {
       const groupIds = u.groups && u.groups.length ? await resolveGroupIds(u.groups) : [];
       const primaryGroupId = groupIds[0];
       try {
-        const res = await fetch(`${API_BASE}/realms/users`, {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
           method: "POST",
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            realm: targetRealm,
             username: u.username,
             name: u.name,
             email: u.email,
@@ -375,7 +373,7 @@ function TenantOrgManager() {
             for (const gid of groupIds) {
               try {
                 await fetch(
-                  `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups/${encodeURIComponent(
+                  `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups/${encodeURIComponent(
                     gid
                   )}/members/${encodeURIComponent(userId)}`,
                   {
@@ -434,7 +432,7 @@ function TenantOrgManager() {
     setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
       const res = await fetch(
-        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users/${encodeURIComponent(id)}`,
+        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users/${encodeURIComponent(id)}`,
         {
           method: "DELETE",
           headers: {

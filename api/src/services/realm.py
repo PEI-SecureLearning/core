@@ -49,6 +49,23 @@ def domain_from_token_or_realm(access_token: str) -> str | None:
     return domain
 
 
+def list_realms() -> dict:
+    """List all tenant realms from Keycloak (excluding master and platform)."""
+    realms = _admin.list_realms(exclude_system=True)
+    return {"realms": realms}
+
+
+def delete_realm_from_keycloak(realm_name: str) -> None:
+    """Delete a realm from Keycloak."""
+    _admin.delete_realm(realm_name)
+
+
+def get_platform_logs(max_results: int = 100) -> dict:
+    """Get platform logs/events from all tenant realms."""
+    events = _admin.get_events(max_results)
+    return {"logs": events}
+
+
 # ============ Realm Operations ============
 
 def get_realm_by_domain(session: Session, domain: str) -> Realm | None:

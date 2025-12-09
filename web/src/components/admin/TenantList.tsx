@@ -1,31 +1,80 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink } from 'lucide-react'
+import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink, Loader2, Trash2 } from 'lucide-react'
+import { apiClient } from '../../lib/api-client'
 
 interface Tenant {
     id: string
-    name: string
-    domain: string
-    users: number
-    status: 'active' | 'suspended'
-    features: {
-        phishing: boolean
-        lms: boolean
-        reports: boolean
-    }
+    realm: string
+    displayName: string
+    domain: string | null
+    enabled: boolean
+    features: Record<string, boolean>
 }
 
-const MOCK_TENANTS: Tenant[] = [
-    { id: '1', name: 'Acme Corp', domain: 'acme.com', users: 150, status: 'active', features: { phishing: true, lms: true, reports: true } },
-    { id: '2', name: 'Globex Inc', domain: 'globex.com', users: 50, status: 'active', features: { phishing: true, lms: false, reports: true } },
-    { id: '3', name: 'Soylent Corp', domain: 'soylent.com', users: 1200, status: 'suspended', features: { phishing: false, lms: true, reports: false } },
-    { id: '4', name: 'Umbrella Corp', domain: 'umbrella.com', users: 5000, status: 'active', features: { phishing: true, lms: true, reports: true } },
-]
+interface TenantsResponse {
+    realms: Array<{
+        id: string
+        realm: string
+        displayName: string
+        domain: string | null
+        enabled: boolean
+        features: Record<string, boolean>
+    }>
+}
 
 export function TenantList() {
-    const [tenants, setTenants] = useState(MOCK_TENANTS)
+    const [tenants, setTenants] = useState<Tenant[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [deleting, setDeleting] = useState<string | null>(null)
 
-    const toggleFeature = (tenantId: string, feature: keyof Tenant['features']) => {
+    const fetchTenants = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await apiClient.get<TenantsResponse>('/realms/tenants')
+            // Map API response to Tenant interface with features from Keycloak
+            const mappedTenants: Tenant[] = response.realms.map(realm => ({
+                id: realm.id,
+                realm: realm.realm,
+                displayName: realm.displayName,
+                domain: realm.domain,
+                enabled: realm.enabled,
+                features: realm.features || {},
+            }))
+            setTenants(mappedTenants)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load tenants')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchTenants()
+    }, [])
+
+    const deleteTenant = async (tenant: Tenant) => {
+        const confirmed = window.confirm(
+            `Are you sure you want to delete the tenant "${tenant.displayName}"?\n\nThis action cannot be undone and will permanently remove the realm and all its users from Keycloak.`
+        )
+
+        if (!confirmed) return
+
+        try {
+            setDeleting(tenant.realm)
+            await apiClient.delete(`/realms/${tenant.realm}`)
+            // Refresh the tenant list
+            await fetchTenants()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to delete tenant')
+        } finally {
+            setDeleting(null)
+        }
+    }
+
+    const toggleFeature = (tenantId: string, feature: string) => {
         setTenants(tenants.map(t => {
             if (t.id === tenantId) {
                 return {
@@ -38,6 +87,15 @@ export function TenantList() {
             }
             return t
         }))
+    }
+
+    // Helper function to format feature names for display
+    const formatFeatureName = (feature: string): string => {
+        return feature
+            .replace(/_/g, ' ')
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase())
+            .trim()
     }
 
     return (
@@ -55,79 +113,103 @@ export function TenantList() {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tenants.map((tenant) => (
-                    <div key={tenant.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
-                                        <Building2 size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-gray-900">{tenant.name}</h3>
-                                        <div className="text-sm text-gray-500">{tenant.domain}</div>
-                                    </div>
-                                </div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tenant.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                    }`}>
-                                    {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
-                                </span>
-                            </div>
+            {loading && (
+                <div className="flex justify-center items-center py-12">
+                    <Loader2 className="animate-spin text-blue-600" size={32} />
+                    <span className="ml-3 text-gray-600">Loading tenants...</span>
+                </div>
+            )}
 
-                            <div className="space-y-4">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Total Users</span>
-                                    <span className="font-medium text-gray-900">{tenant.users.toLocaleString()}</span>
-                                </div>
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                    <p className="font-medium">Failed to load tenants</p>
+                    <p className="text-sm mt-1">{error}</p>
+                </div>
+            )}
 
-                                <div className="pt-4 border-t border-gray-100">
-                                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Feature Access</h4>
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-700">Phishing Sim</span>
-                                            <button
-                                                onClick={() => toggleFeature(tenant.id, 'phishing')}
-                                                className={`text-2xl ${tenant.features.phishing ? 'text-blue-600' : 'text-gray-300'}`}
-                                            >
-                                                {tenant.features.phishing ? <ToggleRight /> : <ToggleLeft />}
-                                            </button>
+            {!loading && !error && tenants.length === 0 && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                    <Building2 className="mx-auto text-gray-400" size={48} />
+                    <h3 className="mt-4 text-lg font-medium text-gray-900">No tenants yet</h3>
+                    <p className="mt-2 text-gray-500">Get started by creating your first tenant.</p>
+                </div>
+            )}
+
+            {!loading && !error && tenants.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {tenants.map((tenant) => (
+                        <div key={tenant.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
+                                            <Building2 size={24} />
                                         </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-700">LMS Platform</span>
-                                            <button
-                                                onClick={() => toggleFeature(tenant.id, 'lms')}
-                                                className={`text-2xl ${tenant.features.lms ? 'text-blue-600' : 'text-gray-300'}`}
-                                            >
-                                                {tenant.features.lms ? <ToggleRight /> : <ToggleLeft />}
-                                            </button>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm text-gray-700">Advanced Reports</span>
-                                            <button
-                                                onClick={() => toggleFeature(tenant.id, 'reports')}
-                                                className={`text-2xl ${tenant.features.reports ? 'text-blue-600' : 'text-gray-300'}`}
-                                            >
-                                                {tenant.features.reports ? <ToggleRight /> : <ToggleLeft />}
-                                            </button>
+                                        <div>
+                                            <h3 className="font-semibold text-gray-900">{tenant.displayName}</h3>
+                                            <div className="text-sm text-gray-500">{tenant.domain || tenant.realm}</div>
                                         </div>
                                     </div>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tenant.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {tenant.enabled ? 'Active' : 'Disabled'}
+                                    </span>
                                 </div>
-                            </div>
 
-                            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
-                                <Link
-                                    to="/admin/tenants/$tenantId"
-                                    params={{ tenantId: tenant.id }}
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                                >
-                                    Manage Tenant <ExternalLink size={14} />
-                                </Link>
+                                <div className="space-y-4">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Realm</span>
+                                        <span className="font-medium text-gray-900">{tenant.realm}</span>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-gray-100">
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Feature Access</h4>
+                                        <div className="space-y-3">
+                                            {Object.keys(tenant.features).length === 0 ? (
+                                                <p className="text-sm text-gray-400 italic">No features configured</p>
+                                            ) : (
+                                                Object.entries(tenant.features).map(([featureName, isEnabled]) => (
+                                                    <div key={featureName} className="flex justify-between items-center">
+                                                        <span className="text-sm text-gray-700">{formatFeatureName(featureName)}</span>
+                                                        <button
+                                                            onClick={() => toggleFeature(tenant.id, featureName)}
+                                                            className={`text-2xl ${isEnabled ? 'text-blue-600' : 'text-gray-300'}`}
+                                                        >
+                                                            {isEnabled ? <ToggleRight /> : <ToggleLeft />}
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
+                                    <button
+                                        onClick={() => deleteTenant(tenant)}
+                                        disabled={deleting === tenant.realm}
+                                        className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {deleting === tenant.realm ? (
+                                            <Loader2 className="animate-spin" size={14} />
+                                        ) : (
+                                            <Trash2 size={14} />
+                                        )}
+                                        Delete
+                                    </button>
+                                    <Link
+                                        to="/admin/tenants/$tenantId"
+                                        params={{ tenantId: tenant.realm }}
+                                        className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                    >
+                                        Manage Tenant <ExternalLink size={14} />
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
