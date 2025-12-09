@@ -4,7 +4,7 @@ import BasicInfo from "./newGroupBasicInfo";
 import NewGroupFooter from "./newGroupFooter";
 import Preview from "./newGroupPreview";
 import MembersSection from "./newGroupMembers";
-import { addUserToGroup, createGroup, fetchGroups, fetchUsers } from "./api";
+import { addUserToGroup, createGroup, createUser, fetchGroups, fetchUsers } from "./api";
 import "../../css/liquidGlass.css";
 
 interface Member {
@@ -100,20 +100,50 @@ export default function NewUserGroup() {
     setIsLoading(true);
     setStatus(null);
     try {
+      // Create the group first
       await createGroup(realm, groupName, keycloak.token || undefined);
       const groupsRes = await fetchGroups(realm, keycloak.token || undefined);
       const created = (groupsRes.groups || []).find((g) => g.name === groupName);
+
       if (created?.id) {
+        let createdCount = 0;
+        let addedCount = 0;
+
         for (const m of selectedMembers) {
-          if (!m.id) continue;
           try {
-            await addUserToGroup(realm, created.id, m.id, keycloak.token || undefined);
+            // Check if this is an existing user (has a valid UUID) or a CSV import (no valid UUID)
+            const isExistingUser = m.id && m.id.includes("-") && m.id.length > 30;
+
+            if (isExistingUser) {
+              // Existing user - just add to group
+              await addUserToGroup(realm, created.id, m.id, keycloak.token || undefined);
+              addedCount++;
+            } else {
+              // CSV imported user - create user first, then add to group
+              const username = m.email?.split("@")[0] || m.name.toLowerCase().replace(/\s+/g, ".");
+              const result = await createUser(
+                realm,
+                username,
+                m.name,
+                m.email,
+                "DEFAULT_USER",
+                created.id,  // Add directly to the group
+                keycloak.token || undefined
+              );
+              if (result.status === "created") {
+                createdCount++;
+              }
+            }
           } catch (err) {
-            console.error("Failed to add member", err);
+            console.error("Failed to process member", m.name, err);
           }
         }
+
+        setStatus(`Group created. ${createdCount} users created, ${addedCount} existing users added.`);
+      } else {
+        setStatus("Group created.");
       }
-      setStatus("Group created.");
+
       setGroupName("");
       setDescription("");
       setSelectedMembers([]);

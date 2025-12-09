@@ -25,6 +25,18 @@ class GroupCreateRequest(BaseModel):
     name: str
 
 
+@router.get("/realms/tenants")
+def list_tenants():
+    """List all tenant realms from Keycloak (excluding master and platform)."""
+    return realm_service.list_realms()
+
+
+@router.get("/logs")
+def get_platform_logs(max_results: int = 100):
+    """Get platform logs/events from all tenant realms."""
+    return realm_service.get_platform_logs(max_results)
+
+
 @router.get("/realms", response_model=RealmResponse)
 def get_realms_by_domain(domain: str):
     realm = realm_service.find_realm_by_domain(domain)
@@ -36,6 +48,13 @@ def get_realms_by_domain(domain: str):
 @router.post("/realms")
 def create_realm(realm: RealmCreate):
     return realm_service.create_realm_in_keycloak(realm)
+
+
+@router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_realm(realm: str):
+    """Delete a tenant realm from Keycloak."""
+    realm_service.delete_realm_from_keycloak(realm)
+    return None
 
 
 @router.post("/realms/users")

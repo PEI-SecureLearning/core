@@ -13,7 +13,7 @@ class ApiClient {
     }
     return response.json();
   }
-  
+
   async post<T>(endpoint: string, data: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
@@ -29,7 +29,7 @@ class ApiClient {
     return response.json();
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
+  async delete<T>(endpoint: string): Promise<T | void> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'DELETE',
       headers: {
@@ -40,6 +40,12 @@ class ApiClient {
     if (!response.ok) {
       throw new Error(`Error deleting ${endpoint}: ${response.statusText}`);
     }
+
+    // Handle 204 No Content responses
+    if (response.status === 204) {
+      return;
+    }
+
     return response.json();
   }
 }
