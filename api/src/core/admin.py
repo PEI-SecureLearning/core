@@ -44,114 +44,6 @@ class Admin():
         return access_token
 
 
-    def create_realm(self, realm_name: str, admin_email: str, domain: str, features: dict | None = None):
-        print(f"DEBUG: Creating realm '{realm_name}' for admin '{admin_email}' with domain '{domain}'")
-        token = self._get_admin_token()
-        url = f"{self.keycloak_url}/admin/realms"
-
-        attributes = {
-            "tenant-domain": domain,
-            "features": json.dumps(features) if features else ""
-        }
-
-        r = requests.post(url, headers={
-                                        "Content-Type": "application/json", 
-                                        "Authorization": "Bearer {}".format(token)
-                                    },
-        json={
-                "realm": realm_name,
-                "enabled": True,
-                "sslRequired": "NONE",
-                "loginTheme": "keycloakify-starter",
-                "displayName": realm_name,
-                "attributes": attributes,
-                "roles": {
-                    "realm": [
-                        {
-                            "name": "ORG_MANAGER",
-                            "description": "Custom administrator role for the organization"
-                        },
-                        {
-                            "name": "CONTENT_MANAGER",
-                            "description": "Custom role for read-only access"
-                        },
-                        {
-                            "name": "DEFAULT_USER",
-                            "description": "Custom role for read-only access"
-                        },
-                        {
-                            "name": "PHISHING",
-                            "description": "Custom role for read-only access"
-                        },
-                        {
-                            "name": "LMS",
-                            "description": "Custom role for read-only access"
-                        },  
-                    ]
-                },
-                "clients": [
-                    {
-                        "clientId": "react-app",
-                        "enabled": True,
-                        "publicClient": True,
-                        "redirectUris": ["http://localhost:5173/*"],
-                        "webOrigins": ["http://localhost:5173"],
-                        "standardFlowEnabled": True,
-                        "directAccessGrantsEnabled": True
-                    },
-                    {
-                        "clientId": "api",
-                        "enabled": True,
-                        "publicClient": False,
-                        "redirectUris": ["http://localhost:8000/*"],
-                        "webOrigins": ["http://localhost:8000"],
-                        "implicitFlowEnabled": False,
-                        "directAccessGrantsEnabled": True,
-                        "serviceAccountsEnabled": True,
-                        "authorizationServicesEnabled": True,
-                    }
-                ],
-                "users": [
-                    {
-                        "username": "Org_manager",
-                        "enabled": True,
-                        "firstName": "Org",
-                        "lastName": "Manager",
-                        "email": admin_email, 
-                        "credentials": [
-                            {
-                                "type": "password",
-                                "value": "1234",
-                                "temporary": True
-                            }
-                        ],
-                        "realmRoles": [
-                            "ORG_MANAGER"
-                        ]
-                    },
-                    {
-                        "username": "User",
-                        "enabled": True,
-                        "firstName": "nome",
-                        "lastName": "sobrenome",
-                        "email": "user@user.com", 
-                        "credentials": [
-                            {
-                                "type": "password",
-                                "value": "1234",
-                                "temporary": True
-                            }
-                        ],
-                        "realmRoles": [
-                            "DEFAULT_USER"
-                        ]
-                    }
-                ]
-        })             
-        print(f"DEBUG: Keycloak create realm response: {r.status_code} - {r.text}")
-        return r
-
-
     def get_realm(self, realm_name: str) -> dict:
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
@@ -423,5 +315,698 @@ class Admin():
                                         "Authorization": "Bearer {}".format(token)
                                     },
         json=payload)
+        
+        return r
+
+
+    def _create_client_scope(self, realm_name: str, scope_name: str, token: str) -> str | None:
+        """Create a client scope and return its ID."""
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes"
+        
+        payload = {
+            "name": scope_name,
+            "description": f"Feature flags scope: {scope_name}",
+            "protocol": "openid-connect",
+            "attributes": {
+                "include.in.token.scope": "true",
+                "display.on.consent.screen": "false"
+            }
+        }
+        
+        try:
+            r = requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            if r.status_code == 201:
+                # Get the scope ID from the Location header
+                location = r.headers.get("Location", "")
+                scope_id = location.split("/")[-1] if location else None
+                return scope_id
+            print(f"DEBUG: Failed to create client scope: {r.status_code} - {r.text}")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG: Error creating client scope: {e}")
+            return None
+
+
+    def _add_hardcoded_claim_mapper(
+        self, 
+        realm_name: str, 
+        scope_id: str, 
+        feature_name: str, 
+        feature_value: bool,
+        token: str
+    ):
+        """Add a hardcoded claim mapper to a client scope."""
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models"
+        
+        payload = {
+            "name": f"feature-{feature_name}",
+            "protocol": "openid-connect",
+            "protocolMapper": "oidc-hardcoded-claim-mapper",
+            "consentRequired": False,
+            "config": {
+                "claim.name": f"features.{feature_name}",
+                "claim.value": str(feature_value).lower(),
+                "jsonType.label": "boolean",
+                "id.token.claim": "true",
+                "access.token.claim": "true",
+                "userinfo.token.claim": "true"
+            }
+        }
+        
+        try:
+            r = requests.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+            if r.status_code not in (201, 204):
+                print(f"DEBUG: Failed to add claim mapper for {feature_name}: {r.status_code} - {r.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG: Error adding claim mapper for {feature_name}: {e}")
+
+
+    def _add_client_scope_to_client(self, realm_name: str, client_id: str, scope_id: str, token: str):
+        """Add a client scope as a default scope to a client."""
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients/{client_id}/default-client-scopes/{scope_id}"
+        
+        try:
+            r = requests.put(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if r.status_code not in (204, 200):
+                print(f"DEBUG: Failed to add scope to client: {r.status_code} - {r.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"DEBUG: Error adding scope to client: {e}")
+
+
+    def _get_clients(self, realm_name: str, token: str) -> list[dict]:
+        """Get all clients in a realm."""
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/clients"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            return r.json()
+        except requests.exceptions.RequestException:
+            return []
+
+
+    def create_realm(self, realm_name: str, admin_email: str, domain: str, features: dict | None = None):
+        print(f"DEBUG: Creating realm '{realm_name}' for admin '{admin_email}' with domain '{domain}'")
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms"
+
+        # Prepare client scopes and default scopes
+        client_scopes = [
+            {
+                "name": "acr",
+                "description": "OpenID Connect scope for add acr (authentication context class reference) to the token",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "false",
+                    "display.on.consent.screen": "false"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "acr loa level",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-acr-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "id.token.claim": "true",
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true",
+                            "userinfo.token.claim": "true"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "address",
+                "description": "OpenID Connect built-in scope: address",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "true",
+                    "display.on.consent.screen": "true",
+                    "consent.screen.text": "${addressScopeConsentText}"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "address",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-address-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.attribute.formatted": "formatted",
+                            "user.attribute.country": "country",
+                            "user.attribute.postal_code": "postal_code",
+                            "userinfo.token.claim": "true",
+                            "user.attribute.street": "street",
+                            "id.token.claim": "true",
+                            "user.attribute.region": "region",
+                            "access.token.claim": "true",
+                            "user.attribute.locality": "locality"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "basic",
+                "description": "OpenID Connect scope for add all basic claims to the token",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "false",
+                    "display.on.consent.screen": "false"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "sub",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-sub-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true"
+                        }
+                    },
+                    {
+                        "name": "auth_time",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usersessionmodel-note-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.session.note": "AUTH_TIME",
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "auth_time",
+                            "jsonType.label": "long"
+                        }
+                    },
+                    {
+                        "name": "session id",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usersessionmodel-note-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.session.note": "nosession",
+                            "introspection.token.claim": "true",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "sid",
+                            "jsonType.label": "String"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "email",
+                "description": "OpenID Connect built-in scope: email",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "true",
+                    "display.on.consent.screen": "true",
+                    "consent.screen.text": "${emailScopeConsentText}"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "email",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-property-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.attribute": "email",
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "email",
+                            "jsonType.label": "String"
+                        }
+                    },
+                    {
+                        "name": "email verified",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-property-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.attribute": "emailVerified",
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "email_verified",
+                            "jsonType.label": "boolean"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "microprofile-jwt",
+                "description": "Microprofile - JWT built-in scope",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "true",
+                    "display.on.consent.screen": "false"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "groups",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-realm-role-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "multivalued": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "foo",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "groups",
+                            "jsonType.label": "String"
+                        }
+                    },
+                    {
+                        "name": "upn",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "username",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "upn",
+                            "jsonType.label": "String"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "offline_access",
+                "description": "OpenID Connect built-in scope: offline_access",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "false",
+                    "display.on.consent.screen": "true",
+                    "consent.screen.text": "${offlineAccessScopeConsentText}"
+                }
+            },
+            {
+                "name": "organization",
+                "description": "Additional claims about the organization a subject belongs to",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "true",
+                    "display.on.consent.screen": "false"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "organization",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-organization-membership-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "multivalued": "true",
+                            "userinfo.token.claim": "true",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "organization",
+                            "jsonType.label": "String"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "phone",
+                "description": "OpenID Connect built-in scope: phone",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "true",
+                    "display.on.consent.screen": "true",
+                    "consent.screen.text": "${phoneScopeConsentText}"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "phone number",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "phoneNumber",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "phone_number",
+                            "jsonType.label": "String"
+                        }
+                    },
+                    {
+                        "name": "phone number verified",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "phoneNumberVerified",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "phone_number_verified",
+                            "jsonType.label": "boolean"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "profile",
+                "description": "OpenID Connect built-in scope: profile",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "true",
+                    "display.on.consent.screen": "true",
+                    "consent.screen.text": "${profileScopeConsentText}"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "full name",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-full-name-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "id.token.claim": "true",
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true",
+                            "userinfo.token.claim": "true"
+                        }
+                    },
+                    {
+                        "name": "username",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "username",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "preferred_username",
+                            "jsonType.label": "String"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-property-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.attribute": "email",
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "email",
+                            "jsonType.label": "String"
+                        }
+                    },
+                    {
+                        "name": "given name",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "firstName",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "given_name",
+                            "jsonType.label": "String"
+                        }
+                    },
+                    {
+                        "name": "family name",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-attribute-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "userinfo.token.claim": "true",
+                            "user.attribute": "lastName",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "family_name",
+                            "jsonType.label": "String"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "role_list",
+                "description": "SAML role list",
+                "protocol": "saml",
+                "attributes": {
+                    "consent.screen.text": "${samlRoleListScopeConsentText}",
+                    "display.on.consent.screen": "true"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "role list",
+                        "protocol": "saml",
+                        "protocolMapper": "saml-role-list-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "single": "false",
+                            "attribute.nameformat": "Basic",
+                            "attribute.name": "Role"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "roles",
+                "description": "OpenID Connect scope for add user roles to the access token",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "false",
+                    "consent.screen.text": "${rolesScopeConsentText}",
+                    "display.on.consent.screen": "true"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "client roles",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-client-role-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.attribute": "foo",
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "resource_access.${client_id}.roles",
+                            "jsonType.label": "String",
+                            "multivalued": "true"
+                        }
+                    },
+                    {
+                        "name": "realm roles",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-usermodel-realm-role-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "user.attribute": "foo",
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true",
+                            "claim.name": "realm_access.roles",
+                            "jsonType.label": "String",
+                            "multivalued": "true"
+                        }
+                    },
+                    {
+                        "name": "audience resolve",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-audience-resolve-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "web-origins",
+                "description": "OpenID Connect scope for add allowed web origins to the access token",
+                "protocol": "openid-connect",
+                "attributes": {
+                    "include.in.token.scope": "false",
+                    "consent.screen.text": "",
+                    "display.on.consent.screen": "false"
+                },
+                "protocolMappers": [
+                    {
+                        "name": "allowed web origins",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-allowed-origins-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "introspection.token.claim": "true",
+                            "access.token.claim": "true"
+                        }
+                    }
+                ]
+            }
+        ]
+
+        default_default_client_scopes = [
+            "role_list", "profile", "email", "roles", "web-origins", "acr"
+        ]
+
+        if features:
+            mappers = []
+            for feature_name, feature_value in features.items():
+                if isinstance(feature_value, bool):
+                    mappers.append({
+                        "name": f"feature-{feature_name}",
+                        "protocol": "openid-connect",
+                        "protocolMapper": "oidc-hardcoded-claim-mapper",
+                        "consentRequired": False,
+                        "config": {
+                            "claim.name": f"features.{feature_name}",
+                            "claim.value": str(feature_value).lower(),
+                            "jsonType.label": "boolean",
+                            "id.token.claim": "true",
+                            "access.token.claim": "true",
+                            "userinfo.token.claim": "true"
+                        }
+                    })
+            
+            if mappers:
+                scope_name = "realm-feature-flags"
+                client_scopes.append({
+                    "name": scope_name,
+                    "description": "Feature flags for the realm",
+                    "protocol": "openid-connect",
+                    "attributes": {
+                        "include.in.token.scope": "true",
+                        "display.on.consent.screen": "false"
+                    },
+                    "protocolMappers": mappers
+                })
+                default_default_client_scopes.append(scope_name)
+
+        payload = {
+            "realm": realm_name,
+            "enabled": True,
+            "sslRequired": "NONE",
+            "loginTheme": "keycloakify-starter",
+            "displayName": realm_name,
+            "clientScopes": client_scopes,
+            "defaultDefaultClientScopes": default_default_client_scopes,
+            "roles": {
+                "realm": [
+                    {
+                        "name": "ORG_MANAGER",
+                        "description": "Custom administrator role for the organization"
+                    },
+                    {
+                        "name": "CONTENT_MANAGER",
+                        "description": "Custom role for read-only access"
+                    },
+                    {
+                        "name": "DEFAULT_USER",
+                        "description": "Custom role for read-only access"
+                    }
+                ]
+            },
+            "clients": [
+                {
+                    "clientId": "react-app",
+                    "enabled": True,
+                    "publicClient": True,
+                    "redirectUris": ["http://localhost:5173/*"],
+                    "webOrigins": ["http://localhost:5173"],
+                    "standardFlowEnabled": True,
+                    "directAccessGrantsEnabled": True
+                },
+                {
+                    "clientId": "api",
+                    "enabled": True,
+                    "publicClient": False,
+                    "redirectUris": ["http://localhost:8000/*"],
+                    "webOrigins": ["http://localhost:8000"],
+                    "implicitFlowEnabled": False,
+                    "directAccessGrantsEnabled": True,
+                    "serviceAccountsEnabled": True,
+                    "authorizationServicesEnabled": True,
+                }
+            ],
+            "users": [
+                {
+                    "username": "Org_manager",
+                    "enabled": True,
+                    "firstName": "Org",
+                    "lastName": "Manager",
+                    "email": admin_email, 
+                    "credentials": [
+                        {
+                            "type": "password",
+                            "value": "1234",
+                            "temporary": True
+                        }
+                    ],
+                    "realmRoles": [
+                        "ORG_MANAGER"
+                    ]
+                },
+                {
+                    "username": "User",
+                    "enabled": True,
+                    "firstName": "nome",
+                    "lastName": "sobrenome",
+                    "email": "user@user.com", 
+                    "credentials": [
+                        {
+                            "type": "password",
+                            "value": "1234",
+                            "temporary": True
+                        }
+                    ],
+                    "realmRoles": [
+                        "DEFAULT_USER"
+                    ]
+                }
+            ]
+        }
+
+        r = requests.post(url, headers={
+                                        "Content-Type": "application/json", 
+                                        "Authorization": "Bearer {}".format(token)
+                                    },
+        json=payload)             
+        print(f"DEBUG: Keycloak create realm response: {r.status_code} - {r.text}")
         
         return r

@@ -4,6 +4,9 @@ import { TimelineLegend } from "./TimelineLegend";
 import { TimelineGrid } from "./TimelineGrid";
 import type { WeekRange } from "./TimelineHeader";
 
+// View period type
+export type ViewPeriod = "week" | "month" | "year";
+
 // Minimal interface for timeline - compatible with various Campaign types
 export interface TimelineCampaign {
     id: string;
@@ -23,19 +26,15 @@ function getWeeksInMonth(year: number, month: number): WeekRange[] {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
-    // Start from the first day of the month
     let currentDate = new Date(firstDay);
     let weekNumber = 1;
 
     while (currentDate <= lastDay) {
         const weekStart = new Date(currentDate);
-
-        // Find end of week (Saturday) or end of month
         const weekEnd = new Date(currentDate);
         const daysUntilSaturday = 6 - weekEnd.getDay();
         weekEnd.setDate(weekEnd.getDate() + daysUntilSaturday);
 
-        // Clamp to end of month
         if (weekEnd > lastDay) {
             weekEnd.setTime(lastDay.getTime());
         }
@@ -51,7 +50,6 @@ function getWeeksInMonth(year: number, month: number): WeekRange[] {
             dateRange: `${formatDay(weekStart).split(" ")[1]}-${formatDay(weekEnd).split(" ")[1]}`,
         });
 
-        // Move to next week (Sunday)
         currentDate = new Date(weekEnd);
         currentDate.setDate(currentDate.getDate() + 1);
         weekNumber++;
@@ -60,68 +58,166 @@ function getWeeksInMonth(year: number, month: number): WeekRange[] {
     return weeks;
 }
 
+function getMonthsInYear(year: number): WeekRange[] {
+    const months: WeekRange[] = [];
+
+    for (let month = 0; month < 12; month++) {
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+        months.push({
+            weekNumber: month + 1,
+            startDate: monthStart,
+            endDate: monthEnd,
+            label: monthStart.toLocaleDateString("en-US", { month: "short" }),
+            dateRange: "",
+        });
+    }
+
+    return months;
+}
+
+function getDaysInWeek(date: Date): WeekRange[] {
+    const days: WeekRange[] = [];
+    const dayOfWeek = date.getDay();
+    const firstDay = new Date(date);
+    firstDay.setDate(date.getDate() - dayOfWeek);
+
+    for (let i = 0; i < 7; i++) {
+        const day = new Date(firstDay);
+        day.setDate(firstDay.getDate() + i);
+
+        days.push({
+            weekNumber: i + 1,
+            startDate: new Date(day),
+            endDate: new Date(day.setHours(23, 59, 59, 999)),
+            label: day.toLocaleDateString("en-US", { weekday: "short" }),
+            dateRange: day.toLocaleDateString("en-US", { day: "numeric" }),
+        });
+    }
+
+    return days;
+}
+
 export const TimelineView = memo(function TimelineView({
     campaigns,
 }: TimelineViewProps) {
     const [currentDate, setCurrentDate] = useState(() => new Date());
+    const [viewPeriod, setViewPeriod] = useState<ViewPeriod>("month");
 
-    const { weeks, monthStart, monthEnd, monthLabel } = useMemo(() => {
+    const { weeks, periodStart, periodEnd, periodLabel } = useMemo(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        return {
-            weeks: getWeeksInMonth(year, month),
-            monthStart: new Date(year, month, 1),
-            monthEnd: new Date(year, month + 1, 0, 23, 59, 59, 999),
-            monthLabel: currentDate.toLocaleDateString("en-US", {
-                month: "long",
-                year: "numeric",
-            }),
-        };
-    }, [currentDate]);
+        if (viewPeriod === "week") {
+            const dayOfWeek = currentDate.getDay();
+            const weekStart = new Date(currentDate);
+            weekStart.setDate(currentDate.getDate() - dayOfWeek);
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
 
-    const navigateMonth = (direction: -1 | 1) => {
+            return {
+                weeks: getDaysInWeek(currentDate),
+                periodStart: weekStart,
+                periodEnd: weekEnd,
+                periodLabel: `${weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${weekEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
+            };
+        } else if (viewPeriod === "year") {
+            return {
+                weeks: getMonthsInYear(year),
+                periodStart: new Date(year, 0, 1),
+                periodEnd: new Date(year, 11, 31, 23, 59, 59, 999),
+                periodLabel: `${year}`,
+            };
+        } else {
+            return {
+                weeks: getWeeksInMonth(year, month),
+                periodStart: new Date(year, month, 1),
+                periodEnd: new Date(year, month + 1, 0, 23, 59, 59, 999),
+                periodLabel: currentDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                }),
+            };
+        }
+    }, [currentDate, viewPeriod]);
+
+    const navigatePeriod = (direction: -1 | 1) => {
         setCurrentDate((prev) => {
             const next = new Date(prev);
-            next.setMonth(next.getMonth() + direction);
+            if (viewPeriod === "week") {
+                next.setDate(next.getDate() + direction * 7);
+            } else if (viewPeriod === "year") {
+                next.setFullYear(next.getFullYear() + direction);
+            } else {
+                next.setMonth(next.getMonth() + direction);
+            }
             return next;
         });
     };
 
     return (
-        <div className="flex flex-col flex-1 min-h-0">
+        <div className="h-full flex flex-col flex-1 min-h-0">
             {/* Controls Row */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="h-[7%] flex items-center justify-between mb-4">
                 {/* Month Navigation */}
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => navigateMonth(-1)}
-                        className="p-2 rounded-lg hover:bg-slate-100/80 transition-colors"
+                        onClick={() => navigatePeriod(-1)}
+                        className="p-2 rounded-lg hover:bg-slate-100/80 transition-colors cursor-pointer"
                     >
                         <ChevronLeft size={20} className="text-slate-500" />
                     </button>
-                    <span className="text-[15px] font-semibold text-slate-700 min-w-[140px] text-center">
-                        {monthLabel}
+                    <span className="text-[15px] font-semibold text-slate-700 min-w-[180px] text-center">
+                        {periodLabel}
                     </span>
                     <button
-                        onClick={() => navigateMonth(1)}
-                        className="p-2 rounded-lg hover:bg-slate-100/80 transition-colors"
+                        onClick={() => navigatePeriod(1)}
+                        className="p-2 rounded-lg hover:bg-slate-100/80 transition-colors cursor-pointer"
                     >
                         <ChevronRight size={20} className="text-slate-500" />
                     </button>
                 </div>
 
-                {/* Legend */}
-                <TimelineLegend />
+                {/* View Period Toggle */}
+                <div className="flex items-center gap-4">
+                    <div
+                        className="inline-flex rounded-xl p-1 shadow-lg shadow-slate-200/30"
+                        style={{
+                            background: "rgba(255, 255, 255, 0.27)",
+                            backdropFilter: "blur(24px)",
+                            WebkitBackdropFilter: "blur(24px)",
+                            border: "1px solid rgba(77, 76, 76, 0.06)",
+                        }}
+                    >
+                        {(["week", "month", "year"] as ViewPeriod[]).map((period) => (
+                            <button
+                                key={period}
+                                onClick={() => setViewPeriod(period)}
+                                className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer capitalize ${viewPeriod === period
+                                    ? "bg-white shadow-md text-purple-600"
+                                    : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                                    }`}
+                            >
+                                {period}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Legend */}
+                    <TimelineLegend />
+                </div>
             </div>
 
             {/* Timeline Grid - Full Height */}
-            <div className="flex-1 min-h-0">
+            <div className="h-[93%] flex-1 min-h-0">
                 <TimelineGrid
                     campaigns={campaigns}
                     weeks={weeks}
-                    monthStart={monthStart}
-                    monthEnd={monthEnd}
+                    monthStart={periodStart}
+                    monthEnd={periodEnd}
                 />
             </div>
         </div>
