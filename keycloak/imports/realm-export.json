@@ -29,7 +29,7 @@
     "oauth2DeviceCodeLifespan": 600,
     "oauth2DevicePollingInterval": 5,
     "enabled": true,
-    "sslRequired": "external",
+    "sslRequired": "NONE",
     "registrationAllowed": false,
     "registrationEmailAsUsername": false,
     "rememberMe": false,
@@ -3045,6 +3045,7 @@
     "id": "platform",
     "realm": "platform",
     "enabled": true,
+    "sslRequired": "NONE",
     "loginTheme": "keycloakify-starter",
     "users": [
       {

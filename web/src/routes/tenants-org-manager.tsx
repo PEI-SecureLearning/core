@@ -467,14 +467,14 @@ function TenantOrgManager() {
       <div className="liquid-blob liquid-blob-3"></div>
 
       {/* Header */}
-      <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-4 px-6 animate-slide-down">
+      <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-4 px-6">
         <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">Tenant Manager</h1>
         <p className="text-sm text-gray-600">You are limited to your tenant realm as determined by your Keycloak domain.</p>
       </div>
 
       {/* Main content */}
       <div className="flex-1 min-h-0 overflow-hidden p-6 purple-scrollbar overflow-y-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up" style={{ animationDelay: '0.05s' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="liquid-glass-card p-5">
             <UsersList
               realm={tokenRealm || realm || ""}
@@ -484,7 +484,7 @@ function TenantOrgManager() {
               onDelete={handleDeleteUser}
             />
           </div>
-          <div className="liquid-glass-card p-5 animate-slide-left" style={{ animationDelay: '0.1s' }}>
+          <div className="liquid-glass-card p-5">
             <AddUserForm
               realm={tokenRealm || realm || ""}
               groups={groups}
@@ -500,7 +500,7 @@ function TenantOrgManager() {
           </div>
         </div>
 
-        <div className="mt-6 liquid-glass-card p-5 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+        <div className="mt-6 liquid-glass-card p-5">
           <BulkUserImport
             bulkUsers={bulkUsers}
             isBulkLoading={isBulkLoading}
@@ -510,7 +510,7 @@ function TenantOrgManager() {
         </div>
 
         {status && (
-          <div className="mt-6 liquid-glass-card px-4 py-3 text-sm text-gray-700 animate-scale-in">
+          <div className="mt-6 liquid-glass-card px-4 py-3 text-sm text-gray-700">
             <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
             {status}
           </div>
