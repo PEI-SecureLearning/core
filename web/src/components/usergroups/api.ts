@@ -36,6 +36,40 @@ export async function fetchUsers(realm: string, token?: string) {
   }>;
 }
 
+export async function createUser(
+  realm: string,
+  username: string,
+  name: string,
+  email: string,
+  role: string,
+  groupId: string | null,
+  token?: string
+) {
+  const res = await fetch(`${API_BASE}/realms/users`, {
+    method: "POST",
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      realm,
+      username,
+      name,
+      email,
+      role,
+      group_id: groupId,
+    }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<{
+    realm: string;
+    username: string;
+    status: string;
+    temporary_password: string;
+  }>;
+}
+
+
 export async function addUserToGroup(realm: string, groupId: string, userId: string, token?: string) {
   const res = await fetch(
     `${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(

@@ -46,11 +46,54 @@ class Admin():
 
     def get_events(self, max_results: int = 100) -> list[dict]:
         """
-        Fetch events from all tenant realms (excluding master and platform).
+        Fetch events from all tenant realms and the master realm.
         Combines admin events and login events.
+        Master realm admin events capture realm creation/deletion.
         """
         token = self._get_admin_token()
         all_events = []
+        
+        # First, fetch admin events from master realm (realm creation, deletion, etc.)
+        master_admin_url = f"{self.keycloak_url}/admin/realms/master/admin-events"
+        try:
+            r = requests.get(
+                master_admin_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                params={"max": max_results // 3}
+            )
+            if r.status_code == 200:
+                events = r.json()
+                for event in events:
+                    resource_type = event.get("resourceType", "")
+                    operation = event.get("operationType", "Unknown")
+                    
+                    # Determine log level based on operation type
+                    level = "info"
+                    if operation == "CREATE":
+                        level = "success"
+                    elif operation == "DELETE":
+                        level = "warning"
+                    elif "ERROR" in operation:
+                        level = "error"
+                    
+                    # Extract realm name from resourcePath if available
+                    resource_path = event.get("resourcePath", "")
+                    
+                    all_events.append({
+                        "id": event.get("id", f"master-{event.get('time', '')}"),
+                        "timestamp": event.get("time"),
+                        "level": level,
+                        "message": f"{operation} on {resource_type}" + (f" ({resource_path})" if resource_path else ""),
+                        "source": "Platform Admin",
+                        "user": event.get("authDetails", {}).get("username", "System"),
+                        "realm": "master",
+                        "details": event.get("representation", ""),
+                    })
+        except requests.exceptions.RequestException:
+            pass
         
         # Get all tenant realms
         realms = self.list_realms(exclude_system=True)
@@ -69,7 +112,7 @@ class Admin():
                         "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json",
                     },
-                    params={"max": max_results // 2}
+                    params={"max": max_results // 3}
                 )
                 if r.status_code == 200:
                     events = r.json()
@@ -96,7 +139,7 @@ class Admin():
                         "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json",
                     },
-                    params={"max": max_results // 2}
+                    params={"max": max_results // 3}
                 )
                 if r.status_code == 200:
                     events = r.json()
@@ -111,7 +154,7 @@ class Admin():
                             level = "success"
                         
                         all_events.append({
-                            "id": event.get("id", f"{realm_name}-{event.get('time', '')}"),
+                            "id": event.get("id", f"{realm_name}-{event.get('time', '')}-login"),
                             "timestamp": event.get("time"),
                             "level": level,
                             "message": event_type.replace("_", " ").title(),
@@ -1154,6 +1197,40 @@ class Admin():
             "clientScopes": client_scopes,
             "defaultDefaultClientScopes": default_default_client_scopes,
             "attributes": attributes,
+            # Enable event logging
+            "eventsEnabled": True,
+            "eventsListeners": ["jboss-logging"],
+            "enabledEventTypes": [
+                "LOGIN", "LOGIN_ERROR", "LOGOUT", "LOGOUT_ERROR",
+                "REGISTER", "REGISTER_ERROR",
+                "CODE_TO_TOKEN", "CODE_TO_TOKEN_ERROR",
+                "CLIENT_LOGIN", "CLIENT_LOGIN_ERROR",
+                "REFRESH_TOKEN", "REFRESH_TOKEN_ERROR",
+                "INTROSPECT_TOKEN", "INTROSPECT_TOKEN_ERROR",
+                "FEDERATED_IDENTITY_LINK", "FEDERATED_IDENTITY_LINK_ERROR",
+                "REMOVE_FEDERATED_IDENTITY", "REMOVE_FEDERATED_IDENTITY_ERROR",
+                "UPDATE_EMAIL", "UPDATE_EMAIL_ERROR",
+                "UPDATE_PROFILE", "UPDATE_PROFILE_ERROR",
+                "UPDATE_PASSWORD", "UPDATE_PASSWORD_ERROR",
+                "UPDATE_TOTP", "UPDATE_TOTP_ERROR",
+                "VERIFY_EMAIL", "VERIFY_EMAIL_ERROR",
+                "VERIFY_PROFILE", "VERIFY_PROFILE_ERROR",
+                "REMOVE_TOTP", "REMOVE_TOTP_ERROR",
+                "GRANT_CONSENT", "GRANT_CONSENT_ERROR",
+                "UPDATE_CONSENT", "UPDATE_CONSENT_ERROR",
+                "REVOKE_GRANT", "REVOKE_GRANT_ERROR",
+                "SEND_VERIFY_EMAIL", "SEND_VERIFY_EMAIL_ERROR",
+                "SEND_RESET_PASSWORD", "SEND_RESET_PASSWORD_ERROR",
+                "RESET_PASSWORD", "RESET_PASSWORD_ERROR",
+                "CUSTOM_REQUIRED_ACTION", "CUSTOM_REQUIRED_ACTION_ERROR",
+                "EXECUTE_ACTIONS", "EXECUTE_ACTIONS_ERROR",
+                "CLIENT_REGISTER", "CLIENT_REGISTER_ERROR",
+                "CLIENT_UPDATE", "CLIENT_UPDATE_ERROR",
+                "CLIENT_DELETE", "CLIENT_DELETE_ERROR"
+            ],
+            "eventsExpiration": 604800,  # 7 days in seconds
+            "adminEventsEnabled": True,
+            "adminEventsDetailsEnabled": True,
             "roles": {
                 "realm": [
                     {
