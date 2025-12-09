@@ -1,96 +1,122 @@
 import datetime
 import math
 from fastapi import HTTPException
-from sqlmodel import Session, col, func, select
+from sqlmodel import Session, select
 
-from src.models.campaign import MIN_INTERVAL, Campaign, CampaignCreate
-from src.models.email_sending import EmailSending, EmailSendingStatus
-from src.models.email_template import EmailTemplate
-from src.models.landing_page_template import LandingPageTemplate
-from src.models.sending_profile import SendingProfile
-from src.models.user import User
-from src.models.user_group import UserGroup
+from models.campaign import MIN_INTERVAL, Campaign, CampaignCreate, CampaignInfo
+from models.email_sending import EmailSending
+from models.email_template import EmailTemplate
+from models.landing_page_template import LandingPageTemplate
+from models.sending_profile import SendingProfile
+from models.user import User
+from services.realm import list_group_members_in_realm
 
 
 class CampaignService:
     """Service class for managing campaigns."""
 
-    def create_campaign(self, campaign: CampaignCreate, session: Session) -> Campaign:
+    def create_campaign(
+        self, campaign: CampaignCreate, current_realm: str, session: Session
+    ) -> Campaign:
         """Create a new campaign with scheduled email sendings."""
         self._validate_campaign(campaign, session)
 
-        # Collect unique user IDs from all user groups
-        user_ids = {
-            uid
-            for ug_id in campaign.user_group_ids
-            for uid in self._get_userids_in_group(ug_id)
-        }
+        users = self._collect_users_from_groups(campaign.user_group_ids, current_realm)
+        interval = self._calculate_interval(campaign, len(users))
 
-        # Adjust sending interval based on user count and campaign duration
-        total_seconds = (campaign.end_date - campaign.begin_date).total_seconds()
-        adjusted_interval = max(
-            campaign.sending_interval_seconds,
-            math.ceil(total_seconds / len(user_ids)) if user_ids else MIN_INTERVAL,
-            MIN_INTERVAL,
-        )
-
-        # Create and persist campaign
         new_campaign = Campaign(
             **campaign.model_dump(exclude={"user_group_ids"}),
-            sending_interval_seconds=adjusted_interval,
+            sending_interval_seconds=interval,
         )
         session.add(new_campaign)
-        session.flush()  # Get campaign ID without committing
+        session.flush()
 
-        # Create email sendings one by one
-        for i, user_id in enumerate(user_ids):
-            session.add(
-                EmailSending(
-                    user_id=user_id,
-                    campaign_id=new_campaign.id,
-                    scheduled_date=campaign.begin_date
-                    + datetime.timedelta(seconds=i * adjusted_interval),
-                )
-            )
+        self._create_email_sendings(session, new_campaign, users)
         session.commit()
 
         return new_campaign
 
-    def get_all_campaigns(self, session: Session) -> list[Campaign]:
-        """Fetch all campaigns."""
-        return list(session.exec(select(Campaign)).all())
+    def get_campaigns(self, current_realm: str, session: Session) -> list[CampaignInfo]:
+        """Fetch all campaigns for the current realm."""
+        campaigns = session.exec(
+            select(Campaign).where(Campaign.realm_name == current_realm)
+        ).all()
+        return [CampaignInfo.model_validate(c) for c in campaigns]
+
+    def get_campaign_by_id(
+        self, id: int, current_realm: str, session: Session
+    ) -> CampaignInfo | None:
+        """Fetch a campaign by ID for the current realm."""
+        campaign = session.exec(
+            select(Campaign).where(
+                Campaign.id == id, Campaign.realm_name == current_realm
+            )
+        ).first()
+        if campaign:
+            return CampaignInfo.model_validate(campaign)
+        return None
+
+    def _collect_users_from_groups(
+        self, group_ids: list[str], realm: str
+    ) -> dict[str, dict]:
+        """Collect unique users from multiple groups."""
+        users: dict[str, dict] = {}
+        for group_id in group_ids:
+            for member in list_group_members_in_realm(realm, group_id).get(
+                "members", []
+            ):
+                if (user_id := member.get("id")) and user_id not in users:
+                    users[user_id] = member
+        return users
+
+    def _calculate_interval(self, campaign: CampaignCreate, user_count: int) -> int:
+        """Calculate the sending interval based on campaign duration and user count."""
+        total_seconds = (campaign.end_date - campaign.begin_date).total_seconds()
+        return max(
+            campaign.sending_interval_seconds,
+            math.ceil(total_seconds / user_count) if user_count else MIN_INTERVAL,
+            MIN_INTERVAL,
+        )
+
+    def _create_email_sendings(
+        self,
+        session: Session,
+        campaign: Campaign,
+        users: dict[str, dict],
+    ) -> None:
+        """Create email sending records for all users."""
+
+        for i, (user_id, user_data) in enumerate(users.items()):
+            scheduled_date = campaign.begin_date + datetime.timedelta(
+                seconds=i * campaign.sending_interval_seconds
+            )
+            session.add(
+                EmailSending(
+                    user_id=user_id,
+                    campaign_id=campaign.id,
+                    scheduled_date=scheduled_date,
+                    email_to=user_data.get("email", ""),
+                )
+            )
 
     def _validate_campaign(self, campaign: CampaignCreate, session: Session) -> None:
         """Validate campaign data."""
-        if not session.get(User, campaign.creator_id):
-            raise HTTPException(status_code=400, detail="Invalid creator ID")
+        validations = [
+            (User, campaign.creator_id, "Invalid creator ID"),
+            (SendingProfile, campaign.sending_profile_id, "Invalid sending profile ID"),
+            (EmailTemplate, campaign.email_template_id, "Invalid email template ID"),
+            (
+                LandingPageTemplate,
+                campaign.landing_page_template_id,
+                "Invalid landing page template ID",
+            ),
+        ]
 
-        if not session.get(SendingProfile, campaign.sending_profile_id):
-            raise HTTPException(status_code=400, detail="Invalid sending profile ID")
-
-        if not session.get(EmailTemplate, campaign.email_template_id):
-            raise HTTPException(status_code=400, detail="Invalid email template ID")
-
-        if not session.get(LandingPageTemplate, campaign.landing_page_template_id):
-            raise HTTPException(
-                status_code=400, detail="Invalid landing page template ID"
-            )
-
-        user_group_count = session.exec(
-            select(func.count()).where(
-                col(UserGroup.keycloak_id).in_(campaign.user_group_ids)
-            )
-        ).one()
-        if user_group_count != len(campaign.user_group_ids):
-            raise HTTPException(status_code=400, detail="Invalid user group IDs")
+        for model, id_value, error_msg in validations:
+            if not session.get(model, id_value):
+                raise HTTPException(status_code=400, detail=error_msg)
 
         if campaign.sending_interval_seconds <= 0:
             raise HTTPException(
                 status_code=400, detail="Sending interval must be positive"
             )
-
-    def _get_userids_in_group(self, user_group_id: str) -> list[str]:
-        """Fetch user IDs in a user group (mock implementation)."""
-        # TODO: Replace with Keycloak API call
-        n = hash(user_group_id) % 10
-        return [f"user-{i}" for i in range(n * 10, (n + 1) * 10)]

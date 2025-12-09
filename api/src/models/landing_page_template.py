@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
-    from src.models.campaign import Campaign
+    from models.campaign import Campaign
 
 
 class LandingPageTemplate(SQLModel, table=True):

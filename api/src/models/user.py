@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
-    from src.models.campaign import Campaign
-    from src.models.email_sending import EmailSending
+    from models.campaign import Campaign
+    from models.email_sending import EmailSending
 
 
 class User(SQLModel, table=True):

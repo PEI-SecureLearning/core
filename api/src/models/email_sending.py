@@ -3,6 +3,8 @@ from typing import Optional
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 
+from src.utils import token
+
 
 class EmailSendingStatus(StrEnum):
     SCHEDULED = "scheduled"
@@ -18,6 +20,14 @@ class EmailSending(SQLModel, table=True):
     user_id: str = Field(foreign_key="user.keycloak_id")
     scheduled_date: datetime
     status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
+    email_to: str
+    tracking_token: str = Field(
+        default_factory=lambda: token.generate_tracking_token()
+    )  # You might want to generate a unique token here
+    sent_at: Optional[datetime] = Field(default=None)
+    opened_at: Optional[datetime] = Field(default=None)
+    clicked_at: Optional[datetime] = Field(default=None)
+    phished_at: Optional[datetime] = Field(default=None)
 
     campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")
 

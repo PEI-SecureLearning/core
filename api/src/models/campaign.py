@@ -45,6 +45,10 @@ class Campaign(SQLModel, table=True):
     )
     creator_id: Optional[str] = Field(default=None, foreign_key="user.keycloak_id")
 
+    realm_name: Optional[str] = Field(
+        default=None, foreign_key="realm.name", index=True
+    )
+
     # Relationships
 
     user_groups: list["UserGroup"] = Relationship(
@@ -65,6 +69,8 @@ class Campaign(SQLModel, table=True):
 
     creator: Optional["User"] = Relationship(back_populates="created_campaigns")
 
+    realm: Optional["Realm"] = Relationship(back_populates="campaigns")
+
 
 class CampaignCreate(SQLModel):
     name: str
@@ -77,3 +83,11 @@ class CampaignCreate(SQLModel):
     landing_page_template_id: int
     user_group_ids: list[str]
     creator_id: str
+
+
+class CampaignInfo(SQLModel):
+    id: int
+    name: str
+    begin_date: datetime
+    end_date: datetime
+    status: CampaignStatus

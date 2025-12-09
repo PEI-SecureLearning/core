@@ -1,10 +1,12 @@
+from typing import Optional
 from sqlmodel import SQLModel
 from sqlmodel import Field
 
+
 class Realm(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    name: str
+    name: Optional[str] = Field(default=None, primary_key=True, unique=True)
     domain: str
+
 
 class RealmCreate(SQLModel):
     name: str

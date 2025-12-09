@@ -65,8 +65,12 @@ def get_user_in_realm(realm: str, user_id: str, token: str = Depends(oauth_2_sch
     return realm_service.get_user_in_realm(realm, user_id)
 
 
-@router.delete("/realms/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user_in_realm(realm: str, user_id: str, token: str = Depends(oauth_2_scheme)):
+@router.delete(
+    "/realms/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_user_in_realm(
+    realm: str, user_id: str, token: str = Depends(oauth_2_scheme)
+):
     realm_service.validate_realm_access(token, realm)
     realm_service.delete_user_in_realm(realm, user_id)
     return None
@@ -79,13 +83,20 @@ def list_groups_in_realm(realm: str, token: str = Depends(oauth_2_scheme)):
 
 
 @router.post("/realms/{realm}/groups", status_code=status.HTTP_201_CREATED)
-def create_group_in_realm(realm: str, group: GroupCreateRequest, token: str = Depends(oauth_2_scheme)):
+def create_group_in_realm(
+    realm: str, group: GroupCreateRequest, token: str = Depends(oauth_2_scheme)
+):
     realm_service.validate_realm_access(token, realm)
     return realm_service.create_group_in_realm(realm, group.name)
 
 
-@router.post("/realms/{realm}/groups/{group_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def add_user_to_group(realm: str, group_id: str, user_id: str, token: str = Depends(oauth_2_scheme)):
+@router.post(
+    "/realms/{realm}/groups/{group_id}/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def add_user_to_group(
+    realm: str, group_id: str, user_id: str, token: str = Depends(oauth_2_scheme)
+):
     realm_service.validate_realm_access(token, realm)
     realm_service.add_user_to_group_in_realm(realm, user_id, group_id)
     return None
@@ -97,22 +108,36 @@ def list_group_members(realm: str, group_id: str, token: str = Depends(oauth_2_s
     return realm_service.list_group_members_in_realm(realm, group_id)
 
 
-@router.delete("/realms/{realm}/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_group_in_realm(realm: str, group_id: str, token: str = Depends(oauth_2_scheme)):
+@router.delete(
+    "/realms/{realm}/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_group_in_realm(
+    realm: str, group_id: str, token: str = Depends(oauth_2_scheme)
+):
     realm_service.validate_realm_access(token, realm)
     realm_service.delete_group_in_realm(realm, group_id)
     return None
 
 
 @router.put("/realms/{realm}/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_group_in_realm(realm: str, group_id: str, group: GroupCreateRequest, token: str = Depends(oauth_2_scheme)):
+def update_group_in_realm(
+    realm: str,
+    group_id: str,
+    group: GroupCreateRequest,
+    token: str = Depends(oauth_2_scheme),
+):
     realm_service.validate_realm_access(token, realm)
     realm_service.update_group_in_realm(realm, group_id, group.name)
     return None
 
 
-@router.delete("/realms/{realm}/groups/{group_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_user_from_group(realm: str, group_id: str, user_id: str, token: str = Depends(oauth_2_scheme)):
+@router.delete(
+    "/realms/{realm}/groups/{group_id}/members/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def remove_user_from_group(
+    realm: str, group_id: str, user_id: str, token: str = Depends(oauth_2_scheme)
+):
     realm_service.validate_realm_access(token, realm)
     realm_service.remove_user_from_group_in_realm(realm, user_id, group_id)
     return None
