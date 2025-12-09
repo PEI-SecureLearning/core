@@ -22,8 +22,10 @@ services:
 
       KC_HTTP_ENABLED: true
       KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
 
-    command: start --import-realm
+    command: start-dev --import-realm
 
     ports:
       - "8080:8080"

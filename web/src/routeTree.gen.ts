@@ -22,8 +22,9 @@ import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
 import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
 import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
+import { Route as CampaignsTimelineRouteImport } from './routes/campaigns/timeline'
 import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
-import { Route as CampaignsIdRouteImport } from './routes/campaigns/[id]'
+import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTermsRouteImport } from './routes/admin/terms'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
@@ -96,14 +97,19 @@ const UsergroupsIdRoute = UsergroupsIdRouteImport.update({
   path: '/usergroups/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CampaignsTimelineRoute = CampaignsTimelineRouteImport.update({
+  id: '/campaigns/timeline',
+  path: '/campaigns/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
   id: '/campaigns/new-campaign',
   path: '/campaigns/new-campaign',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsIdRoute = CampaignsIdRouteImport.update({
-  id: '/campaigns/id',
-  path: '/campaigns/id',
+  id: '/campaigns/$id',
+  path: '/campaigns/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -150,8 +156,9 @@ export interface FileRoutesByFullPath {
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/campaigns/id': typeof CampaignsIdRoute
+  '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/timeline': typeof CampaignsTimelineRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
@@ -173,8 +180,9 @@ export interface FileRoutesByTo {
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/campaigns/id': typeof CampaignsIdRoute
+  '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/timeline': typeof CampaignsTimelineRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
@@ -197,8 +205,9 @@ export interface FileRoutesById {
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/campaigns/id': typeof CampaignsIdRoute
+  '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/timeline': typeof CampaignsTimelineRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns/': typeof CampaignsIndexRoute
@@ -222,8 +231,9 @@ export interface FileRouteTypes {
     | '/admin/logs'
     | '/admin/terms'
     | '/admin/users'
-    | '/campaigns/id'
+    | '/campaigns/$id'
     | '/campaigns/new-campaign'
+    | '/campaigns/timeline'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
@@ -245,8 +255,9 @@ export interface FileRouteTypes {
     | '/admin/logs'
     | '/admin/terms'
     | '/admin/users'
-    | '/campaigns/id'
+    | '/campaigns/$id'
     | '/campaigns/new-campaign'
+    | '/campaigns/timeline'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
@@ -268,8 +279,9 @@ export interface FileRouteTypes {
     | '/admin/logs'
     | '/admin/terms'
     | '/admin/users'
-    | '/campaigns/id'
+    | '/campaigns/$id'
     | '/campaigns/new-campaign'
+    | '/campaigns/timeline'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns/'
@@ -291,6 +303,7 @@ export interface RootRouteChildren {
   TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
+  CampaignsTimelineRoute: typeof CampaignsTimelineRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
   UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsergroupsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/campaigns/timeline': {
+      id: '/campaigns/timeline'
+      path: '/campaigns/timeline'
+      fullPath: '/campaigns/timeline'
+      preLoaderRoute: typeof CampaignsTimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/new-campaign': {
       id: '/campaigns/new-campaign'
       path: '/campaigns/new-campaign'
@@ -397,10 +417,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsNewCampaignRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/campaigns/id': {
-      id: '/campaigns/id'
-      path: '/campaigns/id'
-      fullPath: '/campaigns/id'
+    '/campaigns/$id': {
+      id: '/campaigns/$id'
+      path: '/campaigns/$id'
+      fullPath: '/campaigns/$id'
       preLoaderRoute: typeof CampaignsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -481,6 +501,7 @@ const rootRouteChildren: RootRouteChildren = {
   TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
+  CampaignsTimelineRoute: CampaignsTimelineRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
   UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
