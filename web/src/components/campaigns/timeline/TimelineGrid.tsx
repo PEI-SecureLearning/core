@@ -32,7 +32,7 @@ export const TimelineGrid = memo(function TimelineGrid({
                 campaignColumnWidth={CAMPAIGN_COLUMN_WIDTH}
             />
 
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-100/60">
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100/60 purple-scrollbar">
                 {visibleCampaigns.length > 0 ? (
                     visibleCampaigns.map((campaign) => (
                         <TimelineRow

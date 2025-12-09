@@ -29,11 +29,7 @@
     "oauth2DeviceCodeLifespan": 600,
     "oauth2DevicePollingInterval": 5,
     "enabled": true,
-<<<<<<< HEAD
     "sslRequired": "NONE",
-=======
-    "sslRequired": "external",
->>>>>>> 25217bbded9ccf0f86e247426be8ed5c4ca8fec8
     "registrationAllowed": false,
     "registrationEmailAsUsername": false,
     "rememberMe": false,
