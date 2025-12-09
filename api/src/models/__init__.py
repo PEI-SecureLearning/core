@@ -10,6 +10,7 @@ from .email_template import EmailTemplate
 from .landing_page_template import LandingPageTemplate
 from .campaign import Campaign, CampaignCreate, CampaignStatus
 from .email_sending import EmailSending, EmailSendingCreate
+from .compliance import ComplianceAcceptance
 
 
 __all__ = [
@@ -38,4 +39,6 @@ __all__ = [
     # User Group
     "UserGroup",
     "CampaignUserGroupLink",
+    # Compliance
+    "ComplianceAcceptance",
 ]

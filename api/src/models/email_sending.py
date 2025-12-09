@@ -5,16 +5,19 @@ from datetime import datetime
 
 
 class EmailSendingStatus(StrEnum):
-    PENDING = "pending"
+    SCHEDULED = "scheduled"
     SENT = "sent"
+    OPENED = "opened"
+    CLICKED = "clicked"
+    PHISHED = "phished"
     FAILED = "failed"
 
 
 class EmailSending(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id")
+    user_id: str = Field(foreign_key="user.keycloak_id")
     scheduled_date: datetime
-    status: EmailSendingStatus
+    status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
 
     campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")
 
@@ -25,7 +28,7 @@ class EmailSending(SQLModel, table=True):
 
 
 class EmailSendingCreate(SQLModel):
-    user_id: int
+    user_id: str
     scheduled_date: datetime
     status: EmailSendingStatus
     campaign_id: int

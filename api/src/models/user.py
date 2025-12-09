@@ -7,8 +7,10 @@ if TYPE_CHECKING:
 
 
 class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    keycloak_id: str
+    keycloak_id: str = Field(primary_key=True)
+    email: str
+    dept: str
+    last_keycloak_sync: Optional[str] = None
 
     email_sendings: list["EmailSending"] = Relationship(back_populates="user")
 

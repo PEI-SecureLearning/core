@@ -14,6 +14,7 @@ from src.models import (
     EmailSending,
     CustomHeader,
     SendingProfile,
+    ComplianceAcceptance,
 )
 
 engine = create_engine(str(settings.PGSQL_DATABASE_URI))

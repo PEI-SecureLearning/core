@@ -43,7 +43,7 @@ class Campaign(SQLModel, table=True):
     landing_page_template_id: Optional[int] = Field(
         default=None, foreign_key="landingpagetemplate.id"
     )
-    creator_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    creator_id: Optional[str] = Field(default=None, foreign_key="user.keycloak_id")
 
     # Relationships
 
@@ -75,5 +75,5 @@ class CampaignCreate(SQLModel):
     sending_profile_id: int
     email_template_id: int
     landing_page_template_id: int
-    user_group_ids: list[int]
-    creator_id: int
+    user_group_ids: list[str]
+    creator_id: str
