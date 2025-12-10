@@ -16,6 +16,11 @@ class Settings(BaseSettings):
   POSTGRES_PASSWORD: str = ""
   POSTGRES_DB: str = ""
 
+  # MongoDB
+  MONGODB_URI: str = "mongodb://template_user:template_pass@mongo:27017/securelearning?authSource=securelearning"
+  MONGODB_DB: str = "securelearning"
+  MONGODB_COLLECTION_TEMPLATES: str = "templates"
+
   @computed_field
   @property
   def PGSQL_DATABASE_URI(self) -> PostgresDsn:
