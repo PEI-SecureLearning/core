@@ -1,51 +1,55 @@
+from enum import StrEnum
+from typing import Optional
+from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
-from typing import Optional, List
 
-from sqlmodel import Field, Relationship, SQLModel
+from src.utils import token
 
 
-class EmailSendingTemplateLink(SQLModel, table=True):
-    """Link table for EmailSending-EmailTemplate many-to-many relationship"""
-    __tablename__ = "email_sending_template_link"
-
-    email_sending_id: Optional[int] = Field(default=None, foreign_key="email_sending.id", primary_key=True)
-    email_template_id: Optional[int] = Field(default=None, foreign_key="email_template.id", primary_key=True)
+class EmailSendingStatus(StrEnum):
+    SCHEDULED = "scheduled"
+    SENT = "sent"
+    OPENED = "opened"
+    CLICKED = "clicked"
+    PHISHED = "phished"
+    FAILED = "failed"
 
 
 class EmailSending(SQLModel, table=True):
-    """Email sending schedule model"""
-    __tablename__ = "email_sending"
-
     id: Optional[int] = Field(default=None, primary_key=True)
-    profile: str  # Email profile to use
-    date: datetime
-    time: str  # Time of day for sending
-    args: Optional[str] = None  # Additional arguments as JSON
-    campaign_id: int = Field(foreign_key="campaign.id")
+    user_id: str = Field(foreign_key="user.keycloak_id")
+    scheduled_date: datetime
+    status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
+    email_to: str
+    tracking_token: str = Field(
+        default_factory=lambda: token.generate_tracking_token()
+    )  # You might want to generate a unique token here
+    sent_at: Optional[datetime] = Field(default=None)
+    opened_at: Optional[datetime] = Field(default=None)
+    clicked_at: Optional[datetime] = Field(default=None)
+    phished_at: Optional[datetime] = Field(default=None)
 
-    # Relationships
-    campaign: "Campaign" = Relationship(back_populates="schedules")
-    email_templates: List["EmailTemplate"] = Relationship(
-        back_populates="email_sendings",
-        link_model=EmailSendingTemplateLink
-    )
-    landing_pages: List["LandingPage"] = Relationship(back_populates="email_sending")
+    campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")
+
+    campaign: Optional["Campaign"] = Relationship(back_populates="email_sendings")
+    user: Optional["User"] = Relationship(
+        back_populates="email_sendings"
+    )  # Assuming a User model exists
 
 
 class EmailSendingCreate(SQLModel):
-    """Schema for creating an email sending"""
-    profile: str
-    date: datetime
-    time: str
-    args: Optional[str] = None
+    user_id: str
+    scheduled_date: datetime
+    status: EmailSendingStatus
     campaign_id: int
-    email_template_ids: List[int]
 
 
-class EmailSendingUpdate(SQLModel):
-    """Schema for updating an email sending"""
-    profile: Optional[str] = None
-    date: Optional[datetime] = None
-    time: Optional[str] = None
-    args: Optional[str] = None
-    email_template_ids: Optional[List[int]] = None
+class UserSendingInfo(SQLModel):
+    """Summary of a user's interaction with a campaign email."""
+    user_id: str
+    email: str
+    status: str
+    sent_at: Optional[datetime] = None
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    phished_at: Optional[datetime] = None

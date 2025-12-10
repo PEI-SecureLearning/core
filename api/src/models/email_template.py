@@ -1,30 +1,15 @@
-from typing import Optional, List
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import Field, SQLModel, Relationship
 
-from sqlmodel import Field, Relationship, SQLModel
-
-from .email_sending import EmailSendingTemplateLink
+if TYPE_CHECKING:
+    from models.campaign import Campaign
 
 
 class EmailTemplate(SQLModel, table=True):
-    """Email template model"""
-    __tablename__ = "email_template"
-
     id: Optional[int] = Field(default=None, primary_key=True)
-    content_id: int = Field(foreign_key="content.id")
+    name: str
+    subject: str
+    content_link: str
 
     # Relationships
-    content: "Content" = Relationship(back_populates="email_templates")
-    email_sendings: List["EmailSending"] = Relationship(
-        back_populates="email_templates",
-        link_model=EmailSendingTemplateLink
-    )
-
-
-class EmailTemplateCreate(SQLModel):
-    """Schema for creating an email template"""
-    content_id: int
-
-
-class EmailTemplateUpdate(SQLModel):
-    """Schema for updating an email template"""
-    content_id: Optional[int] = None
+    campaigns: list["Campaign"] = Relationship(back_populates="email_template")
