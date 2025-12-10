@@ -17,5 +17,5 @@ class EmailMessage(BaseModel):
     receiver_email: str
     subject: str
     template_path: str
-    tracking_id: Optional[str] = None
+    tracking_id: str = None
     arguments: dict[str, str] = {}
