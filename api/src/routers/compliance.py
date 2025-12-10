@@ -39,49 +39,84 @@ QUESTION_BANK: List[Question] = [
     Question(
         id="device-auth",
         prompt="Which control is mandatory for devices used for company work?",
-        options=["Guest Wi-Fi access", "Strong authentication (passwords/PIN/biometric)", "No lock screen", "Public hotspot auto-connect"],
+        options=[
+            "Guest Wi-Fi access",
+            "Strong authentication (passwords/PIN/biometric)",
+            "No lock screen",
+            "Public hotspot auto-connect",
+        ],
         answer_index=1,
         feedback="Devices must be protected with strong authentication (password, PIN, biometrics).",
     ),
     Question(
         id="vpn-public",
         prompt="When on public or untrusted networks, what is required?",
-        options=["Nothing special, public Wi‑Fi is fine", "Use a company-approved VPN at all times", "Disable the lock screen", "Share credentials over email"],
+        options=[
+            "Nothing special, public Wi‑Fi is fine",
+            "Use a company-approved VPN at all times",
+            "Disable the lock screen",
+            "Share credentials over email",
+        ],
         answer_index=1,
         feedback="Always use the company-approved VPN when on public/untrusted networks.",
     ),
     Question(
         id="auto-wifi",
         prompt="What should be disabled regarding Wi‑Fi on public hotspots?",
-        options=["Wi‑Fi entirely", "Automatic connection to known public hotspots", "VPN", "Antivirus updates"],
+        options=[
+            "Wi‑Fi entirely",
+            "Automatic connection to known public hotspots",
+            "VPN",
+            "Antivirus updates",
+        ],
         answer_index=1,
         feedback="Disable automatic connection to known public hotspots to avoid unsafe access.",
     ),
     Question(
         id="data-storage",
         prompt="Where is it forbidden to store company data?",
-        options=["Approved cloud platforms or VPN-protected servers", "Local folders on unapproved personal devices", "Company servers via VPN", "Authorized web portals"],
+        options=[
+            "Approved cloud platforms or VPN-protected servers",
+            "Local folders on unapproved personal devices",
+            "Company servers via VPN",
+            "Authorized web portals",
+        ],
         answer_index=1,
         feedback="Do not store company data on unapproved personal devices or local folders.",
     ),
     Question(
         id="personal-cloud",
         prompt="What is the rule about syncing company data to personal cloud accounts?",
-        options=["Allowed if password-protected", "Allowed with manager approval only", "Not allowed unless explicitly approved", "Always allowed"],
+        options=[
+            "Allowed if password-protected",
+            "Allowed with manager approval only",
+            "Not allowed unless explicitly approved",
+            "Always allowed",
+        ],
         answer_index=2,
         feedback="Syncing to personal cloud (e.g., Dropbox/iCloud) is not allowed without explicit approval.",
     ),
     Question(
         id="incident-report",
         prompt="What must you do if a device is lost or information is suspected compromised?",
-        options=["Wait 24 hours", "Report immediately to the Information Security team", "Try to fix it yourself", "Ignore unless confirmed breach"],
+        options=[
+            "Wait 24 hours",
+            "Report immediately to the Information Security team",
+            "Try to fix it yourself",
+            "Ignore unless confirmed breach",
+        ],
         answer_index=1,
         feedback="Incidents must be reported immediately to the Information Security team.",
     ),
     Question(
         id="screen-visibility",
         prompt="What is required for a secure workspace setup at home?",
-        options=["Screens visible to family/guests", "Use open/public Wi‑Fi", "Screens not visible to unauthorized people", "Disable VPN"],
+        options=[
+            "Screens visible to family/guests",
+            "Use open/public Wi‑Fi",
+            "Screens not visible to unauthorized people",
+            "Disable VPN",
+        ],
         answer_index=2,
         feedback="Maintain a dedicated workspace where screens are not visible to unauthorized people.",
     ),
@@ -149,7 +184,9 @@ class ComplianceStatusResponse(BaseModel):
 def _read_compliance_content() -> str:
     # Primary: packaged resource (works in production builds)
     try:
-        with resources.files(RESOURCE_PACKAGE).joinpath(RESOURCE_NAME).open("r", encoding="utf-8") as f:
+        with resources.files(RESOURCE_PACKAGE).joinpath(RESOURCE_NAME).open(
+            "r", encoding="utf-8"
+        ) as f:
             content = f.read()
             if content:
                 return content
@@ -163,7 +200,9 @@ def _read_compliance_content() -> str:
         if content:
             return content
 
-    raise HTTPException(status_code=500, detail="Compliance document not found or empty.")
+    raise HTTPException(
+        status_code=500, detail="Compliance document not found or empty."
+    )
 
 
 def _compute_version(content: str) -> str:
@@ -179,13 +218,22 @@ def _extract_title(content: str) -> str:
 
 def _get_user_and_tenant(token: str) -> Tuple[str, str | None]:
     try:
-        claims = jwt.decode(token, options={"verify_signature": False, "verify_aud": False})
+        claims = jwt.decode(
+            token, options={"verify_signature": False, "verify_aud": False}
+        )
     except Exception as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token") from exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        ) from exc
 
-    user_identifier = claims.get("preferred_username") or claims.get("email") or claims.get("sub")
+    user_identifier = (
+        claims.get("preferred_username") or claims.get("email") or claims.get("sub")
+    )
     if not user_identifier:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unable to resolve user identifier from token")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to resolve user identifier from token",
+        )
 
     iss = claims.get("iss")
     tenant = None
@@ -212,7 +260,9 @@ def get_latest_compliance():
         )
     except FileNotFoundError:
         try:
-            fallback_path = Path(__file__).resolve().parents[1] / "resources" / RESOURCE_NAME
+            fallback_path = (
+                Path(__file__).resolve().parents[1] / "resources" / RESOURCE_NAME
+            )
             updated_at = datetime.utcfromtimestamp(fallback_path.stat().st_mtime)
         except FileNotFoundError:
             updated_at = datetime.utcnow()
@@ -236,7 +286,10 @@ def get_latest_quiz():
         required_score=PASSING_SCORE,
         question_count=len(selected),
         cooldown_seconds=COOLDOWN_SECONDS,
-        questions=[QuizQuestionResponse(id=q.id, prompt=q.prompt, options=q.options) for q in selected],
+        questions=[
+            QuizQuestionResponse(id=q.id, prompt=q.prompt, options=q.options)
+            for q in selected
+        ],
     )
 
 
@@ -245,7 +298,10 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
     content = _read_compliance_content()
     version = _compute_version(content)
     if payload.version != version:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Outdated compliance version. Refresh and retry.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Outdated compliance version. Refresh and retry.",
+        )
 
     user_id, _ = _get_user_and_tenant(token)
     cooldown_key = (user_id, version)
@@ -261,7 +317,10 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
 
     question_map = {q.id: q for q in QUESTION_BANK}
     if len(payload.answers) < min(QUESTION_COUNT, len(QUESTION_BANK)):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough answers provided.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough answers provided.",
+        )
 
     correct = 0
     feedback: List[QuestionFeedback] = []
@@ -270,15 +329,23 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
     for ans in payload.answers:
         question = question_map.get(ans.id)
         if not question:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Unknown question id: {ans.id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown question id: {ans.id}",
+            )
         if ans.id in evaluated_questions:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Duplicate answer for question id: {ans.id}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Duplicate answer for question id: {ans.id}",
+            )
         evaluated_questions.add(ans.id)
 
         is_correct = ans.choice == question.answer_index
         if is_correct:
             correct += 1
-        feedback.append(QuestionFeedback(id=ans.id, correct=is_correct, feedback=question.feedback))
+        feedback.append(
+            QuestionFeedback(id=ans.id, correct=is_correct, feedback=question.feedback)
+        )
 
     total = len(payload.answers)
     score = int((correct / total) * 100) if total else 0
@@ -324,14 +391,22 @@ def get_compliance_status(session: SessionDep, token: str = Depends(oauth_2_sche
 
 
 @router.post("/compliance/accept", status_code=status.HTTP_201_CREATED)
-def accept_compliance(payload: AcceptRequest, session: SessionDep, token: str = Depends(oauth_2_scheme)):
+def accept_compliance(
+    payload: AcceptRequest, session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
     content = _read_compliance_content()
     version = _compute_version(content)
     if payload.version != version:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Outdated compliance version. Refresh and retry.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Outdated compliance version. Refresh and retry.",
+        )
 
     if payload.score < PASSING_SCORE:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quiz must be passed before acceptance.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Quiz must be passed before acceptance.",
+        )
 
     user_id, tenant = _get_user_and_tenant(token)
 
@@ -359,4 +434,3 @@ def accept_compliance(payload: AcceptRequest, session: SessionDep, token: str = 
 
     session.commit()
     return {"status": "accepted", "version": version, "accepted_at": now}
-
