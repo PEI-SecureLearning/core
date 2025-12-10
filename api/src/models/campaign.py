@@ -50,7 +50,6 @@ class Campaign(SQLModel, table=True):
     landing_page_template_id: Optional[int] = Field(
         default=None, foreign_key="landingpagetemplate.id"
     )
-    creator_id: Optional[str] = Field(default=None, foreign_key="user.keycloak_id")
 
     realm_name: Optional[str] = Field(
         default=None, foreign_key="realm.name", index=True
@@ -74,8 +73,6 @@ class Campaign(SQLModel, table=True):
 
     email_sendings: list["EmailSending"] = Relationship(back_populates="campaign")
 
-    creator: Optional["User"] = Relationship(back_populates="created_campaigns")
-
     realm: Optional["Realm"] = Relationship(back_populates="campaigns")
 
 
@@ -89,7 +86,6 @@ class CampaignCreate(SQLModel):
     email_template_id: int
     landing_page_template_id: int
     user_group_ids: list[str]
-    creator_id: str
 
 
 class CampaignDisplayInfo(SQLModel):

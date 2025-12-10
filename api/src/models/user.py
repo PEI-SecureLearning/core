@@ -13,5 +13,3 @@ class User(SQLModel, table=True):
     last_keycloak_sync: Optional[str] = None
 
     email_sendings: list["EmailSending"] = Relationship(back_populates="user")
-
-    created_campaigns: list["Campaign"] = Relationship(back_populates="creator")
