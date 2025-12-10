@@ -5,8 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.routers import realm
 from src.routers import compliance
 from src.routers import org_manager
+from src.routers import campaign
+from src.routers import tracking
 from src.core.db import init_db
 from src.core.security import valid_resource_access
+from src.tasks import start_scheduler, shutdown_scheduler
 import csv
 import codecs
 
@@ -18,7 +21,9 @@ from typing import Annotated
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    start_scheduler()
     yield
+    shutdown_scheduler()
 
 
 app = FastAPI(
@@ -66,3 +71,5 @@ def upload(file: UploadFile = File(...)):
 app.include_router(realm.router, prefix="/api", tags=["realms"])
 app.include_router(compliance.router, prefix="/api", tags=["compliance"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
+app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
+app.include_router(tracking.router, prefix="/api", tags=["tracking"])

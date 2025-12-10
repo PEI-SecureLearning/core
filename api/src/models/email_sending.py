@@ -42,3 +42,14 @@ class EmailSendingCreate(SQLModel):
     scheduled_date: datetime
     status: EmailSendingStatus
     campaign_id: int
+
+
+class UserSendingInfo(SQLModel):
+    """Summary of a user's interaction with a campaign email."""
+    user_id: str
+    email: str
+    status: str
+    sent_at: Optional[datetime] = None
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    phished_at: Optional[datetime] = None
