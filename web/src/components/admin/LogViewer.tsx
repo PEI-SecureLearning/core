@@ -1,33 +1,51 @@
-import { useState } from 'react'
-import { Search, AlertCircle, Info, CheckCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Search, AlertCircle, Info, CheckCircle, Loader2, RefreshCw } from 'lucide-react'
+import { apiClient } from '../../lib/api-client'
 
 interface LogEntry {
     id: string
-    timestamp: string
+    timestamp: number
     level: 'info' | 'warning' | 'error' | 'success'
     message: string
     source: string
     user?: string
+    realm?: string
+    details?: unknown
 }
 
-const MOCK_LOGS: LogEntry[] = [
-    { id: '1', timestamp: '2024-03-20 10:30:15', level: 'error', message: 'Failed to connect to Keycloak server', source: 'Auth Service', user: 'System' },
-    { id: '2', timestamp: '2024-03-20 10:29:55', level: 'success', message: 'New tenant "Acme Corp" created successfully', source: 'Admin API', user: 'admin@pei.com' },
-    { id: '3', timestamp: '2024-03-20 10:28:12', level: 'info', message: 'User login attempt', source: 'Auth Service', user: 'john@example.com' },
-    { id: '4', timestamp: '2024-03-20 10:25:00', level: 'warning', message: 'High memory usage detected', source: 'System Monitor', user: 'System' },
-    { id: '5', timestamp: '2024-03-20 10:24:45', level: 'info', message: 'Scheduled backup completed', source: 'Backup Service', user: 'System' },
-    { id: '6', timestamp: '2024-03-20 10:22:10', level: 'success', message: 'User "jane@example.com" role updated to "Manager"', source: 'User Management', user: 'admin@pei.com' },
-    { id: '7', timestamp: '2024-03-20 10:20:05', level: 'error', message: 'Database connection timeout', source: 'Database', user: 'System' },
-    { id: '8', timestamp: '2024-03-20 10:18:30', level: 'info', message: 'New terms of service uploaded', source: 'Terms Manager', user: 'legal@pei.com' },
-    { id: '9', timestamp: '2024-03-20 10:15:00', level: 'warning', message: 'API rate limit approaching for tenant "Globex"', source: 'API Gateway', user: 'System' },
-    { id: '10', timestamp: '2024-03-20 10:12:45', level: 'success', message: 'Phishing campaign "Q1 Security Test" launched', source: 'Phishing Service', user: 'security@pei.com' },
-    { id: '11', timestamp: '2024-03-20 10:10:20', level: 'info', message: 'User logout', source: 'Auth Service', user: 'mike@example.com' },
-    { id: '12', timestamp: '2024-03-20 10:05:00', level: 'info', message: 'System health check passed', source: 'Health Monitor', user: 'System' },
-]
+interface LogsResponse {
+    logs: LogEntry[]
+}
 
 export function LogViewer() {
-    const [logs] = useState(MOCK_LOGS)
+    const [logs, setLogs] = useState<LogEntry[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [filter, setFilter] = useState('all')
+    const [searchQuery, setSearchQuery] = useState('')
+
+    const fetchLogs = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const response = await apiClient.get<LogsResponse>('/logs?max_results=100')
+            setLogs(response.logs || [])
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to load logs')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchLogs()
+    }, [])
+
+    const formatTimestamp = (timestamp: number): string => {
+        if (!timestamp) return 'Unknown'
+        const date = new Date(timestamp)
+        return date.toLocaleString()
+    }
 
     const getIcon = (level: LogEntry['level']) => {
         switch (level) {
@@ -38,6 +56,15 @@ export function LogViewer() {
         }
     }
 
+    const filteredLogs = logs.filter(log => {
+        const matchesFilter = filter === 'all' || log.level === filter
+        const matchesSearch = searchQuery === '' ||
+            log.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            log.source.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (log.user && log.user.toLowerCase().includes(searchQuery.toLowerCase()))
+        return matchesFilter && matchesSearch
+    })
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -46,14 +73,23 @@ export function LogViewer() {
                     <p className="text-gray-500 mt-1">Monitor system activity and events</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700">
-                        Export Logs
-                    </button>
-                    <button className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700">
-                        Live Mode
+                    <button
+                        onClick={fetchLogs}
+                        disabled={loading}
+                        className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-2 disabled:opacity-50"
+                    >
+                        <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
+                        Refresh
                     </button>
                 </div>
             </div>
+
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                    <p className="font-medium">Failed to load logs</p>
+                    <p className="text-sm mt-1">{error}</p>
+                </div>
+            )}
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-[600px]">
                 <div className="p-4 border-b border-gray-200 flex gap-4 bg-gray-50 rounded-t-xl">
@@ -62,6 +98,8 @@ export function LogViewer() {
                         <input
                             type="text"
                             placeholder="Search logs..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
@@ -73,38 +111,52 @@ export function LogViewer() {
                         <option value="all">All Levels</option>
                         <option value="error">Errors</option>
                         <option value="warning">Warnings</option>
+                        <option value="success">Success</option>
                         <option value="info">Info</option>
                     </select>
                 </div>
 
                 <div className="flex-1 overflow-auto p-0">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 sticky top-0 z-10">
-                            <tr>
-                                <th className="px-6 py-3 font-medium text-gray-500 w-48">Timestamp</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 w-24">Level</th>
-                                <th className="px-6 py-3 font-medium text-gray-500">Message</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 w-40">Source</th>
-                                <th className="px-6 py-3 font-medium text-gray-500 w-40">User</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {logs.map((log) => (
-                                <tr key={log.id} className="hover:bg-gray-50 font-mono">
-                                    <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{log.timestamp}</td>
-                                    <td className="px-6 py-3 whitespace-nowrap">
-                                        <div className="flex items-center gap-2">
-                                            {getIcon(log.level)}
-                                            <span className="capitalize text-gray-700">{log.level}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-3 text-gray-900">{log.message}</td>
-                                    <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{log.source}</td>
-                                    <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{log.user}</td>
+                    {loading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <Loader2 className="animate-spin text-blue-600" size={32} />
+                            <span className="ml-3 text-gray-600">Loading logs...</span>
+                        </div>
+                    ) : filteredLogs.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center py-12 text-gray-500">
+                            <Info size={48} className="text-gray-300 mb-4" />
+                            <p className="font-medium">No logs found</p>
+                            <p className="text-sm mt-1">Events will appear here when activity occurs</p>
+                        </div>
+                    ) : (
+                        <table className="w-full text-left text-sm">
+                            <thead className="bg-gray-50 sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-6 py-3 font-medium text-gray-500 w-48">Timestamp</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500 w-24">Level</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500">Message</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500 w-40">Source</th>
+                                    <th className="px-6 py-3 font-medium text-gray-500 w-40">User</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {filteredLogs.map((log) => (
+                                    <tr key={log.id} className="hover:bg-gray-50 font-mono">
+                                        <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{formatTimestamp(log.timestamp)}</td>
+                                        <td className="px-6 py-3 whitespace-nowrap">
+                                            <div className="flex items-center gap-2">
+                                                {getIcon(log.level)}
+                                                <span className="capitalize text-gray-700">{log.level}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-3 text-gray-900">{log.message}</td>
+                                        <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{log.source}</td>
+                                        <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{log.user || 'System'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
             </div>
         </div>

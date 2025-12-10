@@ -6,6 +6,7 @@ import UsersList from "@/components/tenants/UsersList";
 import AddUserForm from "@/components/tenants/AddUserForm";
 import BulkUserImport from "@/components/tenants/BulkUserImport";
 import type { BulkUser, UserRecord } from "@/components/tenants/types";
+import "../css/liquidGlass.css";
 
 export const Route = createFileRoute("/tenants-org-manager")({
   component: TenantOrgManager,
@@ -101,7 +102,7 @@ function TenantOrgManager() {
   const fetchUsers = async (targetRealm: string) => {
     setIsUsersLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`, {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
         },
@@ -119,7 +120,7 @@ function TenantOrgManager() {
 
   const fetchGroups = async (targetRealm: string) => {
     try {
-      const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
         },
@@ -155,14 +156,13 @@ function TenantOrgManager() {
     setStatus(null);
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/realms/users`, {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
         method: "POST",
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          realm: targetRealm,
           username,
           name,
           email,
@@ -241,7 +241,7 @@ function TenantOrgManager() {
 
     const refreshGroups = async () => {
       try {
-        const resp = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+        const resp = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
           headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
         });
         if (resp.ok) {
@@ -261,7 +261,7 @@ function TenantOrgManager() {
       if (groupIdCache[key]) return groupIdCache[key];
       // Try to create the group; if it already exists server should return conflict or similar.
       try {
-        const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`, {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
           method: "POST",
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -318,7 +318,7 @@ function TenantOrgManager() {
 
     const fetchUserIdByUsername = async (usernameValue: string): Promise<string | undefined> => {
       try {
-        const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`, {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
           headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
         });
         if (!res.ok) return undefined;
@@ -345,14 +345,13 @@ function TenantOrgManager() {
       const groupIds = u.groups && u.groups.length ? await resolveGroupIds(u.groups) : [];
       const primaryGroupId = groupIds[0];
       try {
-        const res = await fetch(`${API_BASE}/realms/users`, {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
           method: "POST",
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            realm: targetRealm,
             username: u.username,
             name: u.name,
             email: u.email,
@@ -374,7 +373,7 @@ function TenantOrgManager() {
             for (const gid of groupIds) {
               try {
                 await fetch(
-                  `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups/${encodeURIComponent(
+                  `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups/${encodeURIComponent(
                     gid
                   )}/members/${encodeURIComponent(userId)}`,
                   {
@@ -433,7 +432,7 @@ function TenantOrgManager() {
     setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
       const res = await fetch(
-        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users/${encodeURIComponent(id)}`,
+        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users/${encodeURIComponent(id)}`,
         {
           method: "DELETE",
           headers: {
@@ -459,46 +458,62 @@ function TenantOrgManager() {
   };
 
   return (
-    <div className="w-full p-6 flex flex-col gap-6 overflow-y-auto">
-      <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Tenant Manager</h1>
+    <div className="liquid-glass-container h-full w-full animate-fade-in">
+      {/* Animated background blobs */}
+      <div className="liquid-blob liquid-blob-1"></div>
+      <div className="liquid-blob liquid-blob-2"></div>
+      <div className="liquid-blob liquid-blob-3"></div>
+
+      {/* Header */}
+      <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-4 px-6 animate-slide-down">
+        <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">Tenant Manager</h1>
         <p className="text-sm text-gray-600">You are limited to your tenant realm as determined by your Keycloak domain.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <UsersList
-          realm={tokenRealm || realm || ""}
-          users={users}
-          isLoading={isUsersLoading}
-          deletingIds={deletingIds}
-          onDelete={handleDeleteUser}
-        />
-        <AddUserForm
-          realm={tokenRealm || realm || ""}
-          groups={groups}
-          username={username}
-          name={name}
-          email={email}
-          role={role}
-          selectedGroupId={selectedGroupId}
-          isLoading={isLoading}
-          onChange={handleFieldChange}
-          onSubmit={handleAddUser}
-        />
-      </div>
-
-      <BulkUserImport
-        bulkUsers={bulkUsers}
-        isBulkLoading={isBulkLoading}
-        onCsvUpload={handleCsvUpload}
-        onBulkCreate={handleBulkCreate}
-      />
-
-      {status && (
-        <div className="rounded-md border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-          {status}
+      {/* Main content */}
+      <div className="flex-1 min-h-0 overflow-hidden p-6 purple-scrollbar overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up" style={{ animationDelay: '0.05s' }}>
+          <div className="liquid-glass-card p-5">
+            <UsersList
+              realm={tokenRealm || realm || ""}
+              users={users}
+              isLoading={isUsersLoading}
+              deletingIds={deletingIds}
+              onDelete={handleDeleteUser}
+            />
+          </div>
+          <div className="liquid-glass-card p-5 animate-slide-left" style={{ animationDelay: '0.1s' }}>
+            <AddUserForm
+              realm={tokenRealm || realm || ""}
+              groups={groups}
+              username={username}
+              name={name}
+              email={email}
+              role={role}
+              selectedGroupId={selectedGroupId}
+              isLoading={isLoading}
+              onChange={handleFieldChange}
+              onSubmit={handleAddUser}
+            />
+          </div>
         </div>
-      )}
-    </div>
+
+        <div className="mt-6 liquid-glass-card p-5 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+          <BulkUserImport
+            bulkUsers={bulkUsers}
+            isBulkLoading={isBulkLoading}
+            onCsvUpload={handleCsvUpload}
+            onBulkCreate={handleBulkCreate}
+          />
+        </div>
+
+        {status && (
+          <div className="mt-6 liquid-glass-card px-4 py-3 text-sm text-gray-700 animate-scale-in">
+            <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
+            {status}
+          </div>
+        )}
+      </div>
+    </div >
   );
 }
