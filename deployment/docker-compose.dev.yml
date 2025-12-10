@@ -11,9 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
+    command: start-dev --import-realm
     container_name: keycloak
     environment:
       KEYCLOAK_ADMIN: admin
@@ -24,17 +26,59 @@ services:
       KC_HOSTNAME: localhost
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
-
-    command: start-dev --import-realm
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER:-myuser}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
 
     ports:
       - "8080:8080"
+
+    depends_on:
+      - db
 
     volumes:
       - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
       - ../keycloak/themes:/opt/keycloak/themes:ro
       - ../keycloak/imports:/opt/keycloak/data/import:ro
       - ../keycloak/providers:/opt/keycloak/providers:ro
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile.dev
+    container_name: api
+    environment:
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
+      KEYCLOAK_URL: http://keycloak:8080
+      CLIENT_SECRET: ${CLIENT_SECRET:-your-client-secret}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../api/src:/app/src:ro
+    depends_on:
+      - db
+      - keycloak
+
+  frontend:
+    build:
+      context: ../web
+      dockerfile: Dockerfile.dev
+    container_name: frontend
+    environment:
+      VITE_API_URL: http://localhost:8000/api
+      VITE_KEYCLOAK_URL: http://localhost:8080
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../web/src:/app/src:ro
+      - ../web/public:/app/public:ro
+    depends_on:
+      - api
 
 volumes:
   db_data:

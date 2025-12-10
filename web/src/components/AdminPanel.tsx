@@ -24,7 +24,6 @@ export function CreateTenantPage() {
                 {
                     name: realmName,
                     domain: domain,
-                    // Sending extra fields even if backend doesn't support them yet
                     adminEmail,
                     features
                 },
@@ -35,7 +34,6 @@ export function CreateTenantPage() {
                 }
             )
             alert('Realm created successfully!')
-            // Reset form
             setRealmName('')
             setDomain('')
             setAdminEmail('')
@@ -48,28 +46,32 @@ export function CreateTenantPage() {
     }
 
     return (
-        <div className="flex h-full w-full bg-gray-50 flex justify-center items-center">
+        <div className="h-full w-full bg-gradient-to-br from-gray-50 to-purple-50/30 flex">
+            <div className="h-full w-full max-w-6xl mx-auto p-6 flex gap-8">
+                {/* Scrollable form section */}
+                <div className="flex-1 h-full overflow-y-auto pr-2">
+                    <TenantForm
+                        realmName={realmName}
+                        setRealmName={setRealmName}
+                        domain={domain}
+                        setDomain={setDomain}
+                        adminEmail={adminEmail}
+                        setAdminEmail={setAdminEmail}
+                        features={features}
+                        setFeatures={setFeatures}
+                        handleSubmit={handleSubmit}
+                    />
+                </div>
 
-
-            <div className="flex h-8/10 gap-6">
-                <TenantForm
-                    realmName={realmName}
-                    setRealmName={setRealmName}
-                    domain={domain}
-                    setDomain={setDomain}
-                    adminEmail={adminEmail}
-                    setAdminEmail={setAdminEmail}
-                    features={features}
-                    setFeatures={setFeatures}
-                    handleSubmit={handleSubmit}
-                />
-
-                <PreviewPanel
-                    realmName={realmName}
-                    features={features}
-                    isLoading={isLoading}
-                    handleSubmit={handleSubmit}
-                />
+                {/* Fixed preview panel - doesn't scroll */}
+                <div className="flex-shrink-0">
+                    <PreviewPanel
+                        realmName={realmName}
+                        features={features}
+                        isLoading={isLoading}
+                        handleSubmit={handleSubmit}
+                    />
+                </div>
             </div>
         </div>
     )
