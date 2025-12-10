@@ -30,6 +30,7 @@ services:
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
       KC_DB_USERNAME: ${POSTGRES_USER:-myuser}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      CLIENT_SECRET: ${CLIENT_SECRET:-your-client-secret}
 
     ports:
       - "8080:8080"

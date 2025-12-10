@@ -551,7 +551,7 @@
         "enabled": true,
         "alwaysDisplayInConsole": false,
         "clientAuthenticatorType": "client-secret",
-        "secret": "MbV2B0dwJfvdfvYyeYjcay7EuT5kid2C",
+        "secret": "${CLIENT_SECRET}",
         "redirectUris": [
           "http://localhost:5173/admin/*",
           "http://localhost:5173/admin"
