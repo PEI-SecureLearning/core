@@ -28,6 +28,7 @@ declare module '@tanstack/react-router' {
 // Render the app
 import { useState, useEffect } from 'react'
 import { ServiceUnavailable } from './components/ServiceUnavailable'
+import ErrorBoundary from './components/ErrorBoundary'
 
 const App = () => {
   const [isError, setIsError] = useState(false)
@@ -84,11 +85,13 @@ const App = () => {
 
   return (
     <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
-      <StrictMode>
-        <Providers>
-          <RouterProvider router={router} />
-        </Providers>
-      </StrictMode>
+      <ErrorBoundary>
+        <StrictMode>
+          <Providers>
+            <RouterProvider router={router} />
+          </Providers>
+        </StrictMode>
+      </ErrorBoundary>
     </ReactKeycloakProvider>
   )
 }

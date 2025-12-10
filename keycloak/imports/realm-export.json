@@ -540,34 +540,6 @@
     },
     "clients": [
       {
-        "id": "53fd8103-8794-4869-bd0d-519f5df07986",
-        "clientId": "POSTMAN_TESTE2-realm",
-        "name": "POSTMAN_TESTE2 Realm",
-        "surrogateAuthRequired": false,
-        "enabled": true,
-        "alwaysDisplayInConsole": false,
-        "clientAuthenticatorType": "client-secret",
-        "redirectUris": [],
-        "webOrigins": [],
-        "notBefore": 0,
-        "bearerOnly": true,
-        "consentRequired": false,
-        "standardFlowEnabled": true,
-        "implicitFlowEnabled": false,
-        "directAccessGrantsEnabled": false,
-        "serviceAccountsEnabled": false,
-        "publicClient": false,
-        "frontchannelLogout": false,
-        "attributes": {
-          "realm_client": "true"
-        },
-        "authenticationFlowBindingOverrides": {},
-        "fullScopeAllowed": false,
-        "nodeReRegistrationTimeout": 0,
-        "defaultClientScopes": [],
-        "optionalClientScopes": []
-      },
-      {
         "id": "8a7c2efa-6974-4b66-8f9d-79734bc0471b",
         "clientId": "SecureLearning-admin",
         "name": "SecureLearning-admin",
@@ -579,7 +551,7 @@
         "enabled": true,
         "alwaysDisplayInConsole": false,
         "clientAuthenticatorType": "client-secret",
-        "secret": "**********",
+        "secret": "MbV2B0dwJfvdfvYyeYjcay7EuT5kid2C",
         "redirectUris": [
           "http://localhost:5173/admin/*",
           "http://localhost:5173/admin"
@@ -629,36 +601,6 @@
           "offline_access",
           "microprofile-jwt"
         ]
-      },
-      {
-        "id": "5f503656-31d4-4481-90f7-f13b9fb18381",
-        "clientId": "SecureLearning-realm",
-        "name": "SecureLearning Realm",
-        "surrogateAuthRequired": false,
-        "enabled": true,
-        "alwaysDisplayInConsole": false,
-        "clientAuthenticatorType": "client-secret",
-        "redirectUris": [],
-        "webOrigins": [],
-        "notBefore": 0,
-        "bearerOnly": true,
-        "consentRequired": false,
-        "standardFlowEnabled": true,
-        "implicitFlowEnabled": false,
-        "directAccessGrantsEnabled": false,
-        "serviceAccountsEnabled": false,
-        "publicClient": false,
-        "frontchannelLogout": false,
-        "protocol": "openid-connect",
-        "attributes": {
-          "realm_client": "false",
-          "post.logout.redirect.uris": "+"
-        },
-        "authenticationFlowBindingOverrides": {},
-        "fullScopeAllowed": false,
-        "nodeReRegistrationTimeout": 0,
-        "defaultClientScopes": [],
-        "optionalClientScopes": []
       },
       {
         "id": "a0e0b604-9803-495b-9a3b-3db6375c13aa",
