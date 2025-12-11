@@ -15,7 +15,7 @@ import { toast } from "sonner";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 
-export const Route = createFileRoute("/campaigns/new-campaign")({
+export const Route = createFileRoute("/campaigns/new")({
   component: RouteComponent,
 });
 

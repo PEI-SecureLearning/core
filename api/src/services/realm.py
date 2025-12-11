@@ -2,8 +2,11 @@ import secrets
 import jwt
 from fastapi import HTTPException
 from sqlmodel import Session, select
+from src.core.deps import SessionDep
 from src.models.realm import Realm, RealmCreate
 from src.core.admin import Admin
+from src.models.user import User
+from src.models.user_group import UserGroup
 
 
 # Singleton admin instance
@@ -57,9 +60,9 @@ def list_realms() -> dict:
     return {"realms": realms}
 
 
-def delete_realm_from_keycloak(realm_name: str) -> None:
+def delete_realm_from_keycloak(realm_name: str, session: Session) -> None:
     """Delete a realm from Keycloak."""
-    _admin.delete_realm(realm_name)
+    _admin.delete_realm(session, realm_name)
 
 
 def get_platform_logs(max_results: int = 100) -> dict:
@@ -81,10 +84,11 @@ def find_realm_by_domain(domain: str) -> str | None:
     return _admin.find_realm_by_domain(domain)
 
 
-def create_realm_in_keycloak(realm: RealmCreate) -> RealmCreate:
+def create_realm_in_keycloak(realm: RealmCreate, session: Session) -> RealmCreate:
     """Create a realm in Keycloak."""
     try:
         response = _admin.create_realm(
+            session,
             realm_name=realm.name,
             admin_email=realm.adminEmail,
             domain=realm.domain,
@@ -95,6 +99,7 @@ def create_realm_in_keycloak(realm: RealmCreate) -> RealmCreate:
                 status_code=response.status_code,
                 detail=f"Failed to create realm in Keycloak: {response.text}",
             )
+
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -114,6 +119,7 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
 
     # Create realm in Keycloak
     response = _admin.create_realm(
+        session,
         realm_name=realm_in.name,
         admin_email=realm_in.adminEmail,
         features=realm_in.features,
@@ -139,6 +145,7 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
 
 
 def create_user_in_realm(
+    session: Session,
     realm: str,
     username: str,
     name: str,
@@ -152,6 +159,7 @@ def create_user_in_realm(
 
     try:
         response = _admin.add_user(
+            session,
             realm,
             username,
             temporary_password,
@@ -177,6 +185,12 @@ def create_user_in_realm(
     location = response.headers.get("Location")
     if location:
         user_id = location.rstrip("/").split("/")[-1]
+
+        user = User(keycloak_id=user_id, email=email)
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
     if group_id and user_id:
         try:
             _admin.add_user_to_group(realm, user_id, group_id)
@@ -202,13 +216,12 @@ def list_users_in_realm(realm: str) -> dict:
         raise HTTPException(
             status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
         )
-
     # Return simplified fields
     simplified = []
     for u in users:
         simplified.append(
             {
-                "id": u.get("id"),
+                "": u.get("id"),
                 "username": u.get("username"),
                 "email": u.get("email"),
                 "firstName": u.get("firstName"),
@@ -244,10 +257,10 @@ def get_user_in_realm(realm: str, user_id: str) -> dict:
     raise HTTPException(status_code=404, detail="User not found in realm")
 
 
-def delete_user_in_realm(realm: str, user_id: str) -> None:
+def delete_user_in_realm(realm: str, user_id: str, session: Session) -> None:
     """Delete a user from the realm."""
     try:
-        _admin.delete_user(realm, user_id)
+        _admin.delete_user(session, realm, user_id)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -278,22 +291,33 @@ def list_groups_in_realm(realm: str) -> dict:
     return {"realm": realm, "groups": simplified}
 
 
-def create_group_in_realm(realm: str, group_name: str) -> dict:
+def create_group_in_realm(realm: str, group_name: str, session: Session) -> UserGroup:
     """Create a group in the realm."""
     try:
-        response = _admin.create_group(realm, group_name)
+        response = _admin.create_group(session, realm, group_name)
         if response.status_code not in (201, 204):
             raise HTTPException(
                 status_code=response.status_code,
                 detail="Failed to create group in Keycloak",
             )
+        location = response.headers.get("Location")
+        if not location:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to retrieve group location from Keycloak",
+            )
+        group_id = location.rstrip("/").split("/")[-1]
+        group = UserGroup(keycloak_id=group_id)
+        session.add(group)
+        session.commit()
+        session.refresh(group)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(
             status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
         )
-    return {"realm": realm, "name": group_name}
+    return group
 
 
 def add_user_to_group_in_realm(realm: str, user_id: str, group_id: str) -> None:
@@ -333,10 +357,10 @@ def list_group_members_in_realm(realm: str, group_id: str) -> dict:
     return {"realm": realm, "groupId": group_id, "members": simplified}
 
 
-def delete_group_in_realm(realm: str, group_id: str) -> None:
+def delete_group_in_realm(realm: str, group_id: str, session: Session) -> None:
     """Delete a group from the realm."""
     try:
-        _admin.delete_group(realm, group_id)
+        _admin.delete_group(session, realm, group_id)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e

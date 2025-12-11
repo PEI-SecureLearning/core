@@ -1,8 +1,22 @@
-import { ArrowLeft, Users, Calendar, Trash2, UserPlus, Send, X } from 'lucide-react';
-import { Link, useParams } from '@tanstack/react-router';
-import { useEffect, useMemo, useState } from 'react';
-import { useKeycloak } from '@react-keycloak/web';
-import { fetchGroups, fetchGroupMembers, addUserToGroup, fetchUsers, removeUserFromGroup } from '@/components/usergroups/api';
+import {
+  ArrowLeft,
+  Users,
+  Calendar,
+  Trash2,
+  UserPlus,
+  Send,
+  X,
+} from "lucide-react";
+import { Link, useParams } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { useKeycloak } from "@react-keycloak/web";
+import {
+  fetchGroups,
+  fetchGroupMembers,
+  addUserToGroup,
+  fetchUsers,
+  removeUserFromGroup,
+} from "@/services/userGroupsApi";
 
 interface Member {
   id?: string;
@@ -96,16 +110,22 @@ export default function UserGroupDetail() {
               <ArrowLeft className="h-5 w-5 text-gray-600" />
             </Link>
             <div className="flex items-center gap-3">
-              <div className={`h-12 w-12 rounded-full bg-gradient-to-br ${colorClasses.purple} flex items-center justify-center shadow-md`}>
+              <div
+                className={`h-12 w-12 rounded-full bg-gradient-to-br ${colorClasses.purple} flex items-center justify-center shadow-md`}
+              >
                 <Users className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{groupName}</h1>
-                <p className="text-sm text-gray-500">{members.length} members</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  {groupName}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  {members.length} members
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <button className="hidden sm:flex items-center gap-2 px-4 py-2 text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
               <Trash2 className="h-4 w-4" />
@@ -126,15 +146,21 @@ export default function UserGroupDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Description */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">About this group</h2>
-              <p className="text-gray-600 leading-relaxed mb-4">Group ID: {groupId}</p>
-              
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                About this group
+              </h2>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Group ID: {groupId}
+              </p>
+
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <div>
                     <p className="text-gray-500">Created</p>
-                    <p className="font-medium text-gray-900">{realm || "Unknown"}</p>
+                    <p className="font-medium text-gray-900">
+                      {realm || "Unknown"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
@@ -149,7 +175,9 @@ export default function UserGroupDetail() {
 
             {/* Recent Campaigns */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Campaigns</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Recent Campaigns
+              </h2>
               <div className="text-sm text-gray-500">No campaign data.</div>
             </div>
           </div>
@@ -159,7 +187,9 @@ export default function UserGroupDetail() {
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Members</h2>
-                <p className="text-sm text-gray-500 mt-1">{members.length} total members</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {members.length} total members
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -194,26 +224,37 @@ export default function UserGroupDetail() {
                 </thead>
                 <tbody>
                   {members.map((member, index) => (
-                    <tr 
-                      key={member.id} 
+                    <tr
+                      key={member.id}
                       className={`hover:bg-gray-50 transition-colors ${
-                        index !== members.length - 1 ? 'border-b border-gray-100' : ''
+                        index !== members.length - 1
+                          ? "border-b border-gray-100"
+                          : ""
                       }`}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                            {(member.firstName || member.username || "U").slice(0, 1)}
+                            {(member.firstName || member.username || "U").slice(
+                              0,
+                              1
+                            )}
                           </div>
-                          <span className="font-medium text-gray-900">{member.username || "Unknown"}</span>
+                          <span className="font-medium text-gray-900">
+                            {member.username || "Unknown"}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600">{member.email || "—"}</span>
+                        <span className="text-sm text-gray-600">
+                          {member.email || "—"}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-600">
-                          {(member.firstName || "") + " " + (member.lastName || "")}
+                          {(member.firstName || "") +
+                            " " +
+                            (member.lastName || "")}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -225,8 +266,17 @@ export default function UserGroupDetail() {
                             setIsLoading(true);
                             setStatus(null);
                             try {
-                              await removeUserFromGroup(realm, groupId, member.id, keycloak.token || undefined);
-                              const membersRes = await fetchGroupMembers(realm, groupId, keycloak.token || undefined);
+                              await removeUserFromGroup(
+                                realm,
+                                groupId,
+                                member.id,
+                                keycloak.token || undefined
+                              );
+                              const membersRes = await fetchGroupMembers(
+                                realm,
+                                groupId,
+                                keycloak.token || undefined
+                              );
                               setMembers(membersRes.members || []);
                             } catch (err) {
                               console.error("Failed to remove member", err);
@@ -253,8 +303,13 @@ export default function UserGroupDetail() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Add member</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-1 text-gray-500 hover:text-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Add member
+              </h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1 text-gray-500 hover:text-gray-700"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -285,8 +340,17 @@ export default function UserGroupDetail() {
                         setIsLoading(true);
                         setStatus(null);
                         try {
-                          await addUserToGroup(realm, groupId, u.id, keycloak.token || undefined);
-                          const membersRes = await fetchGroupMembers(realm, groupId, keycloak.token || undefined);
+                          await addUserToGroup(
+                            realm,
+                            groupId,
+                            u.id,
+                            keycloak.token || undefined
+                          );
+                          const membersRes = await fetchGroupMembers(
+                            realm,
+                            groupId,
+                            keycloak.token || undefined
+                          );
                           setMembers(membersRes.members || []);
                           setShowAddModal(false);
                         } catch (err) {
@@ -298,8 +362,12 @@ export default function UserGroupDetail() {
                       }}
                     >
                       <div className="truncate">
-                        <div className="font-medium text-gray-900">{u.username || "Unknown"}</div>
-                        <div className="text-xs text-gray-500">{u.email || "—"}</div>
+                        <div className="font-medium text-gray-900">
+                          {u.username || "Unknown"}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {u.email || "—"}
+                        </div>
                       </div>
                     </button>
                   ))}

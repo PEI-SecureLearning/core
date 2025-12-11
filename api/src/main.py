@@ -2,12 +2,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, File, UploadFile
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
-from src.routers import realm
-from src.routers import compliance
-from src.routers import org_manager
-from src.routers import templates
-from src.routers import campaign
-from src.routers import tracking
+from src.routers import (
+    realm,
+    compliance,
+    org_manager,
+    campaign,
+    tracking,
+    templates,
+    sending_profile
+)
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.core.security import valid_resource_access
@@ -79,3 +82,4 @@ app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-man
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
 app.include_router(tracking.router, prefix="/api", tags=["tracking"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
+app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])

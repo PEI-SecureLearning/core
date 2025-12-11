@@ -4,7 +4,13 @@ import BasicInfo from "./newGroupBasicInfo";
 import NewGroupFooter from "./newGroupFooter";
 import Preview from "./newGroupPreview";
 import MembersSection from "./newGroupMembers";
-import { addUserToGroup, createGroup, createUser, fetchGroups, fetchUsers } from "./api";
+import {
+  addUserToGroup,
+  createGroup,
+  createUser,
+  fetchGroups,
+  fetchUsers,
+} from "../../services/userGroupsApi";
 import "../../css/liquidGlass.css";
 
 interface Member {
@@ -23,17 +29,27 @@ interface Color {
 export default function NewUserGroup() {
   const { keycloak } = useKeycloak();
   const colors: Color[] = [
-    { name: "purple", class: "from-purple-400 to-purple-600", bg: "bg-purple-500" },
+    {
+      name: "purple",
+      class: "from-purple-400 to-purple-600",
+      bg: "bg-purple-500",
+    },
     { name: "blue", class: "from-blue-400 to-blue-600", bg: "bg-blue-500" },
     { name: "green", class: "from-green-400 to-green-600", bg: "bg-green-500" },
     { name: "pink", class: "from-pink-400 to-pink-600", bg: "bg-pink-500" },
-    { name: "orange", class: "from-orange-400 to-orange-600", bg: "bg-orange-500" },
+    {
+      name: "orange",
+      class: "from-orange-400 to-orange-600",
+      bg: "bg-orange-500",
+    },
     { name: "teal", class: "from-teal-400 to-teal-600", bg: "bg-teal-500" },
   ];
 
   const [groupName, setGroupName] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedColor] = useState(() => colors[Math.floor(Math.random() * colors.length)].name);
+  const [selectedColor] = useState(
+    () => colors[Math.floor(Math.random() * colors.length)].name
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [availableUsers, setAvailableUsers] = useState<Member[]>([]);
@@ -46,8 +62,6 @@ export default function NewUserGroup() {
     const parts = iss.split("/realms/");
     return parts[1] ?? null;
   }, [keycloak.tokenParsed]);
-
-
 
   const filteredUsers = availableUsers.filter(
     (user) =>
@@ -66,7 +80,10 @@ export default function NewUserGroup() {
         const mapped =
           (res.users || []).map((u) => ({
             id: u.id || u.username || "",
-            name: `${u.firstName || ""} ${u.lastName || ""}`.trim() || u.username || "",
+            name:
+              `${u.firstName || ""} ${u.lastName || ""}`.trim() ||
+              u.username ||
+              "",
             email: u.email || "",
             department: "Tenant",
           })) || [];
@@ -103,7 +120,9 @@ export default function NewUserGroup() {
       // Create the group first
       await createGroup(realm, groupName, keycloak.token || undefined);
       const groupsRes = await fetchGroups(realm, keycloak.token || undefined);
-      const created = (groupsRes.groups || []).find((g) => g.name === groupName);
+      const created = (groupsRes.groups || []).find(
+        (g) => g.name === groupName
+      );
 
       if (created?.id) {
         let createdCount = 0;
@@ -112,22 +131,30 @@ export default function NewUserGroup() {
         for (const m of selectedMembers) {
           try {
             // Check if this is an existing user (has a valid UUID) or a CSV import (no valid UUID)
-            const isExistingUser = m.id && m.id.includes("-") && m.id.length > 30;
+            const isExistingUser =
+              m.id && m.id.includes("-") && m.id.length > 30;
 
             if (isExistingUser) {
               // Existing user - just add to group
-              await addUserToGroup(realm, created.id, m.id, keycloak.token || undefined);
+              await addUserToGroup(
+                realm,
+                created.id,
+                m.id,
+                keycloak.token || undefined
+              );
               addedCount++;
             } else {
               // CSV imported user - create user first, then add to group
-              const username = m.email?.split("@")[0] || m.name.toLowerCase().replace(/\s+/g, ".");
+              const username =
+                m.email?.split("@")[0] ||
+                m.name.toLowerCase().replace(/\s+/g, ".");
               const result = await createUser(
                 realm,
                 username,
                 m.name,
                 m.email,
                 "DEFAULT_USER",
-                created.id,  // Add directly to the group
+                created.id, // Add directly to the group
                 keycloak.token || undefined
               );
               if (result.status === "created") {
@@ -139,7 +166,9 @@ export default function NewUserGroup() {
           }
         }
 
-        setStatus(`Group created. ${createdCount} users created, ${addedCount} existing users added.`);
+        setStatus(
+          `Group created. ${createdCount} users created, ${addedCount} existing users added.`
+        );
       } else {
         setStatus("Group created.");
       }
@@ -155,7 +184,8 @@ export default function NewUserGroup() {
     }
   };
 
-  const selectedColorClass = colors.find((c) => c.name === selectedColor)?.class || colors[0].class;
+  const selectedColorClass =
+    colors.find((c) => c.name === selectedColor)?.class || colors[0].class;
 
   return (
     <div className="liquid-glass-container h-full w-full animate-fade-in">
@@ -166,14 +196,18 @@ export default function NewUserGroup() {
 
       {/* Header */}
       <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-3 px-6 animate-slide-down">
-        <h3 className="text-xl font-semibold text-gray-800 tracking-tight">Create a new group</h3>
-        <h2 className="text-sm font-medium text-gray-600">Set up a new group for your campaigns</h2>
+        <h3 className="text-xl font-semibold text-gray-800 tracking-tight">
+          Create a new group
+        </h3>
+        <h2 className="text-sm font-medium text-gray-600">
+          Set up a new group for your campaigns
+        </h2>
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-row gap-4 p-4 min-h-0 overflow-hidden">
         <div className="h-full w-[65%] purple-scrollbar overflow-y-auto pr-2 space-y-5">
-          <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
             <BasicInfo
               groupName={groupName}
               description={description}
@@ -181,7 +215,7 @@ export default function NewUserGroup() {
               onDescriptionChange={setDescription}
             />
           </div>
-          <div className="animate-slide-up" style={{ animationDelay: '0.05s' }}>
+          <div className="animate-slide-up" style={{ animationDelay: "0.05s" }}>
             <MembersSection
               searchQuery={searchQuery}
               filteredUsers={filteredUsers}
@@ -196,7 +230,10 @@ export default function NewUserGroup() {
           </div>
         </div>
 
-        <div className="h-full w-[35%] animate-slide-left overflow-hidden" style={{ animationDelay: '0.1s' }}>
+        <div
+          className="h-full w-[35%] animate-slide-left overflow-hidden"
+          style={{ animationDelay: "0.1s" }}
+        >
           <Preview
             groupName={groupName}
             selectedColor={selectedColor}
@@ -208,7 +245,10 @@ export default function NewUserGroup() {
       </div>
 
       {/* Footer */}
-      <div className="liquid-glass-footer flex-shrink-0 border-t border-white/20 py-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+      <div
+        className="liquid-glass-footer flex-shrink-0 border-t border-white/20 py-4 animate-slide-up"
+        style={{ animationDelay: "0.2s" }}
+      >
         <NewGroupFooter
           onSubmit={handleSubmit}
           groupName={groupName}

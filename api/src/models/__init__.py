@@ -2,7 +2,6 @@
 # Import link tables and models without relationships first
 from .user_group import CampaignUserGroupLink, UserGroup
 from .realm import Realm, RealmCreate
-from .tenant import Tenant
 from .user import User
 from .custom_header import CustomHeader
 from .sending_profile import SendingProfile
@@ -16,8 +15,6 @@ from .compliance import ComplianceAcceptance
 __all__ = [
     # User
     "User",
-    # Tenant
-    "Tenant",
     # Campaign
     "Campaign",
     "CampaignCreate",

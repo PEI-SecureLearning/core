@@ -6,7 +6,6 @@ from src.models import (
     User,
     UserGroup,
     CampaignUserGroupLink,
-    Tenant,
     Realm,
     Campaign,
     LandingPageTemplate,
