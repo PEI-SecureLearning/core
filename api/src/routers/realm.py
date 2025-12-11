@@ -53,7 +53,7 @@ def create_realm(realm: RealmCreate):
 @router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_realm(realm: str):
     """Delete a tenant realm from Keycloak."""
-    realm_service.delete_realm_from_keycloak(realm)
+    realm_service.delete_realm(realm)
     return None
 
 

@@ -4,7 +4,9 @@ Org Manager Router - API endpoints for org manager operations.
 These endpoints use the user's access token for Keycloak authorization
 instead of the admin service account.
 """
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
+import csv
+import codecs
 from pydantic import BaseModel
 
 from src.core.security import oauth_2_scheme, valid_resource_access
@@ -66,6 +68,15 @@ def delete_user(realm: str, user_id: str, token: str = Depends(oauth_2_scheme)):
     _validate_realm_access(token, realm)
     org_manager_service.delete_user(realm, token, user_id)
     return None
+
+
+@router.post("/upload", dependencies=[Depends(valid_resource_access("org_manager"))])
+def upload_user_csv(file: UploadFile = File(...)):
+    """Upload CSV with user data; accessible to org managers (and admins via policy)."""
+    reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
+    data = [row for row in reader]
+    file.file.close()
+    return data
 
 
 # ============ Group Endpoints ============

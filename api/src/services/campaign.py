@@ -11,11 +11,13 @@ from src.models.campaign import (
     CampaignDisplayInfo,
     CampaignGlobalStats,
     CampaignStatus,
+    TemplateSelection,
 )
 from src.models.email_sending import EmailSending, UserSendingInfo
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.models.sending_profile import SendingProfile
+from src.models.realm import Realm
 from src.models.user import User
 from src.services.realm import list_group_members_in_realm
 
@@ -27,14 +29,40 @@ class CampaignService:
         self, campaign: CampaignCreate, current_realm: str, session: Session
     ) -> Campaign:
         """Create a new campaign with scheduled email sendings."""
-        self._validate_campaign(campaign, session)
+        self._ensure_realm_exists(session, current_realm)
+
+        email_template_id = self._get_or_create_email_template(
+            session, campaign.email_template_id, campaign.email_template
+        )
+        landing_page_template_id = self._get_or_create_landing_page_template(
+            session, campaign.landing_page_template_id, campaign.landing_page_template
+        )
+        sending_profile_id = self._get_or_create_sending_profile(
+            session, campaign.sending_profile_id, current_realm
+        )
+
+        enriched_campaign = campaign.model_copy(
+            update={
+                "email_template_id": email_template_id,
+                "landing_page_template_id": landing_page_template_id,
+                "sending_profile_id": sending_profile_id,
+            }
+        )
+
+        self._validate_campaign(enriched_campaign, session)
 
         users = self._collect_users_from_groups(campaign.user_group_ids, current_realm)
         interval = self._calculate_interval(campaign, len(users))
 
         new_campaign = Campaign(
-            **campaign.model_dump(
-                exclude={"user_group_ids", "sending_interval_seconds"}
+            **enriched_campaign.model_dump(
+                exclude={
+                    "user_group_ids",
+                    "sending_interval_seconds",
+                    "email_template",
+                    "landing_page_template",
+                    "creator_id",
+                }
             ),
             sending_interval_seconds=interval,
             total_recipients=len(users),
@@ -278,10 +306,103 @@ class CampaignService:
                 )
             )
 
+    def _get_or_create_email_template(
+        self,
+        session: Session,
+        existing_id: int | None,
+        selection: TemplateSelection | None,
+    ) -> int:
+        """Ensure an email template row exists for the selected template."""
+        if existing_id is not None:
+            return existing_id
+
+        if selection is None:
+            raise HTTPException(
+                status_code=400, detail="Email template selection is required"
+            )
+
+        existing = session.exec(
+            select(EmailTemplate).where(EmailTemplate.content_link == selection.id)
+        ).first()
+        if existing:
+            return existing.id  # type: ignore[return-value]
+
+        template = EmailTemplate(
+            name=selection.name or "Email template",
+            subject=selection.subject or "",
+            content_link=selection.id,
+        )
+        session.add(template)
+        session.flush()
+        return template.id  # type: ignore[return-value]
+
+    def _get_or_create_landing_page_template(
+        self,
+        session: Session,
+        existing_id: int | None,
+        selection: TemplateSelection | None,
+    ) -> int:
+        """Ensure a landing page template row exists for the selected template."""
+        if existing_id is not None:
+            return existing_id
+
+        if selection is None:
+            raise HTTPException(
+                status_code=400, detail="Landing page template selection is required"
+            )
+
+        existing = session.exec(
+            select(LandingPageTemplate).where(
+                LandingPageTemplate.content_link == selection.id
+            )
+        ).first()
+        if existing:
+            return existing.id  # type: ignore[return-value]
+
+        template = LandingPageTemplate(
+            name=selection.name or "Landing page template",
+            content_link=selection.id,
+        )
+        session.add(template)
+        session.flush()
+        return template.id  # type: ignore[return-value]
+
+    def _get_or_create_sending_profile(
+        self, session: Session, existing_id: int | None, realm: str
+    ) -> int:
+        """Use provided sending profile or create a placeholder for the realm."""
+        if existing_id is not None:
+            existing = session.get(SendingProfile, existing_id)
+            if existing:
+                return existing.id  # type: ignore[return-value]
+
+        # Only set FK if realm exists; otherwise keep it nullable to avoid FK violation
+        realm_fk = realm if session.get(Realm, realm) else None
+        placeholder = SendingProfile(
+            name="Placeholder SMTP",
+            smtp_host="smtp.example.com",
+            smtp_port=587,
+            username="placeholder",
+            password="placeholder",
+            from_fname="Secure",
+            from_lname="Learning",
+            from_email="noreply@example.com",
+            realm_name=realm_fk,
+        )
+        session.add(placeholder)
+        session.flush()
+        return placeholder.id  # type: ignore[return-value]
+
+    def _ensure_realm_exists(self, session: Session, realm_name: str) -> None:
+        """Ensure a Realm row exists before assigning FK fields."""
+        if session.get(Realm, realm_name):
+            return
+        session.add(Realm(name=realm_name, domain=f"{realm_name}.local"))
+        session.flush()
+
     def _validate_campaign(self, campaign: CampaignCreate, session: Session) -> None:
         """Validate campaign data."""
         validations = [
-            (User, campaign.creator_id, "Invalid creator ID"),
             (SendingProfile, campaign.sending_profile_id, "Invalid sending profile ID"),
             (EmailTemplate, campaign.email_template_id, "Invalid email template ID"),
             (
@@ -291,8 +412,11 @@ class CampaignService:
             ),
         ]
 
+        if campaign.creator_id is not None and not session.get(User, campaign.creator_id):
+            raise HTTPException(status_code=400, detail="Invalid creator ID")
+
         for model, id_value, error_msg in validations:
-            if not session.get(model, id_value):
+            if id_value is None or not session.get(model, id_value):
                 raise HTTPException(status_code=400, detail=error_msg)
 
         if campaign.sending_interval_seconds <= 0:
