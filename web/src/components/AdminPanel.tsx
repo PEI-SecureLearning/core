@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useKeycloak } from '@react-keycloak/web'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
+import { toast } from 'sonner'
 
 export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
@@ -33,13 +34,13 @@ export function CreateTenantPage() {
                     },
                 }
             )
-            alert('Realm created successfully!')
+            toast.success('Realm created successfully!')
             setRealmName('')
             setDomain('')
             setAdminEmail('')
         } catch (error) {
             console.error('Error creating realm:', error)
-            alert('Failed to create realm')
+            toast.error('Failed to create realm')
         } finally {
             setIsLoading(false)
         }
