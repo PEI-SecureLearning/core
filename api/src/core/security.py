@@ -10,7 +10,7 @@ from jwt import PyJWKClient
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL", "http://localhost:8080")
+AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
 RESOURCE_SERVER_ID = "api"
 
 
@@ -58,7 +58,6 @@ class valid_resource_access:
             )
             iss = decoded.get("iss")
             if iss:
-                # Extract realm from issuer URL (e.g., http://localhost:8080/realms/my-realm)
                 realm_name = iss.split("/realms/")[-1]
             else:
                 raise HTTPException(status_code=401, detail="Invalid token: missing issuer")

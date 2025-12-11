@@ -37,6 +37,7 @@ interface CampaignContextType {
   resetData: () => void;
   isValid: () => boolean;
   getPayload: () => CampaignCreatePayload | null;
+  creatorId?: string;
 }
 
 const initialCampaignData: CampaignData = {
@@ -55,7 +56,13 @@ const CampaignContext = createContext<CampaignContextType | undefined>(
   undefined
 );
 
-export function CampaignProvider({ children }: { children: ReactNode }) {
+export function CampaignProvider({
+  children,
+  creatorId,
+}: {
+  children: ReactNode;
+  creatorId?: string;
+}) {
   const [data, setData] = useState<CampaignData>({
     ...initialCampaignData,
   });
@@ -99,7 +106,7 @@ export function CampaignProvider({ children }: { children: ReactNode }) {
 
   return (
     <CampaignContext.Provider
-      value={{ data, updateData, resetData, isValid, getPayload }}
+      value={{ data, updateData, resetData, isValid, getPayload, creatorId }}
     >
       {children}
     </CampaignContext.Provider>

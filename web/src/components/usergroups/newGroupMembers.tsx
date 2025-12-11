@@ -157,7 +157,7 @@ function MembersSection({
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:8000/upload", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL.replace('/api', '')}/upload`, {
         method: "POST",
         body: formData,
       });

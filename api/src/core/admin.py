@@ -15,6 +15,9 @@ class Admin():
             raise HTTPException(status_code=500, detail="KEYCLOAK_URL environment variable is not set")
         if not self.admin_secret:
             raise HTTPException(status_code=500, detail="CLIENT_SECRET environment variable is not set")
+        
+        self.web_url = os.getenv("WEB_URL")
+        self.api_url = os.getenv("API_URL")
 
     def _get_admin_token(self):
         url = f"{self.keycloak_url}/realms/master/protocol/openid-connect/token"
@@ -1252,8 +1255,8 @@ class Admin():
                     "clientId": "react-app",
                     "enabled": True,
                     "publicClient": True,
-                    "redirectUris": ["http://localhost:5173/*"],
-                    "webOrigins": ["http://localhost:5173"],
+                    "redirectUris": [f"{self.web_url}/*"],
+                    "webOrigins": [self.web_url],
                     "standardFlowEnabled": True,
                     "directAccessGrantsEnabled": True,
                     "protocolMappers": [
@@ -1275,8 +1278,8 @@ class Admin():
                     "clientId": "api",
                     "enabled": True,
                     "publicClient": False,
-                    "redirectUris": ["http://localhost:8000/*"],
-                    "webOrigins": ["http://localhost:8000"],
+                    "redirectUris": [f"{self.api_url}/*"],
+                    "webOrigins": [self.api_url],
                     "implicitFlowEnabled": False,
                     "directAccessGrantsEnabled": True,
                     "serviceAccountsEnabled": True,

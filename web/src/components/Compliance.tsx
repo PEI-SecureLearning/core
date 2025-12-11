@@ -225,9 +225,9 @@ export default function ComplianceFlow() {
     setLoading(true);
     try {
       const [statusRes, docRes, quizRes] = await Promise.all([
-        apiClient.get<StatusResponse>("/api/compliance/status").then((r) => r.data),
-        apiClient.get<ComplianceDoc>("/api/compliance/latest").then((r) => r.data),
-        apiClient.get<QuizPayload>("/api/compliance/latest/quiz").then((r) => r.data),
+        apiClient.get<StatusResponse>("/compliance/status").then((r) => r.data),
+        apiClient.get<ComplianceDoc>("/compliance/latest").then((r) => r.data),
+        apiClient.get<QuizPayload>("/compliance/latest/quiz").then((r) => r.data),
       ]);
       setStatus(statusRes);
       setDoc(docRes);
@@ -281,7 +281,7 @@ export default function ComplianceFlow() {
     if (!keycloak.authenticated || !keycloak.token) return;
     if (isAdminContext) return; // skip compliance for platform admin context
     void loadStatusAndData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialized, keycloak.authenticated, keycloak.token]);
 
   useEffect(() => {
@@ -327,7 +327,7 @@ export default function ComplianceFlow() {
           choice: answers[q.id],
         })),
       };
-      const resp = await apiClient.post<SubmitResponse>("/api/compliance/submit", payload);
+      const resp = await apiClient.post<SubmitResponse>("/compliance/submit", payload);
       setResult(resp.data);
       if (resp.data.passed) {
         setStep("confirm");
@@ -352,7 +352,7 @@ export default function ComplianceFlow() {
     setSubmitting(true);
     setError(null);
     try {
-      await apiClient.post("/api/compliance/accept", {
+      await apiClient.post("/compliance/accept", {
         version: doc.version,
         score: result.score,
       });
@@ -423,9 +423,8 @@ export default function ComplianceFlow() {
             {STEPS.map((s) => (
               <div key={s} className="flex items-center gap-1">
                 <div
-                  className={`h-2.5 w-2.5 rounded-full ${
-                    step === s || STEPS.indexOf(step) > STEPS.indexOf(s) ? "bg-white" : "bg-white/40"
-                  }`}
+                  className={`h-2.5 w-2.5 rounded-full ${step === s || STEPS.indexOf(step) > STEPS.indexOf(s) ? "bg-white" : "bg-white/40"
+                    }`}
                 />
                 <span className="text-white/80 capitalize">{s}</span>
               </div>
@@ -586,8 +585,9 @@ export default function ComplianceFlow() {
                         clearPersistedFailure();
                         setAnswers({});
                         setResult(null);
+                        setResult(null);
                         const refreshed = await apiClient
-                          .get<QuizPayload>("/api/compliance/latest/quiz")
+                          .get<QuizPayload>("/compliance/latest/quiz")
                           .then((r) => r.data);
                         setQuiz(refreshed);
                         setStep("quiz");
@@ -613,11 +613,10 @@ export default function ComplianceFlow() {
                             return (
                               <label
                                 key={optIdx}
-                                className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer transition ${
-                                  selected
+                                className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer transition ${selected
                                     ? "border-purple-500 bg-purple-50"
                                     : "border-transparent hover:bg-gray-50"
-                                }`}
+                                  }`}
                               >
                                 <input
                                   type="radio"

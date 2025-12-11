@@ -22,7 +22,7 @@ export function Navbar() {
   const routerState = useRouterState();
   const { keycloak } = useKeycloak();
   const currentPath = routerState.location.pathname;
-  const BASE_URL = 'http://localhost:5173';
+  const BASE_URL = import.meta.env.VITE_WEB_URL;
 
   // Split the current path into parts (e.g. "/campaigns/new-campaign" → ["campaigns", "new-campaign"])
   const parts = currentPath.split("/").filter(Boolean);

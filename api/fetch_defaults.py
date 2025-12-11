@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "http://localhost:8080")
+KEYCLOAK_URL = os.getenv("KEYCLOAK_URL")
 ADMIN_SECRET = os.getenv("CLIENT_SECRET")
 
 def get_admin_token():
