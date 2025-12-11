@@ -61,7 +61,6 @@ class CampaignService:
                     "sending_interval_seconds",
                     "email_template",
                     "landing_page_template",
-                    "creator_id",
                 }
             ),
             sending_interval_seconds=interval,
@@ -499,8 +498,8 @@ class CampaignService:
             status=campaign.status,
             realm_name=campaign.realm_name,
             # Related entities
-            creator_id=campaign.creator_id,
-            creator_email=campaign.creator.email if campaign.creator else None,
+            email_template_id=campaign.email_template_id,
+            landing_page_template_id=campaign.landing_page_template_id,
             sending_profile_name=(
                 campaign.sending_profile.name if campaign.sending_profile else None
             ),

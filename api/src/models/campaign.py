@@ -125,6 +125,8 @@ class CampaignDetailInfo(SQLModel):
     realm_name: Optional[str] = None
 
     # Related entity names
+    email_template_id: Optional[int] = None
+    landing_page_template_id: Optional[int] = None
     creator_id: Optional[str] = None
     creator_email: Optional[str] = None
     sending_profile_name: Optional[str] = None

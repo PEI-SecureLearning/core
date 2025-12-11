@@ -122,15 +122,9 @@ function CampaignStepper() {
 }
 
 function RouteComponent() {
-  const { keycloak } = useKeycloak();
-
-  const creatorId = useMemo(() => {
-    return (keycloak.tokenParsed as { sub?: string } | undefined)?.sub ?? null;
-  }, [keycloak.tokenParsed]);
-
   return (
     <div className="size-full p-6 bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
-      <CampaignProvider creatorId={creatorId ?? undefined}>
+      <CampaignProvider>
         <CampaignStepper />
       </CampaignProvider>
     </div>
