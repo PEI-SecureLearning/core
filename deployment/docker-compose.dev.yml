@@ -27,8 +27,35 @@ services:
       - mongo_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  smtp:
+    build:
+      context: ../smtp
+      dockerfile: Dockerfile
+    container_name: smtp
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: user
+      RABBITMQ_PASS: password
+      RABBITMQ_QUEUE: email_queue
+      RATE_LIMITER_MAX_REQUESTS: 10
+      RATE_LIMITER_TIME_WINDOW_SECONDS: 1
+    depends_on:
+      - rabbitmq
+
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
+    image: quay.io/keycloak/keycloak:26.4
     command: start --import-realm
     container_name: keycloak
     environment:
@@ -104,4 +131,5 @@ services:
 
 volumes:
   db_data:
+  rabbitmq_data:
   mongo_data:

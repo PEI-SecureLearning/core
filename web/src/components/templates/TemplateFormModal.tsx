@@ -41,7 +41,7 @@ export function TemplateFormModal({ showForm, editingTemplate, form, setForm, on
             Close
           </Button>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 h-500px overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               placeholder="Name"
@@ -76,7 +76,7 @@ export function TemplateFormModal({ showForm, editingTemplate, form, setForm, on
           </div>
           <Textarea
             placeholder="HTML content"
-            rows={8}
+            className="h-500px overflow-y-auto"
             value={form.html}
             onChange={(e) => setForm({ ...form, html: e.target.value })}
           />

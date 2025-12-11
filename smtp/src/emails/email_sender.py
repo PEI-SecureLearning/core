@@ -64,6 +64,7 @@ class EmailSender:
             f'width="1" height="1" alt="" style="display:none;border:0;" />'
         )
         
+        #TODO buscar ENV
         # Add redirect link for ${{redirect}} - points to track/click endpoint
         arguments["redirect"] = f"api/track/click?si={tracking_id}"
         

@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     try:
         start_scheduler()
-    yield
+        yield
     finally:
         await close_mongo_client()
     shutdown_scheduler()
