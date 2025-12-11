@@ -1,51 +1,47 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from sqlmodel import Field, Relationship, SQLModel
 
 
-class EmailSendingTemplateLink(SQLModel, table=True):
-    """Link table for EmailSending-EmailTemplate many-to-many relationship"""
-    __tablename__ = "email_sending_template_link"
-
-    email_sending_id: Optional[int] = Field(default=None, foreign_key="email_sending.id", primary_key=True)
-    email_template_id: Optional[int] = Field(default=None, foreign_key="email_template.id", primary_key=True)
-
-
 class EmailSending(SQLModel, table=True):
-    """Email sending schedule model"""
+    """Email sending event tied to a campaign"""
     __tablename__ = "email_sending"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    profile: str  # Email profile to use
-    date: datetime
-    time: str  # Time of day for sending
-    args: Optional[str] = None  # Additional arguments as JSON
+    email_to: str
+    scheduled_time: datetime
+    status: Optional[str] = None
+    tracking_token: Optional[str] = Field(default=None, index=True)
+    sent_at: Optional[datetime] = None
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
     campaign_id: int = Field(foreign_key="campaign.id")
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
 
     # Relationships
     campaign: "Campaign" = Relationship(back_populates="schedules")
-    email_templates: List["EmailTemplate"] = Relationship(
-        back_populates="email_sendings",
-        link_model=EmailSendingTemplateLink
-    )
-    landing_pages: List["LandingPage"] = Relationship(back_populates="email_sending")
+    landing_pages: list["LandingPage"] = Relationship(back_populates="email_sending")
 
 
 class EmailSendingCreate(SQLModel):
-    """Schema for creating an email sending"""
-    profile: str
-    date: datetime
-    time: str
-    args: Optional[str] = None
+    email_to: str
+    scheduled_time: datetime
+    status: Optional[str] = None
+    tracking_token: Optional[str] = None
+    sent_at: Optional[datetime] = None
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
     campaign_id: int
-    email_template_ids: List[int]
+    user_id: Optional[int] = None
 
 
 class EmailSendingUpdate(SQLModel):
-    """Schema for updating an email sending"""
-    profile: Optional[str] = None
-    date: Optional[datetime] = None
-    time: Optional[str] = None
-    args: Optional[str] = None
-    email_template_ids: Optional[List[int]] = None
+    email_to: Optional[str] = None
+    scheduled_time: Optional[datetime] = None
+    status: Optional[str] = None
+    tracking_token: Optional[str] = None
+    sent_at: Optional[datetime] = None
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    user_id: Optional[int] = None

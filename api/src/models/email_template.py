@@ -1,8 +1,6 @@
-from typing import Optional, List
+from typing import Optional
 
-from sqlmodel import Field, Relationship, SQLModel
-
-from .email_sending import EmailSendingTemplateLink
+from sqlmodel import Field, SQLModel
 
 
 class EmailTemplate(SQLModel, table=True):
@@ -10,21 +8,20 @@ class EmailTemplate(SQLModel, table=True):
     __tablename__ = "email_template"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    content_id: int = Field(foreign_key="content.id")
-
-    # Relationships
-    content: "Content" = Relationship(back_populates="email_templates")
-    email_sendings: List["EmailSending"] = Relationship(
-        back_populates="email_templates",
-        link_model=EmailSendingTemplateLink
-    )
+    name: Optional[str] = None
+    subject: Optional[str] = None
+    content_link: Optional[str] = Field(default=None, index=True, description="Mongo template id or URL")
 
 
 class EmailTemplateCreate(SQLModel):
     """Schema for creating an email template"""
-    content_id: int
+    name: Optional[str] = None
+    subject: Optional[str] = None
+    content_link: Optional[str] = None
 
 
 class EmailTemplateUpdate(SQLModel):
     """Schema for updating an email template"""
-    content_id: Optional[int] = None
+    name: Optional[str] = None
+    subject: Optional[str] = None
+    content_link: Optional[str] = None

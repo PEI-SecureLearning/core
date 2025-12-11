@@ -67,4 +67,3 @@ app.include_router(realm.router, prefix="/api", tags=["realms"])
 app.include_router(compliance.router, prefix="/api", tags=["compliance"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
-

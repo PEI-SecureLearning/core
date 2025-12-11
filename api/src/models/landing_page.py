@@ -8,21 +8,23 @@ class LandingPageTemplate(SQLModel, table=True):
     __tablename__ = "landing_page_template"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    content_id: int = Field(foreign_key="content.id")
+    name: Optional[str] = None
+    content_link: Optional[str] = Field(default=None, index=True, description="Mongo template id or URL")
 
     # Relationships
-    content: "Content" = Relationship(back_populates="landing_page_templates")
     landing_pages: List["LandingPage"] = Relationship(back_populates="template")
 
 
 class LandingPageTemplateCreate(SQLModel):
     """Schema for creating a landing page template"""
-    content_id: int
+    name: Optional[str] = None
+    content_link: Optional[str] = None
 
 
 class LandingPageTemplateUpdate(SQLModel):
     """Schema for updating a landing page template"""
-    content_id: Optional[int] = None
+    name: Optional[str] = None
+    content_link: Optional[str] = None
 
 
 class LandingPage(SQLModel, table=True):
