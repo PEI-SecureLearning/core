@@ -1,66 +1,187 @@
 from datetime import datetime
-from typing import Optional, List
+from enum import StrEnum
+from typing import TYPE_CHECKING, Optional
+from sqlmodel import Relationship, SQLModel, Field
 
-from sqlmodel import Field, Relationship, SQLModel
+from src.models.user_group import CampaignUserGroupLink
+from src.models.email_sending import UserSendingInfo
+
+if TYPE_CHECKING:
+    from src.models.email_sending import EmailSending
+    from src.models.email_template import EmailTemplate
+    from src.models.landing_page_template import LandingPageTemplate
+    from src.models.sending_profile import SendingProfile
+    from src.models.user import User
+    from src.models.user_group import UserGroup
 
 
-class CampaignGroupLink(SQLModel, table=True):
-    """Link table for Campaign-Group many-to-many relationship"""
-    __tablename__ = "campaign_group_link"
+MIN_INTERVAL = 6
 
-    campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id", primary_key=True)
-    group_id: Optional[int] = Field(default=None, foreign_key="group.id", primary_key=True)
+
+class CampaignStatus(StrEnum):
+    SCHEDULED = "scheduled"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    CANCELED = "canceled"
 
 
 class Campaign(SQLModel, table=True):
-    """Campaign model for phishing campaigns"""
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    description: Optional[str] = None
-    begin_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    time_between_sending: Optional[int] = Field(default=None, description="Seconds between sends")
-    status: Optional[str] = None
+    description: Optional[str] = Field(default=None)
+    begin_date: datetime
+    end_date: datetime
+    sending_interval_seconds: int = Field(default=MIN_INTERVAL)
+    status: CampaignStatus = Field(default=CampaignStatus.SCHEDULED)
+    total_recipients: int = Field(default=0)
     total_sent: int = Field(default=0)
     total_opened: int = Field(default=0)
     total_clicked: int = Field(default=0)
-    sending_profile_id: Optional[int] = Field(default=None, foreign_key="sending_profile.id")
-    email_template_id: Optional[int] = Field(default=None, foreign_key="email_template.id")
-    landing_page_template_id: Optional[int] = Field(default=None, foreign_key="landing_page_template.id")
-    tenant_id: Optional[int] = None
-    creator_id: int = Field(foreign_key="user.id")
+    total_phished: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.now)
+
+    # FKs
+    sending_profile_id: Optional[int] = Field(
+        default=None, foreign_key="sendingprofile.id"
+    )
+    email_template_id: Optional[int] = Field(
+        default=None, foreign_key="emailtemplate.id"
+    )
+    landing_page_template_id: Optional[int] = Field(
+        default=None, foreign_key="landingpagetemplate.id"
+    )
+
+    realm_name: Optional[str] = Field(
+        default=None, foreign_key="realm.name", index=True
+    )
 
     # Relationships
-    creator: "User" = Relationship(back_populates="created_campaigns")
-    groups: List["Group"] = Relationship(back_populates="campaigns", link_model=CampaignGroupLink)
-    schedules: List["EmailSending"] = Relationship(back_populates="campaign")
-    remediation_plan: Optional["RemediationPlan"] = Relationship(back_populates="campaign")
+
+    user_groups: list["UserGroup"] = Relationship(
+        back_populates="campaigns", link_model=CampaignUserGroupLink
+    )
+
+    sending_profile: Optional["SendingProfile"] = Relationship(
+        back_populates="campaigns"
+    )
+
+    email_template: Optional["EmailTemplate"] = Relationship(back_populates="campaigns")
+
+    landing_page_template: Optional["LandingPageTemplate"] = Relationship(
+        back_populates="campaigns"
+    )
+
+    email_sendings: list["EmailSending"] = Relationship(back_populates="campaign")
+
+    realm: Optional["Realm"] = Relationship(back_populates="campaigns")
 
 
 class CampaignCreate(SQLModel):
-    """Schema for creating a campaign"""
     name: str
     description: Optional[str] = None
-    begin_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    time_between_sending: Optional[int] = None
-    status: Optional[str] = None
-    sending_profile_id: Optional[int] = None
-    email_template_id: Optional[int] = None
-    landing_page_template_id: Optional[int] = None
-    tenant_id: Optional[int] = None
-    creator_id: int
+    begin_date: datetime
+    end_date: datetime
+    sending_interval_seconds: int = MIN_INTERVAL
+    sending_profile_id: int
+    email_template_id: int
+    landing_page_template_id: int
+    user_group_ids: list[str]
 
 
-class CampaignUpdate(SQLModel):
-    """Schema for updating a campaign"""
-    name: Optional[str] = None
+class CampaignDisplayInfo(SQLModel):
+    id: int
+    name: str
+    begin_date: datetime
+    end_date: datetime
+    status: CampaignStatus
+    total_sent: int = 0
+    total_opened: int = 0
+    total_clicked: int = 0
+
+
+class CampaignDetailInfo(SQLModel):
+    """Detailed campaign information for single campaign view."""
+
+    # Core attributes
+    id: int
+    name: str
     description: Optional[str] = None
-    begin_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
-    time_between_sending: Optional[int] = None
-    status: Optional[str] = None
-    sending_profile_id: Optional[int] = None
-    email_template_id: Optional[int] = None
-    landing_page_template_id: Optional[int] = None
-    tenant_id: Optional[int] = None
+    begin_date: datetime
+    end_date: datetime
+    sending_interval_seconds: int
+    status: CampaignStatus
+    realm_name: Optional[str] = None
+
+    # Related entity names
+    creator_id: Optional[str] = None
+    creator_email: Optional[str] = None
+    sending_profile_name: Optional[str] = None
+    email_template_name: Optional[str] = None
+    landing_page_template_name: Optional[str] = None
+
+    # Statistics
+    total_recipients: int = 0
+    total_sent: int = 0
+    total_opened: int = 0
+    total_clicked: int = 0
+    total_phished: int = 0
+    total_failed: int = 0
+
+    # Rates
+    delivery_rate: float = 0.0
+    open_rate: float = 0.0
+    click_rate: float = 0.0
+    phish_rate: float = 0.0
+
+    # Progress
+    progress_percentage: float = 0.0  # % of emails sent vs total
+    time_elapsed_percentage: float = 0.0  # % of campaign duration elapsed
+
+    # Time metrics
+    avg_time_to_open_seconds: Optional[float] = None
+    avg_time_to_click_seconds: Optional[float] = None
+    first_open_at: Optional[datetime] = None
+    last_open_at: Optional[datetime] = None
+    first_click_at: Optional[datetime] = None
+    last_click_at: Optional[datetime] = None
+
+    # User breakdown
+    user_sendings: list[UserSendingInfo] = []
+
+
+class CampaignGlobalStats(SQLModel):
+    """Global statistics across all campaigns for a realm."""
+
+    # Campaign counts
+    total_campaigns: int = 0
+    scheduled_campaigns: int = 0
+    running_campaigns: int = 0
+    completed_campaigns: int = 0
+    canceled_campaigns: int = 0
+
+    # Email statistics
+    total_emails_scheduled: int = 0
+    total_emails_sent: int = 0
+    total_emails_opened: int = 0
+    total_emails_clicked: int = 0
+    total_emails_phished: int = 0
+    total_emails_failed: int = 0
+
+    # Rates (percentages)
+    delivery_rate: float = 0.0  # sent / scheduled
+    open_rate: float = 0.0  # opened / sent
+    click_rate: float = 0.0  # clicked / sent
+    phish_rate: float = 0.0  # phished / sent
+
+    # User vulnerability
+    unique_users_targeted: int = 0
+    users_who_opened: int = 0
+    users_who_clicked: int = 0
+    users_who_phished: int = 0
+    repeat_offenders: list[str] = (
+        []
+    )  # Users who fell for > 50% of campaigns they were in
+
+    # Time-based
+    avg_time_to_open_seconds: Optional[float] = None
+    avg_time_to_click_seconds: Optional[float] = None

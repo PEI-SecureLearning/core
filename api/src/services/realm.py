@@ -18,7 +18,9 @@ def get_admin() -> Admin:
 def realm_from_token(access_token: str) -> str | None:
     """Parse realm from token issuer without verifying signature (Keycloak managed)."""
     try:
-        decoded = jwt.decode(access_token, options={"verify_signature": False, "verify_aud": False})
+        decoded = jwt.decode(
+            access_token, options={"verify_signature": False, "verify_aud": False}
+        )
         iss = decoded.get("iss")
         if iss:
             print(f"[realm:realm_from_token] access token iss={iss}")
@@ -68,6 +70,7 @@ def get_platform_logs(max_results: int = 100) -> dict:
 
 # ============ Realm Operations ============
 
+
 def get_realm_by_domain(session: Session, domain: str) -> Realm | None:
     statement = select(Realm).where(Realm.domain == domain)
     return session.exec(statement).first()
@@ -85,18 +88,20 @@ def create_realm_in_keycloak(realm: RealmCreate) -> RealmCreate:
             realm_name=realm.name,
             admin_email=realm.adminEmail,
             domain=realm.domain,
-            features=realm.features
+            features=realm.features,
         )
         if response.status_code != 201:
             raise HTTPException(
-                status_code=response.status_code, 
-                detail=f"Failed to create realm in Keycloak: {response.text}"
+                status_code=response.status_code,
+                detail=f"Failed to create realm in Keycloak: {response.text}",
             )
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
+        )
+
     return realm
 
 
@@ -111,30 +116,27 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
     response = _admin.create_realm(
         realm_name=realm_in.name,
         admin_email=realm_in.adminEmail,
-        user_count=realm_in.userCount,
-        bundle=realm_in.bundle,
-        features=realm_in.features
+        features=realm_in.features,
+        domain=realm_in.domain,
     )
 
     if response.status_code != 201:
         raise HTTPException(
-            status_code=response.status_code, 
-            detail=f"Failed to create realm in Keycloak: {response.text}"
+            status_code=response.status_code,
+            detail=f"Failed to create realm in Keycloak: {response.text}",
         )
 
     # Persist to DB
-    db_realm = Realm(
-        name=realm_in.name,
-        domain=realm_in.domain
-    )
+    db_realm = Realm(name=realm_in.name, domain=realm_in.domain)
     session.add(db_realm)
     session.commit()
     session.refresh(db_realm)
-    
+
     return db_realm
 
 
 # ============ User Operations ============
+
 
 def create_user_in_realm(
     realm: str,
@@ -142,7 +144,7 @@ def create_user_in_realm(
     name: str,
     email: str,
     role: str,
-    group_id: str | None = None
+    group_id: str | None = None,
 ) -> dict:
     """Create a new user inside the specified Keycloak realm/tenant."""
     # Generate a one-time password for first login.
@@ -160,12 +162,14 @@ def create_user_in_realm(
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
+        )
 
     if response.status_code not in (201, 204):
         raise HTTPException(
-            status_code=response.status_code, 
-            detail=f"Failed to create user in Keycloak: {response.text}"
+            status_code=response.status_code,
+            detail=f"Failed to create user in Keycloak: {response.text}",
         )
 
     # Optionally add user to a group if provided
@@ -195,7 +199,9 @@ def list_users_in_realm(realm: str) -> dict:
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
+        )
 
     # Return simplified fields
     simplified = []
@@ -220,7 +226,9 @@ def get_user_in_realm(realm: str, user_id: str) -> dict:
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
+        )
 
     for u in users:
         if u.get("id") == user_id:
@@ -243,10 +251,13 @@ def delete_user_in_realm(realm: str, user_id: str) -> None:
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to delete user in Keycloak: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to delete user in Keycloak: {str(e)}"
+        )
 
 
 # ============ Group Operations ============
+
 
 def list_groups_in_realm(realm: str) -> dict:
     """List groups inside the specified Keycloak realm/tenant."""
@@ -255,11 +266,15 @@ def list_groups_in_realm(realm: str) -> dict:
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
+        )
 
     simplified = []
     for g in groups:
-        simplified.append({"id": g.get("id"), "name": g.get("name"), "path": g.get("path")})
+        simplified.append(
+            {"id": g.get("id"), "name": g.get("name"), "path": g.get("path")}
+        )
     return {"realm": realm, "groups": simplified}
 
 
@@ -268,11 +283,16 @@ def create_group_in_realm(realm: str, group_name: str) -> dict:
     try:
         response = _admin.create_group(realm, group_name)
         if response.status_code not in (201, 204):
-            raise HTTPException(status_code=response.status_code, detail="Failed to create group in Keycloak")
+            raise HTTPException(
+                status_code=response.status_code,
+                detail="Failed to create group in Keycloak",
+            )
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
+        )
     return {"realm": realm, "name": group_name}
 
 
@@ -283,7 +303,9 @@ def add_user_to_group_in_realm(realm: str, user_id: str, group_id: str) -> None:
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to add user to group: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to add user to group: {str(e)}"
+        )
 
 
 def list_group_members_in_realm(realm: str, group_id: str) -> dict:
@@ -293,7 +315,9 @@ def list_group_members_in_realm(realm: str, group_id: str) -> dict:
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to fetch group members: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to fetch group members: {str(e)}"
+        )
 
     simplified = []
     for m in members:
@@ -336,4 +360,6 @@ def remove_user_from_group_in_realm(realm: str, user_id: str, group_id: str) -> 
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
-        raise HTTPException(status_code=500, detail=f"Failed to remove user from group: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to remove user from group: {str(e)}"
+        )

@@ -1,47 +1,55 @@
-from datetime import datetime
+from enum import StrEnum
 from typing import Optional
+from sqlmodel import Field, SQLModel, Relationship
+from datetime import datetime
 
-from sqlmodel import Field, Relationship, SQLModel
+from src.utils import token
+
+
+class EmailSendingStatus(StrEnum):
+    SCHEDULED = "scheduled"
+    SENT = "sent"
+    OPENED = "opened"
+    CLICKED = "clicked"
+    PHISHED = "phished"
+    FAILED = "failed"
 
 
 class EmailSending(SQLModel, table=True):
-    """Email sending event tied to a campaign"""
-    __tablename__ = "email_sending"
-
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: str = Field(foreign_key="user.keycloak_id")
+    scheduled_date: datetime
+    status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
     email_to: str
-    scheduled_time: datetime
-    status: Optional[str] = None
-    tracking_token: Optional[str] = Field(default=None, index=True)
-    sent_at: Optional[datetime] = None
-    opened_at: Optional[datetime] = None
-    clicked_at: Optional[datetime] = None
-    campaign_id: int = Field(foreign_key="campaign.id")
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    tracking_token: str = Field(
+        default_factory=lambda: token.generate_tracking_token()
+    )  # You might want to generate a unique token here
+    sent_at: Optional[datetime] = Field(default=None)
+    opened_at: Optional[datetime] = Field(default=None)
+    clicked_at: Optional[datetime] = Field(default=None)
+    phished_at: Optional[datetime] = Field(default=None)
 
-    # Relationships
-    campaign: "Campaign" = Relationship(back_populates="schedules")
-    landing_pages: list["LandingPage"] = Relationship(back_populates="email_sending")
+    campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")
+
+    campaign: Optional["Campaign"] = Relationship(back_populates="email_sendings")
+    user: Optional["User"] = Relationship(
+        back_populates="email_sendings"
+    )  # Assuming a User model exists
 
 
 class EmailSendingCreate(SQLModel):
-    email_to: str
-    scheduled_time: datetime
-    status: Optional[str] = None
-    tracking_token: Optional[str] = None
-    sent_at: Optional[datetime] = None
-    opened_at: Optional[datetime] = None
-    clicked_at: Optional[datetime] = None
+    user_id: str
+    scheduled_date: datetime
+    status: EmailSendingStatus
     campaign_id: int
-    user_id: Optional[int] = None
 
 
-class EmailSendingUpdate(SQLModel):
-    email_to: Optional[str] = None
-    scheduled_time: Optional[datetime] = None
-    status: Optional[str] = None
-    tracking_token: Optional[str] = None
+class UserSendingInfo(SQLModel):
+    """Summary of a user's interaction with a campaign email."""
+    user_id: str
+    email: str
+    status: str
     sent_at: Optional[datetime] = None
     opened_at: Optional[datetime] = None
     clicked_at: Optional[datetime] = None
-    user_id: Optional[int] = None
+    phished_at: Optional[datetime] = None
