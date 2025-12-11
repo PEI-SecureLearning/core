@@ -3,11 +3,15 @@ Org Manager Service - Business logic for org manager operations.
 """
 
 import secrets
+
+from requests import session
 from fastapi import HTTPException
 from sqlmodel import Session, select
 from src.core.org_manager import OrgManager
 from src.models.user import User
 from src.models.user_group import UserGroup
+from src.core.db import engine
+from src.models.realm import Realm
 
 # Singleton instance
 _org_manager = OrgManager()
@@ -97,6 +101,26 @@ def create_user(
         except Exception:
             pass  # Ignore group assignment errors
 
+    # Persist the user locally (upsert by keycloak_id). If Location header missing, look up by username.
+    if not user_id:
+        try:
+            kc_users = _org_manager.list_users(realm, token)
+            match = next((u for u in kc_users if u.get("username") == username), None)
+            user_id = match.get("id") if match else None
+        except Exception:
+            user_id = None
+
+    if user_id:
+        with Session(engine) as session:
+            if realm and not session.get(Realm, realm):
+                session.add(Realm(name=realm, domain=f"{realm}.local"))
+            existing = session.get(User, user_id)
+            if existing:
+                existing.email = email
+            else:
+                session.add(User(keycloak_id=user_id, email=email))
+            session.commit()
+
     return {
         "realm": realm,
         "username": username,
@@ -108,8 +132,11 @@ def create_user(
 def delete_user(realm: str, token: str, user_id: str, session: Session) -> None:
     """Delete a user from the realm."""
     _org_manager.delete_user(realm, token, user_id)
-    session.delete(session.exec(select(User).where(User.keycloak_id == user_id)).one())
-    session.commit()
+    with Session(engine) as session:
+        db_user = session.get(User, user_id)
+        if db_user:
+            session.delete(db_user)
+            session.commit()
 
 
 # ============ Group Operations ============
@@ -131,28 +158,32 @@ def create_group(session: Session, realm: str, token: str, name: str) -> dict:
     """Create a group in the realm."""
     response = _org_manager.create_group(realm, token, name)
 
-    group_id = None
-    location = response.headers.get("Location")
-    if location:
-        group_id = location.rstrip("/").split("/")[-1]
-        group = UserGroup(keycloak_id=group_id)
-        session.add(group)
-        session.commit()
-
     if response.status_code not in (201, 204):
         raise HTTPException(
-            status_code=response.status_code, detail="Failed to create group"
+            status_code=response.status_code,
+            detail="Failed to create group"
         )
+    # Persist group locally
+    location = response.headers.get("Location")
+    group_id = None
+    if location:
+        group_id = location.rstrip("/").split("/")[-1]
+    if group_id:
+        existing = session.get(UserGroup, group_id)
+        if not existing:
+            session.add(UserGroup(keycloak_id=group_id))
+            session.commit()
     return {"realm": realm, "name": name}
 
 
 def delete_group(session: Session, realm: str, token: str, group_id: str) -> None:
     """Delete a group from the realm."""
     _org_manager.delete_group(realm, token, group_id)
-    session.delete(
-        session.exec(select(UserGroup).where(UserGroup.keycloak_id == group_id)).one()
-    )
-    session.commit()
+    with Session(engine) as session:
+        db_group = session.get(UserGroup, group_id)
+        if db_group:
+            session.delete(db_group)
+            session.commit()
 
 
 def update_group(realm: str, token: str, group_id: str, name: str) -> None:

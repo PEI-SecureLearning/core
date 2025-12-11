@@ -76,15 +76,27 @@ class Campaign(SQLModel, table=True):
     realm: Optional["Realm"] = Relationship(back_populates="campaigns")
 
 
+class TemplateSelection(SQLModel):
+    """Template coming from the Mongo templates service to persist in Postgres."""
+
+    id: str
+    name: Optional[str] = None
+    subject: Optional[str] = None
+    path: Optional[str] = None
+
+
 class CampaignCreate(SQLModel):
     name: str
     description: Optional[str] = None
     begin_date: datetime
     end_date: datetime
     sending_interval_seconds: int = MIN_INTERVAL
-    sending_profile_id: int
-    email_template_id: int
-    landing_page_template_id: int
+    sending_profile_id: Optional[int] = None
+    creator_id: Optional[str] = None
+    email_template_id: Optional[int] = None
+    landing_page_template_id: Optional[int] = None
+    email_template: Optional[TemplateSelection] = None
+    landing_page_template: Optional[TemplateSelection] = None
     user_group_ids: list[str]
 
 
@@ -113,6 +125,8 @@ class CampaignDetailInfo(SQLModel):
     realm_name: Optional[str] = None
 
     # Related entity names
+    email_template_id: Optional[int] = None
+    landing_page_template_id: Optional[int] = None
     creator_id: Optional[str] = None
     creator_email: Optional[str] = None
     sending_profile_name: Optional[str] = None

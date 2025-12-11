@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 
 class User(SQLModel, table=True):
+    __tablename__ = "useres"
     keycloak_id: str = Field(primary_key=True)
     email: str
 

@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
 from src.routers import (
@@ -15,8 +15,6 @@ from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.core.security import valid_resource_access
 from src.tasks import start_scheduler, shutdown_scheduler
-import csv
-import codecs
 
 from jwt import PyJWKClient
 import jwt
@@ -63,16 +61,6 @@ app.add_middleware(
 )
 async def health_check():
     return {"status": "ok"}
-
-
-@app.post("/upload")
-def upload(file: UploadFile = File(...)):
-    csvReader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
-    data = []
-    for rows in csvReader:
-        data.append(rows)
-    file.file.close()
-    return data
 
 
 # Include routers

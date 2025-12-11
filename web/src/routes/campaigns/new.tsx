@@ -26,7 +26,7 @@ interface StepConfig {
 }
 
 function CampaignStepper() {
-  const { getPayload, isValid } = useCampaign();
+  const { getPayload, isValid, getValidationErrors } = useCampaign();
   const { keycloak } = useKeycloak();
   const navigate = useNavigate();
 
@@ -63,8 +63,11 @@ function CampaignStepper() {
 
   const handleCreateCampaign = async () => {
     if (!isValid()) {
+      const errors = getValidationErrors();
       toast.error(
-        "Campaign data is incomplete. Please fill in all required fields."
+        errors.length
+          ? errors.join(" ")
+          : "Campaign data is incomplete. Please fill in all required fields."
       );
       return;
     }
@@ -76,7 +79,7 @@ function CampaignStepper() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/realms/${realm}/campaigns`, {
+      const response = await fetch(`${API_BASE}/campaigns`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -119,15 +122,9 @@ function CampaignStepper() {
 }
 
 function RouteComponent() {
-  const { keycloak } = useKeycloak();
-
-  const creatorId = useMemo(() => {
-    return (keycloak.tokenParsed as { sub?: string } | undefined)?.sub ?? null;
-  }, [keycloak.tokenParsed]);
-
   return (
     <div className="size-full p-6 bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
-      <CampaignProvider creatorId={creatorId ?? undefined}>
+      <CampaignProvider>
         <CampaignStepper />
       </CampaignProvider>
     </div>
