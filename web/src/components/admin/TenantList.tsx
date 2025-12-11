@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink, Loader2, Trash2 } from 'lucide-react'
 import { apiClient } from '../../lib/api-client'
+import { useConfirm } from '../ui/confirm-modal'
+import { toast } from 'sonner'
+import { motion } from 'motion/react'
 
 interface Tenant {
     id: string
@@ -28,6 +31,22 @@ export function TenantList() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [deleting, setDeleting] = useState<string | null>(null)
+    const confirm = useConfirm()
+
+    const container = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    }
+
+    const item = {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0 }
+    }
 
     const fetchTenants = async () => {
         try {
@@ -56,18 +75,24 @@ export function TenantList() {
     }, [])
 
     const deleteTenant = async (tenant: Tenant) => {
-        const confirmed = window.confirm(
-            `Are you sure you want to delete the tenant "${tenant.displayName}"?\n\nThis action cannot be undone and will permanently remove the realm and all its users from Keycloak.`
-        )
+        const confirmed = await confirm({
+            title: 'Delete Tenant',
+            message: `Are you sure you want to delete "${tenant.displayName}"? This action cannot be undone and will permanently remove the organization and all its users.`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            variant: 'danger'
+        })
 
         if (!confirmed) return
 
         try {
             setDeleting(tenant.realm)
             await apiClient.delete(`/realms/${tenant.realm}`)
+            toast.success(`Tenant "${tenant.displayName}" deleted successfully`)
             // Refresh the tenant list
             await fetchTenants()
         } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Failed to delete tenant')
             setError(err instanceof Error ? err.message : 'Failed to delete tenant')
         } finally {
             setDeleting(null)
@@ -100,7 +125,11 @@ export function TenantList() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex justify-between items-center"
+            >
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">Tenant Management</h2>
                     <p className="text-gray-500 mt-1">Manage organizations and their feature access</p>
@@ -111,34 +140,55 @@ export function TenantList() {
                         New Tenant
                     </button>
                 </Link>
-            </div>
+            </motion.div>
 
             {loading && (
-                <div className="flex justify-center items-center py-12">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex justify-center items-center py-12"
+                >
                     <Loader2 className="animate-spin text-blue-600" size={32} />
                     <span className="ml-3 text-gray-600">Loading tenants...</span>
-                </div>
+                </motion.div>
             )}
 
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+                >
                     <p className="font-medium">Failed to load tenants</p>
                     <p className="text-sm mt-1">{error}</p>
-                </div>
+                </motion.div>
             )}
 
             {!loading && !error && tenants.length === 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center"
+                >
                     <Building2 className="mx-auto text-gray-400" size={48} />
                     <h3 className="mt-4 text-lg font-medium text-gray-900">No tenants yet</h3>
                     <p className="mt-2 text-gray-500">Get started by creating your first tenant.</p>
-                </div>
+                </motion.div>
             )}
 
             {!loading && !error && tenants.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <motion.div
+                    variants={container}
+                    initial="hidden"
+                    animate="show"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
                     {tenants.map((tenant) => (
-                        <div key={tenant.id} className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <motion.div
+                            key={tenant.id}
+                            variants={item}
+                            className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                        >
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
@@ -206,9 +256,9 @@ export function TenantList() {
                                     </Link>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             )}
         </div>
     )
