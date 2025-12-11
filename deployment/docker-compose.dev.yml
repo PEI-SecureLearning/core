@@ -13,7 +13,6 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
-
   mongo:
     image: mongo:7
     container_name: mongo
@@ -132,9 +131,5 @@ services:
 
 volumes:
   db_data:
-<<<<<<< HEAD
-  mailpit_data:
   rabbitmq_data:
-=======
   mongo_data:
->>>>>>> e67eb334be9695843fe254177dbf2445da6ce726
