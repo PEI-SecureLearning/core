@@ -3,6 +3,8 @@ Org Manager Service - Business logic for org manager operations.
 """
 
 import secrets
+
+from requests import session
 from fastapi import HTTPException
 from sqlmodel import Session, select
 from src.core.org_manager import OrgManager
@@ -115,7 +117,6 @@ def create_user(
             existing = session.get(User, user_id)
             if existing:
                 existing.email = email
-                existing.last_keycloak_sync = None
             else:
                 session.add(User(keycloak_id=user_id, email=email))
             session.commit()
@@ -157,14 +158,6 @@ def create_group(session: Session, realm: str, token: str, name: str) -> dict:
     """Create a group in the realm."""
     response = _org_manager.create_group(realm, token, name)
 
-    group_id = None
-    location = response.headers.get("Location")
-    if location:
-        group_id = location.rstrip("/").split("/")[-1]
-        group = UserGroup(keycloak_id=group_id)
-        session.add(group)
-        session.commit()
-
     if response.status_code not in (201, 204):
         raise HTTPException(
             status_code=response.status_code,
@@ -176,7 +169,8 @@ def create_group(session: Session, realm: str, token: str, name: str) -> dict:
     if location:
         group_id = location.rstrip("/").split("/")[-1]
     if group_id:
-        with Session(engine) as session:
+        existing = session.get(UserGroup, group_id)
+        if not existing:
             session.add(UserGroup(keycloak_id=group_id))
             session.commit()
     return {"realm": realm, "name": name}
