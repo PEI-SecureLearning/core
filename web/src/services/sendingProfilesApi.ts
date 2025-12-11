@@ -77,3 +77,30 @@ export async function deleteSendingProfile(
   if (!res.ok) throw new Error("Failed to delete profile");
   return true;
 }
+
+// 5. UPDATE (PUT)
+export async function updateSendingProfile(
+  realm: string,
+  id: number,
+  data: SendingProfileCreate,
+  token?: string
+) {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}/sending-profiles/${id}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    // Tenta apanhar a mensagem de erro específica do backend se houver
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || "Failed to update profile");
+  }
+
+  return res.json();
+}

@@ -1,9 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
+import EditSendingProfile from "@/components/sending-profiles/id/EditSendingProfile";
 
-export const Route = createFileRoute('/sending-profiles/$id')({
+export const Route = createFileRoute("/sending-profiles/$id")({
   component: RouteComponent,
-})
+});
 
 function RouteComponent() {
-  return <div>Hello "/sending-profiles/$id"!</div>
+  return <EditSendingProfile />;
 }

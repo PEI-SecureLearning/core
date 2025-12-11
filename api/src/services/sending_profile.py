@@ -76,8 +76,9 @@ class SendingProfileService:
 
         # Add new headers
         for header_data in profile_data.custom_headers:
-            header = CustomHeader.model_validate(header_data)
-            header.profile_id = profile.id
+            header = CustomHeader(
+                name=header_data.name, value=header_data.value, profile_id=profile.id
+            )
             session.add(header)
 
         session.commit()

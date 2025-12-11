@@ -1,4 +1,4 @@
-import NewSendingProfile from "@/components/sending-profiles/NewSendingProfile";
+import NewSendingProfile from "@/components/sending-profiles/new/NewSendingProfile";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/sending-profiles/new")({

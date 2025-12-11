@@ -8,8 +8,8 @@ from src.routers import (
     org_manager,
     campaign,
     tracking,
-    templates
-    sending_profile,
+    templates,
+    sending_profile
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
