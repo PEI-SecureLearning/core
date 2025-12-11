@@ -1394,6 +1394,20 @@ class Admin:
                     "webOrigins": ["http://localhost:5173"],
                     "standardFlowEnabled": True,
                     "directAccessGrantsEnabled": True,
+                    "protocolMappers": [
+                        {
+                            "name": "api-audience",
+                            "protocol": "openid-connect",
+                            "protocolMapper": "oidc-audience-mapper",
+                            "consentRequired": False,
+                            "config": {
+                                "included.client.audience": "api",
+                                "id.token.claim": "false",
+                                "access.token.claim": "true",
+                                "introspection.token.claim": "true",
+                            },
+                        }
+                    ],
                 },
                 {
                     "clientId": "api",
@@ -1405,6 +1419,45 @@ class Admin:
                     "directAccessGrantsEnabled": True,
                     "serviceAccountsEnabled": True,
                     "authorizationServicesEnabled": True,
+                    "authorizationSettings": {
+                        "allowRemoteResourceManagement": True,
+                        "policyEnforcementMode": "ENFORCING",
+                        "resources": [
+                            {
+                                "name": "org_manager",
+                                "type": "urn:api:resources:org_manager",
+                                "ownerManagedAccess": False,
+                                "displayName": "Organization Manager Resource",
+                                "attributes": {},
+                                "uris": ["/api/org-manager/*"],
+                                "scopes": [{"name": "view"}, {"name": "manage"}],
+                            }
+                        ],
+                        "policies": [
+                            {
+                                "name": "ORG_MANAGER Role Policy",
+                                "description": "Policy that grants access to users with ORG_MANAGER role",
+                                "type": "role",
+                                "logic": "POSITIVE",
+                                "decisionStrategy": "UNANIMOUS",
+                                "config": {
+                                    "roles": '[{"id":"ORG_MANAGER","required":false}]'
+                                },
+                            },
+                            {
+                                "name": "org_manager Permission",
+                                "description": "Permission for org_manager resource",
+                                "type": "resource",
+                                "logic": "POSITIVE",
+                                "decisionStrategy": "UNANIMOUS",
+                                "config": {
+                                    "resources": '["org_manager"]',
+                                    "applyPolicies": '["ORG_MANAGER Role Policy"]',
+                                },
+                            },
+                        ],
+                        "scopes": [{"name": "view"}, {"name": "manage"}],
+                    },
                 },
             ],
             "users": [

@@ -8,9 +8,11 @@ from src.routers import (
     org_manager,
     campaign,
     tracking,
+    templates
     sending_profile,
 )
 from src.core.db import init_db
+from src.core.mongo import close_mongo_client
 from src.core.security import valid_resource_access
 from src.tasks import start_scheduler, shutdown_scheduler
 import csv
@@ -24,8 +26,11 @@ from typing import Annotated
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    start_scheduler()
-    yield
+    try:
+        start_scheduler()
+        yield
+    finally:
+        await close_mongo_client()
     shutdown_scheduler()
 
 
@@ -76,4 +81,5 @@ app.include_router(compliance.router, prefix="/api", tags=["compliance"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
 app.include_router(tracking.router, prefix="/api", tags=["tracking"])
+app.include_router(templates.router, prefix="/api", tags=["templates"])
 app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])

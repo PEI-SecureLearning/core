@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from src.core.deps import SessionDep
 from src.core.security import oauth_2_scheme
+from src.core.security import oauth_2_scheme, valid_resource_access
 from src.services import org_manager as org_manager_service
 from src.services.realm import realm_from_token
 
@@ -41,14 +42,18 @@ def _validate_realm_access(token: str, realm: str) -> None:
 # ============ User Endpoints ============
 
 
-@router.get("/{realm}/users")
+@router.get(
+    "/{realm}/users", dependencies=[Depends(valid_resource_access("org_manager"))]
+)
 def list_users(realm: str, token: str = Depends(oauth_2_scheme)):
     """List users in the realm using the user's token."""
     _validate_realm_access(token, realm)
     return org_manager_service.list_users(realm, token)
 
 
-@router.post("/{realm}/users")
+@router.post(
+    "/{realm}/users", dependencies=[Depends(valid_resource_access("org_manager"))]
+)
 def create_user(
     realm: str,
     user: UserCreateRequest,
@@ -69,7 +74,11 @@ def create_user(
     )
 
 
-@router.delete("/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{realm}/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(valid_resource_access("org_manager"))],
+)
 def delete_user(
     realm: str, user_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
 ):
@@ -82,14 +91,20 @@ def delete_user(
 # ============ Group Endpoints ============
 
 
-@router.get("/{realm}/groups")
+@router.get(
+    "/{realm}/groups", dependencies=[Depends(valid_resource_access("org_manager"))]
+)
 def list_groups(realm: str, token: str = Depends(oauth_2_scheme)):
     """List groups in the realm using the user's token."""
     _validate_realm_access(token, realm)
     return org_manager_service.list_groups(realm, token)
 
 
-@router.post("/{realm}/groups", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{realm}/groups",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(valid_resource_access("org_manager"))],
+)
 def create_group(
     realm: str,
     group: GroupCreateRequest,
@@ -101,7 +116,11 @@ def create_group(
     return org_manager_service.create_group(session, realm, token, group.name)
 
 
-@router.delete("/{realm}/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{realm}/groups/{group_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(valid_resource_access("org_manager"))],
+)
 def delete_group(
     realm: str, group_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
 ):
@@ -111,7 +130,11 @@ def delete_group(
     return None
 
 
-@router.put("/{realm}/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.put(
+    "/{realm}/groups/{group_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(valid_resource_access("org_manager"))],
+)
 def update_group(
     realm: str,
     group_id: str,
@@ -130,6 +153,7 @@ def update_group(
 @router.post(
     "/{realm}/groups/{group_id}/members/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(valid_resource_access("org_manager"))],
 )
 def add_user_to_group(
     realm: str, group_id: str, user_id: str, token: str = Depends(oauth_2_scheme)
@@ -140,7 +164,10 @@ def add_user_to_group(
     return None
 
 
-@router.get("/{realm}/groups/{group_id}/members")
+@router.get(
+    "/{realm}/groups/{group_id}/members",
+    dependencies=[Depends(valid_resource_access("org_manager"))],
+)
 def list_group_members(realm: str, group_id: str, token: str = Depends(oauth_2_scheme)):
     """List members of a group using the user's token."""
     _validate_realm_access(token, realm)
