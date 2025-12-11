@@ -1,4 +1,5 @@
 import smtplib
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -52,7 +53,7 @@ class EmailSender:
         # Load and render template
         template_content = self.template_renderer.load_template(
             email_message.template_path
-        )
+        ) # Change to get the template from the api
         
         # Build arguments with tracking variables
         arguments = email_message.arguments.copy()
@@ -83,3 +84,12 @@ class EmailSender:
             receiver=email_message.receiver_email,
             message=message
         )
+
+        # Notify tracking endpoint that email was sent
+        if tracking_id:
+            try:
+                requests.post(f"api/track/sent/{tracking_id}") #TODO change this url
+            except requests.RequestException as e:
+                print(f"Failed to notify tracking endpoint: {e}")
+
+        

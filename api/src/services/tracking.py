@@ -9,6 +9,25 @@ from src.models.email_sending import EmailSending, EmailSendingStatus
 class TrackingService:
     """Service for tracking email interactions and updating campaign statistics."""
 
+    def record_sent(self, tracking_token: str, session: Session):
+        """Record an email sent event and increment campaign counter."""
+        sending = self._get_sending_by_token(tracking_token, session)
+
+        # Only count first sent
+        if sending.sent_at is None:
+            sending.sent_at = datetime.now()
+            sending.status = EmailSendingStatus.SENT
+
+            # Atomically increment campaign counter
+            session.exec(
+                text(
+                    "UPDATE campaign SET total_sent = total_sent + 1 WHERE id = :campaign_id"
+                ),
+                {"campaign_id": sending.campaign_id},
+            )
+            session.commit()
+            session.refresh(sending)
+
     def record_open(self, tracking_token: str, session: Session) -> EmailSending:
         """Record an email open event and increment campaign counter."""
         sending = self._get_sending_by_token(tracking_token, session)

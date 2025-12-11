@@ -60,7 +60,20 @@ TRACKING_PIXEL = bytes(
 )
 
 
-@router.get(
+@router.post(
+    "/track/sent/{token}",
+    description="Email sent tracking endpoint - records when email is sent",
+    include_in_schema=False,
+)
+def track_sent(token: str, session: SessionDep):
+    """
+    Called when email is sent.
+    Records the email sent event.
+    """
+    service.record_sent(token, session)
+    return {"message": "Email sent recorded"}
+
+@router.post(
     "/track/open/{token}",
     description="Tracking pixel endpoint - records email opens",
     include_in_schema=False,
@@ -74,7 +87,7 @@ def track_open(token: str, session: SessionDep):
     return Response(content=TRACKING_PIXEL, media_type="image/gif")
 
 
-@router.get(
+@router.post(
     "/track/click/{token}",
     description="Link click tracking endpoint - records clicks and redirects to landing page",
 )

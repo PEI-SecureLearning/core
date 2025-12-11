@@ -2,6 +2,7 @@ import datetime
 import math
 from fastapi import HTTPException
 from sqlmodel import Session, select
+import pika
 
 from src.models.campaign import (
     MIN_INTERVAL,
@@ -19,6 +20,9 @@ from src.models.sending_profile import SendingProfile
 from src.models.user import User
 from src.services.realm import list_group_members_in_realm
 
+from services.rabbit import RabbitMQService
+
+rabbitmq_service = RabbitMQService()
 
 class CampaignService:
     """Service class for managing campaigns."""
@@ -44,6 +48,9 @@ class CampaignService:
         session.flush()
 
         self._create_email_sendings(session, new_campaign, users)
+
+        # TODO send data to rabbitmq
+
         session.commit()
 
         return new_campaign
