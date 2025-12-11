@@ -33,33 +33,45 @@ export default function EmailTemplatePicker() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // TODO: Replace with API call to fetch sending profiles
-  // Placeholder sending profiles for now
-  const mockSendingProfiles: SendingProfile[] = [
-    {
-      id: 1,
-      name: "Default SMTP",
-      from_email: "noreply@company.com",
-      smtp_host: "smtp.company.com",
-    },
-    {
-      id: 2,
-      name: "Marketing",
-      from_email: "marketing@company.com",
-      smtp_host: "smtp.marketing.com",
-    },
-    {
-      id: 3,
-      name: "IT Department",
-      from_email: "it-support@company.com",
-      smtp_host: "smtp.it.company.com",
-    },
-  ];
+  // Fetch sending profiles from API
+  const [sendingProfiles, setSendingProfiles] = useState<SendingProfile[]>([]);
+  const [sendingProfilesLoading, setSendingProfilesLoading] = useState(false);
+  const [sendingProfilesError, setSendingProfilesError] = useState<
+    string | null
+  >(null);
 
   const API_BASE = useMemo(
     () => import.meta.env.VITE_API_URL ?? "http://localhost:8000/api",
     []
   );
+
+  useEffect(() => {
+    const fetchSendingProfiles = async () => {
+      setSendingProfilesLoading(true);
+      setSendingProfilesError(null);
+      try {
+        const res = await fetch(`${API_BASE}/sending-profiles`, {
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          },
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to load sending profiles (${res.status})`);
+        }
+        const json = (await res.json()) as SendingProfile[];
+        setSendingProfiles(json);
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Unable to load sending profiles";
+        setSendingProfilesError(message);
+      } finally {
+        setSendingProfilesLoading(false);
+      }
+    };
+    fetchSendingProfiles();
+  }, [API_BASE, keycloak.token]);
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -137,29 +149,45 @@ export default function EmailTemplatePicker() {
           <Send size={12} />
           Sending Profile <span className="text-rose-400">*</span>
         </label>
-        <select
-          value={data.sending_profile_id ?? ""}
-          onChange={(e) => handleSelectSendingProfile(Number(e.target.value))}
-          className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full max-w-md cursor-pointer"
-          style={inputStyle}
-        >
-          <option value="" disabled>
-            Select a sending profile...
-          </option>
-          {mockSendingProfiles.map((profile) => (
-            <option key={profile.id} value={profile.id}>
-              {profile.name} ({profile.from_email})
-            </option>
-          ))}
-        </select>
-        {data.sending_profile_id && (
-          <p className="text-[12px] text-slate-500">
-            SMTP:{" "}
-            {
-              mockSendingProfiles.find((p) => p.id === data.sending_profile_id)
-                ?.smtp_host
-            }
-          </p>
+        {sendingProfilesLoading ? (
+          <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <Loader2 className="animate-spin" size={16} />
+            Loading sending profiles...
+          </div>
+        ) : sendingProfilesError ? (
+          <div className="flex items-center gap-2 p-2 rounded bg-rose-50 border border-rose-200 text-rose-700">
+            <AlertCircle size={14} />
+            <span>{sendingProfilesError}</span>
+          </div>
+        ) : (
+          <>
+            <select
+              value={data.sending_profile_id ?? ""}
+              onChange={(e) =>
+                handleSelectSendingProfile(Number(e.target.value))
+              }
+              className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full max-w-md cursor-pointer"
+              style={inputStyle}
+            >
+              <option value="" disabled>
+                Select a sending profile...
+              </option>
+              {sendingProfiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.name} ({profile.from_email})
+                </option>
+              ))}
+            </select>
+            {data.sending_profile_id && (
+              <p className="text-[12px] text-slate-500">
+                SMTP:{" "}
+                {
+                  sendingProfiles.find((p) => p.id === data.sending_profile_id)
+                    ?.smtp_host
+                }
+              </p>
+            )}
+          </>
         )}
       </div>
 

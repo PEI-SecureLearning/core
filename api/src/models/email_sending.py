@@ -44,6 +44,7 @@ class EmailSendingCreate(SQLModel):
 
 class UserSendingInfo(SQLModel):
     """Summary of a user's interaction with a campaign email."""
+
     user_id: str
     email: str
     status: str
