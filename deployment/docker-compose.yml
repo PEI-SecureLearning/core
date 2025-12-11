@@ -69,6 +69,7 @@ services:
 
     depends_on:
       - db
+      - mongo
 
     volumes:
       - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
@@ -115,5 +116,9 @@ services:
 
 volumes:
   db_data:
+<<<<<<< HEAD
   mailpit_data:
   rabbitmq_data:
+=======
+  mongo_data:
+>>>>>>> e67eb334be9695843fe254177dbf2445da6ce726
