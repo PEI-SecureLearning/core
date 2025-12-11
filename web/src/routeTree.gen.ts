@@ -28,6 +28,7 @@ import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTermsRouteImport } from './routes/admin/terms'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
 import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
 import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
@@ -127,6 +128,11 @@ const AdminLogsRoute = AdminLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
   id: '/tenants/',
   path: '/tenants/',
@@ -219,76 +225,76 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/terms'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new-campaign'
-    | '/campaigns/timeline'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/campaigns'
-    | '/usergroups'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
+  | '/'
+  | '/admin'
+  | '/dashboard'
+  | '/help'
+  | '/report'
+  | '/settings'
+  | '/statistics'
+  | '/templates'
+  | '/tenants-org-manager'
+  | '/admin/logs'
+  | '/admin/terms'
+  | '/admin/users'
+  | '/campaigns/$id'
+  | '/campaigns/new-campaign'
+  | '/campaigns/timeline'
+  | '/usergroups/$id'
+  | '/usergroups/new-group'
+  | '/campaigns'
+  | '/usergroups'
+  | '/admin/tenants/$tenantId'
+  | '/admin/tenants/new-tenant'
+  | '/admin/tenants'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/terms'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new-campaign'
-    | '/campaigns/timeline'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/campaigns'
-    | '/usergroups'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
+  | '/'
+  | '/admin'
+  | '/dashboard'
+  | '/help'
+  | '/report'
+  | '/settings'
+  | '/statistics'
+  | '/templates'
+  | '/tenants-org-manager'
+  | '/admin/logs'
+  | '/admin/terms'
+  | '/admin/users'
+  | '/campaigns/$id'
+  | '/campaigns/new-campaign'
+  | '/campaigns/timeline'
+  | '/usergroups/$id'
+  | '/usergroups/new-group'
+  | '/campaigns'
+  | '/usergroups'
+  | '/admin/tenants/$tenantId'
+  | '/admin/tenants/new-tenant'
+  | '/admin/tenants'
   id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/terms'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new-campaign'
-    | '/campaigns/timeline'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/campaigns/'
-    | '/usergroups/'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants/'
+  | '__root__'
+  | '/'
+  | '/admin'
+  | '/dashboard'
+  | '/help'
+  | '/report'
+  | '/settings'
+  | '/statistics'
+  | '/templates'
+  | '/tenants-org-manager'
+  | '/admin/logs'
+  | '/admin/terms'
+  | '/admin/users'
+  | '/campaigns/$id'
+  | '/campaigns/new-campaign'
+  | '/campaigns/timeline'
+  | '/usergroups/$id'
+  | '/usergroups/new-group'
+  | '/campaigns/'
+  | '/usergroups/'
+  | '/admin/tenants/$tenantId'
+  | '/admin/tenants/new-tenant'
+  | '/admin/tenants/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -470,6 +476,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminTermsRoute: typeof AdminTermsRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -479,6 +486,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminTermsRoute: AdminTermsRoute,
   AdminUsersRoute: AdminUsersRoute,

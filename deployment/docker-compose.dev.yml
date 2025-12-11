@@ -15,13 +15,18 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
-    command: start-dev --import-realm
+    command: start --import-realm
     container_name: keycloak
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_IMPORT: /opt/keycloak/data/import/
-
+      KC_HTTP_ACCESS_LOG_ENABLED: "true"
+      KC_LOG_CATEGORY_ORG_KEYCLOAK_AUTHORIZATION: DEBUG
+      KC_LOG_CATEGORY_ORG_KEYCLOAK_SERVICES: DEBUG
+      KC_LOG_CATEGORY_ORG_KEYCLOAK_PROTOCOL_OIDC: DEBUG
+      KC_LOG_CATEGORY_IO_QUARKUS_HTTP: DEBUG
+      KC_LOG_LEVEL: DEBUG
       KC_HTTP_ENABLED: true
       KC_HOSTNAME: localhost
       KC_HOSTNAME_STRICT: false

@@ -25,15 +25,15 @@ interface SidebarLinkProps {
 }
 
 const adminLinks: SidebarLinkProps[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/tenants", label: "Tenants", icon: Building2 },
-  { href: "/admin/logs", label: "Logs", icon: ScrollText },
-  { href: "/admin/terms", label: "Terms", icon: ShieldCheck },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN"] },
+  { href: "/admin/tenants", label: "Tenants", icon: Building2, roles: ["ADMIN"] },
+  { href: "/admin/logs", label: "Logs", icon: ScrollText, roles: ["ADMIN"] },
+  { href: "/admin/terms", label: "Terms", icon: ShieldCheck, roles: ["ADMIN"] },
+  { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["ADMIN"] },
 ];
 
 const userLinks: SidebarLinkProps[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["ORG_MANAGER"] },
   { href: "/campaigns", label: "Campaigns", icon: Megaphone, roles: ["ORG_MANAGER"] },
   { href: "/templates", label: "Templates", icon: FileText, roles: ["ORG_MANAGER"] },
   { href: "/tenants-org-manager", label: "Tenant Manager", icon: Building2, roles: ["ORG_MANAGER"] },
