@@ -10,11 +10,10 @@ router = APIRouter()
 
 service = SendingProfileService()
 
-router.post(
+
+@router.post(
     "/sending-profiles", description="Create a new sending profile", status_code=201
 )
-
-
 def create_sending_profile(
     profile_data: SendingProfileCreate,
     current_realm: CurrentRealm,

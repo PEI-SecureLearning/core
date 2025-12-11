@@ -34,15 +34,46 @@ const adminLinks: SidebarLinkProps[] = [
 
 const userLinks: SidebarLinkProps[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/campaigns", label: "Campaigns", icon: Megaphone, roles: ["ORG_MANAGER"] },
-  { href: "/templates", label: "Templates", icon: FileText, roles: ["ORG_MANAGER"] },
-  { href: "/tenants-org-manager", label: "Tenant Manager", icon: Building2, roles: ["ORG_MANAGER"] },
-  { href: "/usergroups", label: "User groups", icon: Users, roles: ["ORG_MANAGER"] },
+  {
+    href: "/campaigns",
+    label: "Campaigns",
+    icon: Megaphone,
+    roles: ["ORG_MANAGER"],
+  },
+  {
+    href: "/sending-profiles",
+    label: "Sending Profiles",
+    icon: Users,
+    roles: ["ORG_MANAGER"],
+  },
+  {
+    href: "/templates",
+    label: "Templates",
+    icon: FileText,
+    roles: ["ORG_MANAGER"],
+  },
+  {
+    href: "/tenants-org-manager",
+    label: "Tenant Manager",
+    icon: Building2,
+    roles: ["ORG_MANAGER"],
+  },
+  {
+    href: "/usergroups",
+    label: "User groups",
+    icon: Users,
+    roles: ["ORG_MANAGER"],
+  },
   { href: "/statistics", label: "Statistics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-function SidebarLink({ href, label, icon: Icon, isCollapsed }: SidebarLinkProps & { isCollapsed: boolean }) {
+function SidebarLink({
+  href,
+  label,
+  icon: Icon,
+  isCollapsed,
+}: SidebarLinkProps & { isCollapsed: boolean }) {
   return (
     <Link
       to={href}
@@ -56,8 +87,13 @@ function SidebarLink({ href, label, icon: Icon, isCollapsed }: SidebarLinkProps 
       title={isCollapsed ? label : undefined}
     >
       <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-300" />
-      <span className={`truncate transition-all duration-700 ease-in-out whitespace-nowrap ${isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 delay-150'
-        }`}>
+      <span
+        className={`truncate transition-all duration-700 ease-in-out whitespace-nowrap ${
+          isCollapsed
+            ? "opacity-0 w-0 overflow-hidden"
+            : "opacity-100 delay-150"
+        }`}
+      >
         {label}
       </span>
     </Link>
@@ -83,14 +119,15 @@ export function Sidebar() {
   const linksToDisplay = isAdminRoute
     ? adminLinks
     : userLinks.filter((link) => {
-      if (!link.roles) return true;
-      return link.roles.some((role) => userRoles.includes(role));
-    });
+        if (!link.roles) return true;
+        return link.roles.some((role) => userRoles.includes(role));
+      });
 
   return (
     <aside
-      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${shouldShowContent ? 'w-[15%] min-w-[120px] lg:min-w-[180px]' : 'w-12'
-        }`}
+      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${
+        shouldShowContent ? "w-[15%] min-w-[120px] lg:min-w-[180px]" : "w-12"
+      }`}
       onMouseEnter={() => {
         if (isCollapsed) {
           setIsHovered(true);

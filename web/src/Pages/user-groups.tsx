@@ -3,13 +3,19 @@ import { useKeycloak } from "@react-keycloak/web";
 import UserGroupsHeader from "@/components/usergroups/userGroupsHeader";
 import UserGroupsGrid from "@/components/usergroups/userGroupsGrid";
 import UserGroupsTable from "@/components/usergroups/userGroupsTable";
-import { fetchGroups, fetchGroupMembers, deleteGroup } from "@/components/usergroups/api";
+import {
+  fetchGroups,
+  fetchGroupMembers,
+  deleteGroup,
+} from "@/services/userGroupsApi";
 import { Loader2 } from "lucide-react";
 
 export default function UserGroupsPage() {
   const { keycloak } = useKeycloak();
   const [view, setView] = useState<"grid" | "table">("grid");
-  const [groups, setGroups] = useState<{ id?: string; name?: string; memberCount?: number }[]>([]);
+  const [groups, setGroups] = useState<
+    { id?: string; name?: string; memberCount?: number }[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const tokenRealm = useMemo(() => {
@@ -24,13 +30,20 @@ export default function UserGroupsPage() {
   const loadData = async (targetRealm: string) => {
     setIsLoading(true);
     try {
-      const groupsRes = await fetchGroups(targetRealm, keycloak.token || undefined);
+      const groupsRes = await fetchGroups(
+        targetRealm,
+        keycloak.token || undefined
+      );
       // Optionally fetch member counts to keep cards/table closer to previous UX
       const groupsWithCounts = await Promise.all(
         (groupsRes.groups || []).map(async (g) => {
           let memberCount = 0;
           try {
-            const membersRes = await fetchGroupMembers(targetRealm, g.id || "", keycloak.token || undefined);
+            const membersRes = await fetchGroupMembers(
+              targetRealm,
+              g.id || "",
+              keycloak.token || undefined
+            );
             memberCount = (membersRes.members || []).length;
           } catch {
             memberCount = 0;
@@ -69,7 +82,7 @@ export default function UserGroupsPage() {
       </div>
       <div
         className="h-11/12 w-full overflow-y-auto p-4 space-y-4"
-        style={{ animation: 'fadeInDelay 0.5s ease-out 0.1s both' }}
+        style={{ animation: "fadeInDelay 0.5s ease-out 0.1s both" }}
       >
         {view === "grid" ? (
           <UserGroupsGrid

@@ -1,5 +1,6 @@
 import datetime
 import math
+from typing import Iterable
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -142,7 +143,7 @@ class CampaignService:
         users_phished = set(s.user_id for s in all_sendings if s.phished_at)
 
         # Repeat offenders: users who clicked/phished in > 50% of campaigns they participated in
-        repeat_offenders = self._find_repeat_offenders(campaigns)
+        repeat_offenders = self._find_repeat_offenders(list(campaigns))
 
         # Time calculations
         avg_open_time = self._calc_avg_time_delta(
@@ -196,7 +197,7 @@ class CampaignService:
             avg_time_to_click_seconds=avg_click_time,
         )
 
-    def _find_repeat_offenders(self, campaigns: list[Campaign]) -> list[str]:
+    def _find_repeat_offenders(self, campaigns: Iterable[Campaign]) -> list[str]:
         """Find users who clicked/phished in more than 50% of campaigns they were targeted in."""
         user_campaigns: dict[str, dict] = {}  # user_id -> {targeted: int, fell: int}
 
@@ -281,7 +282,6 @@ class CampaignService:
     def _validate_campaign(self, campaign: CampaignCreate, session: Session) -> None:
         """Validate campaign data."""
         validations = [
-            (User, campaign.creator_id, "Invalid creator ID"),
             (SendingProfile, campaign.sending_profile_id, "Invalid sending profile ID"),
             (EmailTemplate, campaign.email_template_id, "Invalid email template ID"),
             (
@@ -375,8 +375,6 @@ class CampaignService:
             status=campaign.status,
             realm_name=campaign.realm_name,
             # Related entities
-            creator_id=campaign.creator_id,
-            creator_email=campaign.creator.email if campaign.creator else None,
             sending_profile_name=(
                 campaign.sending_profile.name if campaign.sending_profile else None
             ),

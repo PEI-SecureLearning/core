@@ -19,11 +19,14 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
+import { Route as SendingProfilesIndexRouteImport } from './routes/sending-profiles/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
 import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
 import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
+import { Route as SendingProfilesNewRouteImport } from './routes/sending-profiles/new'
+import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
 import { Route as CampaignsTimelineRouteImport } from './routes/campaigns/timeline'
-import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
+import { Route as CampaignsNewRouteImport } from './routes/campaigns/new'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTermsRouteImport } from './routes/admin/terms'
@@ -82,6 +85,11 @@ const UsergroupsIndexRoute = UsergroupsIndexRouteImport.update({
   path: '/usergroups/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SendingProfilesIndexRoute = SendingProfilesIndexRouteImport.update({
+  id: '/sending-profiles/',
+  path: '/sending-profiles/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   id: '/campaigns/',
   path: '/campaigns/',
@@ -97,14 +105,24 @@ const UsergroupsIdRoute = UsergroupsIdRouteImport.update({
   path: '/usergroups/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SendingProfilesNewRoute = SendingProfilesNewRouteImport.update({
+  id: '/sending-profiles/new',
+  path: '/sending-profiles/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SendingProfilesIdRoute = SendingProfilesIdRouteImport.update({
+  id: '/sending-profiles/$id',
+  path: '/sending-profiles/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsTimelineRoute = CampaignsTimelineRouteImport.update({
   id: '/campaigns/timeline',
   path: '/campaigns/timeline',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
-  id: '/campaigns/new-campaign',
-  path: '/campaigns/new-campaign',
+const CampaignsNewRoute = CampaignsNewRouteImport.update({
+  id: '/campaigns/new',
+  path: '/campaigns/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsIdRoute = CampaignsIdRouteImport.update({
@@ -157,11 +175,14 @@ export interface FileRoutesByFullPath {
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
-  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
+  '/sending-profiles/$id': typeof SendingProfilesIdRoute
+  '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/sending-profiles': typeof SendingProfilesIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
@@ -181,11 +202,14 @@ export interface FileRoutesByTo {
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
-  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
+  '/sending-profiles/$id': typeof SendingProfilesIdRoute
+  '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/sending-profiles': typeof SendingProfilesIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
@@ -206,11 +230,14 @@ export interface FileRoutesById {
   '/admin/terms': typeof AdminTermsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
-  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
+  '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
+  '/sending-profiles/$id': typeof SendingProfilesIdRoute
+  '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/campaigns/': typeof CampaignsIndexRoute
+  '/sending-profiles/': typeof SendingProfilesIndexRoute
   '/usergroups/': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
@@ -232,11 +259,14 @@ export interface FileRouteTypes {
     | '/admin/terms'
     | '/admin/users'
     | '/campaigns/$id'
-    | '/campaigns/new-campaign'
+    | '/campaigns/new'
     | '/campaigns/timeline'
+    | '/sending-profiles/$id'
+    | '/sending-profiles/new'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
+    | '/sending-profiles'
     | '/usergroups'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
@@ -256,11 +286,14 @@ export interface FileRouteTypes {
     | '/admin/terms'
     | '/admin/users'
     | '/campaigns/$id'
-    | '/campaigns/new-campaign'
+    | '/campaigns/new'
     | '/campaigns/timeline'
+    | '/sending-profiles/$id'
+    | '/sending-profiles/new'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns'
+    | '/sending-profiles'
     | '/usergroups'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
@@ -280,11 +313,14 @@ export interface FileRouteTypes {
     | '/admin/terms'
     | '/admin/users'
     | '/campaigns/$id'
-    | '/campaigns/new-campaign'
+    | '/campaigns/new'
     | '/campaigns/timeline'
+    | '/sending-profiles/$id'
+    | '/sending-profiles/new'
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/campaigns/'
+    | '/sending-profiles/'
     | '/usergroups/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
@@ -302,11 +338,14 @@ export interface RootRouteChildren {
   TemplatesRoute: typeof TemplatesRoute
   TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
-  CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
+  CampaignsNewRoute: typeof CampaignsNewRoute
   CampaignsTimelineRoute: typeof CampaignsTimelineRoute
+  SendingProfilesIdRoute: typeof SendingProfilesIdRoute
+  SendingProfilesNewRoute: typeof SendingProfilesNewRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
   UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
+  SendingProfilesIndexRoute: typeof SendingProfilesIndexRoute
   UsergroupsIndexRoute: typeof UsergroupsIndexRoute
 }
 
@@ -382,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsergroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sending-profiles/': {
+      id: '/sending-profiles/'
+      path: '/sending-profiles'
+      fullPath: '/sending-profiles'
+      preLoaderRoute: typeof SendingProfilesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
@@ -403,6 +449,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsergroupsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sending-profiles/new': {
+      id: '/sending-profiles/new'
+      path: '/sending-profiles/new'
+      fullPath: '/sending-profiles/new'
+      preLoaderRoute: typeof SendingProfilesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sending-profiles/$id': {
+      id: '/sending-profiles/$id'
+      path: '/sending-profiles/$id'
+      fullPath: '/sending-profiles/$id'
+      preLoaderRoute: typeof SendingProfilesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/timeline': {
       id: '/campaigns/timeline'
       path: '/campaigns/timeline'
@@ -410,11 +470,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CampaignsTimelineRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/campaigns/new-campaign': {
-      id: '/campaigns/new-campaign'
-      path: '/campaigns/new-campaign'
-      fullPath: '/campaigns/new-campaign'
-      preLoaderRoute: typeof CampaignsNewCampaignRouteImport
+    '/campaigns/new': {
+      id: '/campaigns/new'
+      path: '/campaigns/new'
+      fullPath: '/campaigns/new'
+      preLoaderRoute: typeof CampaignsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/$id': {
@@ -500,11 +560,14 @@ const rootRouteChildren: RootRouteChildren = {
   TemplatesRoute: TemplatesRoute,
   TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRoute,
-  CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
+  CampaignsNewRoute: CampaignsNewRoute,
   CampaignsTimelineRoute: CampaignsTimelineRoute,
+  SendingProfilesIdRoute: SendingProfilesIdRoute,
+  SendingProfilesNewRoute: SendingProfilesNewRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
   UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
+  SendingProfilesIndexRoute: SendingProfilesIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,
 }
 export const routeTree = rootRouteImport
