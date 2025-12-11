@@ -4,7 +4,7 @@ from sqlmodel import Relationship, Field, SQLModel
 
 class Realm(SQLModel, table=True):
     name: Optional[str] = Field(default=None, primary_key=True, unique=True)
-    domain: str
+    domain: str = Field(index=True)
 
     # Relationships
 

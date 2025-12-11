@@ -12,3 +12,8 @@ class CustomHeader(SQLModel, table=True):
 
     # Relationship back to SendingProfile
     profile: Optional["SendingProfile"] = Relationship(back_populates="custom_headers")
+
+
+class CustomHeaderCreate(SQLModel):
+    name: str
+    value: str

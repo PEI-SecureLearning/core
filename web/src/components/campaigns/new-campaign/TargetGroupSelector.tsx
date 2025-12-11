@@ -3,7 +3,7 @@ import { useKeycloak } from "@react-keycloak/web";
 import { cn } from "@/lib/utils";
 import { X, Loader2, Users } from "lucide-react";
 import { useCampaign } from "./CampaignContext";
-import { fetchGroups } from "@/components/usergroups/api";
+import { fetchGroups } from "@/services/userGroupsApi";
 
 interface Group {
   id: string;
