@@ -26,13 +26,39 @@ function extractDomainFromClaims(claims?: { email?: string; preferred_username?:
   return candidate.split("@")[1];
 }
 
+async function parseErrorResponse(res: Response): Promise<string> {
+  let message = res.statusText || `HTTP ${res.status}`;
+  try {
+    const data = await res.json();
+    if (data?.detail) return `HTTP ${res.status}: ${data.detail}`;
+    const asString = typeof data === "string" ? data : JSON.stringify(data);
+    if (asString && asString !== "{}") return `HTTP ${res.status}: ${asString}`;
+  } catch {
+    try {
+      const text = await res.text();
+      if (text) return `HTTP ${res.status}: ${text}`;
+    } catch {
+      // ignore
+    }
+  }
+  return message || "Request failed";
+}
+
+function mapRole(value: string | undefined): "ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | "" {
+  const v = (value || "").trim().toLowerCase();
+  if (["org_manager", "org manager", "organization manager", "org"].includes(v)) return "ORG_MANAGER";
+  if (["content_manager", "content manager", "content"].includes(v)) return "CONTENT_MANAGER";
+  if (["default_user", "default user", "user", "default"].includes(v)) return "DEFAULT_USER";
+  return "";
+}
+
 function TenantOrgManager() {
   const { keycloak } = useKeycloak();
   const [realm, setRealm] = useState("");
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState<"ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | "">("");
   const [bulkUsers, setBulkUsers] = useState<BulkUser[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -171,15 +197,8 @@ function TenantOrgManager() {
         }),
       });
       if (!res.ok) {
-        let message = res.statusText;
-        try {
-          const data = await res.json();
-          message = data?.detail || JSON.stringify(data);
-        } catch {
-          const text = await res.text();
-          if (text) message = text;
-        }
-        throw new Error(`HTTP ${res.status}: ${message || "Unknown error"}`);
+        setStatus(await parseErrorResponse(res));
+        return;
       }
       const data = await res.json();
       setStatus(
@@ -218,7 +237,7 @@ function TenantOrgManager() {
         username: row.username || "",
         name: row.name || "",
         email: row.email || "",
-        role: row.role || "",
+        role: mapRole(row.role),
         groups: typeof row.groups === "string" ? row.groups.split(",").map((g: string) => g.trim()).filter(Boolean) : [],
         status: "pending",
       }));
@@ -234,6 +253,10 @@ function TenantOrgManager() {
     const targetRealm = tokenRealm || realm || "";
     if (!targetRealm) {
       setStatus("Realm not resolved from token or domain. Cannot add users.");
+      return;
+    }
+    if (bulkUsers.some((u) => !u.role)) {
+      setStatus("Every imported user needs a role (Organization manager, Content manager, or User).");
       return;
     }
     // Cache group names to IDs so we can create missing groups only once per run.
@@ -345,6 +368,12 @@ function TenantOrgManager() {
         updated[i] = { ...u, status: "missing fields" };
         continue;
       }
+      // Ensure role stays normalized to the allowed constants.
+      updated[i] = { ...u, role: mapRole(u.role) };
+      if (!updated[i].role) {
+        updated[i] = { ...updated[i], status: "invalid role" };
+        continue;
+      }
       const groupIds = u.groups && u.groups.length ? await resolveGroupIds(u.groups) : [];
       const primaryGroupId = groupIds[0];
       try {
@@ -415,7 +444,7 @@ function TenantOrgManager() {
         setEmail(value);
         break;
       case "role":
-        setRole(value);
+        setRole(mapRole(value));
         break;
       case "selectedGroupId":
         setSelectedGroupId(value);
@@ -470,7 +499,7 @@ function TenantOrgManager() {
       {/* Header */}
       <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-4 px-6 animate-slide-down">
         <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">Tenant Manager</h1>
-        <p className="text-sm text-gray-600">You are limited to your tenant realm as determined by your Keycloak domain.</p>
+        <p className="text-sm text-gray-600">Manage your realm's users</p>
       </div>
 
       {/* Main content */}
@@ -501,6 +530,13 @@ function TenantOrgManager() {
           </div>
         </div>
 
+        {status && (
+          <div className="mt-6 liquid-glass-card px-4 py-3 text-sm text-gray-700 animate-scale-in">
+            <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
+            {status}
+          </div>
+        )}
+
         <div className="mt-6 liquid-glass-card p-5 animate-slide-up" style={{ animationDelay: '0.15s' }}>
           <BulkUserImport
             bulkUsers={bulkUsers}
@@ -509,13 +545,6 @@ function TenantOrgManager() {
             onBulkCreate={handleBulkCreate}
           />
         </div>
-
-        {status && (
-          <div className="mt-6 liquid-glass-card px-4 py-3 text-sm text-gray-700 animate-scale-in">
-            <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
-            {status}
-          </div>
-        )}
       </div>
     </div >
   );

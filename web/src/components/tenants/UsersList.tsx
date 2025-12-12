@@ -22,6 +22,7 @@ const UserRow = memo(function UserRow({
   onDelete: (id: string) => Promise<void>;
 }) {
   const id = user.id || user.username || "";
+  const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
   return (
     <div key={id} className="flex items-center justify-between px-3 py-2 gap-3">
       <div className="truncate">
@@ -32,14 +33,16 @@ const UserRow = memo(function UserRow({
         <div className="text-xs text-gray-500 hidden sm:block">
           {user.firstName || user.lastName ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "—"}
         </div>
-        <button
-          type="button"
-          className="liquid-glass-button-destructive"
-          disabled={!id || isDeleting}
-          onClick={() => onDelete(id)}
-        >
-          {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
-        </button>
+        {!isOrgManager && (
+          <button
+            type="button"
+            className="liquid-glass-button-destructive"
+            disabled={!id || isDeleting}
+            onClick={() => onDelete(id)}
+          >
+            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -71,7 +74,7 @@ const UsersListContent = memo(function UsersListContent({
   }
 
   return (
-    <div className="border rounded-md divide-y text-sm">
+    <div className="border rounded-md divide-y text-sm max-h-100 overflow-y-auto">
       {users.map((u) => {
         const id = u.id || u.username || "";
         return (
