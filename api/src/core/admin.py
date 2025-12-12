@@ -16,6 +16,8 @@ class Admin:
     def __init__(self):
         self.keycloak_url = os.getenv("KEYCLOAK_URL")
         self.admin_secret = os.getenv("CLIENT_SECRET")
+        self.web_url = os.getenv("WEB_URL", "http://localhost:3000")
+        self.api_url = os.getenv("API_URL", "http://localhost:8080")
 
         if not self.keycloak_url:
             raise HTTPException(

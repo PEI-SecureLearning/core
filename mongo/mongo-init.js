@@ -3,21 +3,21 @@
 db = db.getSiblingDB('securelearning');
 
 db.createUser({
-  user: 'template_user',
-  pwd: 'template_pass',
-  roles: [
-    { role: 'readWrite', db: 'securelearning' }
-  ]
+    user: 'template_user',
+    pwd: 'template_pass',
+    roles: [
+        { role: 'readWrite', db: 'securelearning' }
+    ]
 });
 
 db.templates.insertMany([
-  {
-    name: "Payroll Update",
-    path: "/templates/emails/",
-    subject: "Important: Payroll information needs your confirmation",
-    category: "Finance",
-    description: "Classic payroll lure with CTA to update details.",
-    html: `
+    {
+        name: "Payroll Update",
+        path: "/templates/emails/",
+        subject: "Important: Payroll information needs your confirmation",
+        category: "Finance",
+        description: "Classic payroll lure with CTA to update details.",
+        html: `
 <!doctype html>
 <html>
   <body style="font-family:Arial,sans-serif;max-width:600px;margin:auto;">
@@ -27,16 +27,16 @@ db.templates.insertMany([
     <p style="color:#6b7280;font-size:12px;margin-top:24px;">If you already verified, you can ignore this message.</p>
   </body>
 </html>`,
-    created_at: new Date(),
-    updated_at: new Date(),
-  },
-  {
-    name: "Cloud Storage Share",
-    path: "/templates/pages/",
-    subject: "You have been granted access to a shared document",
-    category: "Collaboration",
-    description: "Drive/SharePoint style share notification.",
-    html: `
+        created_at: new Date(),
+        updated_at: new Date(),
+    },
+    {
+        name: "Cloud Storage Share",
+        path: "/templates/pages/",
+        subject: "You have been granted access to a shared document",
+        category: "Collaboration",
+        description: "Drive/SharePoint style share notification.",
+        html: `
 <!doctype html>
 <html>
   <body style="font-family:Helvetica,Arial,sans-serif;max-width:640px;margin:auto;">
@@ -48,7 +48,7 @@ db.templates.insertMany([
     <a href="{{ phishing_link }}" style="background:#10b981;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;">Open in Drive</a>
   </body>
 </html>`,
-    created_at: new Date(),
-    updated_at: new Date(),
-  }
+        created_at: new Date(),
+        updated_at: new Date(),
+    }
 ]);
