@@ -1,5 +1,5 @@
 username,name,email,role,groups
-alice.williams,Alice Williams,alice.williams@your-domain.com,user,"group-a,group-b"
-bob.miller,Bob Miller,bob.miller@your-domain.com,manager,group-a
-carol.jones,Carol Jones,carol.jones@your-domain.com,user,
-david.smith,David Smith,david.smith@your-domain.com,user,"group-admins,group-a"
+alice.williams,Alice Williams,alice.williams@a.a,CONTENT_MANAGER,"group-a,group-b"
+bob.miller,Bob Miller,bob.miller@a.a,DEFAULT_USER,group-a
+carol.jones,Carol Jones,carol.jones@a.a,DEFAULT_USER,
+david.smith,David Smith,david.smith@a.a,DEFAULT_USER,"group-admins,group-a"

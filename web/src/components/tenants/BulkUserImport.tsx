@@ -16,7 +16,10 @@ export default function BulkUserImport({ bulkUsers, isBulkLoading, onCsvUpload, 
     <Card className="shadow-sm border border-gray-100">
       <CardHeader>
         <CardTitle className="text-lg">Bulk User Registration</CardTitle>
-        <CardDescription>Import a CSV with username,name,email,role[,groups] columns and create users.</CardDescription>
+        <CardDescription>
+          Import a CSV with username,name,email,role[,groups] columns and create users. Role is required for every row
+          and must be one of: Organization manager, Content manager, or User.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between gap-4">
