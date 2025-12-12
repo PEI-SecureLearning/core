@@ -19,7 +19,7 @@ from src.services.campaign import CampaignService
 from src.services.realm import realm_from_token
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
-from src.routers import templates as templates_router
+from src.services import templates as template_service
 
 router = APIRouter()
 
@@ -124,7 +124,7 @@ async def get_realm_campaign_detail(
     tmpl = session.get(EmailTemplate, detail.email_template_id) if detail.email_template_id else None
     if tmpl and tmpl.content_link:
         try:
-            doc = await templates_router.get_template(str(tmpl.content_link))
+            doc = await template_service.get_template(str(tmpl.content_link))
             email_template = doc.model_dump()  # type: ignore[assignment]
             email_template["content_link"] = tmpl.content_link
         except Exception:
@@ -133,7 +133,7 @@ async def get_realm_campaign_detail(
     ltmpl = session.get(LandingPageTemplate, detail.landing_page_template_id) if detail.landing_page_template_id else None
     if ltmpl and ltmpl.content_link:
         try:
-            doc = await templates_router.get_template(str(ltmpl.content_link))
+            doc = await template_service.get_template(str(ltmpl.content_link))
             landing_page_template = doc.model_dump()  # type: ignore[assignment]
             landing_page_template["content_link"] = ltmpl.content_link
         except Exception:
