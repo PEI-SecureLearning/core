@@ -3,11 +3,11 @@ from fastapi.responses import RedirectResponse, Response
 
 from src.core.deps import SessionDep
 from src.services.tracking import TrackingService
+from src.services import templates as TemplateService
 
 router = APIRouter()
 
 service = TrackingService()
-
 
 
 # 1x1 transparent GIF for tracking pixel
@@ -78,22 +78,19 @@ def track_open(token: str, session: SessionDep):
     "/track/click/{token}",
     description="Link click tracking endpoint - records clicks and redirects to landing page",
 )
-def track_click(token: str, session: SessionDep, redirect_url: str | None = None):
+def track_click(token: str, session: SessionDep):
     """
     Called when user clicks a tracked link in the email.
     Records the click and redirects to the landing page.
     """
     sending = service.record_click(token, session)
 
-    # Get landing page URL from the campaign
-    landing_url = redirect_url
-    if not landing_url and sending.campaign and sending.campaign.landing_page_template:
-        landing_url = sending.campaign.landing_page_template.url
+    template = TemplateService.get_template(sending.campaign.template_id)
 
-    if landing_url:
-        return RedirectResponse(url=landing_url, status_code=302)
+    if template is None:
+        raise HTTPException(status_code=404, detail="Page not found")
 
-    return {"message": "Click recorded"}
+    return template.html
 
 
 @router.post(
