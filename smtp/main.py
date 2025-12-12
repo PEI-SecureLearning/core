@@ -7,7 +7,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.core.config import RabbitMQConfig, RateLimiterConfig
+from src.core.config import RabbitMQConfig, RateLimiterConfig, APIConfig
 from src.consumer import RabbitMQConsumer
 from src.emails.email_sender import EmailSender, TemplateRenderer
 from src.rate_limiter import RateLimiter
@@ -18,10 +18,11 @@ def main() -> None:
     # Load configuration from environment
     rabbitmq_config = RabbitMQConfig()
     rate_limiter_config = RateLimiterConfig()
+    api_config = APIConfig()
 
     
     # Initialize components
-    template_renderer = TemplateRenderer(templates_dir=Path("templates"))
+    template_renderer = TemplateRenderer(api_url=api_config.API_URL)
     email_sender = EmailSender(template_renderer=template_renderer)
     rate_limiter = RateLimiter(rate_limiter_config)
     consumer = RabbitMQConsumer(rabbitmq_config, rate_limiter, email_sender)

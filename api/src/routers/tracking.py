@@ -4,10 +4,10 @@ from fastapi.responses import RedirectResponse, Response
 from src.core.deps import SessionDep
 from src.services.tracking import TrackingService
 
-
 router = APIRouter()
 
 service = TrackingService()
+
 
 
 # 1x1 transparent GIF for tracking pixel
