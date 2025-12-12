@@ -204,8 +204,11 @@ function TenantOrgManager() {
     formData.append("file", file);
     setStatus("Uploading CSV...");
     try {
-      const res = await fetch(`${API_BASE.replace("/api", "")}/upload`, {
+      const res = await fetch(`${API_BASE}/org-manager/upload`, {
         method: "POST",
+        headers: {
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+        },
         body: formData,
       });
       if (!res.ok) throw new Error("Failed to upload CSV");

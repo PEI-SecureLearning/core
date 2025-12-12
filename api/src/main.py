@@ -1,20 +1,20 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, File, UploadFile
+from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
-from src.routers import realm
-from src.routers import compliance
-from src.routers import org_manager
-from src.routers import templates
-from src.routers import campaign
-from src.routers import tracking
+from src.routers import (
+    realm,
+    compliance,
+    org_manager,
+    campaign,
+    tracking,
+    templates,
+    sending_profile
+)
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.core.security import valid_resource_access
 from src.tasks import start_scheduler, shutdown_scheduler
-import csv
-import codecs
-import os
 
 from jwt import PyJWKClient
 import jwt
@@ -62,16 +62,6 @@ async def health_check():
     return {"status": "ok"}
 
 
-@app.post("/upload")
-def upload(file: UploadFile = File(...)):
-    csvReader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
-    data = []
-    for rows in csvReader:
-        data.append(rows)
-    file.file.close()
-    return data
-
-
 # Include routers
 app.include_router(realm.router, prefix="/api", tags=["realms"])
 app.include_router(compliance.router, prefix="/api", tags=["compliance"])
@@ -79,3 +69,4 @@ app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-man
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
 app.include_router(tracking.router, prefix="/api", tags=["tracking"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
+app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])

@@ -1,5 +1,8 @@
 import { memo, useCallback } from "react";
 import { Users, X, UserPlus, Search, Upload } from "lucide-react";
+import { useKeycloak } from "@react-keycloak/web";
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 
 interface Member {
   id: string;
@@ -152,13 +155,17 @@ function MembersSection({
   onRemoveMember,
   onStatus,
 }: MembersSectionProps) {
+  const { keycloak } = useKeycloak();
   const handleFileSelect = useCallback(async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL.replace('/api', '')}/upload`, {
+      const res = await fetch(`${API_BASE}/org-manager/upload`, {
         method: "POST",
+        headers: {
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+        },
         body: formData,
       });
       if (!res.ok) throw new Error("Failed to upload CSV");
@@ -169,7 +176,7 @@ function MembersSection({
       console.error(err);
       onStatus?.("Error uploading CSV");
     }
-  }, [setSelectedMembers, onStatus]);
+  }, [setSelectedMembers, onStatus, keycloak.token]);
 
   return (
     <div className="liquid-glass-card p-6 relative z-10">

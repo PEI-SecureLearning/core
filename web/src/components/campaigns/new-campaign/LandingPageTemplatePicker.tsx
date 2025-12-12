@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { Check, Layout, AlertCircle } from "lucide-react";
-import { useCampaign } from "./CampaignContext";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Layout, AlertCircle, Loader2 } from "lucide-react";
+import { useCampaign, type TemplateSelection } from "./CampaignContext";
+import { useKeycloak } from "@react-keycloak/web";
 
 interface LandingPageTemplate {
-  id: number;
+  id: string;
   name: string;
-  description: string;
-  thumbnail?: string;
+  description?: string;
+  path: string;
 }
 
 const inputStyle = {
@@ -18,62 +19,81 @@ const inputStyle = {
 
 export default function LandingPageTemplatePicker() {
   const { data, updateData } = useCampaign();
+  const { keycloak } = useKeycloak();
   const [searchQuery, setSearchQuery] = useState("");
+  const [templates, setTemplates] = useState<LandingPageTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // TODO: Replace with API call to fetch landing page templates
-  // Placeholder templates for now
-  const mockTemplates: LandingPageTemplate[] = [
-    {
-      id: 1,
-      name: "Login Page",
-      description: "Classic login form with username and password fields",
-    },
-    {
-      id: 2,
-      name: "Password Reset",
-      description: "Password reset form with email verification",
-    },
-    {
-      id: 3,
-      name: "Document Download",
-      description: "Fake document download page",
-    },
-    {
-      id: 4,
-      name: "Survey Form",
-      description: "Employee satisfaction survey template",
-    },
-    {
-      id: 5,
-      name: "Software Update",
-      description: "Fake software update notification page",
-    },
-    {
-      id: 6,
-      name: "Account Verification",
-      description: "Account verification form template",
-    },
-  ];
-
-  const filteredTemplates = mockTemplates.filter(
-    (t) =>
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const API_BASE = useMemo(
+    () => import.meta.env.VITE_API_URL ?? "http://localhost:8000/api",
+    []
   );
 
-  const handleSelectTemplate = (templateId: number) => {
-    updateData({ landing_page_template_id: templateId });
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${API_BASE}/templates`, {
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          },
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to load templates (${res.status})`);
+        }
+        const json = (await res.json()) as LandingPageTemplate[];
+        setTemplates(json.filter((t) => t.path === "/templates/pages/"));
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Unable to load templates";
+        setError(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTemplates();
+  }, [API_BASE, keycloak.token]);
+
+  const filteredTemplates = templates.filter(
+    (t) =>
+      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSelectTemplate = (template: LandingPageTemplate) => {
+    const selection: TemplateSelection = {
+      id: template.id,
+      name: template.name,
+      path: template.path,
+    };
+    updateData({
+      landing_page_template: selection,
+      landing_page_template_id: null,
+    });
+  };
+
+  const isTemplateSelected = (templateId: string) => {
+    if (data.landing_page_template?.id === templateId) return true;
+    if (
+      data.landing_page_template_id !== null &&
+      Number.isFinite(data.landing_page_template_id)
+    ) {
+      return String(data.landing_page_template_id) === templateId;
+    }
+    return false;
   };
 
   return (
     <div className="h-full w-full flex flex-col gap-4  p-2">
-      {/* Placeholder Notice */}
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
-        <AlertCircle size={16} className="text-amber-500" />
-        <p className="text-[13px] text-amber-700">
-          Landing page templates are placeholders. API integration pending.
-        </p>
-      </div>
+      {error && (
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700">
+          <AlertCircle size={16} />
+          <p className="text-[13px]">{error}</p>
+        </div>
+      )}
 
       {/* Search */}
       <div className="flex flex-col gap-2">
@@ -92,52 +112,60 @@ export default function LandingPageTemplatePicker() {
 
       {/* Templates Grid */}
       <div className="flex-1 ">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTemplates.map((template) => (
-            <div
-              key={template.id}
-              onClick={() => handleSelectTemplate(template.id)}
-              className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-                data.landing_page_template_id === template.id
-                  ? "ring-2 ring-purple-500 bg-purple-50/50"
-                  : "hover:bg-slate-50/50"
-              }`}
-              style={{
-                background:
-                  data.landing_page_template_id === template.id
-                    ? "rgba(147, 51, 234, 0.08)"
-                    : "rgba(255, 255, 255, 0.7)",
-                border:
-                  data.landing_page_template_id === template.id
-                    ? "1px solid rgba(147, 51, 234, 0.3)"
-                    : "1px solid rgba(148, 163, 184, 0.2)",
-              }}
-            >
-              {data.landing_page_template_id === template.id && (
-                <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
-                  <Check size={14} className="text-white" strokeWidth={3} />
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <Loader2 className="animate-spin" size={16} />
+            Loading templates...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTemplates.map((template) => {
+              const selected = isTemplateSelected(template.id);
+              return (
+                <div
+                  key={template.id}
+                  onClick={() => handleSelectTemplate(template)}
+                  className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                    selected
+                      ? "ring-2 ring-purple-500 bg-purple-50/50"
+                      : "hover:bg-slate-50/50"
+                  }`}
+                  style={{
+                    background: selected
+                      ? "rgba(147, 51, 234, 0.08)"
+                      : "rgba(255, 255, 255, 0.7)",
+                    border: selected
+                      ? "1px solid rgba(147, 51, 234, 0.3)"
+                      : "1px solid rgba(148, 163, 184, 0.2)",
+                  }}
+                >
+                  {selected && (
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                      <Check size={14} className="text-white" strokeWidth={3} />
+                    </div>
+                  )}
+
+                  {/* Template Preview Placeholder */}
+                  <div
+                    className="w-full h-24 rounded-lg mb-3 flex items-center justify-center"
+                    style={{ background: "rgba(148, 163, 184, 0.1)" }}
+                  >
+                    <Layout size={32} className="text-slate-400" />
+                  </div>
+
+                  <h3 className="text-[14px] font-medium text-slate-700 mb-1">
+                    {template.name}
+                  </h3>
+                  <p className="text-[12px] text-slate-500 line-clamp-2">
+                    {template.description || "No description provided."}
+                  </p>
                 </div>
-              )}
+              );
+            })}
+          </div>
+        )}
 
-              {/* Template Preview Placeholder */}
-              <div
-                className="w-full h-24 rounded-lg mb-3 flex items-center justify-center"
-                style={{ background: "rgba(148, 163, 184, 0.1)" }}
-              >
-                <Layout size={32} className="text-slate-400" />
-              </div>
-
-              <h3 className="text-[14px] font-medium text-slate-700 mb-1">
-                {template.name}
-              </h3>
-              <p className="text-[12px] text-slate-500 line-clamp-2">
-                {template.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {filteredTemplates.length === 0 && (
+        {filteredTemplates.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Layout size={40} className="text-slate-300 mb-3" />
             <p className="text-slate-500 text-[14px]">No templates found</p>
@@ -149,13 +177,13 @@ export default function LandingPageTemplatePicker() {
       </div>
 
       {/* Selected indicator */}
-      {data.landing_page_template_id && (
+      {(data.landing_page_template || data.landing_page_template_id) && (
         <div className="text-[13px] text-purple-600 font-medium">
           ✓ Selected:{" "}
-          {
-            mockTemplates.find((t) => t.id === data.landing_page_template_id)
-              ?.name
-          }
+          {data.landing_page_template?.name ||
+            templates.find(
+              (t) => String(t.id) === String(data.landing_page_template_id)
+            )?.name}
         </div>
       )}
     </div>

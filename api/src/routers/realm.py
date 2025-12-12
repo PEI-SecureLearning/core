@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel
 
+from src.core.deps import SessionDep
 from src.models.realm import RealmCreate
 from src.core.security import oauth_2_scheme
 from src.services import realm as realm_service
@@ -17,6 +18,7 @@ class UserCreateRequest(BaseModel):
     username: str
     name: str
     email: str
+    dept: str
     role: str
     group_id: str | None = None
 
@@ -46,22 +48,25 @@ def get_realms_by_domain(domain: str):
 
 
 @router.post("/realms")
-def create_realm(realm: RealmCreate):
-    return realm_service.create_realm_in_keycloak(realm)
+def create_realm(realm: RealmCreate, session: SessionDep):
+    return realm_service.create_realm_in_keycloak(realm, session)
 
 
 @router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_realm(realm: str):
+def delete_realm(realm: str, session: SessionDep):
     """Delete a tenant realm from Keycloak."""
-    realm_service.delete_realm_from_keycloak(realm)
+    realm_service.delete_realm_from_keycloak(realm, session)
     return None
 
 
 @router.post("/realms/users")
-def create_user_in_realm(user: UserCreateRequest, token: str = Depends(oauth_2_scheme)):
+def create_user_in_realm(
+    session: SessionDep, user: UserCreateRequest, token: str = Depends(oauth_2_scheme)
+):
     """Create a new user inside the specified Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, user.realm)
     return realm_service.create_user_in_realm(
+        session,
         realm=user.realm,
         username=user.username,
         name=user.name,
@@ -88,10 +93,10 @@ def get_user_in_realm(realm: str, user_id: str, token: str = Depends(oauth_2_sch
     "/realms/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT
 )
 def delete_user_in_realm(
-    realm: str, user_id: str, token: str = Depends(oauth_2_scheme)
+    realm: str, user_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
 ):
     realm_service.validate_realm_access(token, realm)
-    realm_service.delete_user_in_realm(realm, user_id)
+    realm_service.delete_user_in_realm(realm, user_id, session)
     return None
 
 
@@ -103,10 +108,13 @@ def list_groups_in_realm(realm: str, token: str = Depends(oauth_2_scheme)):
 
 @router.post("/realms/{realm}/groups", status_code=status.HTTP_201_CREATED)
 def create_group_in_realm(
-    realm: str, group: GroupCreateRequest, token: str = Depends(oauth_2_scheme)
+    session: SessionDep,
+    realm: str,
+    group: GroupCreateRequest,
+    token: str = Depends(oauth_2_scheme),
 ):
     realm_service.validate_realm_access(token, realm)
-    return realm_service.create_group_in_realm(realm, group.name)
+    return realm_service.create_group_in_realm(realm, group.name, session)
 
 
 @router.post(
@@ -131,10 +139,10 @@ def list_group_members(realm: str, group_id: str, token: str = Depends(oauth_2_s
     "/realms/{realm}/groups/{group_id}", status_code=status.HTTP_204_NO_CONTENT
 )
 def delete_group_in_realm(
-    realm: str, group_id: str, token: str = Depends(oauth_2_scheme)
+    realm: str, group_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
 ):
     realm_service.validate_realm_access(token, realm)
-    realm_service.delete_group_in_realm(realm, group_id)
+    realm_service.delete_group_in_realm(realm, group_id, session)
     return None
 
 

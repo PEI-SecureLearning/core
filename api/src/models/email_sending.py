@@ -17,7 +17,7 @@ class EmailSendingStatus(StrEnum):
 
 class EmailSending(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: str = Field(foreign_key="user.keycloak_id")
+    user_id: str = Field(foreign_key="useres.keycloak_id")
     scheduled_date: datetime
     status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
     email_to: str
@@ -32,9 +32,7 @@ class EmailSending(SQLModel, table=True):
     campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")
 
     campaign: Optional["Campaign"] = Relationship(back_populates="email_sendings")
-    user: Optional["User"] = Relationship(
-        back_populates="email_sendings"
-    )  # Assuming a User model exists
+    user: Optional["User"] = Relationship(back_populates="email_sendings")
 
 
 class EmailSendingCreate(SQLModel):
@@ -46,6 +44,7 @@ class EmailSendingCreate(SQLModel):
 
 class UserSendingInfo(SQLModel):
     """Summary of a user's interaction with a campaign email."""
+
     user_id: str
     email: str
     status: str

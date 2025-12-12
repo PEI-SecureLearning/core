@@ -7,8 +7,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-myuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
       POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
-    expose:
-      - "5432"
+    ports:
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
@@ -70,6 +70,8 @@ services:
       KC_LOG_LEVEL: DEBUG
       KC_HTTP_ENABLED: true
       KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
       KC_DB_USERNAME: ${POSTGRES_USER:-myuser}
@@ -81,6 +83,8 @@ services:
 
     depends_on:
       - db
+      - keycloak
+      - mongo
 
     volumes:
       - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
@@ -101,9 +105,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
       KEYCLOAK_URL: http://keycloak:8080
       CLIENT_SECRET: ${CLIENT_SECRET:-your-client-secret}
-      MONGODB_URI: mongodb://template_user:template_pass@mongo:27017/securelearning?authSource=securelearning
-      MONGODB_DB: securelearning
-      MONGODB_COLLECTION_TEMPLATES: templates
     ports:
       - "8000:8000"
     volumes:
@@ -111,7 +112,6 @@ services:
     depends_on:
       - db
       - keycloak
-      - mongo
 
   frontend:
     build:

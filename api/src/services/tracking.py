@@ -18,15 +18,13 @@ class TrackingService:
             sending.opened_at = datetime.now()
             sending.status = EmailSendingStatus.OPENED
 
-            # Atomically increment campaign counter
-            session.exec(
-                text(
-                    "UPDATE campaign SET total_opened = total_opened + 1 WHERE id = :campaign_id"
-                ),
-                {"campaign_id": sending.campaign_id},
-            )
-            session.commit()
-            session.refresh(sending)
+            # Increment campaign counter using ORM
+            campaign = session.get(Campaign, sending.campaign_id)
+            if campaign:
+                campaign.total_opened += 1
+                session.add(campaign)
+                session.commit()
+                session.refresh(sending)
 
         return sending
 
@@ -37,26 +35,23 @@ class TrackingService:
         # Record open if not already recorded (click implies open)
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
-            session.exec(
-                text(
-                    "UPDATE campaign SET total_opened = total_opened + 1 WHERE id = :campaign_id"
-                ),
-                {"campaign_id": sending.campaign_id},
-            )
+            # Increment campaign counter using ORM
+            campaign = session.get(Campaign, sending.campaign_id)
+            if campaign:
+                campaign.total_opened += 1
+                session.add(campaign)
+                session.commit()
 
         # Only count first click
         if sending.clicked_at is None:
             sending.clicked_at = datetime.now()
             sending.status = EmailSendingStatus.CLICKED
-
-            # Atomically increment campaign counter
-            session.exec(
-                text(
-                    "UPDATE campaign SET total_clicked = total_clicked + 1 WHERE id = :campaign_id"
-                ),
-                {"campaign_id": sending.campaign_id},
-            )
-            session.commit()
+            # Increment campaign counter using ORM
+            campaign = session.get(Campaign, sending.campaign_id)
+            if campaign:
+                campaign.total_clicked += 1
+                session.add(campaign)
+                session.commit()
             session.refresh(sending)
 
         return sending
@@ -66,37 +61,25 @@ class TrackingService:
         sending = self._get_sending_by_token(tracking_token, session)
 
         # Record open and click if not already recorded (phish implies both)
+        campaign = session.get(Campaign, sending.campaign_id)
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
-            session.exec(
-                text(
-                    "UPDATE campaign SET total_opened = total_opened + 1 WHERE id = :campaign_id"
-                ),
-                {"campaign_id": sending.campaign_id},
-            )
-
+            if campaign:
+                campaign.total_opened += 1
         if sending.clicked_at is None:
             sending.clicked_at = datetime.now()
-            session.exec(
-                text(
-                    "UPDATE campaign SET total_clicked = total_clicked + 1 WHERE id = :campaign_id"
-                ),
-                {"campaign_id": sending.campaign_id},
-            )
+            if campaign:
+                campaign.total_clicked += 1
 
         # Only count first phish
         if sending.phished_at is None:
             sending.phished_at = datetime.now()
             sending.status = EmailSendingStatus.PHISHED
-
-            # Atomically increment campaign counter
-            session.exec(
-                text(
-                    "UPDATE campaign SET total_phished = total_phished + 1 WHERE id = :campaign_id"
-                ),
-                {"campaign_id": sending.campaign_id},
-            )
-            session.commit()
+            if campaign:
+                campaign.total_phished += 1
+            if campaign:
+                session.add(campaign)
+                session.commit()
             session.refresh(sending)
 
         return sending

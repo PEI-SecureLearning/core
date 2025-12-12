@@ -255,9 +255,11 @@ export default function CampaignScheduler() {
             <div className="space-y-1">
               <p className="text-[12px] text-slate-500">
                 Email:{" "}
-                {data.email_template_id ? (
+                {data.email_template || data.email_template_id ? (
                   <span className="text-purple-600 font-medium">
-                    Selected (ID: {data.email_template_id})
+                    {data.email_template?.name
+                      ? `Selected: ${data.email_template.name}`
+                      : `Selected (ID: ${data.email_template_id})`}
                   </span>
                 ) : (
                   <span className="text-amber-600">Not selected</span>
@@ -265,9 +267,11 @@ export default function CampaignScheduler() {
               </p>
               <p className="text-[12px] text-slate-500">
                 Landing Page:{" "}
-                {data.landing_page_template_id ? (
+                {data.landing_page_template || data.landing_page_template_id ? (
                   <span className="text-purple-600 font-medium">
-                    Selected (ID: {data.landing_page_template_id})
+                    {data.landing_page_template?.name
+                      ? `Selected: ${data.landing_page_template.name}`
+                      : `Selected (ID: ${data.landing_page_template_id})`}
                   </span>
                 ) : (
                   <span className="text-amber-600">Not selected</span>
