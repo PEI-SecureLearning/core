@@ -1475,17 +1475,6 @@ class Admin:
                     "realmRoles": ["ORG_MANAGER"],
                     "clientRoles": {"realm-management": ["realm-admin"]},
                 },
-                {
-                    "username": "User",
-                    "enabled": True,
-                    "firstName": "nome",
-                    "lastName": "sobrenome",
-                    "email": "user@user.com",
-                    "credentials": [
-                        {"type": "password", "value": "1234", "temporary": True}
-                    ],
-                    "realmRoles": ["DEFAULT_USER"],
-                },
             ],
         }
 

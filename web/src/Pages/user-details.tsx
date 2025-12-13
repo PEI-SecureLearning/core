@@ -79,7 +79,7 @@ export default function UserGroupDetail() {
         const res = await fetchUsers(realm, keycloak.token || undefined);
         const mapped =
           (res.users || []).map((u) => ({
-            id: u.id || u.username || "",
+            id: u.id || "",
             username: u.username,
             email: u.email,
             firstName: u.firstName,
@@ -226,11 +226,10 @@ export default function UserGroupDetail() {
                   {members.map((member, index) => (
                     <tr
                       key={member.id}
-                      className={`hover:bg-gray-50 transition-colors ${
-                        index !== members.length - 1
-                          ? "border-b border-gray-100"
-                          : ""
-                      }`}
+                      className={`hover:bg-gray-50 transition-colors ${index !== members.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
+                        }`}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
