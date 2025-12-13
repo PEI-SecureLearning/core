@@ -3,6 +3,7 @@ import math
 from typing import Iterable
 from fastapi import HTTPException
 from sqlmodel import Session, select
+import pika
 
 from src.models.campaign import (
     MIN_INTERVAL,
