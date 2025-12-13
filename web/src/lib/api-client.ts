@@ -1,5 +1,3 @@
-
-
 class ApiClient {
   private baseUrl: string;
   constructor(baseUrl: string) {
@@ -13,12 +11,12 @@ class ApiClient {
     }
     return response.json();
   }
-  
+
   async post<T>(endpoint: string, data: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
@@ -29,17 +27,38 @@ class ApiClient {
     return response.json();
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
+  async put<T>(endpoint: string, data: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'DELETE',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error putting to ${endpoint}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async delete<T>(endpoint: string): Promise<T | void> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
       throw new Error(`Error deleting ${endpoint}: ${response.statusText}`);
     }
+
+    // Handle 204 No Content responses
+    if (response.status === 204) {
+      return;
+    }
+
     return response.json();
   }
 }

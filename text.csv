@@ -1,0 +1,5 @@
+username,name,email,role,groups
+alice.williams,Alice Williams,alice.williams@a.a,CONTENT_MANAGER,"group-a,group-b"
+bob.miller,Bob Miller,bob.miller@a.a,DEFAULT_USER,group-a
+carol.jones,Carol Jones,carol.jones@a.a,DEFAULT_USER,
+david.smith,David Smith,david.smith@a.a,DEFAULT_USER,"group-admins,group-a"

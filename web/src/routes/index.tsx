@@ -1,22 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import ComplianceAgreement from '@/components/Compliance';
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: Index,
+  beforeLoad: () => {
+    throw redirect({ to: '/dashboard' })
+  },
 })
-
-
-function Index() {
-
-  return (
-    <div>
-      <div>
-        <b>boas pessoal</b>
-      </div>
-      <div className="container mx-auto py-8 px-4">        
-          <ComplianceAgreement></ComplianceAgreement>
-      </div>
-    </div>
-
-  )
-}
