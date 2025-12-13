@@ -2,8 +2,12 @@ import secrets
 import jwt
 from fastapi import HTTPException
 from sqlmodel import Session, select
+from src.core.deps import SessionDep
 from src.models.realm import Realm, RealmCreate
 from src.core.admin import Admin
+from src.models.user import User
+from src.core.db import engine
+from src.models.user_group import UserGroup
 
 
 # Singleton admin instance
@@ -57,9 +61,27 @@ def list_realms() -> dict:
     return {"realms": realms}
 
 
-def delete_realm_from_keycloak(realm_name: str) -> None:
+def delete_realm_from_keycloak(realm_name: str, session: Session) -> None:
     """Delete a realm from Keycloak."""
-    _admin.delete_realm(realm_name)
+    _admin.delete_realm(session, realm_name)
+    # Remove realm and related users locally
+    with Session(engine) as session:
+        # Delete users belonging to this realm (best-effort: based on Keycloak listing before deletion)
+        try:
+            kc_users = _admin.list_users(realm_name)
+            kc_ids = [u.get("id") for u in kc_users if u.get("id")]
+        except Exception:
+            kc_ids = []
+        if kc_ids:
+            for uid in kc_ids:
+                user = session.get(User, uid)
+                if user:
+                    session.delete(user)
+        # Delete realm row
+        db_realm = session.get(Realm, realm_name)
+        if db_realm:
+            session.delete(db_realm)
+        session.commit()
 
 
 def get_platform_logs(max_results: int = 100) -> dict:
@@ -81,10 +103,11 @@ def find_realm_by_domain(domain: str) -> str | None:
     return _admin.find_realm_by_domain(domain)
 
 
-def create_realm_in_keycloak(realm: RealmCreate) -> RealmCreate:
+def create_realm_in_keycloak(realm: RealmCreate, session: Session) -> RealmCreate:
     """Create a realm in Keycloak."""
     try:
         response = _admin.create_realm(
+            session,
             realm_name=realm.name,
             admin_email=realm.adminEmail,
             domain=realm.domain,
@@ -95,12 +118,29 @@ def create_realm_in_keycloak(realm: RealmCreate) -> RealmCreate:
                 status_code=response.status_code,
                 detail=f"Failed to create realm in Keycloak: {response.text}",
             )
+
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(
             status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
         )
+
+    # Persist realm in DB so it's available before any user creation
+    with Session(engine) as session:
+        _ensure_realm(session, realm.name, realm.domain)
+        # Upsert default users created by the realm template (e.g., Org_manager, User)
+        try:
+            kc_users = _admin.list_users(realm.name)
+            for u in kc_users:
+                uid = u.get("id")
+                if not uid:
+                    continue
+                _upsert_user(session, uid, u.get("email"))
+            session.commit()
+        except Exception:
+            # If user sync fails, continue; can be retried later
+            pass
 
     return realm
 
@@ -114,6 +154,7 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
 
     # Create realm in Keycloak
     response = _admin.create_realm(
+        session,
         realm_name=realm_in.name,
         admin_email=realm_in.adminEmail,
         features=realm_in.features,
@@ -127,10 +168,36 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
         )
 
     # Persist to DB
-    db_realm = Realm(name=realm_in.name, domain=realm_in.domain)
-    session.add(db_realm)
-    session.commit()
-    session.refresh(db_realm)
+    db_realm = session.get(Realm, realm_in.name)
+    if not db_realm:
+        db_realm = Realm(name=realm_in.name, domain=realm_in.domain)
+        session.add(db_realm)
+        session.commit()
+        session.refresh(db_realm)
+
+    # Ensure platform/admin users from Keycloak exist locally for FK usage
+    try:
+        kc_users = _admin.list_users(realm_in.name)
+        for u in kc_users:
+            uid = u.get("id")
+            if not uid:
+                continue
+            existing_user = session.get(User, uid)
+            if existing_user:
+                # Update basic fields
+                if u.get("email"):
+                    existing_user.email = u["email"]
+            else:
+                session.add(
+                    User(
+                        keycloak_id=uid,
+                        email=u.get("email") or "",
+                    )
+                )
+        session.commit()
+    except Exception:
+        # If Keycloak lookup fails, still return; users can sync later
+        pass
 
     return db_realm
 
@@ -139,6 +206,7 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
 
 
 def create_user_in_realm(
+    session: Session,
     realm: str,
     username: str,
     name: str,
@@ -152,6 +220,7 @@ def create_user_in_realm(
 
     try:
         response = _admin.add_user(
+            session,
             realm,
             username,
             temporary_password,
@@ -177,12 +246,40 @@ def create_user_in_realm(
     location = response.headers.get("Location")
     if location:
         user_id = location.rstrip("/").split("/")[-1]
+
+        user = User(keycloak_id=user_id, email=email)
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
     if group_id and user_id:
         try:
             _admin.add_user_to_group(realm, user_id, group_id)
         except Exception:
             # Ignore group assignment errors for now but log detail
             pass
+
+    # Persist the user locally (upsert by keycloak_id). If Location header missing, look up by username/email.
+    if not user_id:
+        try:
+            kc_users = _admin.list_users(realm)
+            match = next(
+                (
+                    u
+                    for u in kc_users
+                    if u.get("username") == username or u.get("email") == email
+                ),
+                None,
+            )
+            user_id = match.get("id") if match else None
+        except Exception:
+            user_id = None
+
+    if user_id:
+        with Session(engine) as session:
+            _ensure_realm(session, realm, f"{realm}.local")
+            _upsert_user(session, user_id, email)
+            session.commit()
 
     return {
         "realm": realm,
@@ -202,13 +299,12 @@ def list_users_in_realm(realm: str) -> dict:
         raise HTTPException(
             status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
         )
-
     # Return simplified fields
     simplified = []
     for u in users:
         simplified.append(
             {
-                "id": u.get("id"),
+                "": u.get("id"),
                 "username": u.get("username"),
                 "email": u.get("email"),
                 "firstName": u.get("firstName"),
@@ -244,16 +340,22 @@ def get_user_in_realm(realm: str, user_id: str) -> dict:
     raise HTTPException(status_code=404, detail="User not found in realm")
 
 
-def delete_user_in_realm(realm: str, user_id: str) -> None:
+def delete_user_in_realm(realm: str, user_id: str, session: Session) -> None:
     """Delete a user from the realm."""
     try:
-        _admin.delete_user(realm, user_id)
+        _admin.delete_user(session, realm, user_id)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(
             status_code=500, detail=f"Failed to delete user in Keycloak: {str(e)}"
         )
+    # Remove from local DB
+    with Session(engine) as session:
+        db_user = session.get(User, user_id)
+        if db_user:
+            session.delete(db_user)
+            session.commit()
 
 
 # ============ Group Operations ============
@@ -278,22 +380,44 @@ def list_groups_in_realm(realm: str) -> dict:
     return {"realm": realm, "groups": simplified}
 
 
-def create_group_in_realm(realm: str, group_name: str) -> dict:
+def create_group_in_realm(realm: str, group_name: str, session: Session) -> UserGroup:
     """Create a group in the realm."""
     try:
-        response = _admin.create_group(realm, group_name)
+        response = _admin.create_group(session, realm, group_name)
         if response.status_code not in (201, 204):
             raise HTTPException(
                 status_code=response.status_code,
                 detail="Failed to create group in Keycloak",
             )
+        location = response.headers.get("Location")
+        if not location:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to retrieve group location from Keycloak",
+            )
+        group_id = location.rstrip("/").split("/")[-1]
+        group = UserGroup(keycloak_id=group_id)
+        session.add(group)
+        session.commit()
+        session.refresh(group)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(
             status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
         )
-    return {"realm": realm, "name": group_name}
+    # Persist group locally
+    try:
+        location = response.headers.get("Location")
+        group_id = location.rstrip("/").split("/")[-1] if location else None
+        with Session(engine) as session:
+            _ensure_realm(session, realm, f"{realm}.local")
+            if group_id and not session.get(UserGroup, group_id):
+                session.add(UserGroup(keycloak_id=group_id))
+            session.commit()
+    except Exception:
+        pass
+    return group
 
 
 def add_user_to_group_in_realm(realm: str, user_id: str, group_id: str) -> None:
@@ -333,14 +457,19 @@ def list_group_members_in_realm(realm: str, group_id: str) -> dict:
     return {"realm": realm, "groupId": group_id, "members": simplified}
 
 
-def delete_group_in_realm(realm: str, group_id: str) -> None:
+def delete_group_in_realm(realm: str, group_id: str, session: Session) -> None:
     """Delete a group from the realm."""
     try:
-        _admin.delete_group(realm, group_id)
+        _admin.delete_group(session, realm, group_id)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=f"Failed to delete group: {str(e)}")
+    with Session(engine) as session:
+        db_group = session.get(UserGroup, group_id)
+        if db_group:
+            session.delete(db_group)
+            session.commit()
 
 
 def update_group_in_realm(realm: str, group_id: str, group_name: str) -> None:
@@ -363,3 +492,19 @@ def remove_user_from_group_in_realm(realm: str, user_id: str, group_id: str) -> 
         raise HTTPException(
             status_code=500, detail=f"Failed to remove user from group: {str(e)}"
         )
+
+
+def _ensure_realm(session: Session, realm_name: str, domain: str | None = None) -> None:
+    if session.get(Realm, realm_name):
+        return
+    session.add(Realm(name=realm_name, domain=domain or f"{realm_name}.local"))
+    session.commit()
+
+
+def _upsert_user(session: Session, keycloak_id: str, email: str | None) -> None:
+    existing = session.get(User, keycloak_id)
+    if existing:
+        if email:
+            existing.email = email
+    else:
+        session.add(User(keycloak_id=keycloak_id, email=email or ""))

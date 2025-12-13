@@ -8,486 +8,545 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as TenantsOrgManagerRouteImport } from './routes/tenants-org-manager'
-import { Route as TemplatesRouteImport } from './routes/templates'
-import { Route as StatisticsRouteImport } from './routes/statistics'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ReportRouteImport } from './routes/report'
-import { Route as HelpRouteImport } from './routes/help'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
-import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
-import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
-import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
-import { Route as CampaignsTimelineRouteImport } from './routes/campaigns/timeline'
-import { Route as CampaignsNewCampaignRouteImport } from './routes/campaigns/new-campaign'
-import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
-import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminTermsRouteImport } from './routes/admin/terms'
-import { Route as AdminLogsRouteImport } from './routes/admin/logs'
-import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
-import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
-import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as TenantsOrgManagerRouteImport } from "./routes/tenants-org-manager";
+import { Route as TemplatesRouteImport } from "./routes/templates";
+import { Route as StatisticsRouteImport } from "./routes/statistics";
+import { Route as SettingsRouteImport } from "./routes/settings";
+import { Route as ReportRouteImport } from "./routes/report";
+import { Route as HelpRouteImport } from "./routes/help";
+import { Route as DashboardRouteImport } from "./routes/dashboard";
+import { Route as AdminRouteImport } from "./routes/admin";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as UsergroupsIndexRouteImport } from "./routes/usergroups/index";
+import { Route as SendingProfilesIndexRouteImport } from "./routes/sending-profiles/index";
+import { Route as CampaignsIndexRouteImport } from "./routes/campaigns/index";
+import { Route as UsergroupsNewGroupRouteImport } from "./routes/usergroups/new-group";
+import { Route as UsergroupsIdRouteImport } from "./routes/usergroups/$id";
+import { Route as SendingProfilesNewRouteImport } from "./routes/sending-profiles/new";
+import { Route as SendingProfilesIdRouteImport } from "./routes/sending-profiles/$id";
+import { Route as CampaignsTimelineRouteImport } from "./routes/campaigns/timeline";
+import { Route as CampaignsNewRouteImport } from "./routes/campaigns/new";
+import { Route as CampaignsIdRouteImport } from "./routes/campaigns/$id";
+import { Route as AdminUsersRouteImport } from "./routes/admin/users";
+import { Route as AdminTermsRouteImport } from "./routes/admin/terms";
+import { Route as AdminLogsRouteImport } from "./routes/admin/logs";
+import { Route as AdminIndexRouteImport } from "./routes/admin/index";
+import { Route as AdminTenantsIndexRouteImport } from "./routes/admin/tenants/index";
+import { Route as AdminTenantsNewTenantRouteImport } from "./routes/admin/tenants/new-tenant";
+import { Route as AdminTenantsTenantIdRouteImport } from "./routes/admin/tenants/$tenantId";
 
 const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
-  id: '/tenants-org-manager',
-  path: '/tenants-org-manager',
+  id: "/tenants-org-manager",
+  path: "/tenants-org-manager",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const TemplatesRoute = TemplatesRouteImport.update({
-  id: '/templates',
-  path: '/templates',
+  id: "/templates",
+  path: "/templates",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const StatisticsRoute = StatisticsRouteImport.update({
-  id: '/statistics',
-  path: '/statistics',
+  id: "/statistics",
+  path: "/statistics",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
+  id: "/settings",
+  path: "/settings",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ReportRoute = ReportRouteImport.update({
-  id: '/report',
-  path: '/report',
+  id: "/report",
+  path: "/report",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const HelpRoute = HelpRouteImport.update({
-  id: '/help',
-  path: '/help',
+  id: "/help",
+  path: "/help",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+  id: "/dashboard",
+  path: "/dashboard",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+  id: "/admin",
+  path: "/admin",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const UsergroupsIndexRoute = UsergroupsIndexRouteImport.update({
-  id: '/usergroups/',
-  path: '/usergroups/',
+  id: "/usergroups/",
+  path: "/usergroups/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const SendingProfilesIndexRoute = SendingProfilesIndexRouteImport.update({
+  id: "/sending-profiles/",
+  path: "/sending-profiles/",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
-  id: '/campaigns/',
-  path: '/campaigns/',
+  id: "/campaigns/",
+  path: "/campaigns/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const UsergroupsNewGroupRoute = UsergroupsNewGroupRouteImport.update({
-  id: '/usergroups/new-group',
-  path: '/usergroups/new-group',
+  id: "/usergroups/new-group",
+  path: "/usergroups/new-group",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const UsergroupsIdRoute = UsergroupsIdRouteImport.update({
-  id: '/usergroups/$id',
-  path: '/usergroups/$id',
+  id: "/usergroups/$id",
+  path: "/usergroups/$id",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
+const SendingProfilesNewRoute = SendingProfilesNewRouteImport.update({
+  id: "/sending-profiles/new",
+  path: "/sending-profiles/new",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const SendingProfilesIdRoute = SendingProfilesIdRouteImport.update({
+  id: "/sending-profiles/$id",
+  path: "/sending-profiles/$id",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const CampaignsTimelineRoute = CampaignsTimelineRouteImport.update({
-  id: '/campaigns/timeline',
-  path: '/campaigns/timeline',
+  id: "/campaigns/timeline",
+  path: "/campaigns/timeline",
   getParentRoute: () => rootRouteImport,
-} as any)
-const CampaignsNewCampaignRoute = CampaignsNewCampaignRouteImport.update({
-  id: '/campaigns/new-campaign',
-  path: '/campaigns/new-campaign',
+} as any);
+const CampaignsNewRoute = CampaignsNewRouteImport.update({
+  id: "/campaigns/new",
+  path: "/campaigns/new",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CampaignsIdRoute = CampaignsIdRouteImport.update({
-  id: '/campaigns/$id',
-  path: '/campaigns/$id',
+  id: "/campaigns/$id",
+  path: "/campaigns/$id",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
+  id: "/users",
+  path: "/users",
   getParentRoute: () => AdminRoute,
-} as any)
+} as any);
 const AdminTermsRoute = AdminTermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+  id: "/terms",
+  path: "/terms",
   getParentRoute: () => AdminRoute,
-} as any)
+} as any);
 const AdminLogsRoute = AdminLogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
+  id: "/logs",
+  path: "/logs",
   getParentRoute: () => AdminRoute,
-} as any)
+} as any);
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: "/admin/",
+  path: "/",
+  getParentRoute: () => AdminRoute,
+} as any);
 const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
-  id: '/tenants/',
-  path: '/tenants/',
+  id: "/tenants/",
+  path: "/tenants/",
   getParentRoute: () => AdminRoute,
-} as any)
+} as any);
 const AdminTenantsNewTenantRoute = AdminTenantsNewTenantRouteImport.update({
-  id: '/tenants/new-tenant',
-  path: '/tenants/new-tenant',
+  id: "/tenants/new-tenant",
+  path: "/tenants/new-tenant",
   getParentRoute: () => AdminRoute,
-} as any)
+} as any);
 const AdminTenantsTenantIdRoute = AdminTenantsTenantIdRouteImport.update({
-  id: '/tenants/$tenantId',
-  path: '/tenants/$tenantId',
+  id: "/tenants/$tenantId",
+  path: "/tenants/$tenantId",
   getParentRoute: () => AdminRoute,
-} as any)
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/dashboard': typeof DashboardRoute
-  '/help': typeof HelpRoute
-  '/report': typeof ReportRoute
-  '/settings': typeof SettingsRoute
-  '/statistics': typeof StatisticsRoute
-  '/templates': typeof TemplatesRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
-  '/admin/logs': typeof AdminLogsRoute
-  '/admin/terms': typeof AdminTermsRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/campaigns/$id': typeof CampaignsIdRoute
-  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
-  '/campaigns/timeline': typeof CampaignsTimelineRoute
-  '/usergroups/$id': typeof UsergroupsIdRoute
-  '/usergroups/new-group': typeof UsergroupsNewGroupRoute
-  '/campaigns': typeof CampaignsIndexRoute
-  '/usergroups': typeof UsergroupsIndexRoute
-  '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
-  '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
-  '/admin/tenants': typeof AdminTenantsIndexRoute
+  "/": typeof IndexRoute;
+  "/admin": typeof AdminRouteWithChildren;
+  "/dashboard": typeof DashboardRoute;
+  "/help": typeof HelpRoute;
+  "/report": typeof ReportRoute;
+  "/settings": typeof SettingsRoute;
+  "/statistics": typeof StatisticsRoute;
+  "/templates": typeof TemplatesRoute;
+  "/tenants-org-manager": typeof TenantsOrgManagerRoute;
+  "/admin/logs": typeof AdminLogsRoute;
+  "/admin/terms": typeof AdminTermsRoute;
+  "/admin/users": typeof AdminUsersRoute;
+  "/campaigns/$id": typeof CampaignsIdRoute;
+  "/campaigns/new": typeof CampaignsNewRoute;
+  "/campaigns/timeline": typeof CampaignsTimelineRoute;
+  "/sending-profiles/$id": typeof SendingProfilesIdRoute;
+  "/sending-profiles/new": typeof SendingProfilesNewRoute;
+  "/usergroups/$id": typeof UsergroupsIdRoute;
+  "/usergroups/new-group": typeof UsergroupsNewGroupRoute;
+  "/campaigns": typeof CampaignsIndexRoute;
+  "/sending-profiles": typeof SendingProfilesIndexRoute;
+  "/usergroups": typeof UsergroupsIndexRoute;
+  "/admin/tenants/$tenantId": typeof AdminTenantsTenantIdRoute;
+  "/admin/tenants/new-tenant": typeof AdminTenantsNewTenantRoute;
+  "/admin/tenants": typeof AdminTenantsIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/dashboard': typeof DashboardRoute
-  '/help': typeof HelpRoute
-  '/report': typeof ReportRoute
-  '/settings': typeof SettingsRoute
-  '/statistics': typeof StatisticsRoute
-  '/templates': typeof TemplatesRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
-  '/admin/logs': typeof AdminLogsRoute
-  '/admin/terms': typeof AdminTermsRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/campaigns/$id': typeof CampaignsIdRoute
-  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
-  '/campaigns/timeline': typeof CampaignsTimelineRoute
-  '/usergroups/$id': typeof UsergroupsIdRoute
-  '/usergroups/new-group': typeof UsergroupsNewGroupRoute
-  '/campaigns': typeof CampaignsIndexRoute
-  '/usergroups': typeof UsergroupsIndexRoute
-  '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
-  '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
-  '/admin/tenants': typeof AdminTenantsIndexRoute
+  "/": typeof IndexRoute;
+  "/admin": typeof AdminRouteWithChildren;
+  "/dashboard": typeof DashboardRoute;
+  "/help": typeof HelpRoute;
+  "/report": typeof ReportRoute;
+  "/settings": typeof SettingsRoute;
+  "/statistics": typeof StatisticsRoute;
+  "/templates": typeof TemplatesRoute;
+  "/tenants-org-manager": typeof TenantsOrgManagerRoute;
+  "/admin/logs": typeof AdminLogsRoute;
+  "/admin/terms": typeof AdminTermsRoute;
+  "/admin/users": typeof AdminUsersRoute;
+  "/campaigns/$id": typeof CampaignsIdRoute;
+  "/campaigns/new": typeof CampaignsNewRoute;
+  "/campaigns/timeline": typeof CampaignsTimelineRoute;
+  "/sending-profiles/$id": typeof SendingProfilesIdRoute;
+  "/sending-profiles/new": typeof SendingProfilesNewRoute;
+  "/usergroups/$id": typeof UsergroupsIdRoute;
+  "/usergroups/new-group": typeof UsergroupsNewGroupRoute;
+  "/campaigns": typeof CampaignsIndexRoute;
+  "/sending-profiles": typeof SendingProfilesIndexRoute;
+  "/usergroups": typeof UsergroupsIndexRoute;
+  "/admin/tenants/$tenantId": typeof AdminTenantsTenantIdRoute;
+  "/admin/tenants/new-tenant": typeof AdminTenantsNewTenantRoute;
+  "/admin/tenants": typeof AdminTenantsIndexRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/dashboard': typeof DashboardRoute
-  '/help': typeof HelpRoute
-  '/report': typeof ReportRoute
-  '/settings': typeof SettingsRoute
-  '/statistics': typeof StatisticsRoute
-  '/templates': typeof TemplatesRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
-  '/admin/logs': typeof AdminLogsRoute
-  '/admin/terms': typeof AdminTermsRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/campaigns/$id': typeof CampaignsIdRoute
-  '/campaigns/new-campaign': typeof CampaignsNewCampaignRoute
-  '/campaigns/timeline': typeof CampaignsTimelineRoute
-  '/usergroups/$id': typeof UsergroupsIdRoute
-  '/usergroups/new-group': typeof UsergroupsNewGroupRoute
-  '/campaigns/': typeof CampaignsIndexRoute
-  '/usergroups/': typeof UsergroupsIndexRoute
-  '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
-  '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
-  '/admin/tenants/': typeof AdminTenantsIndexRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/admin": typeof AdminRouteWithChildren;
+  "/dashboard": typeof DashboardRoute;
+  "/help": typeof HelpRoute;
+  "/report": typeof ReportRoute;
+  "/settings": typeof SettingsRoute;
+  "/statistics": typeof StatisticsRoute;
+  "/templates": typeof TemplatesRoute;
+  "/tenants-org-manager": typeof TenantsOrgManagerRoute;
+  "/admin/logs": typeof AdminLogsRoute;
+  "/admin/terms": typeof AdminTermsRoute;
+  "/admin/users": typeof AdminUsersRoute;
+  "/campaigns/$id": typeof CampaignsIdRoute;
+  "/campaigns/new": typeof CampaignsNewRoute;
+  "/campaigns/timeline": typeof CampaignsTimelineRoute;
+  "/sending-profiles/$id": typeof SendingProfilesIdRoute;
+  "/sending-profiles/new": typeof SendingProfilesNewRoute;
+  "/usergroups/$id": typeof UsergroupsIdRoute;
+  "/usergroups/new-group": typeof UsergroupsNewGroupRoute;
+  "/campaigns/": typeof CampaignsIndexRoute;
+  "/sending-profiles/": typeof SendingProfilesIndexRoute;
+  "/usergroups/": typeof UsergroupsIndexRoute;
+  "/admin/tenants/$tenantId": typeof AdminTenantsTenantIdRoute;
+  "/admin/tenants/new-tenant": typeof AdminTenantsNewTenantRoute;
+  "/admin/tenants/": typeof AdminTenantsIndexRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/terms'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new-campaign'
-    | '/campaigns/timeline'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/campaigns'
-    | '/usergroups'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/admin"
+    | "/dashboard"
+    | "/help"
+    | "/report"
+    | "/settings"
+    | "/statistics"
+    | "/templates"
+    | "/tenants-org-manager"
+    | "/admin/logs"
+    | "/admin/terms"
+    | "/admin/users"
+    | "/campaigns/$id"
+    | "/campaigns/new-campaign"
+    | "/campaigns/timeline"
+    | "/usergroups/$id"
+    | "/usergroups/new-group"
+    | "/campaigns"
+    | "/usergroups"
+    | "/admin/tenants/$tenantId"
+    | "/admin/tenants/new-tenant"
+    | "/admin/tenants";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/terms'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new-campaign'
-    | '/campaigns/timeline'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/campaigns'
-    | '/usergroups'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
+    | "/"
+    | "/admin"
+    | "/dashboard"
+    | "/help"
+    | "/report"
+    | "/settings"
+    | "/statistics"
+    | "/templates"
+    | "/tenants-org-manager"
+    | "/admin/logs"
+    | "/admin/terms"
+    | "/admin/users"
+    | "/campaigns/$id"
+    | "/campaigns/new-campaign"
+    | "/campaigns/timeline"
+    | "/usergroups/$id"
+    | "/usergroups/new-group"
+    | "/campaigns"
+    | "/usergroups"
+    | "/admin/tenants/$tenantId"
+    | "/admin/tenants/new-tenant"
+    | "/admin/tenants";
   id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/terms'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new-campaign'
-    | '/campaigns/timeline'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/campaigns/'
-    | '/usergroups/'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants/'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/admin"
+    | "/dashboard"
+    | "/help"
+    | "/report"
+    | "/settings"
+    | "/statistics"
+    | "/templates"
+    | "/tenants-org-manager"
+    | "/admin/logs"
+    | "/admin/terms"
+    | "/admin/users"
+    | "/campaigns/$id"
+    | "/campaigns/new-campaign"
+    | "/campaigns/timeline"
+    | "/usergroups/$id"
+    | "/usergroups/new-group"
+    | "/campaigns/"
+    | "/usergroups/"
+    | "/admin/tenants/$tenantId"
+    | "/admin/tenants/new-tenant"
+    | "/admin/tenants/";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
-  DashboardRoute: typeof DashboardRoute
-  HelpRoute: typeof HelpRoute
-  ReportRoute: typeof ReportRoute
-  SettingsRoute: typeof SettingsRoute
-  StatisticsRoute: typeof StatisticsRoute
-  TemplatesRoute: typeof TemplatesRoute
-  TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
-  CampaignsIdRoute: typeof CampaignsIdRoute
-  CampaignsNewCampaignRoute: typeof CampaignsNewCampaignRoute
-  CampaignsTimelineRoute: typeof CampaignsTimelineRoute
-  UsergroupsIdRoute: typeof UsergroupsIdRoute
-  UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
-  CampaignsIndexRoute: typeof CampaignsIndexRoute
-  UsergroupsIndexRoute: typeof UsergroupsIndexRoute
+  IndexRoute: typeof IndexRoute;
+  AdminRoute: typeof AdminRouteWithChildren;
+  DashboardRoute: typeof DashboardRoute;
+  HelpRoute: typeof HelpRoute;
+  ReportRoute: typeof ReportRoute;
+  SettingsRoute: typeof SettingsRoute;
+  StatisticsRoute: typeof StatisticsRoute;
+  TemplatesRoute: typeof TemplatesRoute;
+  TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute;
+  CampaignsIdRoute: typeof CampaignsIdRoute;
+  CampaignsNewRoute: typeof CampaignsNewRoute;
+  CampaignsTimelineRoute: typeof CampaignsTimelineRoute;
+  SendingProfilesIdRoute: typeof SendingProfilesIdRoute;
+  SendingProfilesNewRoute: typeof SendingProfilesNewRoute;
+  UsergroupsIdRoute: typeof UsergroupsIdRoute;
+  UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute;
+  CampaignsIndexRoute: typeof CampaignsIndexRoute;
+  SendingProfilesIndexRoute: typeof SendingProfilesIndexRoute;
+  UsergroupsIndexRoute: typeof UsergroupsIndexRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/tenants-org-manager': {
-      id: '/tenants-org-manager'
-      path: '/tenants-org-manager'
-      fullPath: '/tenants-org-manager'
-      preLoaderRoute: typeof TenantsOrgManagerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/templates': {
-      id: '/templates'
-      path: '/templates'
-      fullPath: '/templates'
-      preLoaderRoute: typeof TemplatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/statistics': {
-      id: '/statistics'
-      path: '/statistics'
-      fullPath: '/statistics'
-      preLoaderRoute: typeof StatisticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/report': {
-      id: '/report'
-      path: '/report'
-      fullPath: '/report'
-      preLoaderRoute: typeof ReportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/help': {
-      id: '/help'
-      path: '/help'
-      fullPath: '/help'
-      preLoaderRoute: typeof HelpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/usergroups/': {
-      id: '/usergroups/'
-      path: '/usergroups'
-      fullPath: '/usergroups'
-      preLoaderRoute: typeof UsergroupsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/campaigns/': {
-      id: '/campaigns/'
-      path: '/campaigns'
-      fullPath: '/campaigns'
-      preLoaderRoute: typeof CampaignsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/usergroups/new-group': {
-      id: '/usergroups/new-group'
-      path: '/usergroups/new-group'
-      fullPath: '/usergroups/new-group'
-      preLoaderRoute: typeof UsergroupsNewGroupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/usergroups/$id': {
-      id: '/usergroups/$id'
-      path: '/usergroups/$id'
-      fullPath: '/usergroups/$id'
-      preLoaderRoute: typeof UsergroupsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/campaigns/timeline': {
-      id: '/campaigns/timeline'
-      path: '/campaigns/timeline'
-      fullPath: '/campaigns/timeline'
-      preLoaderRoute: typeof CampaignsTimelineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/campaigns/new-campaign': {
-      id: '/campaigns/new-campaign'
-      path: '/campaigns/new-campaign'
-      fullPath: '/campaigns/new-campaign'
-      preLoaderRoute: typeof CampaignsNewCampaignRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/campaigns/$id': {
-      id: '/campaigns/$id'
-      path: '/campaigns/$id'
-      fullPath: '/campaigns/$id'
-      preLoaderRoute: typeof CampaignsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/terms': {
-      id: '/admin/terms'
-      path: '/terms'
-      fullPath: '/admin/terms'
-      preLoaderRoute: typeof AdminTermsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/logs': {
-      id: '/admin/logs'
-      path: '/logs'
-      fullPath: '/admin/logs'
-      preLoaderRoute: typeof AdminLogsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/tenants/': {
-      id: '/admin/tenants/'
-      path: '/tenants'
-      fullPath: '/admin/tenants'
-      preLoaderRoute: typeof AdminTenantsIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/tenants/new-tenant': {
-      id: '/admin/tenants/new-tenant'
-      path: '/tenants/new-tenant'
-      fullPath: '/admin/tenants/new-tenant'
-      preLoaderRoute: typeof AdminTenantsNewTenantRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/tenants/$tenantId': {
-      id: '/admin/tenants/$tenantId'
-      path: '/tenants/$tenantId'
-      fullPath: '/admin/tenants/$tenantId'
-      preLoaderRoute: typeof AdminTenantsTenantIdRouteImport
-      parentRoute: typeof AdminRoute
-    }
+    "/tenants-org-manager": {
+      id: "/tenants-org-manager";
+      path: "/tenants-org-manager";
+      fullPath: "/tenants-org-manager";
+      preLoaderRoute: typeof TenantsOrgManagerRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/templates": {
+      id: "/templates";
+      path: "/templates";
+      fullPath: "/templates";
+      preLoaderRoute: typeof TemplatesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/statistics": {
+      id: "/statistics";
+      path: "/statistics";
+      fullPath: "/statistics";
+      preLoaderRoute: typeof StatisticsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/settings": {
+      id: "/settings";
+      path: "/settings";
+      fullPath: "/settings";
+      preLoaderRoute: typeof SettingsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/report": {
+      id: "/report";
+      path: "/report";
+      fullPath: "/report";
+      preLoaderRoute: typeof ReportRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/help": {
+      id: "/help";
+      path: "/help";
+      fullPath: "/help";
+      preLoaderRoute: typeof HelpRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/dashboard": {
+      id: "/dashboard";
+      path: "/dashboard";
+      fullPath: "/dashboard";
+      preLoaderRoute: typeof DashboardRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/admin": {
+      id: "/admin";
+      path: "/admin";
+      fullPath: "/admin";
+      preLoaderRoute: typeof AdminRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/usergroups/": {
+      id: "/usergroups/";
+      path: "/usergroups";
+      fullPath: "/usergroups";
+      preLoaderRoute: typeof UsergroupsIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/sending-profiles/": {
+      id: "/sending-profiles/";
+      path: "/sending-profiles";
+      fullPath: "/sending-profiles";
+      preLoaderRoute: typeof SendingProfilesIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/campaigns/": {
+      id: "/campaigns/";
+      path: "/campaigns";
+      fullPath: "/campaigns";
+      preLoaderRoute: typeof CampaignsIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/usergroups/new-group": {
+      id: "/usergroups/new-group";
+      path: "/usergroups/new-group";
+      fullPath: "/usergroups/new-group";
+      preLoaderRoute: typeof UsergroupsNewGroupRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/usergroups/$id": {
+      id: "/usergroups/$id";
+      path: "/usergroups/$id";
+      fullPath: "/usergroups/$id";
+      preLoaderRoute: typeof UsergroupsIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/sending-profiles/new": {
+      id: "/sending-profiles/new";
+      path: "/sending-profiles/new";
+      fullPath: "/sending-profiles/new";
+      preLoaderRoute: typeof SendingProfilesNewRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/sending-profiles/$id": {
+      id: "/sending-profiles/$id";
+      path: "/sending-profiles/$id";
+      fullPath: "/sending-profiles/$id";
+      preLoaderRoute: typeof SendingProfilesIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/campaigns/timeline": {
+      id: "/campaigns/timeline";
+      path: "/campaigns/timeline";
+      fullPath: "/campaigns/timeline";
+      preLoaderRoute: typeof CampaignsTimelineRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/campaigns/new": {
+      id: "/campaigns/new";
+      path: "/campaigns/new";
+      fullPath: "/campaigns/new";
+      preLoaderRoute: typeof CampaignsNewRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/campaigns/$id": {
+      id: "/campaigns/$id";
+      path: "/campaigns/$id";
+      fullPath: "/campaigns/$id";
+      preLoaderRoute: typeof CampaignsIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/admin/users": {
+      id: "/admin/users";
+      path: "/users";
+      fullPath: "/admin/users";
+      preLoaderRoute: typeof AdminUsersRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/admin/terms": {
+      id: "/admin/terms";
+      path: "/terms";
+      fullPath: "/admin/terms";
+      preLoaderRoute: typeof AdminTermsRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/admin/logs": {
+      id: "/admin/logs";
+      path: "/logs";
+      fullPath: "/admin/logs";
+      preLoaderRoute: typeof AdminLogsRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/admin/tenants/": {
+      id: "/admin/tenants/";
+      path: "/tenants";
+      fullPath: "/admin/tenants";
+      preLoaderRoute: typeof AdminTenantsIndexRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/admin/tenants/new-tenant": {
+      id: "/admin/tenants/new-tenant";
+      path: "/tenants/new-tenant";
+      fullPath: "/admin/tenants/new-tenant";
+      preLoaderRoute: typeof AdminTenantsNewTenantRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
+    "/admin/tenants/$tenantId": {
+      id: "/admin/tenants/$tenantId";
+      path: "/tenants/$tenantId";
+      fullPath: "/admin/tenants/$tenantId";
+      preLoaderRoute: typeof AdminTenantsTenantIdRouteImport;
+      parentRoute: typeof AdminRoute;
+    };
   }
 }
 
 interface AdminRouteChildren {
-  AdminLogsRoute: typeof AdminLogsRoute
-  AdminTermsRoute: typeof AdminTermsRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-  AdminTenantsTenantIdRoute: typeof AdminTenantsTenantIdRoute
-  AdminTenantsNewTenantRoute: typeof AdminTenantsNewTenantRoute
-  AdminTenantsIndexRoute: typeof AdminTenantsIndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute;
+  AdminLogsRoute: typeof AdminLogsRoute;
+  AdminTermsRoute: typeof AdminTermsRoute;
+  AdminUsersRoute: typeof AdminUsersRoute;
+  AdminTenantsTenantIdRoute: typeof AdminTenantsTenantIdRoute;
+  AdminTenantsNewTenantRoute: typeof AdminTenantsNewTenantRoute;
+  AdminTenantsIndexRoute: typeof AdminTenantsIndexRoute;
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminTermsRoute: AdminTermsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminTenantsTenantIdRoute: AdminTenantsTenantIdRoute,
   AdminTenantsNewTenantRoute: AdminTenantsNewTenantRoute,
   AdminTenantsIndexRoute: AdminTenantsIndexRoute,
-}
+};
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren);
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -500,13 +559,16 @@ const rootRouteChildren: RootRouteChildren = {
   TemplatesRoute: TemplatesRoute,
   TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRoute,
-  CampaignsNewCampaignRoute: CampaignsNewCampaignRoute,
+  CampaignsNewRoute: CampaignsNewRoute,
   CampaignsTimelineRoute: CampaignsTimelineRoute,
+  SendingProfilesIdRoute: SendingProfilesIdRoute,
+  SendingProfilesNewRoute: SendingProfilesNewRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
   UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
+  SendingProfilesIndexRoute: SendingProfilesIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

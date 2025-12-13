@@ -1,4 +1,5 @@
 import logging
+import os
 import jwt
 import requests
 from fastapi.security import OAuth2PasswordBearer
@@ -9,15 +10,13 @@ from jwt import PyJWKClient
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-# TODO CHANGE TO ENV VARIABLES
-AUTH_SERVER_URL = "http://localhost:8080"
-REALM_NAME = "AAAAAA"
-RESOURCE_SERVER_ID = "api-cli"
+AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
+RESOURCE_SERVER_ID = "api"
 
 
-def check_keycloak_permission(access_token: str, resource: str) -> bool:
+def check_keycloak_permission(access_token: str, resource: str, realm_name: str) -> bool:
 
-    url = f"{AUTH_SERVER_URL}/realms/{REALM_NAME}/protocol/openid-connect/token"
+    url = f"{AUTH_SERVER_URL}/realms/{realm_name}/protocol/openid-connect/token"
 
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -52,9 +51,22 @@ class valid_resource_access:
         self.resource = resource
 
     async def __call__(self, access_token: str = Depends(oauth_2_scheme)):
+        # Extract realm from token
+        try:
+            decoded = jwt.decode(
+                access_token, options={"verify_signature": False, "verify_aud": False}
+            )
+            iss = decoded.get("iss")
+            if iss:
+                realm_name = iss.split("/realms/")[-1]
+            else:
+                raise HTTPException(status_code=401, detail="Invalid token: missing issuer")
+        except Exception as e:
+            logging.error(f"Failed to extract realm from token: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
 
         # Check the authorization policy centrally in Keycloak
-        if not check_keycloak_permission(access_token, self.resource):
+        if not check_keycloak_permission(access_token, self.resource, realm_name):
             raise HTTPException(
                 status_code=403,
                 detail=f"Permission denied for resource '{self.resource}'",
@@ -62,3 +74,4 @@ class valid_resource_access:
 
         # Authorization successful!
         return {"authorized": True}
+

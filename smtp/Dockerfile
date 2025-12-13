@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir .
 
 COPY . .
 
-CMD ["python", "client.py"]
+CMD ["python", "main.py"]

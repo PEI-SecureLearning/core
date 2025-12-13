@@ -91,13 +91,18 @@ const FormFields = memo(function FormFields({
       </div>
       <div className="space-y-2">
         <Label htmlFor="role">Role</Label>
-        <Input
+        <select
           id="role"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           value={role}
           onChange={(e) => onChange("role", e.target.value)}
           required
-          placeholder="user / manager / admin"
-        />
+        >
+          <option value="">Select a role</option>
+          <option value="ORG_MANAGER">Organization manager</option>
+          <option value="CONTENT_MANAGER">Content manager</option>
+          <option value="DEFAULT_USER">User</option>
+        </select>
       </div>
     </>
   );
@@ -125,7 +130,7 @@ function AddUserForm({
     <Card className="shadow-sm border border-gray-100">
       <CardHeader>
         <CardTitle className="text-lg">Add User to Realm</CardTitle>
-        <CardDescription>Create a Keycloak user within your tenant realm.</CardDescription>
+        <CardDescription>Create user within your realm.</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={onSubmit}>

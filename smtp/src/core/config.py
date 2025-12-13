@@ -42,3 +42,15 @@ class RateLimiterConfig(BaseSettings):
 
     RATE_LIMITER_MAX_REQUESTS: int
     RATE_LIMITER_TIME_WINDOW_SECONDS: float
+
+
+class APIConfig(BaseSettings):
+    """API configuration loaded from environment variables."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_ignore_empty=True,
+        extra="ignore",
+    )
+
+    API_URL: str = "http://localhost:8000"

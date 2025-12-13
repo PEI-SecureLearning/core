@@ -1,83 +1,107 @@
 import { memo } from "react";
 import { TimelineBar } from "./TimelineBar";
-import type { TimelineCampaign } from "./TimelineView";
 import type { WeekRange } from "./TimelineHeader";
+import type { TimelineCampaign } from "./TimelineView";
+import { Mail, MousePointer, Eye } from "lucide-react";
 
 interface TimelineRowProps {
-    campaign: TimelineCampaign;
-    weeks: WeekRange[];
-    monthStart: Date;
-    monthEnd: Date;
-    campaignColumnWidth: number;
-}
-
-function formatDateRange(start: Date, end: Date): string {
-    const formatDate = (d: Date) =>
-        d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    return `${formatDate(start)} - ${formatDate(end)}`;
+  campaign: TimelineCampaign;
+  weeks: WeekRange[];
+  monthStart: Date;
+  monthEnd: Date;
+  campaignColumnWidth: number;
 }
 
 export const TimelineRow = memo(function TimelineRow({
-    campaign,
-    weeks,
-    monthStart,
-    monthEnd,
-    campaignColumnWidth,
+  campaign,
+  weeks,
+  monthStart,
+  monthEnd,
+  campaignColumnWidth,
 }: TimelineRowProps) {
-    const campaignStart = new Date(campaign.begin_date);
-    const campaignEnd = new Date(campaign.end_date);
+  // Calcular a posição da barra
+  const start = new Date(campaign.begin_date);
+  const end = new Date(campaign.end_date);
+  const totalDuration = monthEnd.getTime() - monthStart.getTime();
 
-    // Check if campaign overlaps with current month
-    const overlapsMonth = campaignStart <= monthEnd && campaignEnd >= monthStart;
-    if (!overlapsMonth) return null;
+  // Percentagem inicial (onde começa a barra)
+  let startPercent =
+    ((start.getTime() - monthStart.getTime()) / totalDuration) * 100;
 
-    // Calculate position and width as percentage of the month
-    const monthDuration = monthEnd.getTime() - monthStart.getTime();
-    const clampedStart = new Date(Math.max(campaignStart.getTime(), monthStart.getTime()));
-    const clampedEnd = new Date(Math.min(campaignEnd.getTime(), monthEnd.getTime()));
+  // Percentagem da largura (duração)
+  let widthPercent = ((end.getTime() - start.getTime()) / totalDuration) * 100;
 
-    const startPercent =
-        ((clampedStart.getTime() - monthStart.getTime()) / monthDuration) * 100;
-    const widthPercent =
-        ((clampedEnd.getTime() - clampedStart.getTime()) / monthDuration) * 100;
+  // Ajustes para não sair dos limites visuais do mês atual
+  if (start < monthStart) {
+    const overflow =
+      ((monthStart.getTime() - start.getTime()) / totalDuration) * 100;
+    widthPercent -= overflow;
+    startPercent = 0;
+  }
 
-    const dateLabel = formatDateRange(clampedStart, clampedEnd);
+  // Garantir limites
+  if (startPercent < 0) startPercent = 0;
+  if (startPercent + widthPercent > 100) widthPercent = 100 - startPercent;
 
-    return (
-        <div className="flex border-b border-slate-100/60 hover:bg-slate-50/40 transition-colors">
-            {/* Campaign info column */}
-            <div
-                className="flex-shrink-0 px-4 py-4"
-                style={{ width: campaignColumnWidth }}
-            >
-                <div className="text-[13px] font-medium text-slate-800 truncate">
-                    {campaign.name}
-                </div>
-                <div className="text-[11px] text-slate-400 mt-0.5">
-                    {campaign.stats.sent} recipients
-                </div>
-            </div>
-
-            {/* Timeline area */}
-            <div className="flex-1 relative h-16">
-                {/* Week grid lines */}
-                <div className="absolute inset-0 flex">
-                    {weeks.map((week) => (
-                        <div
-                            key={week.weekNumber}
-                            className="flex-1 border-l border-slate-200/40"
-                        />
-                    ))}
-                </div>
-
-                {/* Campaign bar */}
-                <TimelineBar
-                    startPercent={startPercent}
-                    widthPercent={widthPercent}
-                    status={campaign.status}
-                    dateLabel={dateLabel}
-                />
-            </div>
+  return (
+    <div className="flex h-16 group hover:bg-slate-50 transition-colors">
+      {/* Coluna Fixa: Informação da Campanha */}
+      <div
+        className="flex-shrink-0 p-3 border-r border-slate-100 flex flex-col justify-center gap-1.5 bg-white/50 backdrop-blur-sm z-10 sticky left-0"
+        style={{ width: campaignColumnWidth }}
+      >
+        <div
+          className="font-medium text-slate-700 text-sm truncate"
+          title={campaign.name}
+        >
+          {campaign.name}
         </div>
-    );
+
+        {/* Stats Row (Agora usando os campos flat do backend) */}
+        <div className="flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="flex items-center gap-1" title="Sent">
+            <Mail size={12} />
+            <span>{campaign.total_sent || 0}</span>
+          </div>
+          <div className="flex items-center gap-1" title="Opened">
+            <Eye size={12} />
+            <span>{campaign.total_opened || 0}</span>
+          </div>
+          <div className="flex items-center gap-1" title="Clicked">
+            <MousePointer size={12} />
+            <span>{campaign.total_clicked || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Área da Timeline */}
+      <div className="flex-1 relative">
+        {/* Grid Lines de Fundo */}
+        <div className="absolute inset-0 flex pointer-events-none">
+          {weeks.map((week) => (
+            <div
+              key={week.weekNumber}
+              className="flex-1 border-r border-slate-100/60 last:border-r-0"
+            />
+          ))}
+        </div>
+
+        {/* A Barra Colorida */}
+        <div className="absolute inset-0 mx-2">
+          <TimelineBar
+            startPercent={startPercent}
+            widthPercent={widthPercent}
+            status={campaign.status}
+            dateLabel={new Date(campaign.begin_date).toLocaleDateString(
+              undefined,
+              {
+                month: "short",
+                day: "numeric",
+              }
+            )}
+          />
+        </div>
+      </div>
+    </div>
+  );
 });

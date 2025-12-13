@@ -2,22 +2,19 @@
 # Import link tables and models without relationships first
 from .user_group import CampaignUserGroupLink, UserGroup
 from .realm import Realm, RealmCreate
-from .tenant import Tenant
 from .user import User
 from .custom_header import CustomHeader
 from .sending_profile import SendingProfile
 from .email_template import EmailTemplate
 from .landing_page_template import LandingPageTemplate
 from .campaign import Campaign, CampaignCreate, CampaignStatus
-from .email_sending import EmailSending, EmailSendingCreate
+from .email_sending import EmailSending, EmailSendingCreate, RabbitMQEmailMessage, SMTPConfig
 from .compliance import ComplianceAcceptance
 
 
 __all__ = [
     # User
     "User",
-    # Tenant
-    "Tenant",
     # Campaign
     "Campaign",
     "CampaignCreate",
@@ -27,6 +24,8 @@ __all__ = [
     # Email Sending
     "EmailSending",
     "EmailSendingCreate",
+    "RabbitMQEmailMessage",
+    "SMTPConfig",
     # Custom Header
     "CustomHeader",
     # Landing Page Template

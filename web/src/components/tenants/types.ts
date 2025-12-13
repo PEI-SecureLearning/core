@@ -5,6 +5,8 @@ export type UserRecord = {
   firstName?: string;
   lastName?: string;
   enabled?: boolean;
+  is_org_manager?: boolean;
+  isOrgManager?: boolean;
 };
 
 export type BulkUser = {
