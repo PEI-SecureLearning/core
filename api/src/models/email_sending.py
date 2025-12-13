@@ -68,6 +68,6 @@ class RabbitMQEmailMessage(SQLModel):
     sender_email: str
     receiver_email: str
     subject: str
-    template_path: str
+    template_id: str
     tracking_id: str
     arguments: dict[str, str] = {}

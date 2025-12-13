@@ -304,7 +304,7 @@ def list_users_in_realm(realm: str) -> dict:
     for u in users:
         simplified.append(
             {
-                "": u.get("id"),
+                "id": u.get("id"),
                 "username": u.get("username"),
                 "email": u.get("email"),
                 "firstName": u.get("firstName"),

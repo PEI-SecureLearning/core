@@ -10,6 +10,15 @@ router = APIRouter()
 service = TrackingService()
 
 
+@router.post(
+    "/track/sent",
+    status_code=200,
+    description="Email sent tracking endpoint - records successful email delivery from SMTP",
+)
+def track_sent(si: str, session: SessionDep):
+    service.record_sent(si, session)
+
+
 # 1x1 transparent GIF for tracking pixel
 TRACKING_PIXEL = bytes(
     [
@@ -60,32 +69,34 @@ TRACKING_PIXEL = bytes(
 )
 
 
-@router.get(
-    "/track/open/{token}",
+@router.post(
+    "/track/open",
+    status_code=200,
     description="Tracking pixel endpoint - records email opens",
     include_in_schema=False,
 )
-def track_open(token: str, session: SessionDep):
+def track_open(si: str, session: SessionDep):
     """
     Called when email client loads the tracking pixel.
     Returns a 1x1 transparent GIF.
     """
-    service.record_open(token, session)
+    service.record_open(si, session)
     return Response(content=TRACKING_PIXEL, media_type="image/gif")
 
 
-@router.get(
-    "/track/click/{token}",
+@router.post(
+    "/track/click",
+    status_code=200,
     description="Link click tracking endpoint - records clicks and redirects to landing page",
 )
-def track_click(token: str, session: SessionDep):
+async def track_click(si: str, session: SessionDep):
     """
     Called when user clicks a tracked link in the email.
     Records the click and redirects to the landing page.
     """
-    sending = service.record_click(token, session)
+    sending = service.record_click(si, session)
 
-    template = TemplateService.get_template(sending.campaign.template_id)
+    template = await TemplateService.get_template(sending.campaign.email_template.content_link)
 
     if template is None:
         raise HTTPException(status_code=404, detail="Page not found")
@@ -94,13 +105,14 @@ def track_click(token: str, session: SessionDep):
 
 
 @router.post(
-    "/track/phish/{token}",
+    "/track/phish",
+    status_code=200,
     description="Phishing event endpoint - records when user submits credentials on landing page",
 )
-def track_phish(token: str, session: SessionDep):
+def track_phish(si: str, session: SessionDep):
     """
     Called when user submits credentials on the landing page.
     Records the phishing event.
     """
-    service.record_phish(token, session)
+    service.record_phish(si, session)
     return {"message": "Event recorded"}
