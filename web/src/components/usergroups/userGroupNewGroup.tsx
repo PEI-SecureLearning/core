@@ -79,7 +79,7 @@ export default function NewUserGroup() {
         const res = await fetchUsers(realm, keycloak.token || undefined);
         const mapped =
           (res.users || []).map((u) => ({
-            id: u.id || u.username || "",
+            id: u.id || "",
             name:
               `${u.firstName || ""} ${u.lastName || ""}`.trim() ||
               u.username ||

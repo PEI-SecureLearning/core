@@ -57,14 +57,21 @@ services:
     image: rabbitmq:3.11.23-management
     container_name: rabbitmq
     restart: unless-stopped
+    entrypoint: ["/bin/bash", "/scripts/init-users.sh"]
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_API_USER: ${RABBITMQ_API_USER}
+      RABBITMQ_API_PASS: ${RABBITMQ_API_PASS}
+      RABBITMQ_SMTP_USER: ${RABBITMQ_SMTP_USER}
+      RABBITMQ_SMTP_PASS: ${RABBITMQ_SMTP_PASS}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ../rabbitmq/init-users.sh:/scripts/init-users.sh:ro
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -79,8 +86,8 @@ services:
     restart: unless-stopped
     environment:
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: ${RABBITMQ_USER}
-      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_USER: ${RABBITMQ_SMTP_USER}
+      RABBITMQ_PASS: ${RABBITMQ_SMTP_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
       RATE_LIMITER_MAX_REQUESTS: ${RATE_LIMITER_MAX_REQUESTS}
       RATE_LIMITER_TIME_WINDOW_SECONDS: ${RATE_LIMITER_TIME_WINDOW_SECONDS}
@@ -104,6 +111,7 @@ services:
       KC_LOG_CATEGORY_ORG_KEYCLOAK_SERVICES: DEBUG
       KC_LOG_CATEGORY_ORG_KEYCLOAK_PROTOCOL_OIDC: DEBUG
       KC_LOG_CATEGORY_IO_QUARKUS_HTTP: DEBUG
+      KC_SPI_USER_PROVIDER_JPA_CASE_SENSITIVE: "true"
       KC_LOG_LEVEL: DEBUG
       KC_HTTP_ENABLED: true
       KC_HOSTNAME: localhost
@@ -153,6 +161,10 @@ services:
       MONGODB_COLLECTION_TEMPLATES: templates
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_API_USER}
+      RABBITMQ_PASS: ${RABBITMQ_API_PASS}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     ports:
       - "8000:80"
     healthcheck:
@@ -167,6 +179,8 @@ services:
       keycloak:
         condition: service_healthy
       mongo:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   frontend:

@@ -79,8 +79,8 @@ class CampaignService:
         session.add(new_campaign)
         session.flush()
 
-        self._create_email_sendings(session, new_campaign, users)
-        self._send_emails_to_rabbitmq(session, new_campaign, users)
+        email_sendings = self._create_email_sendings(session, new_campaign, users)
+        self._send_emails_to_rabbitmq(session, new_campaign, email_sendings)
         session.commit()
 
         return new_campaign
@@ -273,7 +273,7 @@ class CampaignService:
     # ======================================================================
 
     def _send_emails_to_rabbitmq(
-        self, session: Session, campaign: Campaign, users: dict[str, dict]
+        self, session: Session, campaign: Campaign, email_sendings: list[EmailSending]
     ) -> None:
         """Send emails to RabbitMQ."""
         sending_profile = campaign.sending_profile
@@ -293,17 +293,17 @@ class CampaignService:
         
         subject = email_template.subject if email_template else "Campaign Email"
 
-        for user_id, user_data in users.items():
+        for email_sending in email_sendings:
             email_message = RabbitMQEmailMessage(
                 smtp_config=smtp_config,
                 sender_email=sending_profile.from_email,
-                receiver_email=user_data["email"],
+                receiver_email=email_sending.email_to,
                 subject=subject,
-                template_path="email_template.html",
-                tracking_id=user_id,
-                arguments={"name": user_data["name"]},
+                template_id=email_template.content_link,
+                tracking_id=email_sending.tracking_token,
+                arguments={"name": email_sending.user_id},  # Could be enhanced with actual user name
             )
-            self.rabbitmq_service.send_email(email_message)
+            rabbitmq_service.send_email(email_message)
 
     def _collect_users_from_groups(
         self, group_ids: list[str], realm: str
@@ -332,21 +332,23 @@ class CampaignService:
         session: Session,
         campaign: Campaign,
         users: dict[str, dict],
-    ) -> None:
-        """Create email sending records for all users."""
-
+    ) -> list[EmailSending]:
+        """Create email sending records for all users and return them."""
+        email_sendings = []
         for i, (user_id, user_data) in enumerate(users.items()):
             scheduled_date = campaign.begin_date + datetime.timedelta(
                 seconds=i * campaign.sending_interval_seconds
             )
-            session.add(
-                EmailSending(
-                    user_id=user_id,
-                    campaign_id=campaign.id,
-                    scheduled_date=scheduled_date,
-                    email_to=user_data.get("email", ""),
-                )
+            email_sending = EmailSending(
+                user_id=user_id,
+                campaign_id=campaign.id,
+                scheduled_date=scheduled_date,
+                email_to=user_data.get("email", ""),
             )
+            session.add(email_sending)
+            email_sendings.append(email_sending)
+        session.flush()  # Ensure tracking_tokens are generated
+        return email_sendings
 
     def _get_or_create_email_template(
         self,
@@ -418,6 +420,7 @@ class CampaignService:
             if existing:
                 return existing.id  # type: ignore[return-value]
 
+        #TODO remove
         # Only set FK if realm exists; otherwise keep it nullable to avoid FK violation
         realm_fk = realm if session.get(Realm, realm) else None
         placeholder = SendingProfile(
