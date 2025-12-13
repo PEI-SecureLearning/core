@@ -14,14 +14,21 @@ from src.models.campaign import (
     CampaignStatus,
     TemplateSelection,
 )
-from src.models.email_sending import EmailSending, UserSendingInfo
+from src.models.email_sending import (
+    EmailSending,
+    RabbitMQEmailMessage,
+    SMTPConfig,
+    UserSendingInfo,
+)
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.models.sending_profile import SendingProfile
 from src.models.realm import Realm
 from src.models.user import User
 from src.services.realm import list_group_members_in_realm
+from src.services.rabbit import RabbitMQService
 
+rabbitmq_service = RabbitMQService()
 
 class CampaignService:
     """Service class for managing campaigns."""
@@ -72,6 +79,7 @@ class CampaignService:
         session.flush()
 
         self._create_email_sendings(session, new_campaign, users)
+        self._send_emails_to_rabbitmq(session, new_campaign, users)
         session.commit()
 
         return new_campaign
@@ -262,6 +270,39 @@ class CampaignService:
     # ======================================================================
     # Helper methods
     # ======================================================================
+
+    def _send_emails_to_rabbitmq(
+        self, session: Session, campaign: Campaign, users: dict[str, dict]
+    ) -> None:
+        """Send emails to RabbitMQ."""
+        sending_profile = campaign.sending_profile
+        if not sending_profile:
+            raise ValueError("Campaign has no sending profile associated.")
+
+        smtp_config = SMTPConfig(
+            host=sending_profile.smtp_host,
+            port=sending_profile.smtp_port,
+            user=sending_profile.username,
+            password=sending_profile.password,
+        )
+
+        email_template = campaign.email_template
+        if not email_template and campaign.email_template_id:
+            email_template = session.get(EmailTemplate, campaign.email_template_id)
+        
+        subject = email_template.subject if email_template else "Campaign Email"
+
+        for user_id, user_data in users.items():
+            email_message = RabbitMQEmailMessage(
+                smtp_config=smtp_config,
+                sender_email=sending_profile.from_email,
+                receiver_email=user_data["email"],
+                subject=subject,
+                template_path="email_template.html",
+                tracking_id=user_id,
+                arguments={"name": user_data["name"]},
+            )
+            self.rabbitmq_service.send_email(email_message)
 
     def _collect_users_from_groups(
         self, group_ids: list[str], realm: str

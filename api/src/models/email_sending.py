@@ -52,3 +52,22 @@ class UserSendingInfo(SQLModel):
     opened_at: Optional[datetime] = None
     clicked_at: Optional[datetime] = None
     phished_at: Optional[datetime] = None
+
+
+class SMTPConfig(SQLModel):
+    """SMTP server configuration."""
+    host: str
+    port: int
+    user: str
+    password: str
+
+
+class RabbitMQEmailMessage(SQLModel):
+    """Email message payload from RabbitMQ."""
+    smtp_config: SMTPConfig
+    sender_email: str
+    receiver_email: str
+    subject: str
+    template_path: str
+    tracking_id: str
+    arguments: dict[str, str] = {}

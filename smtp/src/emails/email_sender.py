@@ -51,7 +51,7 @@ class EmailSender:
         """Process and send an email from an EmailMessage payload."""
         # Load and render template
         template_content = self.template_renderer.load_template(
-            email_message.template_path
+            email_message.template_id
         )
         
         # Build arguments with tracking variables
