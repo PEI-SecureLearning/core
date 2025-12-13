@@ -13,7 +13,7 @@ services:
       - db_data:/var/lib/postgresql/data
       - ../db/init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,20 +31,7 @@ services:
       - mongo_data:/data/db
       - ../mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mongosh",
-          "-u",
-          "${MONGO_ROOT_USER}",
-          "-p",
-          "${MONGO_ROOT_PASSWORD}",
-          "--authenticationDatabase",
-          "admin",
-          "--eval",
-          "db.adminCommand('ping')",
-          "--quiet",
-        ]
+      test: [ "CMD", "mongosh", "-u", "${MONGO_ROOT_USER}", "-p", "${MONGO_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')", "--quiet" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,7 +48,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -109,11 +96,7 @@ services:
       API_URL: ${API_URL}
 
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1",
-        ]
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -149,12 +132,16 @@ services:
       MONGODB_COLLECTION_TEMPLATES: templates
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     ports:
       - "8000:8000"
     volumes:
       - ../api/src:/app/src:ro
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      test: [ "CMD", "curl", "-sf", "http://localhost:8000/health" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -165,6 +152,8 @@ services:
       keycloak:
         condition: service_healthy
       mongo:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   frontend:
