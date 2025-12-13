@@ -21,7 +21,7 @@ export function CreateTenantPage() {
         setIsLoading(true)
         try {
             await axios.post(
-                `http://localhost:8000/api/realms`,
+                `${import.meta.env.VITE_API_URL}/realms`,
                 {
                     name: realmName,
                     domain: domain,

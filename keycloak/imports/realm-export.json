@@ -553,11 +553,11 @@
         "clientAuthenticatorType": "client-secret",
         "secret": "${CLIENT_SECRET}",
         "redirectUris": [
-          "http://localhost:5173/admin/*",
-          "http://localhost:5173/admin"
+          "${WEB_URL}/admin/*",
+          "${WEB_URL}/admin"
         ],
         "webOrigins": [
-          "http://localhost:8080"
+          "${KEYCLOAK_URL}"
         ],
         "notBefore": 0,
         "bearerOnly": false,
@@ -2652,17 +2652,17 @@
         "enabled": true,
         "publicClient": true,
         "redirectUris": [
-          "http://localhost:5173/admin/*",
-          "http://localhost:5173/admin/"
+          "${WEB_URL}/admin/*",
+          "${WEB_URL}/admin/"
         ],
         "webOrigins": [
-          "http://localhost:5173"
+          "${WEB_URL}"
         ],
         "standardFlowEnabled": true,
         "directAccessGrantsEnabled": true,
         "attributes": {
-          "post.logout.redirect.uris": "http://localhost:5173",
-          "content.-security-policy": "frame-src 'self'; frame-ancestors 'self' http://localhost:5173; object-src 'none'"
+          "post.logout.redirect.uris": "${WEB_URL}",
+          "content.-security-policy": "frame-src 'self'; frame-ancestors 'self' ${WEB_URL}; object-src 'none'"
         },
         "protocolMappers": [
           {
@@ -2684,10 +2684,10 @@
         "enabled": true,
         "publicClient": false,
         "redirectUris": [
-          "http://localhost:8000/*"
+          "${API_URL}/*"
         ],
         "webOrigins": [
-          "http://localhost:8000"
+          "${API_URL}"
         ],
         "implicitFlowEnabled": false,
         "directAccessGrantsEnabled": true,

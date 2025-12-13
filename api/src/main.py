@@ -15,7 +15,7 @@ from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.core.security import valid_resource_access
 from src.tasks import start_scheduler, shutdown_scheduler
-
+import os
 from jwt import PyJWKClient
 import jwt
 from typing import Annotated
@@ -42,22 +42,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[os.getenv("WEB_URL")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# @app.get("/health", tags=["Health"], dependencies=[Depends(valid_access_token("User"))])
-# async def health_check():
-#     return {"status": "ok"}
-
-
 @app.get(
     "/health",
     tags=["Health"],
-    dependencies=[Depends(valid_resource_access("Health Check Endpoint"))],
 )
 async def health_check():
     return {"status": "ok"}

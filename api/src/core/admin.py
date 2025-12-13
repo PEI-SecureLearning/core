@@ -16,6 +16,8 @@ class Admin:
     def __init__(self):
         self.keycloak_url = os.getenv("KEYCLOAK_URL")
         self.admin_secret = os.getenv("CLIENT_SECRET")
+        self.web_url = os.getenv("WEB_URL", "http://localhost:3000")
+        self.api_url = os.getenv("API_URL", "http://localhost:8080")
 
         if not self.keycloak_url:
             raise HTTPException(
@@ -1390,8 +1392,8 @@ class Admin:
                     "clientId": "react-app",
                     "enabled": True,
                     "publicClient": True,
-                    "redirectUris": ["http://localhost:5173/*"],
-                    "webOrigins": ["http://localhost:5173"],
+                    "redirectUris": [f"{self.web_url}/*"],
+                    "webOrigins": [self.web_url],
                     "standardFlowEnabled": True,
                     "directAccessGrantsEnabled": True,
                     "protocolMappers": [
@@ -1413,8 +1415,8 @@ class Admin:
                     "clientId": "api",
                     "enabled": True,
                     "publicClient": False,
-                    "redirectUris": ["http://localhost:8000/*"],
-                    "webOrigins": ["http://localhost:8000"],
+                    "redirectUris": [f"{self.api_url}/*"],
+                    "webOrigins": [self.api_url],
                     "implicitFlowEnabled": False,
                     "directAccessGrantsEnabled": True,
                     "serviceAccountsEnabled": True,

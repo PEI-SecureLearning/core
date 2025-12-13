@@ -1,66 +1,103 @@
-name: template-project
+name: SecureLearning
 
 services:
   db:
-    image: postgres:18-alpine
+    build:
+      context: ../db
+      dockerfile: Dockerfile
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-myuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
-      POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    expose:
+      - "5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ./init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   mongo:
-    image: mongo:7
+    build:
+      context: ../mongo
+      dockerfile: Dockerfile
     container_name: mongo
-    restart: always
+    restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
-      MONGO_INITDB_DATABASE: securelearning
-    ports:
-      - "27017:27017"
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    expose:
+      - "27017"
     volumes:
       - mongo_data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mongosh",
+          "-u",
+          "${MONGO_ROOT_USER}",
+          "-p",
+          "${MONGO_ROOT_PASSWORD}",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')",
+          "--quiet",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3.11.23-management
     container_name: rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   smtp:
     build:
       context: ../smtp
       dockerfile: Dockerfile
     container_name: smtp
+    restart: unless-stopped
     environment:
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: user
-      RABBITMQ_PASS: password
-      RABBITMQ_QUEUE: email_queue
-      RATE_LIMITER_MAX_REQUESTS: 10
-      RATE_LIMITER_TIME_WINDOW_SECONDS: 1
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+      RATE_LIMITER_MAX_REQUESTS: ${RATE_LIMITER_MAX_REQUESTS}
+      RATE_LIMITER_TIME_WINDOW_SECONDS: ${RATE_LIMITER_TIME_WINDOW_SECONDS}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.4
-    command: start --import-realm
+    build:
+      context: ../keycloak
+      dockerfile: Dockerfile
+    command: start --import-realm --health-enabled=true
     container_name: keycloak
+    restart: unless-stopped
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_IMPORT: /opt/keycloak/data/import/
       KC_HTTP_ACCESS_LOG_ENABLED: "true"
       KC_LOG_CATEGORY_ORG_KEYCLOAK_AUTHORIZATION: DEBUG
@@ -70,63 +107,82 @@ services:
       KC_LOG_LEVEL: DEBUG
       KC_HTTP_ENABLED: true
       KC_HOSTNAME: localhost
-      KC_HOSTNAME_STRICT: false
-      KC_HOSTNAME_STRICT_HTTPS: false
       KC_DB: postgres
+      QUARKUS_SMALLRYE_HEALTH_ENABLED: "true"
+      QUARKUS_SMALLRYE_HEALTH_ROOT_PATH: "/health"
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
-      KC_DB_USERNAME: ${POSTGRES_USER:-myuser}
-      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
-      CLIENT_SECRET: ${CLIENT_SECRET:-your-client-secret}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      WEB_URL: ${WEB_URL}
+      API_URL: ${API_URL}
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
     ports:
       - "8080:8080"
 
     depends_on:
-      - db
-      - mongo
-
-    volumes:
-      - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
-      - ../keycloak/themes:/opt/keycloak/themes:ro
-      - ../keycloak/imports:/opt/keycloak/data/import:ro
-      - ../keycloak/providers:/opt/keycloak/providers:ro
+      db:
+        condition: service_healthy
 
   api:
     build:
       context: ../api
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: api
+    restart: unless-stopped
     environment:
       POSTGRES_SERVER: db
       POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-myuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
-      POSTGRES_DB: ${POSTGRES_DB:-mydatabase}
-      KEYCLOAK_URL: http://keycloak:8080
-      CLIENT_SECRET: ${CLIENT_SECRET:-your-client-secret}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      KEYCLOAK_URL: ${KEYCLOAK_INTERNAL_URL}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
+      MONGODB_DB: securelearning
+      MONGODB_COLLECTION_TEMPLATES: templates
+      WEB_URL: ${WEB_URL}
+      API_URL: ${API_URL}
     ports:
-      - "8000:8000"
-    volumes:
-      - ../api/src:/app/src:ro
+      - "8000:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     depends_on:
-      - db
-      - keycloak
+      db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
 
   frontend:
     build:
       context: ../web
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: frontend
+    restart: unless-stopped
     environment:
-      VITE_API_URL: http://localhost:8000/api
-      VITE_KEYCLOAK_URL: http://localhost:8080
+      VITE_API_URL: ${API_URL}/api
+      VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
     ports:
       - "5173:5173"
-    volumes:
-      - ../web/src:/app/src:ro
-      - ../web/public:/app/public:ro
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
 volumes:
   db_data:

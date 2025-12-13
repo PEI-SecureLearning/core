@@ -19,7 +19,7 @@ export const EmailEntry = () => {
                 throw new Error("Invalid email address");
             }
 
-            const response = await axios.get(`http://localhost:8000/api/realms?domain=${domain}`);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/realms?domain=${domain}`);
             const realm = response.data.realm;
 
             if (realm) {
