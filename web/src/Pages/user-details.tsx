@@ -77,8 +77,6 @@ export default function UserGroupDetail() {
       if (!realm) return;
       try {
         const res = await fetchUsers(realm, keycloak.token || undefined);
-        console.log("Raw API response:", JSON.stringify(res, null, 2));
-        console.log("First user id:", res.users?.[0]?.id);
         const mapped =
           (res.users || []).map((u) => ({
             id: u.id || "",
@@ -88,7 +86,6 @@ export default function UserGroupDetail() {
             lastName: u.lastName,
           })) || [];
         setUsers(mapped);
-        console.log(mapped);
       } catch (err) {
         console.error("Failed to load users", err);
       }
