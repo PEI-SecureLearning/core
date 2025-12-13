@@ -149,7 +149,7 @@ def create_user(
     location = response.headers.get("Location")
     if location:
         user_id = location.rstrip("/").split("/")[-1]
-        user = User(keycloak_id=user_id, email=email)
+        user = User(keycloak_id=user_id, email=email, is_org_manager=(role_clean == "ORG_MANAGER"))
         session.add(user)
         session.commit()
 
@@ -174,7 +174,7 @@ def create_user(
             role_repr = _org_manager.get_realm_role(realm, token, role_clean)
             if role_repr:
                 _org_manager.assign_realm_roles(realm, token, user_id, [role_repr])
-                if role_clean == "ORG_MANAGER":
+            if role_clean == "ORG_MANAGER":
                     client = _org_manager.get_client_by_client_id(realm, token, "realm-management")
                     if client and client.get("id"):
                         client_role = _org_manager.get_client_role(realm, token, client["id"], "realm-admin")
@@ -189,8 +189,9 @@ def create_user(
             existing = session.get(User, user_id)
             if existing:
                 existing.email = email
+                existing.is_org_manager = role_clean == "ORG_MANAGER"
             else:
-                session.add(User(keycloak_id=user_id, email=email))
+                session.add(User(keycloak_id=user_id, email=email, is_org_manager=(role_clean == "ORG_MANAGER")))
             session.commit()
 
     return {
