@@ -99,6 +99,23 @@ def delete_user_in_realm(
     realm_service.delete_user_in_realm(realm, user_id, session)
     return None
 
+@router.put(
+    "/realms/{realm}/role/{user_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def update_user_role_in_realm(
+    realm: str, user_id: str, role: str, token: str = Depends(oauth_2_scheme)
+):
+    realm_service.update_user_role_in_realm(realm, user_id, role)
+    return None
+
+@router.delete(
+    "/realms/admin/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_user_in_realm(
+    realm: str, user_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
+    realm_service.delete_user_in_realm(realm, user_id, session)
+    return None
 
 @router.get("/realms/{realm}/groups")
 def list_groups_in_realm(realm: str, token: str = Depends(oauth_2_scheme)):
@@ -168,3 +185,14 @@ def remove_user_from_group(
     realm_service.validate_realm_access(token, realm)
     realm_service.remove_user_from_group_in_realm(realm, user_id, group_id)
     return None
+
+
+@router.get("/realms/{realm}/info")
+def get_realm_info(realm: str):
+    """
+    Return realm metadata including domain and feature flags.
+    """
+    realm = realm_service.get_realm_info(realm)
+    if not realm:
+        raise HTTPException(status_code=404, detail="Realm not found")
+    return {"realm": realm}

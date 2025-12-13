@@ -356,6 +356,93 @@ class Admin:
             return raw
         return None
 
+    def get_user_realm_roles(self, realm_name: str, user_id: str) -> list[dict]:
+        """Return realm roles assigned to the given user."""
+        token = self._get_admin_token()
+        url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/{user_id}/role-mappings/realm"
+        try:
+            r = requests.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            if r.status_code == 404:
+                return []
+            r.raise_for_status()
+            return r.json() or []
+        except requests.exceptions.RequestException:
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve user roles from Keycloak"
+            )
+        
+    def assign_realm_role_to_user(self, realm_name: str, user_id: str, role_name: str):
+        """Assign a realm role to a user."""
+        token = self._get_admin_token()
+        # First, get the role representation
+        role_url = f"{self.keycloak_url}/admin/realms/{realm_name}/roles/{role_name}"
+        try:
+            r = requests.get(
+                role_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            role_representation = r.json()
+
+            # Now, assign the role to the user
+            assign_url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/{user_id}/role-mappings/realm"
+            r = requests.post(
+                assign_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json=[role_representation],
+            )
+            if r.status_code not in (204, 201):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(
+                status_code=500, detail="Failed to assign role to user in Keycloak"
+            )
+        
+    def remove_realm_role_from_user(self, realm_name: str, user_id: str, role_name: str):
+        """Remove a realm role from a user."""
+        token = self._get_admin_token()
+        # First, get the role representation
+        role_url = f"{self.keycloak_url}/admin/realms/{realm_name}/roles/{role_name}"
+        try:
+            r = requests.get(
+                role_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+            )
+            r.raise_for_status()
+            role_representation = r.json()
+
+            # Now, remove the role from the user
+            remove_url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/{user_id}/role-mappings/realm"
+            r = requests.delete(
+                remove_url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json=[role_representation],
+            )
+            if r.status_code not in (204, 200):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(
+                status_code=500, detail="Failed to remove role from user in Keycloak"
+            )
+
     def get_realm_features(self, realm_name: str) -> dict[str, bool]:
         """
         Get feature flags for a realm by reading the realm-feature-flags client scope.
@@ -431,6 +518,7 @@ class Admin:
                     "Authorization": f"Bearer {token}",
                     "Content-Type": "application/json",
                 },
+                params={"briefRepresentation": "false"},
             )
             r.raise_for_status()
             return r.json()
@@ -668,9 +756,22 @@ class Admin:
             if location:
                 user_id = location.rstrip("/").split("/")[-1]
                 from src.models.user import User
+                from src.models.realm import Realm
 
-                user = User(keycloak_id=user_id, email=email)
-                session.add(user)
+                # Determine org manager flag from requested role
+                is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"
+
+                # Ensure realm exists locally
+                if realm_name and not session.get(Realm, realm_name):
+                    session.add(Realm(name=realm_name, domain=f"{realm_name}.local"))
+
+                existing = session.get(User, user_id)
+                if existing:
+                    existing.email = email or existing.email
+                    existing.is_org_manager = is_org_manager
+                else:
+                    user = User(keycloak_id=user_id, email=email or "", is_org_manager=is_org_manager)
+                    session.add(user)
                 session.commit()
 
         return r
@@ -1490,4 +1591,3 @@ class Admin:
         print(f"DEBUG: Keycloak create realm response: {r.status_code} - {r.text}")
         
         return r
-
