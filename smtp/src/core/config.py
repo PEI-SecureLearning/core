@@ -53,4 +53,5 @@ class APIConfig(BaseSettings):
         extra="ignore",
     )
 
-    API_URL: str = "http://localhost:8000"
+    API_INTERNAL_URL: str 
+    API_URL: str 

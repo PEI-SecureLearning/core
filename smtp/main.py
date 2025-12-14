@@ -30,10 +30,11 @@ def main() -> None:
 
     print(f"RabbitMQ Host: {rabbitmq_config.RABBITMQ_HOST}")
     print(f"RabbitMQ Queue: {rabbitmq_config.RABBITMQ_QUEUE}")
+    print(f"API Internal URL: {api_config.API_INTERNAL_URL}")
     print(f"API URL: {api_config.API_URL}")
     
     # Initialize components
-    template_renderer = TemplateRenderer(api_url=api_config.API_URL)
+    template_renderer = TemplateRenderer(api_url=api_config.API_INTERNAL_URL)
     email_sender = EmailSender(template_renderer=template_renderer)
     rate_limiter = RateLimiter(rate_limiter_config)
     consumer = RabbitMQConsumer(rabbitmq_config, rate_limiter, email_sender)

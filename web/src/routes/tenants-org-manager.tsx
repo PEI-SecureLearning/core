@@ -1,138 +1,119 @@
-import { useEffect, useMemo, useState } from "react";
-import type { FormEvent } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { createFileRoute } from "@tanstack/react-router";
-import UsersList from "@/components/tenants/UsersList";
-import AddUserForm from "@/components/tenants/AddUserForm";
-import BulkUserImport from "@/components/tenants/BulkUserImport";
-import type { BulkUser, UserRecord } from "@/components/tenants/types";
+import {
+  Users,
+  Plus,
+  Search,
+  Trash2,
+  Loader2,
+  Mail,
+  Shield,
+  LayoutGrid,
+  List,
+  X,
+  User,
+  AtSign,
+  Check,
+  Upload,
+} from "lucide-react";
 import "../css/liquidGlass.css";
 
 export const Route = createFileRoute("/tenants-org-manager")({
-  component: TenantOrgManager,
+  component: UsersManagement,
 });
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 
-function extractRealmFromToken(iss?: string) {
-  if (!iss) return null;
-  const parts = iss.split("/realms/");
-  return parts[1] ?? null;
+interface UserRecord {
+  id?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  isOrgManager?: boolean;
+  is_org_manager?: boolean;
 }
 
-function extractDomainFromClaims(claims?: { email?: string; preferred_username?: string }) {
-  const candidate = claims?.email || claims?.preferred_username;
-  if (!candidate || !candidate.includes("@")) return null;
-  return candidate.split("@")[1];
+interface Group {
+  id?: string;
+  name?: string;
 }
 
-async function parseErrorResponse(res: Response): Promise<string> {
-  let message = res.statusText || `HTTP ${res.status}`;
-  try {
-    const data = await res.json();
-    if (data?.detail) return `HTTP ${res.status}: ${data.detail}`;
-    const asString = typeof data === "string" ? data : JSON.stringify(data);
-    if (asString && asString !== "{}") return `HTTP ${res.status}: ${asString}`;
-  } catch {
-    try {
-      const text = await res.text();
-      if (text) return `HTTP ${res.status}: ${text}`;
-    } catch {
-      // ignore
-    }
-  }
-  return message || "Request failed";
+interface BulkUser {
+  username: string;
+  name: string;
+  email: string;
+  role: string;
+  groups: string[];
+  status: string;
 }
 
-function mapRole(value: string | undefined): "ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | "" {
+function mapRole(
+  value: string | undefined
+): "ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | "" {
   const v = (value || "").trim().toLowerCase();
-  if (["org_manager", "org manager", "organization manager", "org"].includes(v)) return "ORG_MANAGER";
-  if (["content_manager", "content manager", "content"].includes(v)) return "CONTENT_MANAGER";
-  if (["default_user", "default user", "user", "default"].includes(v)) return "DEFAULT_USER";
+  if (
+    ["org_manager", "org manager", "organization manager", "org"].includes(v)
+  )
+    return "ORG_MANAGER";
+  if (["content_manager", "content manager", "content"].includes(v))
+    return "CONTENT_MANAGER";
+  if (["default_user", "default user", "user", "default"].includes(v))
+    return "DEFAULT_USER";
   return "";
 }
 
-function TenantOrgManager() {
+function UsersManagement() {
   const { keycloak } = useKeycloak();
-  const [realm, setRealm] = useState("");
-  const [username, setUsername] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | "">("");
-  const [bulkUsers, setBulkUsers] = useState<BulkUser[]>([]);
-  const [status, setStatus] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isBulkLoading, setIsBulkLoading] = useState(false);
   const [users, setUsers] = useState<UserRecord[]>([]);
-  const [isUsersLoading, setIsUsersLoading] = useState(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
-  const [groups, setGroups] = useState<{ id?: string; name?: string }[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState<"table" | "grid">("table");
 
-  const tokenRealm = useMemo(
-    () => extractRealmFromToken((keycloak.tokenParsed as { iss?: string } | undefined)?.iss),
-    [keycloak.tokenParsed]
-  );
-  const tokenDomain = useMemo(
-    () => {
-      // Try access token first, then ID token in case email is only there.
-      const fromAccess = extractDomainFromClaims(
-        keycloak.tokenParsed as { email?: string; preferred_username?: string } | undefined
-      );
-      if (fromAccess) return fromAccess;
-      return extractDomainFromClaims(
-        keycloak.idTokenParsed as { email?: string; preferred_username?: string } | undefined
-      );
-    },
-    [keycloak.tokenParsed, keycloak.idTokenParsed]
-  );
+  // New User Modal State
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserUsername, setNewUserUsername] = useState("");
+  const [newUserRole, setNewUserRole] = useState<
+    "ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | ""
+  >("");
+  const [newUserGroupId, setNewUserGroupId] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [createStatus, setCreateStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
-  useEffect(() => {
-    // If we already know the realm from the token, prime the UI so the form is usable.
-    if (tokenRealm && !realm) {
-      setRealm(tokenRealm);
-    }
-  }, [tokenRealm, realm]);
+  // Bulk Import State
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkUsers, setBulkUsers] = useState<BulkUser[]>([]);
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // On mount/when token changes, auto-lookup realm using the org manager's email domain.
-    const doLookup = async () => {
-      // If token already has the realm, don't override it with domain lookup.
-      if (tokenRealm) return;
-      if (!tokenDomain || !keycloak.authenticated) return;
-      setStatus("Detecting realm from your domain...");
-      setIsLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/realms?domain=${encodeURIComponent(tokenDomain)}`, {
+  const tokenRealm = useMemo(() => {
+    const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
+    if (!iss) return null;
+    const parts = iss.split("/realms/");
+    return parts[1] ?? null;
+  }, [keycloak.tokenParsed]);
+
+  const realm = tokenRealm || "";
+
+  const fetchUsers = async (targetRealm: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`,
+        {
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
           },
-        });
-        if (!res.ok) {
-          throw new Error(`Lookup failed: ${res.statusText}`);
         }
-        const data = await res.json();
-        setRealm(data.realm);
-        setStatus(`Realm locked to ${data.realm}.`);
-      } catch (err) {
-        console.error(err);
-        setRealm("");
-        setStatus("Could not resolve your realm from domain. Contact an admin.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    doLookup();
-  }, [tokenDomain, tokenRealm, keycloak.authenticated, keycloak.token]);
-
-  const fetchUsers = async (targetRealm: string) => {
-    setIsUsersLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
-        headers: {
-          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-        },
-      });
+      );
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users || []);
@@ -140,17 +121,20 @@ function TenantOrgManager() {
     } catch (err) {
       console.error("Failed to fetch users", err);
     } finally {
-      setIsUsersLoading(false);
+      setIsLoading(false);
     }
   };
 
   const fetchGroups = async (targetRealm: string) => {
     try {
-      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
-        headers: {
-          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-        },
-      });
+      const res = await fetch(
+        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`,
+        {
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          },
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         setGroups(data.groups || []);
@@ -161,67 +145,118 @@ function TenantOrgManager() {
   };
 
   useEffect(() => {
-    const targetRealm = tokenRealm || realm;
-    if (targetRealm) {
-      fetchUsers(targetRealm);
-      fetchGroups(targetRealm);
+    if (realm) {
+      fetchUsers(realm);
+      fetchGroups(realm);
     }
-  }, [tokenRealm, realm]);
+  }, [realm]);
 
-  const handleAddUser = async (e: FormEvent) => {
-    e.preventDefault();
-    const targetRealm = tokenRealm || realm || "";
-    if (!targetRealm) {
-      setStatus("Realm not resolved from token or domain. Cannot add users.");
-      return;
-    }
-    if (!name || !email || !role) {
-      setStatus("Name, email, and role are required to create a user.");
-      return;
-    }
-    setStatus(null);
-    setIsLoading(true);
+
+
+  const handleDeleteUser = async (id: string) => {
+    if (!id || !realm) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
+    if (!confirmed) return;
+
+    setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
-      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
-        method: "POST",
-        headers: {
-          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          name,
-          email,
-          role,
-          group_id: selectedGroupId || undefined,
-        }),
-      });
-      if (!res.ok) {
-        setStatus(await parseErrorResponse(res));
-        return;
-      }
-      const data = await res.json();
-      setStatus(
-        `User ${username} added to realm ${targetRealm}. Temporary password (one-time): ${data?.temporary_password ?? "N/A"}`
+      const res = await fetch(
+        `${API_BASE}/org-manager/${encodeURIComponent(realm)}/users/${encodeURIComponent(id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          },
+        }
       );
-      setUsername("");
-      setName("");
-      setEmail("");
-      setRole("");
-      setSelectedGroupId("");
-      fetchUsers(targetRealm);
+      if (!res.ok) throw new Error("Failed to delete user");
+      // Remove user from local state instead of refetching
+      setUsers((prev) => prev.filter((u) => (u.id || u.username) !== id));
     } catch (err) {
-      console.error(err);
-      setStatus(err instanceof Error ? err.message : "Failed to add user.");
+      console.error("Failed to delete user", err);
     } finally {
-      setIsLoading(false);
+      setDeletingIds((prev) => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!realm) {
+      setCreateStatus({ type: "error", message: "Realm not resolved." });
+      return;
+    }
+    if (!newUserName || !newUserEmail || !newUserRole) {
+      setCreateStatus({
+        type: "error",
+        message: "Name, email, and role are required.",
+      });
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateStatus(null);
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: newUserUsername || newUserEmail.split("@")[0],
+            name: newUserName,
+            email: newUserEmail,
+            role: newUserRole,
+            group_id: newUserGroupId || undefined,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to create user`);
+      }
+
+      const data = await res.json();
+      setCreateStatus({
+        type: "success",
+        message: `User created! Temporary password: ${data?.temporary_password ?? "N/A"}`,
+      });
+
+      // Reset form
+      setNewUserName("");
+      setNewUserEmail("");
+      setNewUserUsername("");
+      setNewUserRole("");
+      setNewUserGroupId("");
+      fetchUsers(realm);
+
+      // Close modal after delay
+      setTimeout(() => {
+        setShowNewUserModal(false);
+        setCreateStatus(null);
+      }, 3000);
+    } catch (err) {
+      setCreateStatus({
+        type: "error",
+        message: err instanceof Error ? err.message : "Failed to create user",
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const handleCsvUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    setStatus("Uploading CSV...");
     try {
       const res = await fetch(`${API_BASE}/org-manager/upload`, {
         method: "POST",
@@ -232,320 +267,641 @@ function TenantOrgManager() {
       });
       if (!res.ok) throw new Error("Failed to upload CSV");
       const data = await res.json();
-      // Expecting CSV columns: username, name, email, role[, group1,group2,...]
       const rows = (data as any[]).map((row) => ({
         username: row.username || "",
         name: row.name || "",
         email: row.email || "",
         role: mapRole(row.role),
-        groups: typeof row.groups === "string" ? row.groups.split(",").map((g: string) => g.trim()).filter(Boolean) : [],
+        groups:
+          typeof row.groups === "string"
+            ? row.groups
+              .split(",")
+              .map((g: string) => g.trim())
+              .filter(Boolean)
+            : [],
         status: "pending",
       }));
       setBulkUsers(rows);
-      setStatus(`Imported ${rows.length} users from CSV.`);
     } catch (err) {
       console.error(err);
-      setStatus("Error uploading CSV. Ensure columns username,name,email,role are present.");
     }
   };
 
   const handleBulkCreate = async () => {
-    const targetRealm = tokenRealm || realm || "";
-    if (!targetRealm) {
-      setStatus("Realm not resolved from token or domain. Cannot add users.");
-      return;
-    }
-    if (bulkUsers.some((u) => !u.role)) {
-      setStatus("Every imported user needs a role (Organization manager, Content manager, or User).");
-      return;
-    }
-    // Cache group names to IDs so we can create missing groups only once per run.
-    const groupIdCache: Record<string, string> = {};
-    groups.forEach((g) => {
-      if (g.name && g.id) groupIdCache[g.name.toLowerCase()] = g.id;
-    });
-
-    const refreshGroups = async () => {
-      try {
-        const resp = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
-          headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
-        });
-        if (resp.ok) {
-          const data = await resp.json();
-          setGroups(data.groups || []);
-          return (data.groups as { id?: string; name?: string }[]) || [];
-        }
-      } catch (e) {
-        console.error("Failed to refresh groups", e);
-      }
-      return groups;
-    };
-
-    const ensureGroupExists = async (groupName: string): Promise<string | undefined> => {
-      const key = groupName.trim().toLowerCase();
-      if (!key) return undefined;
-      if (groupIdCache[key]) return groupIdCache[key];
-      // Try to create the group; if it already exists server should return conflict or similar.
-      try {
-        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`, {
-          method: "POST",
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: groupName }),
-        });
-        if (!res.ok) {
-          // If already exists, fetch group list to resolve ID.
-          if (res.status === 409 || res.status === 400) {
-            try {
-              const latest = await refreshGroups();
-              const found = latest.find((g) => g.name?.toLowerCase() === key);
-              if (found?.id) {
-                groupIdCache[key] = found.id;
-                return found.id;
-              }
-            } catch (e) {
-              console.error("Failed to refetch groups after conflict", e);
-            }
-          }
-          return undefined;
-        }
-        const data = await res.json();
-        const newId = data?.id || data?.group?.id;
-        if (newId) {
-          groupIdCache[key] = newId;
-          // Optimistically add to local groups list.
-          setGroups((prev) => [...prev, { id: newId, name: groupName }]);
-          return newId;
-        }
-        // If API doesn't return ID, refetch and resolve by name.
-        const latest = await refreshGroups();
-        const found = latest.find((g) => g.name?.toLowerCase() === key);
-        if (found?.id) {
-          groupIdCache[key] = found.id;
-          return found.id;
-        }
-        return undefined;
-      } catch (err) {
-        console.error("Failed to ensure group", err);
-        return undefined;
-      }
-    };
-
-    const resolveGroupIds = async (groupNames: string[]): Promise<string[]> => {
-      const ids: string[] = [];
-      for (const name of groupNames) {
-        const id = await ensureGroupExists(name);
-        if (id) ids.push(id);
-      }
-      return ids;
-    };
-
-    const fetchUserIdByUsername = async (usernameValue: string): Promise<string | undefined> => {
-      try {
-        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
-          headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
-        });
-        if (!res.ok) return undefined;
-        const data = await res.json();
-        const found = (data?.users || []).find(
-          (user: { username?: string }) => user.username === usernameValue
-        );
-        return found?.id;
-      } catch (err) {
-        console.error("Failed to resolve user id", err);
-        return undefined;
-      }
-    };
-
+    if (!realm) return;
     setIsBulkLoading(true);
-    setStatus("Creating users...");
     const updated = [...bulkUsers];
+
     for (let i = 0; i < updated.length; i++) {
       const u = updated[i];
       if (!u.username || !u.name || !u.email || !u.role) {
         updated[i] = { ...u, status: "missing fields" };
         continue;
       }
-      // Ensure role stays normalized to the allowed constants.
-      updated[i] = { ...u, role: mapRole(u.role) };
-      if (!updated[i].role) {
-        updated[i] = { ...updated[i], status: "invalid role" };
-        continue;
-      }
-      const groupIds = u.groups && u.groups.length ? await resolveGroupIds(u.groups) : [];
-      const primaryGroupId = groupIds[0];
       try {
-        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`, {
-          method: "POST",
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: u.username,
-            name: u.name,
-            email: u.email,
-            role: u.role,
-            group_id: primaryGroupId,
-          }),
-        });
+        const res = await fetch(
+          `${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: u.username,
+              name: u.name,
+              email: u.email,
+              role: u.role,
+            }),
+          }
+        );
         if (!res.ok) {
-          const text = await res.text();
-          updated[i] = { ...u, status: `error ${res.status}: ${text || res.statusText}` };
+          updated[i] = { ...u, status: `error ${res.status}` };
           continue;
         }
         const data = await res.json();
-
-        // Assign user to any remaining groups (including primary, to ensure membership).
-        if (groupIds.length > 0) {
-          const userId = await fetchUserIdByUsername(u.username);
-          if (userId) {
-            for (const gid of groupIds) {
-              try {
-                await fetch(
-                  `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups/${encodeURIComponent(
-                    gid
-                  )}/members/${encodeURIComponent(userId)}`,
-                  {
-                    method: "POST",
-                    headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
-                  }
-                );
-              } catch (assignErr) {
-                console.error("Failed to add user to group", assignErr);
-              }
-            }
-          }
-        }
-
-        updated[i] = { ...u, status: `created (temp pwd ${data?.temporary_password ?? "N/A"})` };
-        fetchUsers(targetRealm);
-      } catch (err) {
-        updated[i] = { ...u, status: "error creating user" };
+        updated[i] = {
+          ...u,
+          status: `created (pwd: ${data?.temporary_password ?? "N/A"})`,
+        };
+      } catch {
+        updated[i] = { ...u, status: "error" };
       }
     }
     setBulkUsers(updated);
     setIsBulkLoading(false);
-    setStatus("Bulk creation finished.");
-    fetchGroups(targetRealm);
+    fetchUsers(realm);
   };
 
-  const handleFieldChange = (field: string, value: string) => {
-    switch (field) {
-      case "username":
-        setUsername(value);
-        break;
-      case "name":
-        setName(value);
-        break;
-      case "email":
-        setEmail(value);
-        break;
-      case "role":
-        setRole(mapRole(value));
-        break;
-      case "selectedGroupId":
-        setSelectedGroupId(value);
-        break;
-      default:
-        break;
-    }
-  };
+  const filteredUsers = users.filter((user) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      user.username?.toLowerCase().includes(query) ||
+      user.email?.toLowerCase().includes(query) ||
+      user.firstName?.toLowerCase().includes(query) ||
+      user.lastName?.toLowerCase().includes(query)
+    );
+  });
 
-  const handleDeleteUser = async (id: string) => {
-    if (!id) return;
-    const targetRealm = tokenRealm || realm || "";
-    if (!targetRealm) {
-      setStatus("Realm not resolved from token or domain. Cannot delete users.");
-      return;
-    }
-    setDeletingIds((prev) => ({ ...prev, [id]: true }));
-    try {
-      const res = await fetch(
-        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users/${encodeURIComponent(id)}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-          },
-        }
+  const getRoleBadge = (user: UserRecord) => {
+    const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
+    if (isOrgManager) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-purple-100 text-purple-700">
+          <Shield size={12} />
+          Org Manager
+        </span>
       );
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || res.statusText);
-      }
-      fetchUsers(targetRealm);
-    } catch (err) {
-      console.error("Failed to delete user", err);
-      setStatus("Failed to delete user. Check permissions.");
-    } finally {
-      setDeletingIds((prev) => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
     }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+        User
+      </span>
+    );
   };
+
+  const roleOptions = [
+    { value: "ORG_MANAGER", label: "Organization Manager" },
+    { value: "CONTENT_MANAGER", label: "Content Manager" },
+    { value: "DEFAULT_USER", label: "User" },
+  ];
 
   return (
-    <div className="liquid-glass-container h-full w-full animate-fade-in">
-      {/* Animated background blobs */}
-      <div className="liquid-blob liquid-blob-1"></div>
-      <div className="liquid-blob liquid-blob-2"></div>
-      <div className="liquid-blob liquid-blob-3"></div>
-
-      {/* Header */}
-      <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-4 px-6 animate-slide-down">
-        <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">Tenant Manager</h1>
-        <p className="text-sm text-gray-600">Manage your realm's users</p>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 min-h-0 overflow-hidden p-6 purple-scrollbar overflow-y-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-slide-up" style={{ animationDelay: '0.05s' }}>
-          <div className="liquid-glass-card p-5">
-            <UsersList
-              realm={tokenRealm || realm || ""}
-              users={users}
-              isLoading={isUsersLoading}
-              deletingIds={deletingIds}
-              onDelete={handleDeleteUser}
-            />
-          </div>
-          <div className="liquid-glass-card p-5 animate-slide-left" style={{ animationDelay: '0.1s' }}>
-            <AddUserForm
-              realm={tokenRealm || realm || ""}
-              groups={groups}
-              username={username}
-              name={name}
-              email={email}
-              role={role}
-              selectedGroupId={selectedGroupId}
-              isLoading={isLoading}
-              onChange={handleFieldChange}
-              onSubmit={handleAddUser}
-            />
-          </div>
+    <div className="h-full w-full flex flex-col animate-fade-in">
+      {/* Header - matching user groups style */}
+      <div className="h-16 lg:h-20 w-full flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-4 border-b border-gray-200 flex-shrink-0">
+        {/* Title */}
+        <div className="flex-shrink-0">
+          <h1 className="font-bold text-base sm:text-lg lg:text-xl text-gray-900">
+            User Management
+          </h1>
         </div>
 
-        {status && (
-          <div className="mt-6 liquid-glass-card px-4 py-3 text-sm text-gray-700 animate-scale-in">
-            <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
-            {status}
+        {/* Right side - Search, View Toggle, Buttons */}
+        <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
+          {/* Search Bar */}
+          <div className="relative flex-1 max-w-xs lg:max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* View Toggle - Hidden on mobile */}
+          <div className="hidden sm:flex items-center bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setView("table")}
+              className={`p-2 rounded-md transition-colors ${view === "table"
+                ? "bg-white text-purple-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
+              aria-label="Table view"
+            >
+              <List className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setView("grid")}
+              className={`p-2 rounded-md transition-colors ${view === "grid"
+                ? "bg-white text-purple-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+                }`}
+              aria-label="Grid view"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Hidden file input for bulk import */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleCsvUpload(file);
+                setShowBulkModal(true);
+              }
+              e.target.value = ""; // Reset so same file can be selected again
+            }}
+          />
+
+          {/* Bulk Import Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+          >
+            <Upload className="h-4 w-4" />
+            <span className="hidden lg:inline">Bulk Import</span>
+          </button>
+
+          {/* Create Button */}
+          <button
+            onClick={() => setShowNewUserModal(true)}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New User</span>
+            <span className="sm:hidden">Add</span>
+          </button>
+        </div>
+      </div>
+
+
+
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-6 pb-6 purple-scrollbar">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            <span className="ml-2 text-gray-500">Loading users...</span>
+          </div>
+        ) : !realm ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            <span className="ml-2 text-gray-500">
+              Resolving realm from token...
+            </span>
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <Users size={48} className="text-gray-300 mb-4" />
+            <p className="text-gray-500 text-[15px]">
+              {searchQuery ? "No users match your search" : "No users found"}
+            </p>
+          </div>
+        ) : view === "table" ? (
+          <div className="liquid-glass-card overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50/80 border-b border-gray-200/60">
+                  <th className="text-left px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="text-left px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="text-left px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="text-right px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100/60">
+                {filteredUsers.map((user) => {
+                  const id = user.id || user.username || "";
+                  const isOrgManager =
+                    user.isOrgManager ?? user.is_org_manager ?? false;
+                  const isDeleting = deletingIds[id] || false;
+                  const fullName =
+                    `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+                    user.username;
+
+                  return (
+                    <tr
+                      key={id}
+                      className="hover:bg-gray-50/60 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
+                            {(
+                              user.firstName?.[0] ||
+                              user.username?.[0] ||
+                              "U"
+                            ).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium text-[14px] text-gray-900">
+                              {fullName}
+                            </p>
+                            <p className="text-[12px] text-gray-500">
+                              @{user.username}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-[14px] text-gray-600">
+                          <Mail size={14} className="text-gray-400" />
+                          {user.email || "—"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">{getRoleBadge(user)}</td>
+                      <td className="px-6 py-4 text-right">
+                        {!isOrgManager && (
+                          <button
+                            onClick={() => handleDeleteUser(id)}
+                            disabled={isDeleting}
+                            className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
+                          >
+                            {isDeleting ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Trash2 size={16} />
+                            )}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredUsers.map((user) => {
+              const id = user.id || user.username || "";
+              const isOrgManager =
+                user.isOrgManager ?? user.is_org_manager ?? false;
+              const isDeleting = deletingIds[id] || false;
+              const fullName =
+                `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+                user.username;
+
+              return (
+                <div
+                  key={id}
+                  className="liquid-glass-card p-5 hover:shadow-xl transition-all duration-200"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
+                      {(
+                        user.firstName?.[0] ||
+                        user.username?.[0] ||
+                        "U"
+                      ).toUpperCase()}
+                    </div>
+                    {!isOrgManager && (
+                      <button
+                        onClick={() => handleDeleteUser(id)}
+                        disabled={isDeleting}
+                        className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
+                      >
+                        {isDeleting ? (
+                          <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={16} />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <h3 className="font-semibold text-[15px] text-gray-900 truncate">
+                    {fullName}
+                  </h3>
+                  <p className="text-[13px] text-gray-500 truncate">
+                    @{user.username}
+                  </p>
+                  <p className="text-[12px] text-gray-400 truncate mt-1 flex items-center gap-1">
+                    <Mail size={12} />
+                    {user.email || "—"}
+                  </p>
+                  <div className="mt-3">{getRoleBadge(user)}</div>
+                </div>
+              );
+            })}
           </div>
         )}
-
-        <div className="mt-6 liquid-glass-card p-5 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-          <BulkUserImport
-            bulkUsers={bulkUsers}
-            isBulkLoading={isBulkLoading}
-            onCsvUpload={handleCsvUpload}
-            onBulkCreate={handleBulkCreate}
-          />
-        </div>
       </div>
-    </div >
+
+      {/* New User Modal */}
+      {showNewUserModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Create New User
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Add a new user to your organization
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowNewUserModal(false);
+                  setCreateStatus(null);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Full Name */}
+              <div>
+                <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                  Full Name <span className="text-rose-400">*</span>
+                </label>
+                <div className="relative">
+                  <User
+                    size={16}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    value={newUserName}
+                    onChange={(e) => setNewUserName(e.target.value)}
+                    placeholder="John Doe"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                  Email <span className="text-rose-400">*</span>
+                </label>
+                <div className="relative">
+                  <Mail
+                    size={16}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="email"
+                    value={newUserEmail}
+                    onChange={(e) => setNewUserEmail(e.target.value)}
+                    placeholder="john.doe@example.com"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Username */}
+              <div>
+                <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                  Username
+                </label>
+                <div className="relative">
+                  <AtSign
+                    size={16}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    value={newUserUsername}
+                    onChange={(e) => setNewUserUsername(e.target.value)}
+                    placeholder="Username"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Role */}
+              <div>
+                <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                  Role <span className="text-rose-400">*</span>
+                </label>
+                <div className="space-y-2">
+                  {roleOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setNewUserRole(
+                          option.value as
+                          | "ORG_MANAGER"
+                          | "CONTENT_MANAGER"
+                          | "DEFAULT_USER"
+                        )
+                      }
+                      className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center justify-between ${newUserRole === option.value
+                        ? "bg-purple-100 border-2 border-purple-400"
+                        : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+                        }`}
+                    >
+                      <span
+                        className={`font-medium text-[14px] ${newUserRole === option.value ? "text-purple-700" : "text-gray-700"}`}
+                      >
+                        {option.label}
+                      </span>
+                      {newUserRole === option.value && (
+                        <Check size={18} className="text-purple-600" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Group */}
+              <div>
+                <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                  Group (Optional)
+                </label>
+                <select
+                  value={newUserGroupId}
+                  onChange={(e) => setNewUserGroupId(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                >
+                  <option value="">No group</option>
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.id || ""}>
+                      {g.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status Message */}
+              {createStatus && (
+                <div
+                  className={`flex items-center gap-2 p-3 rounded-xl text-[13px] ${createStatus.type === "success"
+                    ? "bg-green-50 text-green-700"
+                    : "bg-rose-50 text-rose-700"
+                    }`}
+                >
+                  {createStatus.type === "success" ? (
+                    <Check size={16} />
+                  ) : (
+                    <X size={16} />
+                  )}
+                  {createStatus.message}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowNewUserModal(false);
+                  setCreateStatus(null);
+                }}
+                className="px-5 py-2.5 rounded-xl text-[14px] font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateUser}
+                disabled={
+                  !newUserName || !newUserEmail || !newUserRole || isCreating
+                }
+                className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+              >
+                {isCreating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Creating...
+                  </span>
+                ) : (
+                  "Create User"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Import Modal */}
+      {showBulkModal && bulkUsers.length > 0 && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Bulk Import Users
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {bulkUsers.length} users imported from CSV
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowBulkModal(false);
+                  setBulkUsers([]);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 max-h-[50vh] overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b border-gray-200">
+                    <th className="pb-3 font-medium">Username</th>
+                    <th className="pb-3 font-medium">Name</th>
+                    <th className="pb-3 font-medium">Email</th>
+                    <th className="pb-3 font-medium">Role</th>
+                    <th className="pb-3 font-medium">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bulkUsers.map((u, i) => (
+                    <tr key={i} className="border-b border-gray-100 last:border-0">
+                      <td className="py-3 text-gray-900">{u.username}</td>
+                      <td className="py-3 text-gray-700">{u.name}</td>
+                      <td className="py-3 text-gray-600">{u.email}</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+                          {u.role || "—"}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <span
+                          className={`text-xs ${u.status.includes("created")
+                            ? "text-green-600"
+                            : u.status.includes("error")
+                              ? "text-rose-600"
+                              : "text-gray-400"
+                            }`}
+                        >
+                          {u.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 flex justify-end gap-3 border-t border-gray-100 bg-gray-50">
+              <button
+                onClick={() => {
+                  setShowBulkModal(false);
+                  setBulkUsers([]);
+                }}
+                className="px-5 py-2.5 rounded-lg text-[14px] font-medium text-gray-600 bg-white hover:bg-gray-100 transition-all border border-gray-200"
+              >
+                Close
+              </button>
+              <button
+                onClick={async () => {
+                  await handleBulkCreate();
+                }}
+                disabled={isBulkLoading || bulkUsers.every((u) => u.status !== "pending")}
+                className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+              >
+                {isBulkLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Creating...
+                  </span>
+                ) : (
+                  `Create ${bulkUsers.filter((u) => u.status === "pending").length} Users`
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

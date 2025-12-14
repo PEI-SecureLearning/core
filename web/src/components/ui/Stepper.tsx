@@ -14,6 +14,8 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   initialStep?: number;
   onStepChange?: (step: number) => void;
   onFinalStepCompleted?: () => void;
+  onBeforeComplete?: () => Promise<boolean> | boolean;
+  validateStep?: (step: number) => boolean;
   stepCircleContainerClassName?: string;
   stepContainerClassName?: string;
   contentClassName?: string;
@@ -36,6 +38,8 @@ export default function Stepper({
   initialStep = 1,
   onStepChange = () => { },
   onFinalStepCompleted = () => { },
+  onBeforeComplete,
+  validateStep,
   stepCircleContainerClassName = "",
   stepContainerClassName = "",
   contentClassName = "",
@@ -74,12 +78,23 @@ export default function Stepper({
 
   const handleNext = () => {
     if (!isLastStep) {
+      // Validate current step before advancing
+      if (validateStep && !validateStep(currentStep)) {
+        return;
+      }
       setDirection(1);
       updateStep(currentStep + 1);
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    // If there's a beforeComplete callback, wait for it
+    if (onBeforeComplete) {
+      const canComplete = await onBeforeComplete();
+      if (!canComplete) {
+        return; // Stay on current step
+      }
+    }
     setDirection(1);
     updateStep(totalSteps + 1);
   };
@@ -111,16 +126,34 @@ export default function Stepper({
             const stepNumber = index + 1;
             const isNotLastStep = index < totalSteps - 1;
             const label = stepLabels[index] || `Step ${stepNumber}`;
+
+            // Handler that validates all steps before jumping
+            const handleStepClick = (clicked: number) => {
+              // Allow going back without validation
+              if (clicked < currentStep) {
+                setDirection(-1);
+                updateStep(clicked);
+                return;
+              }
+              // For jumping forward, validate all steps in between
+              if (validateStep) {
+                for (let step = currentStep; step < clicked; step++) {
+                  if (!validateStep(step)) {
+                    return; // Stop at first invalid step
+                  }
+                }
+              }
+              setDirection(1);
+              updateStep(clicked);
+            };
+
             return (
               <React.Fragment key={stepNumber}>
                 {renderStepIndicator ? (
                   renderStepIndicator({
                     step: stepNumber,
                     currentStep,
-                    onStepClick: (clicked) => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    },
+                    onStepClick: handleStepClick,
                   })
                 ) : (
                   <StepIndicator
@@ -128,10 +161,7 @@ export default function Stepper({
                     label={label}
                     disableStepIndicators={disableStepIndicators}
                     currentStep={currentStep}
-                    onClickStep={(clicked) => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    }}
+                    onClickStep={handleStepClick}
                   />
                 )}
                 {isNotLastStep && (

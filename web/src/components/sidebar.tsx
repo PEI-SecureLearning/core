@@ -69,8 +69,8 @@ const userLinks: SidebarLinkProps[] = [
   },
   {
     href: "/tenants-org-manager",
-    label: "Tenant Manager",
-    icon: Building2,
+    label: "User Management",
+    icon: Users,
     roles: ["ORG_MANAGER"],
   },
   {
@@ -103,11 +103,10 @@ function SidebarLink({
     >
       <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-300" />
       <span
-        className={`truncate transition-all duration-700 ease-in-out whitespace-nowrap ${
-          isCollapsed
-            ? "opacity-0 w-0 overflow-hidden"
-            : "opacity-100 delay-150"
-        }`}
+        className={`truncate transition-all duration-700 ease-in-out whitespace-nowrap ${isCollapsed
+          ? "opacity-0 w-0 overflow-hidden"
+          : "opacity-100 delay-150"
+          }`}
       >
         {label}
       </span>
@@ -134,15 +133,14 @@ export function Sidebar() {
   const linksToDisplay = isAdminRoute
     ? adminLinks
     : userLinks.filter((link) => {
-        if (!link.roles) return true;
-        return link.roles.some((role) => userRoles.includes(role));
-      });
+      if (!link.roles) return true;
+      return link.roles.some((role) => userRoles.includes(role));
+    });
 
   return (
     <aside
-      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${
-        shouldShowContent ? "w-[15%] min-w-[120px] lg:min-w-[180px]" : "w-12"
-      }`}
+      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${shouldShowContent ? "w-[15%] min-w-[120px] lg:min-w-[180px]" : "w-12"
+        }`}
       onMouseEnter={() => {
         if (isCollapsed) {
           setIsHovered(true);

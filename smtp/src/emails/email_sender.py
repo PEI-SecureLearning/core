@@ -52,10 +52,10 @@ class EmailSender:
     def _notify_tracking(self, tracking_id: str) -> None:
         """Notify the API that an email was successfully sent."""
         config = APIConfig()
-        api_url = config.API_URL
+        api_internal_url = config.API_INTERNAL_URL
         try:
             response = requests.post(
-                f"{api_url}/api/track/sent?si={tracking_id}",
+                f"{api_internal_url}/api/track/sent?si={tracking_id}",
                 timeout=5
             )
             if response.ok:
@@ -86,7 +86,6 @@ class EmailSender:
             f'width="1" height="1" alt="" style="display:none;border:0;" />'
         )
         
-        #TODO buscar ENV
         # Add redirect link for ${{redirect}} - points to track/click endpoint
         arguments["redirect"] = f"{api_url}/api/track/click?si={tracking_id}"
         

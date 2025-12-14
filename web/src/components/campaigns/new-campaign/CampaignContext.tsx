@@ -52,18 +52,32 @@ interface CampaignContextType {
   creatorId?: string;
 }
 
-const initialCampaignData: CampaignData = {
-  name: "",
-  description: "",
-  email_template_id: null,
-  landing_page_template_id: null,
-  email_template: null,
-  landing_page_template: null,
-  sending_profile_id: null,
-  user_group_ids: [],
-  begin_date: null,
-  end_date: null,
-  sending_interval_seconds: 60, // default 1 minute
+// Helper to generate default dates (start: now, end: now + 5 minutes)
+function getDefaultDates() {
+  const now = new Date();
+  const startDate = now;
+  const endDate = new Date(now.getTime() + 5 * 60 * 1000); // +5 minutes
+  return {
+    begin_date: startDate.toISOString(),
+    end_date: endDate.toISOString(),
+  };
+}
+
+const getInitialCampaignData = (): CampaignData => {
+  const { begin_date, end_date } = getDefaultDates();
+  return {
+    name: "",
+    description: "",
+    email_template_id: null,
+    landing_page_template_id: null,
+    email_template: null,
+    landing_page_template: null,
+    sending_profile_id: null,
+    user_group_ids: [],
+    begin_date,
+    end_date,
+    sending_interval_seconds: 60, // default 1 minute
+  };
 };
 
 const CampaignContext = createContext<CampaignContextType | undefined>(
@@ -77,16 +91,16 @@ export function CampaignProvider({
   children: ReactNode;
   creatorId?: string;
 }) {
-  const [data, setData] = useState<CampaignData>({
-    ...initialCampaignData,
-  });
+  const [data, setData] = useState<CampaignData>(
+    getInitialCampaignData()
+  );
 
   const updateData = (updates: Partial<CampaignData>) => {
     setData((prev) => ({ ...prev, ...updates }));
   };
 
   const resetData = () => {
-    setData({ ...initialCampaignData });
+    setData(getInitialCampaignData());
   };
 
   const getValidationErrors = (): string[] => {

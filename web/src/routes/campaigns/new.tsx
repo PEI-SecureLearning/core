@@ -26,7 +26,7 @@ interface StepConfig {
 }
 
 function CampaignStepper() {
-  const { getPayload, isValid, getValidationErrors } = useCampaign();
+  const { data, getPayload, isValid, getValidationErrors } = useCampaign();
   const { keycloak } = useKeycloak();
   const navigate = useNavigate();
 
@@ -61,7 +61,40 @@ function CampaignStepper() {
     },
   ];
 
-  const handleCreateCampaign = async () => {
+  // Validate each step before allowing to proceed
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1: // Basic Info
+        if (!data.name.trim()) {
+          toast.error("Campaign name is required.");
+          return false;
+        }
+        return true;
+      case 2: // Email Template
+        if (!data.email_template_id && !data.email_template) {
+          toast.error("Please select an email template.");
+          return false;
+        }
+        return true;
+      case 3: // Landing Page
+        if (!data.landing_page_template_id && !data.landing_page_template) {
+          toast.error("Please select a landing page template.");
+          return false;
+        }
+        return true;
+      case 4: // Target Groups
+        if (data.user_group_ids.length === 0) {
+          toast.error("Please select at least one target group.");
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  };
+
+  // Handle campaign creation - returns true if successful, false if error
+  const handleBeforeComplete = async (): Promise<boolean> => {
     if (!isValid()) {
       const errors = getValidationErrors();
       toast.error(
@@ -69,13 +102,13 @@ function CampaignStepper() {
           ? errors.join(" ")
           : "Campaign data is incomplete. Please fill in all required fields."
       );
-      return;
+      return false;
     }
 
     const payload = getPayload();
     if (!payload) {
       toast.error("Failed to create campaign payload");
-      return;
+      return false;
     }
 
     try {
@@ -95,11 +128,13 @@ function CampaignStepper() {
 
       toast.success("Campaign created successfully!");
       navigate({ to: "/campaigns" });
+      return true;
     } catch (error) {
       console.error("Failed to create campaign:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to create campaign"
       );
+      return false;
     }
   };
 
@@ -107,7 +142,8 @@ function CampaignStepper() {
     <Stepper
       initialStep={1}
       onStepChange={(step) => console.log("Step:", step)}
-      onFinalStepCompleted={handleCreateCampaign}
+      onBeforeComplete={handleBeforeComplete}
+      validateStep={validateStep}
       backButtonText="Previous"
       nextButtonText="Next"
       stepLabels={steps.map((s) => s.label)}

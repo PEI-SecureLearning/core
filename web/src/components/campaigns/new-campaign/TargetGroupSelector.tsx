@@ -20,8 +20,10 @@ export default function TargetGroupSelector() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
 
   const dropdownRef = useRef<HTMLUListElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const realm = useMemo(() => {
     const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
@@ -149,11 +151,17 @@ export default function TargetGroupSelector() {
         <div className="relative w-full max-w-md">
           {/* Input */}
           <input
+            ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setHighlightedIndex(0);
+            }}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => {
+              // Delay to allow click on dropdown item
+              setTimeout(() => setIsFocused(false), 150);
             }}
             onKeyDown={handleKeyDown}
             placeholder="Search groups..."
@@ -161,8 +169,8 @@ export default function TargetGroupSelector() {
             style={inputStyle}
           />
 
-          {/* Dropdown */}
-          {query.length > 0 && filtered.length > 0 && (
+          {/* Dropdown - show when focused */}
+          {isFocused && filtered.length > 0 && (
             <ul
               ref={dropdownRef}
               className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto rounded-xl bg-white z-50 shadow-lg border border-slate-200"
@@ -184,9 +192,15 @@ export default function TargetGroupSelector() {
             </ul>
           )}
 
-          {query.length > 0 && filtered.length === 0 && (
+          {isFocused && filtered.length === 0 && (
             <div className="absolute top-full left-0 mt-1 w-full rounded-xl bg-white z-50 shadow-lg border border-slate-200 p-4 text-center">
-              <p className="text-slate-500 text-[14px]">No groups found</p>
+              <p className="text-slate-500 text-[14px]">
+                {groups.length === 0
+                  ? "No groups available"
+                  : query.length > 0
+                    ? "No groups match your search"
+                    : "All groups have been selected"}
+              </p>
             </div>
           )}
         </div>
