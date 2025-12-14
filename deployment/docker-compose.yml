@@ -115,19 +115,7 @@ services:
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\r
-
-            Host: localhost\r
-
-            Connection: close\r
-
-            \r
-
-            ' >&3 && grep -q 'UP' <&3"
-        ]
+      test: [ "CMD-SHELL", "timeout 1 bash -c '</dev/tcp/127.0.0.1/9000' || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 5
