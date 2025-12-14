@@ -15,7 +15,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,32 +35,20 @@ services:
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mongosh",
-          "-u",
-          "${MONGO_ROOT_USER}",
-          "-p",
-          "${MONGO_ROOT_PASSWORD}",
-          "--authenticationDatabase",
-          "admin",
-          "--eval",
-          "db.adminCommand('ping')",
-          "--quiet",
-        ]
+      test: [ "CMD", "mongosh", "-u", "${MONGO_ROOT_USER}", "-p", "${MONGO_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')", "--quiet" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   rabbitmq:
-    image: rabbitmq:3.11.23-management
+    build:
+      context: ../rabbitmq
+      dockerfile: Dockerfile
     container_name: rabbitmq
     restart: unless-stopped
-    entrypoint: ["/bin/bash", "/scripts/init-users.sh"]
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MGMT_PORT}:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
@@ -71,9 +59,8 @@ services:
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ../rabbitmq/init-users.sh:/scripts/init-users.sh:ro
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -105,39 +92,34 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+
       KC_IMPORT: /opt/keycloak/data/import/
+      KC_LOG_LEVEL: INFO
       KC_HTTP_ACCESS_LOG_ENABLED: "true"
-      KC_LOG_CATEGORY_ORG_KEYCLOAK_AUTHORIZATION: DEBUG
-      KC_LOG_CATEGORY_ORG_KEYCLOAK_SERVICES: DEBUG
-      KC_LOG_CATEGORY_ORG_KEYCLOAK_PROTOCOL_OIDC: DEBUG
-      KC_LOG_CATEGORY_IO_QUARKUS_HTTP: DEBUG
-      KC_SPI_USER_PROVIDER_JPA_CASE_SENSITIVE: "true"
-      KC_LOG_LEVEL: DEBUG
-      KC_HTTP_ENABLED: true
-      KC_HOSTNAME: localhost
+
       KC_DB: postgres
-      QUARKUS_SMALLRYE_HEALTH_ENABLED: "true"
-      QUARKUS_SMALLRYE_HEALTH_ROOT_PATH: "/health"
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_STRICT: "false"
+
+      QUARKUS_SMALLRYE_HEALTH_ENABLED: "true"
+      QUARKUS_SMALLRYE_HEALTH_ROOT_PATH: "/health"
+
       CLIENT_SECRET: ${CLIENT_SECRET}
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
-
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1",
-        ]
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
-
     ports:
-      - "8080:8080"
-
+      - "${KEYCLOAK_PORT}:8080"
     depends_on:
       db:
         condition: service_healthy
@@ -166,9 +148,9 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_API_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     ports:
-      - "8000:80"
+      - "${API_PORT}:80"
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/health"]
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1:80/health" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -193,7 +175,7 @@ services:
       VITE_API_URL: ${API_URL}/api
       VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT}:80"
     depends_on:
       api:
         condition: service_healthy

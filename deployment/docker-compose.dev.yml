@@ -37,9 +37,10 @@ services:
       retries: 5
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    build:
+      context: ../rabbitmq
+      dockerfile: Dockerfile
     container_name: rabbitmq
-    entrypoint: [ "/bin/bash", "/scripts/init-users.sh" ]
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -53,7 +54,6 @@ services:
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ../rabbitmq/init-users.sh:/scripts/init-users.sh:ro
     healthcheck:
       test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
