@@ -87,7 +87,7 @@ services:
     build:
       context: ../keycloak
       dockerfile: Dockerfile
-    command: start --import-realm
+    command: start-dev --import-realm
     container_name: keycloak
     restart: unless-stopped
     environment:
