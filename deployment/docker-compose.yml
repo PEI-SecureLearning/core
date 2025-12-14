@@ -70,7 +70,6 @@ services:
       context: ../smtp
       dockerfile: Dockerfile
     container_name: smtp
-    restart: unless-stopped
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_SMTP_USER}
@@ -78,6 +77,8 @@ services:
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
       RATE_LIMITER_MAX_REQUESTS: ${RATE_LIMITER_MAX_REQUESTS}
       RATE_LIMITER_TIME_WINDOW_SECONDS: ${RATE_LIMITER_TIME_WINDOW_SECONDS}
+      API_INTERNAL_URL: ${API_INTERNAL_URL}
+      API_URL: ${API_URL}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -114,11 +115,23 @@ services:
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
     healthcheck:
-      test: [ "CMD-SHELL", "curl -sf http://localhost:9000/health/ready || exit 1" ]
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\r
+
+            Host: localhost\r
+
+            Connection: close\r
+
+            \r
+
+            ' >&3 && grep -q 'UP' <&3"
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 90s
     ports:
       - "${KEYCLOAK_PORT}:8080"
     depends_on:
