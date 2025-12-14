@@ -20,7 +20,8 @@ export async function createGroup(realm: string, name: string, token?: string) {
     body: JSON.stringify({ name }),
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : {};
 }
 
 export async function fetchUsers(realm: string, token?: string) {

@@ -292,6 +292,63 @@ function UsersManagement() {
     setIsBulkLoading(true);
     const updated = [...bulkUsers];
 
+    // Build group map and ensure groups exist up front
+    const groupNames = new Set<string>();
+    bulkUsers.forEach((u) => {
+      if (u.groups && Array.isArray(u.groups)) {
+        u.groups.filter(Boolean).forEach((g) => groupNames.add(g.trim()));
+      } else if (typeof (u as any).groups === "string") {
+        (u as any).groups
+          .split(",")
+          .map((g: string) => g.trim())
+          .filter(Boolean)
+          .forEach((g: string) => groupNames.add(g));
+      }
+    });
+
+    const groupIdMap: Record<string, string> = {};
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/groups`, {
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        (data.groups || []).forEach((g: any) => {
+          if (g.name && g.id) groupIdMap[g.name] = g.id;
+        });
+      } catch {
+        /* ignore */
+      }
+    };
+
+    // initial groups
+    await fetchGroups();
+    // create missing groups
+    for (const name of groupNames) {
+      if (groupIdMap[name]) continue;
+      try {
+        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/groups`, {
+          method: "POST",
+          headers: {
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name }),
+        });
+        if (res.ok) {
+          await fetchGroups();
+        }
+      } catch {
+        // skip failures; creation will still proceed
+      }
+    }
+
+    // track created users for later group assignment
+    const createdUsers: { email: string; groups: string[] }[] = [];
+
     for (let i = 0; i < updated.length; i++) {
       const u = updated[i];
       if (!u.username || !u.name || !u.email || !u.role) {
@@ -324,10 +381,62 @@ function UsersManagement() {
           ...u,
           status: `created (pwd: ${data?.temporary_password ?? "N/A"})`,
         };
+        const userGroups =
+          Array.isArray(u.groups) && u.groups.length
+            ? u.groups
+            : typeof (u as any).groups === "string"
+              ? (u as any).groups
+                  .split(",")
+                  .map((g: string) => g.trim())
+                  .filter(Boolean)
+              : [];
+        if (userGroups.length) {
+          createdUsers.push({ email: u.email, groups: userGroups });
+        }
       } catch {
         updated[i] = { ...u, status: "error" };
       }
     }
+
+    // Fetch users to map email -> id, then add to groups
+    try {
+      const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`, {
+        headers: {
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const userMap: Record<string, string> = {};
+        (data.users || []).forEach((usr: any) => {
+          if (usr.email && usr.id) userMap[usr.email.toLowerCase()] = usr.id;
+        });
+        for (const entry of createdUsers) {
+          const uid = userMap[entry.email.toLowerCase()];
+          if (!uid) continue;
+          for (const gName of entry.groups) {
+            const gid = groupIdMap[gName];
+            if (!gid) continue;
+            try {
+              await fetch(
+                `${API_BASE}/org-manager/${encodeURIComponent(realm)}/groups/${encodeURIComponent(gid)}/members/${encodeURIComponent(uid)}`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+                  },
+                }
+              );
+            } catch {
+              /* ignore */
+            }
+          }
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+
     setBulkUsers(updated);
     setIsBulkLoading(false);
     fetchUsers(realm);
@@ -807,8 +916,8 @@ function UsersManagement() {
 
       {/* Bulk Import Modal */}
       {showBulkModal && bulkUsers.length > 0 && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50 p-6">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden border border-gray-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
               <div>
@@ -839,6 +948,7 @@ function UsersManagement() {
                     <th className="pb-3 font-medium">Name</th>
                     <th className="pb-3 font-medium">Email</th>
                     <th className="pb-3 font-medium">Role</th>
+                    <th className="pb-3 font-medium">Groups</th>
                     <th className="pb-3 font-medium">Status</th>
                   </tr>
                 </thead>
@@ -847,17 +957,22 @@ function UsersManagement() {
                     <tr key={i} className="border-b border-gray-100 last:border-0">
                       <td className="py-3 text-gray-900">{u.username}</td>
                       <td className="py-3 text-gray-700">{u.name}</td>
-                      <td className="py-3 text-gray-600">{u.email}</td>
-                      <td className="py-3">
-                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
-                          {u.role || "—"}
-                        </span>
-                      </td>
-                      <td className="py-3">
-                        <span
-                          className={`text-xs ${u.status.includes("created")
-                            ? "text-green-600"
-                            : u.status.includes("error")
+                    <td className="py-3 text-gray-600">{u.email}</td>
+                    <td className="py-3">
+                      <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+                        {u.role || "—"}
+                      </span>
+                    </td>
+                    <td className="py-3 text-gray-600">
+                      {u.groups && u.groups.length
+                        ? u.groups.join(", ")
+                        : (u as any).groups || "—"}
+                    </td>
+                    <td className="py-3">
+                      <span
+                        className={`text-xs ${u.status.includes("created")
+                          ? "text-green-600"
+                          : u.status.includes("error")
                               ? "text-rose-600"
                               : "text-gray-400"
                             }`}
