@@ -4,7 +4,7 @@ import requests
 class TemplateRenderer:
     """Handles template loading and variable substitution."""
 
-    PLACEHOLDER_PATTERN = re.compile(r"\$\{\{(\w+)\}\}")
+    PLACEHOLDER_PATTERN = re.compile(r"\$\{\{\s*(\w+)\s*\}\}")
 
     def __init__(self, api_url: str):
         self.api_url = api_url.rstrip('/')
@@ -15,7 +15,8 @@ class TemplateRenderer:
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
-            return response.text
+            template_out = response.json()
+            return template_out["html"]
         except requests.RequestException as e:
             raise RuntimeError(f"Failed to load template {template_id} from {url}: {e}")
 

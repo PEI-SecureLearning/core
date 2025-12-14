@@ -73,19 +73,22 @@ class EmailSender:
             email_message.template_id
         )
         
+        config = APIConfig()
+        api_url = config.API_URL
+
         # Build arguments with tracking variables
         arguments = email_message.arguments.copy()
         tracking_id = email_message.tracking_id
         
         # Add tracking pixel for ${{pixel}} - points to track/open endpoint
         arguments["pixel"] = (
-            f'<img src="api/track/open?si={tracking_id}" '
+            f'<img src="{api_url}/api/track/open?si={tracking_id}" '
             f'width="1" height="1" alt="" style="display:none;border:0;" />'
         )
         
         #TODO buscar ENV
         # Add redirect link for ${{redirect}} - points to track/click endpoint
-        arguments["redirect"] = f"api/track/click?si={tracking_id}"
+        arguments["redirect"] = f"{api_url}/api/track/click?si={tracking_id}"
         
         html_content = self.template_renderer.render(template_content, arguments)
         

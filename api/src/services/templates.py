@@ -1,5 +1,6 @@
+import re
 from datetime import datetime
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict, Any
 
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
@@ -8,6 +9,26 @@ from src.core.mongo import get_templates_collection, serialize_document, to_obje
 
 
 PathLiteral = Literal["/templates/emails/", "/templates/pages/"]
+
+
+def render_template(html: str, variables: Dict[str, Any]) -> str:
+    """
+    Render a template by substituting ${{ variable }} placeholders.
+    
+    Args:
+        html: The raw HTML template.
+        variables: Dictionary mapping variable names to values.
+        
+    Returns:
+        The rendered HTML with variables substituted.
+    """
+    pattern = re.compile(r'\$\{\{\s*(\w+)\s*\}\}')
+    
+    def replace(match: re.Match) -> str:
+        var_name = match.group(1)
+        return str(variables.get(var_name, match.group(0)))
+    
+    return pattern.sub(replace, html)
 
 
 class TemplateCreate(BaseModel):

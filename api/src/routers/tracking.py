@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse, Response
 
 from src.core.deps import SessionDep
@@ -84,7 +84,7 @@ def track_open(si: str, session: SessionDep):
     return Response(content=TRACKING_PIXEL, media_type="image/gif")
 
 
-@router.post(
+@router.get(
     "/track/click",
     status_code=200,
     description="Link click tracking endpoint - records clicks and redirects to landing page",
@@ -96,12 +96,17 @@ async def track_click(si: str, session: SessionDep):
     """
     sending = service.record_click(si, session)
 
-    template = await TemplateService.get_template(sending.campaign.email_template.content_link)
+    template = await TemplateService.get_template(sending.campaign.landing_page_template.content_link)
 
     if template is None:
         raise HTTPException(status_code=404, detail="Page not found")
 
-    return template.html
+    # Render template with phish endpoint as redirect
+    rendered_html = TemplateService.render_template(template.html, {
+        "redirect": f"/track/phish?si={si}"
+    })
+
+    return Response(content=rendered_html, media_type="text/html")
 
 
 @router.post(
