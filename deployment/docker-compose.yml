@@ -114,10 +114,11 @@ services:
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
     healthcheck:
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1" ]
+      test: [ "CMD-SHELL", "curl -sf http://localhost:9000/health/ready || exit 1" ]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
     ports:
       - "${KEYCLOAK_PORT}:8080"
     depends_on:
