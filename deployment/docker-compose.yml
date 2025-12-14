@@ -87,7 +87,7 @@ services:
     build:
       context: ../keycloak
       dockerfile: Dockerfile
-    command: start --import-realm --health-enabled=true
+    command: start --import-realm
     container_name: keycloak
     restart: unless-stopped
     environment:
@@ -108,14 +108,13 @@ services:
       KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
       KC_HOSTNAME_STRICT: "false"
 
-      QUARKUS_SMALLRYE_HEALTH_ENABLED: "true"
-      QUARKUS_SMALLRYE_HEALTH_ROOT_PATH: "/health"
+      KC_HEALTH_ENABLED: "true"
 
       CLIENT_SECRET: ${CLIENT_SECRET}
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
     healthcheck:
-      test: [ "CMD-SHELL", "timeout 1 bash -c '</dev/tcp/127.0.0.1/9000' || exit 1" ]
+      test: [ "CMD-SHELL", "timeout 1 bash -c '</dev/tcp/127.0.0.1/8080' || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 5
