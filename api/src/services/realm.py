@@ -489,6 +489,7 @@ def list_groups_in_realm(realm: str) -> dict:
 
 def create_group_in_realm(realm: str, group_name: str, session: Session) -> UserGroup:
     """Create a group in the realm."""
+    group: UserGroup | None = None
     try:
         response = _admin.create_group(session, realm, group_name)
         if response.status_code not in (201, 204):
@@ -503,10 +504,15 @@ def create_group_in_realm(realm: str, group_name: str, session: Session) -> User
                 detail="Failed to retrieve group location from Keycloak",
             )
         group_id = location.rstrip("/").split("/")[-1]
-        group = UserGroup(keycloak_id=group_id)
-        session.add(group)
-        session.commit()
-        session.refresh(group)
+        # Upsert locally to avoid duplicate key errors
+        existing_local = session.get(UserGroup, group_id)
+        if existing_local:
+            group = existing_local
+        else:
+            group = UserGroup(keycloak_id=group_id)
+            session.add(group)
+            session.commit()
+            session.refresh(group)
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
@@ -521,10 +527,10 @@ def create_group_in_realm(realm: str, group_name: str, session: Session) -> User
             _ensure_realm(session, realm, f"{realm}.local")
             if group_id and not session.get(UserGroup, group_id):
                 session.add(UserGroup(keycloak_id=group_id))
-            session.commit()
+                session.commit()
     except Exception:
         pass
-    return group
+    return group or UserGroup(keycloak_id=group_id if 'group_id' in locals() else "")
 
 
 def add_user_to_group_in_realm(realm: str, user_id: str, group_id: str) -> None:

@@ -119,42 +119,37 @@ export default function NewUserGroup() {
     try {
       // Create the group first
       await createGroup(realm, groupName, keycloak.token || undefined);
-      const groupsRes = await fetchGroups(realm, keycloak.token || undefined);
-      const created = (groupsRes.groups || []).find(
-        (g) => g.name === groupName
-      );
+      let createdId: string | null = null;
+      try {
+        const groupsRes = await fetchGroups(realm, keycloak.token || undefined);
+        const created = (groupsRes.groups || []).find((g) => g.name === groupName);
+        createdId = created?.id || null;
+      } catch (err) {
+        console.warn("Group created but failed to refresh groups", err);
+        // Keep going; we still consider the creation successful.
+      }
 
-      if (created?.id) {
+      if (createdId) {
         let createdCount = 0;
         let addedCount = 0;
 
         for (const m of selectedMembers) {
           try {
             // Check if this is an existing user (has a valid UUID) or a CSV import (no valid UUID)
-            const isExistingUser =
-              m.id && m.id.includes("-") && m.id.length > 30;
+            const isExistingUser = m.id && m.id.includes("-") && m.id.length > 30;
 
             if (isExistingUser) {
-              // Existing user - just add to group
-              await addUserToGroup(
-                realm,
-                created.id,
-                m.id,
-                keycloak.token || undefined
-              );
+              await addUserToGroup(realm, createdId, m.id, keycloak.token || undefined);
               addedCount++;
             } else {
-              // CSV imported user - create user first, then add to group
-              const username =
-                m.email?.split("@")[0] ||
-                m.name.toLowerCase().replace(/\s+/g, ".");
+              const username = m.email?.split("@")[0] || m.name.toLowerCase().replace(/\s+/g, ".");
               const result = await createUser(
                 realm,
                 username,
                 m.name,
                 m.email,
                 "DEFAULT_USER",
-                created.id, // Add directly to the group
+                createdId,
                 keycloak.token || undefined
               );
               if (result.status === "created") {
@@ -178,7 +173,8 @@ export default function NewUserGroup() {
       setSelectedMembers([]);
     } catch (err) {
       console.error(err);
-      setStatus("Failed to create group.");
+      const message = err instanceof Error ? err.message : "Failed to create group.";
+      setStatus(message);
     } finally {
       setIsLoading(false);
     }

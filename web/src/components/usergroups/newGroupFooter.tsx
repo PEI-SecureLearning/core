@@ -28,7 +28,8 @@ function NewGroupFooter({
   isLoading,
   status
 }: NewGroupFooterProps) {
-  const isDisabled = !groupName || selectedMembersCount === 0 || isLoading;
+  // Allow creating a group without pre-selecting users; only block when no name or loading.
+  const isDisabled = !groupName || isLoading;
 
   return (
     <div className="flex flex-col gap-3 px-6 relative z-10">
