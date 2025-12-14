@@ -146,6 +146,34 @@ class CampaignService:
 
         return campaign
 
+    def delete_campaign(
+        self, id: int, current_realm: str, session: Session
+    ) -> str:
+        """Delete a campaign and all its associated email sendings.
+
+        Returns the campaign name for confirmation.
+        """
+        campaign = session.exec(
+            select(Campaign).where(
+                Campaign.id == id, Campaign.realm_name == current_realm
+            )
+        ).first()
+
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        campaign_name = campaign.name
+
+        # Delete all associated email sendings first
+        for sending in campaign.email_sendings:
+            session.delete(sending)
+
+        # Delete the campaign
+        session.delete(campaign)
+        session.commit()
+
+        return campaign_name
+
     def get_global_stats(
         self, current_realm: str, session: Session
     ) -> CampaignGlobalStats:

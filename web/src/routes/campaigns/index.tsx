@@ -151,11 +151,10 @@ function GlassDropdown({ value, onChange, options }: GlassDropdownProps) {
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${
-                value === option.value
+              className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${value === option.value
                   ? "text-purple-600 bg-purple-500/10"
                   : "text-slate-600 hover:bg-white/40"
-              }`}
+                }`}
             >
               {option.label}
             </button>
@@ -395,16 +394,16 @@ function CampaignsPage() {
                 const clickRate =
                   campaign.stats.sent > 0
                     ? (
-                        (campaign.stats.clicked / campaign.stats.sent) *
-                        100
-                      ).toFixed(1)
+                      (campaign.stats.clicked / campaign.stats.sent) *
+                      100
+                    ).toFixed(1)
                     : "0";
                 const openRate =
                   campaign.stats.sent > 0
                     ? (
-                        (campaign.stats.opened / campaign.stats.sent) *
-                        100
-                      ).toFixed(1)
+                      (campaign.stats.opened / campaign.stats.sent) *
+                      100
+                    ).toFixed(1)
                     : "0";
 
                 return (
@@ -466,7 +465,7 @@ function CampaignsPage() {
                         </span>
                       </div>
                     </td>
-                   <td className="px-6 py-4 w-[10%]">
+                    <td className="px-6 py-4 w-[10%]">
                       <div className="relative inline-block text-left">
                         <details className="group">
                           <summary className="list-none p-2 hover:bg-slate-100/80 rounded-lg transition-colors duration-150 cursor-pointer flex items-center justify-center">
@@ -553,7 +552,32 @@ function CampaignsPage() {
                             </button>
                             <button
                               className="w-full text-left px-4 py-2 text-[13px] text-rose-600 hover:bg-rose-50"
-                              onClick={() => setCampaigns((prev) => prev.filter((c) => c.id !== campaign.id))}
+                              onClick={async () => {
+                                if (!confirm(`Are you sure you want to delete "${campaign.name}"? This action cannot be undone.`)) {
+                                  return;
+                                }
+                                try {
+                                  const realm = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1];
+                                  if (!realm) {
+                                    alert("Could not resolve realm from token.");
+                                    return;
+                                  }
+                                  const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${campaign.id}`, {
+                                    method: "DELETE",
+                                    headers: {
+                                      Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+                                    },
+                                  });
+                                  if (!res.ok) {
+                                    const text = await res.text();
+                                    throw new Error(text || `Failed to delete campaign (${res.status})`);
+                                  }
+                                  setCampaigns((prev) => prev.filter((c) => c.id !== campaign.id));
+                                } catch (err) {
+                                  console.error("Failed to delete campaign", err);
+                                  alert(err instanceof Error ? err.message : "Failed to delete campaign");
+                                }
+                              }}
                             >
                               Delete
                             </button>

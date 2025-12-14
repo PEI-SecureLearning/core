@@ -146,6 +146,21 @@ async def get_realm_campaign_detail(
     }
 
 
+@router.delete(
+    "/{realm}/campaigns/{campaign_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(valid_resource_access("org_manager"))],
+)
+def delete_realm_campaign(
+    realm: str, campaign_id: int, session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
+    """Delete a campaign from the realm using the user's token."""
+    _validate_realm_access(token, realm)
+    service = CampaignService()
+    service.delete_campaign(campaign_id, realm, session)
+    return None
+
+
 @router.post("/upload", dependencies=[Depends(valid_resource_access("org_manager"))])
 def upload_user_csv(file: UploadFile = File(...)):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
