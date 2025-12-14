@@ -61,15 +61,15 @@ export const TimelineRow = memo(function TimelineRow({
         <div className="flex items-center gap-3 text-[11px] text-slate-400">
           <div className="flex items-center gap-1" title="Sent">
             <Mail size={12} />
-            <span>{campaign.total_sent || 0}</span>
+            <span>{campaign.total_sent ?? 0}</span>
           </div>
           <div className="flex items-center gap-1" title="Opened">
             <Eye size={12} />
-            <span>{campaign.total_opened || 0}</span>
+            <span>{campaign.total_opened ?? 0}</span>
           </div>
           <div className="flex items-center gap-1" title="Clicked">
             <MousePointer size={12} />
-            <span>{campaign.total_clicked || 0}</span>
+            <span>{campaign.total_clicked ?? 0}</span>
           </div>
         </div>
       </div>

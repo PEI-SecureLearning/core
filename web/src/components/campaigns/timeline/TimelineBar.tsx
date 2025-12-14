@@ -12,7 +12,6 @@ interface TimelineBarProps {
 // Mapeamento atualizado para os status do Backend Python
 const statusColors: Record<CampaignStatus, { bg: string; border: string }> = {
   running: {
-    // Antigo "active"
     bg: "bg-gradient-to-r from-blue-400 to-blue-500",
     border: "border-blue-400/30",
   },
@@ -25,7 +24,6 @@ const statusColors: Record<CampaignStatus, { bg: string; border: string }> = {
     border: "border-emerald-400/30",
   },
   canceled: {
-    // Novo status
     bg: "bg-gradient-to-r from-slate-300 to-slate-400",
     border: "border-slate-400/30",
   },

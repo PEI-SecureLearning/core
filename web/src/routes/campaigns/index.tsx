@@ -1,7 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import { Plus, Search, ChevronDown, Calendar, Mail, Globe, MoreVertical, Play, Pause, CheckCircle, XCircle, Clock, CalendarRange } from "lucide-react";
+import {
+  Plus,
+  Search,
+  ChevronDown,
+  Calendar,
+  Mail,
+  Globe,
+  MoreVertical,
+  Play,
+  CheckCircle,
+  XCircle,
+  Clock,
+  CalendarRange,
+} from "lucide-react";
 
 type ApiCampaignStatus = "scheduled" | "running" | "completed" | "canceled";
 
@@ -23,7 +36,7 @@ interface Campaign {
   description: string;
   begin_date: string;
   end_date: string;
-  status: "active" | "completed" | "scheduled" | "paused" | "failed";
+  status: "scheduled" | "running" | "completed" | "canceled";
   stats: { sent: number; opened: number; clicked: number };
 }
 
@@ -41,21 +54,21 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
 function mapStatus(status: ApiCampaignStatus): Campaign["status"] {
   switch (status) {
     case "running":
-      return "active";
+      return "running";
     case "completed":
       return "completed";
     case "scheduled":
       return "scheduled";
     case "canceled":
-      return "paused";
+      return "canceled";
     default:
-      return "failed";
+      return "scheduled";
   }
 }
 
 const statusConfig = {
-  active: {
-    label: "Active",
+  running: {
+    label: "Running",
     color: "text-emerald-600",
     bg: "bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/20",
     Icon: Play,
@@ -72,16 +85,10 @@ const statusConfig = {
     bg: "bg-amber-500/10 backdrop-blur-sm border border-amber-500/20",
     Icon: Clock,
   },
-  paused: {
-    label: "Paused",
-    color: "text-slate-600",
-    bg: "bg-slate-500/10 backdrop-blur-sm border border-slate-500/20",
-    Icon: Pause,
-  },
-  failed: {
-    label: "Failed",
-    color: "text-rose-600",
-    bg: "bg-rose-500/10 backdrop-blur-sm border border-rose-500/20",
+  canceled: {
+    label: "Canceled",
+    color: "text-slate-500",
+    bg: "bg-slate-400/10 backdrop-blur-sm border border-slate-400/20",
     Icon: XCircle,
   },
 };
@@ -152,8 +159,8 @@ function GlassDropdown({ value, onChange, options }: GlassDropdownProps) {
                 setIsOpen(false);
               }}
               className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${value === option.value
-                  ? "text-purple-600 bg-purple-500/10"
-                  : "text-slate-600 hover:bg-white/40"
+                ? "text-purple-600 bg-purple-500/10"
+                : "text-slate-600 hover:bg-white/40"
                 }`}
             >
               {option.label}
@@ -176,14 +183,20 @@ function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
   const [emailTemplate, setEmailTemplate] = useState<TemplateDoc | null>(null);
-  const [landingTemplate, setLandingTemplate] = useState<TemplateDoc | null>(null);
+  const [landingTemplate, setLandingTemplate] = useState<TemplateDoc | null>(
+    null
+  );
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
 
   useEffect(() => {
-    const realm = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1];
+    const realm = (
+      keycloak.tokenParsed as { iss?: string } | undefined
+    )?.iss?.split("/realms/")[1];
     if (!realm) {
       setError("Could not resolve realm from token.");
       return;
@@ -192,16 +205,19 @@ function CampaignsPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns`, {
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-          },
-        });
+        const res = await fetch(
+          `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns`,
+          {
+            headers: {
+              Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+            },
+          }
+        );
         if (!res.ok) {
           const text = await res.text();
           throw new Error(text || `Failed to load campaigns (${res.status})`);
         }
-        const data = await res.json() as { campaigns: ApiCampaign[] };
+        const data = (await res.json()) as { campaigns: ApiCampaign[] };
         const mapped: Campaign[] = (data.campaigns || []).map((c) => ({
           id: String(c.id),
           name: c.name,
@@ -218,7 +234,9 @@ function CampaignsPage() {
         setCampaigns(mapped);
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : "Failed to load campaigns");
+        setError(
+          err instanceof Error ? err.message : "Failed to load campaigns"
+        );
       } finally {
         setLoading(false);
       }
@@ -236,11 +254,19 @@ function CampaignsPage() {
   });
 
   const totalCampaigns = campaigns.length;
-  const activeCampaigns = campaigns.filter(c => c.status === "active").length;
+  const activeCampaigns = campaigns.filter((c) => c.status === "active").length;
   const totalEmailsSent = campaigns.reduce((acc, c) => acc + c.stats.sent, 0);
+  // Calculate average click rate as (total clicks / total sent) * 100
+  const totalClicks = campaigns.reduce((acc, c) => acc + c.stats.clicked, 0);
+  const avgClickRate =
+    totalEmailsSent > 0
+      ? ((totalClicks / totalEmailsSent) * 100).toFixed(1)
+      : "0.0";
 
   if (loading) {
-    return <div className="p-8 text-slate-600 text-sm">Loading campaigns...</div>;
+    return (
+      <div className="p-8 text-slate-600 text-sm">Loading campaigns...</div>
+    );
   }
 
   if (error) {
@@ -348,7 +374,7 @@ function CampaignsPage() {
             Avg Click Rate
           </p>
           <p className="text-3xl font-semibold text-amber-600 mt-1.5 tracking-tight">
-            13%
+            {avgClickRate}%
           </p>
         </div>
       </div>
@@ -469,87 +495,18 @@ function CampaignsPage() {
                       <div className="relative inline-block text-left">
                         <details className="group">
                           <summary className="list-none p-2 hover:bg-slate-100/80 rounded-lg transition-colors duration-150 cursor-pointer flex items-center justify-center">
-                            <MoreVertical size={16} className="text-slate-400 group-hover:text-slate-600" />
+                            <MoreVertical
+                              size={16}
+                              className="text-slate-400 group-hover:text-slate-600"
+                            />
                           </summary>
                           <div className="absolute right-0 mt-2 w-40 rounded-xl bg-white shadow-lg border border-slate-200/70 z-10 py-1">
-                            <button
-                              className="w-full text-left px-4 py-2 text-[13px] text-slate-700 hover:bg-slate-50"
-                              onClick={async () => {
-                                setSelectedCampaign(campaign);
-                                setDetailLoading(true);
-                                setEmailTemplate(null);
-                                setLandingTemplate(null);
-                                setDetailError(null);
-                                try {
-                                  const realm = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1];
-                                  if (!realm) {
-                                    setDetailError("Could not resolve realm from token.");
-                                    return;
-                                  }
-                                  const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${campaign.id}`, {
-                                    headers: {
-                                      Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-                                    },
-                                  });
-                                  if (!res.ok) {
-                                    const text = await res.text();
-                                    throw new Error(text || `Failed to load campaign (${res.status})`);
-                                  }
-                                  const data = await res.json() as {
-                                    email_template?: { content_link?: string | null; name?: string | null; subject?: string | null };
-                                    landing_page_template?: { content_link?: string | null; name?: string | null };
-                                  };
-                                  // Fetch from templates API using content_link ids stored in Postgres
-                                  if (data.email_template?.content_link) {
-                                    try {
-                                      const tRes = await fetch(`${API_BASE}/templates/${data.email_template.content_link}`, {
-                                        headers: keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : undefined,
-                                      });
-                                      if (tRes.ok) {
-                                        const tmpl = await tRes.json();
-                                        setEmailTemplate({
-                                          id: tmpl.id,
-                                          name: tmpl.name,
-                                          subject: tmpl.subject,
-                                          description: tmpl.description,
-                                          html: tmpl.html,
-                                          path: tmpl.path,
-                                        });
-                                      }
-                                    } catch (e) {
-                                      console.error("Failed to fetch email template", e);
-                                    }
-                                  }
-                                  if (data.landing_page_template?.content_link) {
-                                    try {
-                                      const lpRes = await fetch(`${API_BASE}/templates/${data.landing_page_template.content_link}`, {
-                                        headers: keycloak.token ? { Authorization: `Bearer ${keycloak.token}` } : undefined,
-                                      });
-                                      if (lpRes.ok) {
-                                        const tmpl = await lpRes.json();
-                                        setLandingTemplate({
-                                          id: tmpl.id,
-                                          name: tmpl.name,
-                                          subject: tmpl.subject,
-                                          description: tmpl.description,
-                                          html: tmpl.html,
-                                          path: tmpl.path,
-                                        });
-                                      }
-                                    } catch (e) {
-                                      console.error("Failed to fetch landing template", e);
-                                    }
-                                  }
-                                } catch (err) {
-                                  console.error("Failed to load campaign templates", err);
-                                  setDetailError(err instanceof Error ? err.message : "Failed to load campaign details");
-                                } finally {
-                                  setDetailLoading(false);
-                                }
-                              }}
+                            <Link
+                              to={`/campaigns/${campaign.id}`}
+                              className="w-full text-left px-4 py-2 text-[13px] text-slate-700 hover:bg-slate-50 block"
                             >
-                              View details
-                            </button>
+                              View Details
+                            </Link>
                             <button
                               className="w-full text-left px-4 py-2 text-[13px] text-rose-600 hover:bg-rose-50"
                               onClick={async () => {
@@ -597,8 +554,12 @@ function CampaignsPage() {
             <div className="bg-white rounded-2xl shadow-2xl w-full h-full max-w-5xl border border-slate-200 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
                 <div>
-                  <p className="text-xs uppercase text-slate-400 tracking-wide">Campaign Details</p>
-                  <h2 className="text-lg font-semibold text-slate-900">{selectedCampaign.name}</h2>
+                  <p className="text-xs uppercase text-slate-400 tracking-wide">
+                    Campaign Details
+                  </p>
+                  <h2 className="text-lg font-semibold text-slate-900">
+                    {selectedCampaign.name}
+                  </h2>
                 </div>
                 <button
                   className="text-slate-500 hover:text-slate-700"
@@ -609,39 +570,75 @@ function CampaignsPage() {
               </div>
               <div className="flex-1 overflow-y-auto">
                 <div className="p-5 space-y-4 text-sm text-slate-700">
-                  <p><span className="font-medium text-slate-600">Description:</span> {selectedCampaign.description || "No description"}</p>
-                  <p><span className="font-medium text-slate-600">Start:</span> {new Date(selectedCampaign.begin_date).toLocaleString()}</p>
-                  <p><span className="font-medium text-slate-600">End:</span> {new Date(selectedCampaign.end_date).toLocaleString()}</p>
-                  <p><span className="font-medium text-slate-600">Status:</span> {statusConfig[selectedCampaign.status].label}</p>
+                  <p>
+                    <span className="font-medium text-slate-600">
+                      Description:
+                    </span>{" "}
+                    {selectedCampaign.description || "No description"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-600">Start:</span>{" "}
+                    {new Date(selectedCampaign.begin_date).toLocaleString()}
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-600">End:</span>{" "}
+                    {new Date(selectedCampaign.end_date).toLocaleString()}
+                  </p>
+                  <p>
+                    <span className="font-medium text-slate-600">Status:</span>{" "}
+                    {statusConfig[selectedCampaign.status].label}
+                  </p>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="bg-slate-50 rounded-xl p-3">
-                      <p className="text-[11px] uppercase text-slate-400">Sent</p>
-                      <p className="text-base font-semibold text-slate-900">{selectedCampaign.stats.sent}</p>
+                      <p className="text-[11px] uppercase text-slate-400">
+                        Sent
+                      </p>
+                      <p className="text-base font-semibold text-slate-900">
+                        {selectedCampaign.stats.sent}
+                      </p>
                     </div>
                     <div className="bg-slate-50 rounded-xl p-3">
-                      <p className="text-[11px] uppercase text-slate-400">Opened</p>
-                      <p className="text-base font-semibold text-slate-900">{selectedCampaign.stats.opened}</p>
+                      <p className="text-[11px] uppercase text-slate-400">
+                        Opened
+                      </p>
+                      <p className="text-base font-semibold text-slate-900">
+                        {selectedCampaign.stats.opened}
+                      </p>
                     </div>
                     <div className="bg-slate-50 rounded-xl p-3">
-                      <p className="text-[11px] uppercase text-slate-400">Clicked</p>
-                      <p className="text-base font-semibold text-slate-900">{selectedCampaign.stats.clicked}</p>
+                      <p className="text-[11px] uppercase text-slate-400">
+                        Clicked
+                      </p>
+                      <p className="text-base font-semibold text-slate-900">
+                        {selectedCampaign.stats.clicked}
+                      </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 h-full">
-                      <p className="text-xs uppercase text-slate-400 mb-2">Email Template</p>
+                      <p className="text-xs uppercase text-slate-400 mb-2">
+                        Email Template
+                      </p>
                       {detailLoading ? (
                         <p className="text-slate-500 text-sm">Loading...</p>
                       ) : detailError ? (
                         <p className="text-rose-600 text-sm">{detailError}</p>
                       ) : emailTemplate ? (
                         <div className="space-y-2">
-                          <p className="font-semibold text-slate-900">{emailTemplate.name}</p>
-                          <p className="text-slate-600 text-sm">{emailTemplate.subject}</p>
+                          <p className="font-semibold text-slate-900">
+                            {emailTemplate.name}
+                          </p>
+                          <p className="text-slate-600 text-sm">
+                            {emailTemplate.subject}
+                          </p>
                           {emailTemplate.html && (
                             <div className="border rounded-lg p-2 bg-white max-h-48 overflow-auto">
-                              <div dangerouslySetInnerHTML={{ __html: emailTemplate.html }} />
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: emailTemplate.html,
+                                }}
+                              />
                             </div>
                           )}
                         </div>
@@ -651,17 +648,25 @@ function CampaignsPage() {
                     </div>
 
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 h-full">
-                      <p className="text-xs uppercase text-slate-400 mb-2">Landing Page Template</p>
+                      <p className="text-xs uppercase text-slate-400 mb-2">
+                        Landing Page Template
+                      </p>
                       {detailLoading ? (
                         <p className="text-slate-500 text-sm">Loading...</p>
                       ) : detailError ? (
                         <p className="text-rose-600 text-sm">{detailError}</p>
                       ) : landingTemplate ? (
                         <div className="space-y-2">
-                          <p className="font-semibold text-slate-900">{landingTemplate.name}</p>
+                          <p className="font-semibold text-slate-900">
+                            {landingTemplate.name}
+                          </p>
                           {landingTemplate.html && (
                             <div className="border rounded-lg p-2 bg-white max-h-48 overflow-auto">
-                              <div dangerouslySetInnerHTML={{ __html: landingTemplate.html }} />
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: landingTemplate.html,
+                                }}
+                              />
                             </div>
                           )}
                         </div>
