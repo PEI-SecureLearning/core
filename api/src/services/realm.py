@@ -136,10 +136,20 @@ def create_realm_in_keycloak(realm: RealmCreate, session: Session) -> RealmCreat
                 uid = u.get("id")
                 if not uid:
                     continue
-                _upsert_user(session, uid, u.get("email"))
+                roles = u.get("realmRoles") or []
+                if not roles:
+                    try:
+                        roles = _admin.get_user_realm_roles(realm.name, uid)
+                    except Exception:
+                        roles = []
+                is_org_manager = (
+                    any(str(r.get("name", r)).upper() == "ORG_MANAGER" for r in roles)
+                    if isinstance(roles, list)
+                    else False
+                )
+                _upsert_user(session, uid, u.get("email"), is_org_manager=is_org_manager)
             session.commit()
         except Exception:
-            # If user sync fails, continue; can be retried later
             pass
 
     return realm
@@ -182,21 +192,32 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
             uid = u.get("id")
             if not uid:
                 continue
+            roles = u.get("realmRoles") or []
+            if not roles:
+                try:
+                    roles = _admin.get_user_realm_roles(realm_in.name, uid)
+                except Exception:
+                    roles = []
+            is_org_manager = (
+                any(str((r.get("name", r) if isinstance(r, dict) else r)).upper() == "ORG_MANAGER" for r in roles)
+                if isinstance(roles, list)
+                else False
+            )
             existing_user = session.get(User, uid)
             if existing_user:
-                # Update basic fields
                 if u.get("email"):
                     existing_user.email = u["email"]
+                existing_user.is_org_manager = is_org_manager
             else:
                 session.add(
                     User(
                         keycloak_id=uid,
                         email=u.get("email") or "",
+                        is_org_manager=is_org_manager,
                     )
                 )
         session.commit()
     except Exception:
-        # If Keycloak lookup fails, still return; users can sync later
         pass
 
     return db_realm
@@ -247,7 +268,7 @@ def create_user_in_realm(
     if location:
         user_id = location.rstrip("/").split("/")[-1]
 
-        user = User(keycloak_id=user_id, email=email)
+        user = User(keycloak_id=user_id, email=email, is_org_manager=(role or "").strip().upper() == "ORG_MANAGER")
         session.add(user)
         session.commit()
         session.refresh(user)
@@ -278,7 +299,18 @@ def create_user_in_realm(
     if user_id:
         with Session(engine) as session:
             _ensure_realm(session, realm, f"{realm}.local")
-            _upsert_user(session, user_id, email)
+            existing = session.get(User, user_id)
+            if existing:
+                existing.email = email
+                existing.is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"
+            else:
+                session.add(
+                    User(
+                        keycloak_id=user_id,
+                        email=email,
+                        is_org_manager=(role or "").strip().upper() == "ORG_MANAGER",
+                    )
+                )
             session.commit()
 
     return {
@@ -299,20 +331,60 @@ def list_users_in_realm(realm: str) -> dict:
         raise HTTPException(
             status_code=500, detail=f"Failed to communicate with Keycloak: {str(e)}"
         )
-    # Return simplified fields
     simplified = []
+    org_managers = []
+    # Load org_manager flag from DB, but also respect inline realmRoles and persist them back.
+    db_flags: dict[str, bool] = {}
+    with Session(engine) as session:
+        db_flags = {u.keycloak_id: u.is_org_manager for u in session.exec(select(User)).all()}
+
     for u in users:
-        simplified.append(
-            {
-                "id": u.get("id"),
-                "username": u.get("username"),
-                "email": u.get("email"),
-                "firstName": u.get("firstName"),
-                "lastName": u.get("lastName"),
-                "enabled": u.get("enabled"),
-            }
-        )
-    return {"realm": realm, "users": simplified}
+        uid = u.get("id")
+        # Start from DB flag
+        is_org_manager = db_flags.get(uid, False) if uid else False
+        # Inline roles in list_users payload
+        roles_inline = u.get("realmRoles") or []
+        if isinstance(roles_inline, list) and any(str(r).upper() == "ORG_MANAGER" for r in roles_inline):
+            is_org_manager = True
+        # Fallback: explicitly ask Keycloak for realm roles when we still don't know
+        if not is_org_manager and uid:
+            try:
+                user_roles = _admin.get_user_realm_roles(realm, uid)
+                if any(str((r.get("name", r) if isinstance(r, dict) else r)).upper() == "ORG_MANAGER" for r in user_roles):
+                    is_org_manager = True
+            except Exception:
+                pass
+        record = {
+            "id": uid,
+            "username": u.get("username"),
+            "email": u.get("email"),
+            "firstName": u.get("firstName"),
+            "lastName": u.get("lastName"),
+            "email_verified": u.get("emailVerified"),
+            "enabled": u.get("enabled"),
+            "is_org_manager": is_org_manager,
+        }
+        simplified.append(record)
+        if is_org_manager:
+            org_managers.append(record)
+
+        # Persist the flag for consistency
+        if uid:
+            with Session(engine) as session:
+                existing = session.get(User, uid)
+                if existing:
+                    existing.is_org_manager = is_org_manager
+                    if record["email"]:
+                        existing.email = record["email"]
+                else:
+                    session.add(User(keycloak_id=uid, email=record["email"] or "", is_org_manager=is_org_manager))
+                session.commit()
+    try:
+        total = _admin.get_user_count(realm)
+    except Exception:
+        total = len(simplified)
+    print(f"[realm:list_users_in_realm] users={simplified}")
+    return {"realm": realm, "total": total, "users": simplified, "org_managers": org_managers}
 
 
 def get_user_in_realm(realm: str, user_id: str) -> dict:
@@ -342,6 +414,41 @@ def get_user_in_realm(realm: str, user_id: str) -> dict:
 
 def delete_user_in_realm(realm: str, user_id: str, session: Session) -> None:
     """Delete a user from the realm."""
+    # Prevent deleting the last org manager
+    try:
+        roles = _admin.get_user_realm_roles(realm, user_id)
+    except Exception:
+        roles = []
+    is_target_org_manager = any(
+        str((r.get("name", r) if isinstance(r, dict) else r)).upper() == "ORG_MANAGER"
+        for r in (roles or [])
+    )
+    if is_target_org_manager:
+        try:
+            kc_users = _admin.list_users(realm)
+        except Exception:
+            kc_users = []
+        org_count = 0
+        for u in kc_users:
+            uid = u.get("id")
+            if not uid:
+                continue
+            inline = u.get("realmRoles") or []
+            has_role = any(str(r).upper() == "ORG_MANAGER" for r in inline) if isinstance(inline, list) else False
+            if not has_role:
+                try:
+                    user_roles = _admin.get_user_realm_roles(realm, uid)
+                    has_role = any(
+                        str((r.get("name", r) if isinstance(r, dict) else r)).upper() == "ORG_MANAGER"
+                        for r in (user_roles or [])
+                    )
+                except Exception:
+                    has_role = False
+            if has_role:
+                org_count += 1
+        if org_count <= 1:
+            raise HTTPException(status_code=400, detail="Cannot delete the last org manager.")
+
     try:
         _admin.delete_user(session, realm, user_id)
     except Exception as e:
@@ -501,10 +608,61 @@ def _ensure_realm(session: Session, realm_name: str, domain: str | None = None) 
     session.commit()
 
 
-def _upsert_user(session: Session, keycloak_id: str, email: str | None) -> None:
+def _upsert_user(session: Session, keycloak_id: str, email: str | None, is_org_manager: bool = False) -> None:
     existing = session.get(User, keycloak_id)
     if existing:
         if email:
             existing.email = email
+        existing.is_org_manager = is_org_manager
     else:
-        session.add(User(keycloak_id=keycloak_id, email=email or ""))
+        session.add(User(keycloak_id=keycloak_id, email=email or "", is_org_manager=is_org_manager))
+
+
+def get_realm_info(realm_name: str) -> dict | None:
+    """Return realm metadata plus users for admin/management views."""
+    try:
+        realm = _admin.get_realm(realm_name)
+        if not realm:
+            return None
+
+        features = _admin.get_realm_features(realm_name)
+        domain = _admin.get_domain_for_realm(realm_name)
+
+        try:
+            users = list_users_in_realm(realm_name).get("users", [])
+        except Exception:
+            users = []
+
+        return {
+            "realm": realm.get("realm") or realm_name,
+            "displayName": realm.get("displayName") or realm_name,
+            "enabled": realm.get("enabled", True),
+            "domain": domain,
+            "features": features,
+            "user_count": len(users),
+            "users": users,
+        }
+    except Exception:
+        return None
+
+
+def update_user_role_in_realm(
+    realm: str, user_id: str, new_role: str
+) -> None:
+    """Update a user's role in the realm."""
+    try:
+        # First, remove all existing realm roles
+        existing_roles = _admin.get_user_realm_roles(realm, user_id)
+        for r in existing_roles:
+            role_name = r.get("name") if isinstance(r, dict) else str(r)
+            _admin.remove_realm_role_from_user(realm, user_id, role_name)
+
+        # Then, assign the new role
+        if new_role:
+            _admin.assign_realm_role_to_user(realm, user_id, new_role)
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=500, detail=f"Failed to update user role: {str(e)}"
+        )
