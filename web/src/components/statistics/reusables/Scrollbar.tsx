@@ -1,8 +1,14 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, type ReactNode } from 'react';
 
-export default function CustomScrollbar({ children, className = "", maxHeight = "16rem" }) {
-  const scrollRef = useRef(null);
-  const trackRef = useRef(null);
+interface CustomScrollbarProps {
+  children: ReactNode;
+  className?: string;
+  maxHeight?: string;
+}
+
+export default function CustomScrollbar({ children, className = "", maxHeight = "16rem" }: CustomScrollbarProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [thumbHeight, setThumbHeight] = useState(0);
   const [thumbTop, setThumbTop] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -11,19 +17,19 @@ export default function CustomScrollbar({ children, className = "", maxHeight = 
     const scrollEl = scrollRef.current;
     const trackEl = trackRef.current;
     if (!scrollEl || !trackEl) return;
-    
+
     const trackHeight = trackEl.offsetHeight;
     const scrollRatio = scrollEl.clientHeight / scrollEl.scrollHeight;
     const calculatedThumbHeight = Math.max(trackHeight * scrollRatio, 40);
-    
+
     const scrollPercentage = scrollEl.scrollTop / (scrollEl.scrollHeight - scrollEl.clientHeight);
     const calculatedThumbTop = scrollPercentage * (trackHeight - calculatedThumbHeight);
-    
+
     setThumbHeight(calculatedThumbHeight);
     setThumbTop(calculatedThumbTop);
   };
 
-  const handleTrackClick = (e) => {
+  const handleTrackClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const trackEl = trackRef.current;
     const scrollEl = scrollRef.current;
     if (!trackEl || !scrollEl) return;
@@ -32,20 +38,20 @@ export default function CustomScrollbar({ children, className = "", maxHeight = 
     const clickY = e.clientY - rect.top;
     const trackHeight = trackEl.offsetHeight;
     const scrollPercentage = clickY / trackHeight;
-    
+
     scrollEl.scrollTop = scrollPercentage * (scrollEl.scrollHeight - scrollEl.clientHeight);
   };
 
-  const handleThumbMouseDown = (e) => {
+  const handleThumbMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      
+
       const trackEl = trackRef.current;
       const scrollEl = scrollRef.current;
       if (!trackEl || !scrollEl) return;
@@ -54,7 +60,7 @@ export default function CustomScrollbar({ children, className = "", maxHeight = 
       const mouseY = e.clientY - rect.top;
       const trackHeight = trackEl.offsetHeight;
       const scrollPercentage = Math.max(0, Math.min(1, mouseY / trackHeight));
-      
+
       scrollEl.scrollTop = scrollPercentage * (scrollEl.scrollHeight - scrollEl.clientHeight);
     };
 
@@ -81,36 +87,36 @@ export default function CustomScrollbar({ children, className = "", maxHeight = 
 
   return (
     <div className={`relative flex gap-4 ${className}`}>
-      <div 
-        ref={trackRef} 
+      <div
+        ref={trackRef}
         onClick={handleTrackClick}
-        className="relative w-1 bg-gray-200 rounded-full flex-shrink-0 cursor-pointer" 
+        className="relative w-1 bg-gray-200 rounded-full flex-shrink-0 cursor-pointer"
         style={{ minHeight: maxHeight }}
       >
-        <div 
+        <div
           onMouseDown={handleThumbMouseDown}
           className="absolute left-0 w-full bg-purple-600 rounded-full transition-all duration-150 cursor-grab active:cursor-grabbing"
-          style={{ 
+          style={{
             height: `${thumbHeight}px`,
             top: `${thumbTop}px`,
             transition: isDragging ? 'none' : 'all 0.15s'
           }}
         />
       </div>
-      
-      <div 
+
+      <div
         ref={scrollRef}
         onScroll={updateScrollbar}
         className="flex-1 overflow-y-auto pr-2 scrollbar-hide"
-        style={{ 
+        style={{
           maxHeight,
-          scrollbarWidth: 'none', 
-          msOverflowStyle: 'none' 
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
         }}
       >
         {children}
       </div>
-      
+
       <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;

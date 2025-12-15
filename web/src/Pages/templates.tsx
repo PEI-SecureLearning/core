@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Layers, RefreshCcw, Plus } from "lucide-react";
+import { RefreshCcw, Plus } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

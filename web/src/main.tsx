@@ -9,9 +9,12 @@ import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
 
-const initOptions = {
+// PKCE requires Web Crypto API which is only available in secure contexts (https or localhost)
+const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
+
+const initOptions: Keycloak.KeycloakInitOptions = {
   onLoad: "login-required",
-  pkceMethod: "S256",
+  pkceMethod: isSecureContext ? "S256" : undefined,
   checkLoginIframe: false,
 };
 
@@ -31,7 +34,7 @@ import { ServiceUnavailable } from './components/ServiceUnavailable'
 import ErrorBoundary from './components/ErrorBoundary'
 
 const App = () => {
-  const [isError, setIsError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -46,7 +49,8 @@ const App = () => {
         // Let's assume the instance has the config we passed.
         // Actually, keycloak-js instance usually has 'authServerUrl' set from config.
 
-        const response = await fetch(`${keycloak.authServerUrl}/realms/${keycloak.realm}/.well-known/openid-configuration`, {
+        const url = `${keycloak.authServerUrl}/realms/${keycloak.realm}/.well-known/openid-configuration`
+        const response = await fetch(url, {
           method: 'HEAD',
           signal: controller.signal
         })
@@ -55,13 +59,14 @@ const App = () => {
 
         if (!response.ok) {
           // If 404 or 500, it's an error
-          throw new Error('Service unavailable')
+          throw new Error(`HTTP ${response.status}: ${response.statusText} (URL: ${url})`)
         }
 
         setIsLoading(false)
       } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : String(err)
         console.error("Keycloak pre-check failed:", err)
-        setIsError(true)
+        setErrorMessage(errorMsg)
         setIsLoading(false)
       }
     }
@@ -69,14 +74,15 @@ const App = () => {
     checkConnection()
   }, [])
 
-  const onEvent = (event: string, _error: unknown) => {
+  const onEvent = (event: string, error: unknown) => {
     if (event === 'onInitError') {
-      setIsError(true)
+      const errorMsg = error instanceof Error ? error.message : JSON.stringify(error)
+      setErrorMessage(`Keycloak init error: ${errorMsg}`)
     }
   }
 
-  if (isError) {
-    return <ServiceUnavailable />
+  if (errorMessage) {
+    return <ServiceUnavailable error={errorMessage} />
   }
 
   if (isLoading) {

@@ -49,7 +49,6 @@ interface CampaignContextType {
   getValidationErrors: () => string[];
   isValid: () => boolean;
   getPayload: () => CampaignCreatePayload | null;
-  creatorId?: string;
 }
 
 // Helper to generate default dates (start: now, end: now + 5 minutes)
@@ -86,10 +85,8 @@ const CampaignContext = createContext<CampaignContextType | undefined>(
 
 export function CampaignProvider({
   children,
-  creatorId,
 }: {
   children: ReactNode;
-  creatorId?: string;
 }) {
   const [data, setData] = useState<CampaignData>(
     getInitialCampaignData()

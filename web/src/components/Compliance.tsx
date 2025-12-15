@@ -69,7 +69,7 @@ export default function ComplianceFlow() {
   const [error, setError] = useState<string | null>(null);
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [quizError, setQuizError] = useState<string | null>(null);
+  const [quizError] = useState<string | null>(null);
   const [toc, setToc] = useState<Array<{ id: string; title: string }>>([]);
   const [nowTick, setNowTick] = useState<number>(Date.now());
   const [cooldownBase, setCooldownBase] = useState<number>(0);
@@ -174,7 +174,7 @@ export default function ComplianceFlow() {
   const markdownComponents = useMemo(
     () => ({
       h1: () => null,
-      h2: ({ node, children }: { node?: any; children: React.ReactNode }) => {
+      h2: ({ children }: { children?: React.ReactNode }) => {
         const text =
           typeof children === "string"
             ? children
@@ -188,33 +188,33 @@ export default function ComplianceFlow() {
           </div>
         );
       },
-      h3: ({ children }: { children: React.ReactNode }) => (
+      h3: ({ children }: { children?: React.ReactNode }) => (
         <p className="mt-4 mb-2 text-base font-semibold text-gray-900">{children}</p>
       ),
-      p: ({ children }: { children: React.ReactNode }) => (
+      p: ({ children }: { children?: React.ReactNode }) => (
         <p className="text-sm text-gray-800 leading-6 mb-3">{children}</p>
       ),
-      ul: ({ children }: { children: React.ReactNode }) => (
+      ul: ({ children }: { children?: React.ReactNode }) => (
         <ul className="list-disc pl-5 space-y-1 text-sm text-gray-800 mb-3">{children}</ul>
       ),
-      ol: ({ children }: { children: React.ReactNode }) => (
+      ol: ({ children }: { children?: React.ReactNode }) => (
         <ol className="list-decimal pl-5 space-y-1 text-sm text-gray-800 mb-3">{children}</ol>
       ),
-      li: ({ children }: { children: React.ReactNode }) => <li className="leading-6">{children}</li>,
-      table: ({ children }: { children: React.ReactNode }) => (
+      li: ({ children }: { children?: React.ReactNode }) => <li className="leading-6">{children}</li>,
+      table: ({ children }: { children?: React.ReactNode }) => (
         <div className="overflow-x-auto mb-4">
           <table className="min-w-full border border-gray-200 text-sm text-gray-800">{children}</table>
         </div>
       ),
-      thead: ({ children }: { children: React.ReactNode }) => (
+      thead: ({ children }: { children?: React.ReactNode }) => (
         <thead className="bg-gray-50 text-gray-900 font-semibold">{children}</thead>
       ),
-      tbody: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,
-      tr: ({ children }: { children: React.ReactNode }) => <tr className="border-b">{children}</tr>,
-      th: ({ children }: { children: React.ReactNode }) => (
+      tbody: ({ children }: { children?: React.ReactNode }) => <tbody>{children}</tbody>,
+      tr: ({ children }: { children?: React.ReactNode }) => <tr className="border-b">{children}</tr>,
+      th: ({ children }: { children?: React.ReactNode }) => (
         <th className="px-3 py-2 text-left border-r last:border-r-0">{children}</th>
       ),
-      td: ({ children }: { children: React.ReactNode }) => (
+      td: ({ children }: { children?: React.ReactNode }) => (
         <td className="px-3 py-2 align-top border-r last:border-r-0">{children}</td>
       ),
     }),
@@ -614,8 +614,8 @@ export default function ComplianceFlow() {
                               <label
                                 key={optIdx}
                                 className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer transition ${selected
-                                    ? "border-purple-500 bg-purple-50"
-                                    : "border-transparent hover:bg-gray-50"
+                                  ? "border-purple-500 bg-purple-50"
+                                  : "border-transparent hover:bg-gray-50"
                                   }`}
                               >
                                 <input

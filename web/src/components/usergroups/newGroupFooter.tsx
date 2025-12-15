@@ -24,7 +24,7 @@ const StatusMessage = memo(function StatusMessage({ status }: { status: string }
 function NewGroupFooter({
   onSubmit,
   groupName,
-  selectedMembersCount,
+  selectedMembersCount: _selectedMembersCount,
   isLoading,
   status
 }: NewGroupFooterProps) {

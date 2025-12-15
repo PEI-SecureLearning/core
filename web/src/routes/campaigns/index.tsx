@@ -49,7 +49,7 @@ interface TemplateDoc {
   path?: string | null;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 function mapStatus(status: ApiCampaignStatus): Campaign["status"] {
   switch (status) {
@@ -186,12 +186,12 @@ function CampaignsPage() {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
     null
   );
-  const [emailTemplate, setEmailTemplate] = useState<TemplateDoc | null>(null);
-  const [landingTemplate, setLandingTemplate] = useState<TemplateDoc | null>(
+  const [emailTemplate] = useState<TemplateDoc | null>(null);
+  const [landingTemplate] = useState<TemplateDoc | null>(
     null
   );
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
+  const [detailLoading] = useState(false);
+  const [detailError] = useState<string | null>(null);
 
   useEffect(() => {
     const realm = (
@@ -254,7 +254,7 @@ function CampaignsPage() {
   });
 
   const totalCampaigns = campaigns.length;
-  const activeCampaigns = campaigns.filter((c) => c.status === "active").length;
+  const activeCampaigns = campaigns.filter((c) => c.status === "running").length;
   const totalEmailsSent = campaigns.reduce((acc, c) => acc + c.stats.sent, 0);
   // Calculate average click rate as (total clicks / total sent) * 100
   const totalClicks = campaigns.reduce((acc, c) => acc + c.stats.clicked, 0);
@@ -502,7 +502,7 @@ function CampaignsPage() {
                           </summary>
                           <div className="absolute right-0 mt-2 w-40 rounded-xl bg-white shadow-lg border border-slate-200/70 z-10 py-1">
                             <Link
-                              to={`/campaigns/${campaign.id}`}
+                              to={`/campaigns/${campaign.id}` as any}
                               className="w-full text-left px-4 py-2 text-[13px] text-slate-700 hover:bg-slate-50 block"
                             >
                               View Details

@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 import { Users, X, UserPlus, Search, Upload } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 interface Member {
   id: string;

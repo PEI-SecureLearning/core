@@ -1,6 +1,9 @@
 
+interface ServiceUnavailableProps {
+    error?: string;
+}
 
-export const ServiceUnavailable = () => {
+export const ServiceUnavailable = ({ error }: ServiceUnavailableProps) => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-800 font-sans">
             <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
@@ -21,9 +24,15 @@ export const ServiceUnavailable = () => {
                     </svg>
                 </div>
                 <h1 className="text-2xl font-bold mb-4 text-gray-900">Service Unavailable</h1>
-                <p className="text-gray-600 mb-6">
-                    We are currently unable to connect to the authentication service. Please try again later.
+                <p className="text-gray-600 mb-4">
+                    We are currently unable to connect to the authentication service.
                 </p>
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-left">
+                        <p className="text-sm font-semibold text-red-800 mb-1">Error Details:</p>
+                        <p className="text-sm text-red-700 font-mono break-all">{error}</p>
+                    </div>
+                )}
                 <button
                     onClick={() => window.location.reload()}
                     className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition duration-200"

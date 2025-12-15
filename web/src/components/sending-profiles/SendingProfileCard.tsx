@@ -24,7 +24,7 @@ export default function SendingProfileCard({
 
   return (
     <Link
-      to={`/sending-profiles/${id}`}
+      to={`/sending-profiles/${id}` as any}
       className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200 block"
     >
       {/* Decoration Line */}
@@ -55,7 +55,7 @@ export default function SendingProfileCard({
             {showMenu && (
               <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                 <Link
-                  to={`/sending-profiles/${id}`}
+                  to={`/sending-profiles/${id}` as any}
                   className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                 >
                   <Edit className="h-3.5 w-3.5" />

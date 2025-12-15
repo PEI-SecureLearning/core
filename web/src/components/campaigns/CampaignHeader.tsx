@@ -17,7 +17,7 @@ export function CampaignHeader({
                 <p className="text-gray-500 mt-1">{subtitle}</p>
             </div>
             <Link
-                to="/campaigns/new-campaign"
+                to="/campaigns/new"
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
             >
                 <Plus size={20} />

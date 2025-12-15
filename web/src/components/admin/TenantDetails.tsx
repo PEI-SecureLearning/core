@@ -32,7 +32,7 @@ export function TenantDetails() {
   const [managers, setManagers] = useState<{ id?: string; name: string; email?: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+  const API_BASE = import.meta.env.VITE_API_URL;
 
   const fetchInfo = useCallback(async () => {
     setLoading(true);
@@ -72,8 +72,8 @@ export function TenantDetails() {
       setInfo(infoData);
 
       const orgManagers = mappedUsers
-        .filter((u) => u.is_org_manager)
-        .map((u) => ({ id: u.id, name: u.username || "Org Manager", email: u.email }));
+        .filter((u: { is_org_manager?: boolean }) => u.is_org_manager)
+        .map((u: { id?: string; username?: string; email?: string }) => ({ id: u.id, name: u.username || "Org Manager", email: u.email }));
       setManagers(orgManagers);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load tenant details");
@@ -162,9 +162,8 @@ export function TenantDetails() {
             <span>{info?.domain || "—"}</span>
             <span className="mx-2">•</span>
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                info?.enabled === false ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-              }`}
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${info?.enabled === false ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                }`}
             >
               {(info?.enabled === false ? "inactive" : "active").toUpperCase()}
             </span>

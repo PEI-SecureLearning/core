@@ -2661,7 +2661,7 @@
         "standardFlowEnabled": true,
         "directAccessGrantsEnabled": true,
         "attributes": {
-          "post.logout.redirect.uris": "${WEB_URL}",
+          "post.logout.redirect.uris": "${WEB_URL}/admin/*",
           "content.-security-policy": "frame-src 'self'; frame-ancestors 'self' ${WEB_URL}; object-src 'none'"
         },
         "protocolMappers": [

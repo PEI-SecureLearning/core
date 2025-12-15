@@ -1,16 +1,31 @@
-FROM node:22-alpine AS build
-
+# Build stage
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package.json ./
+# Accept build arguments for Vite environment variables
+ARG VITE_API_URL
+ARG VITE_KEYCLOAK_URL
 
+# Set them as environment variables for the build process
+ENV VITE_API_URL=$VITE_API_URL/api
+ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
+
+COPY package*.json ./
 RUN npm install
 
 COPY . .
-RUN npx vite build
+RUN npm run build
 
-FROM nginx:alpine
+# Production stage - serve with lightweight node server
+FROM node:20-alpine
 
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
+
+RUN npm install -g serve
+
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+
+# serve with SPA fallback (-s flag handles client-side routing)
+CMD ["serve", "-s", "dist", "-l", "80"]

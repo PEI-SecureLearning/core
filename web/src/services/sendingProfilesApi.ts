@@ -4,11 +4,11 @@ import {
   type SendingProfileCreate,
 } from "@/types/sendingProfile";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // 1. CREATE (POST)
 export async function createSendingProfile(
-  realm: string,
+  _realm: string,
   data: SendingProfileCreate,
   token?: string
 ) {
@@ -31,7 +31,7 @@ export async function createSendingProfile(
 }
 
 // 2. READ ALL (GET)
-export async function fetchSendingProfiles(realm: string, token?: string) {
+export async function fetchSendingProfiles(_realm: string, token?: string) {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
@@ -45,7 +45,7 @@ export async function fetchSendingProfiles(realm: string, token?: string) {
 
 // 3. READ ONE (GET)
 export async function fetchSendingProfileById(
-  realm: string,
+  _realm: string,
   id: number,
   token?: string
 ) {
@@ -62,7 +62,7 @@ export async function fetchSendingProfileById(
 
 // 4. DELETE (DELETE)
 export async function deleteSendingProfile(
-  realm: string,
+  _realm: string,
   id: number,
   token?: string
 ) {
@@ -80,7 +80,7 @@ export async function deleteSendingProfile(
 
 // 5. UPDATE (PUT)
 export async function updateSendingProfile(
-  realm: string,
+  _realm: string,
   id: number,
   data: SendingProfileCreate,
   token?: string

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { type ComponentType, useMemo } from "react";
+import { type ComponentType } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
 import EmailTemplatePicker from "@/components/campaigns/new-campaign/EmailTemplatePicker";
@@ -13,7 +13,7 @@ import {
 } from "@/components/campaigns/new-campaign/CampaignContext";
 import { toast } from "sonner";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export const Route = createFileRoute("/campaigns/new")({
   component: RouteComponent,
@@ -29,13 +29,6 @@ function CampaignStepper() {
   const { data, getPayload, isValid, getValidationErrors } = useCampaign();
   const { keycloak } = useKeycloak();
   const navigate = useNavigate();
-
-  const realm = useMemo(() => {
-    const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
-    if (!iss) return null;
-    const parts = iss.split("/realms/");
-    return parts[1] ?? null;
-  }, [keycloak.tokenParsed]);
 
   const steps: StepConfig[] = [
     { name: "forms", label: "Basic Info", component: CampaignForms },

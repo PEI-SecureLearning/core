@@ -16,7 +16,6 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   onFinalStepCompleted?: () => void;
   onBeforeComplete?: () => Promise<boolean> | boolean;
   validateStep?: (step: number) => boolean;
-  stepCircleContainerClassName?: string;
   stepContainerClassName?: string;
   contentClassName?: string;
   footerClassName?: string;
@@ -40,7 +39,6 @@ export default function Stepper({
   onFinalStepCompleted = () => { },
   onBeforeComplete,
   validateStep,
-  stepCircleContainerClassName = "",
   stepContainerClassName = "",
   contentClassName = "",
   footerClassName = "",
@@ -51,7 +49,6 @@ export default function Stepper({
   disableStepIndicators = false,
   stepLabels = [],
   renderStepIndicator,
-  ...rest
 }: StepperProps) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [direction, setDirection] = useState<number>(0);
@@ -242,7 +239,7 @@ function StepContentWrapper({
   children,
   className = "",
 }: StepContentWrapperProps) {
-  const [parentHeight, setParentHeight] = useState<number>(0);
+  const setParentHeight = (_h: number) => { }; // Unused but required by SlideTransition
 
   return (
     <motion.div style={{ position: "relative" }} className={className}>

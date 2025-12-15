@@ -1,5 +1,4 @@
 import {
-  createFileRoute,
   Link,
   useNavigate,
   useParams,
@@ -17,7 +16,7 @@ import {
   Clock,
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 interface CampaignEditForm {
   name: string;
@@ -167,11 +166,10 @@ export default function CampaignDetails() {
         </div>
         {formData?.status && (
           <div
-            className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-medium ${
-              isEditable
-                ? "bg-amber-50 text-amber-700 border-amber-200"
-                : "bg-slate-100 text-slate-600 border-slate-200"
-            }`}
+            className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-medium ${isEditable
+              ? "bg-amber-50 text-amber-700 border-amber-200"
+              : "bg-slate-100 text-slate-600 border-slate-200"
+              }`}
           >
             {isEditable ? <Clock size={16} /> : <Ban size={16} />}
             Status:{" "}

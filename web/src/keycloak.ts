@@ -7,7 +7,7 @@ const realm = isAdminRoute ? 'platform' : (userRealm || 'placeholder');
 const clientId = isAdminRoute ? 'react-admin' : 'react-app';
 
 const keycloak = new Keycloak({
-    url: import.meta.env.VITE_KEYCLOAK_URL || 'http://localhost:8080',
+    url: import.meta.env.VITE_KEYCLOAK_URL,
     realm: realm,
     clientId: clientId,
 });

@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 // --- Tipos alinhados com o campaign.py (Backend) ---
 
@@ -21,7 +21,7 @@ export interface Campaign {
   total_phished?: number;
 }
 
-export async function fetchCampaigns(realm: string, token?: string) {
+export async function fetchCampaigns(_realm: string, token?: string) {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };

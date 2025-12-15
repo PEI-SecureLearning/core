@@ -26,7 +26,7 @@ export default function LandingPageTemplatePicker() {
   const [error, setError] = useState<string | null>(null);
 
   const API_BASE = useMemo(
-    () => import.meta.env.VITE_API_URL ?? "http://localhost:8000/api",
+    () => import.meta.env.VITE_API_URL,
     []
   );
 
@@ -125,11 +125,10 @@ export default function LandingPageTemplatePicker() {
                 <div
                   key={template.id}
                   onClick={() => handleSelectTemplate(template)}
-                  className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-                    selected
+                  className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selected
                       ? "ring-2 ring-purple-500 bg-purple-50/50"
                       : "hover:bg-slate-50/50"
-                  }`}
+                    }`}
                   style={{
                     background: selected
                       ? "rgba(147, 51, 234, 0.08)"

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Send, Server, Globe } from "lucide-react";
+import { Send, Globe } from "lucide-react";
 
 interface Props {
   name: string;

@@ -23,7 +23,7 @@ export const Route = createFileRoute("/tenants-org-manager")({
   component: UsersManagement,
 });
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 interface UserRecord {
   id?: string;
@@ -386,9 +386,9 @@ function UsersManagement() {
             ? u.groups
             : typeof (u as any).groups === "string"
               ? (u as any).groups
-                  .split(",")
-                  .map((g: string) => g.trim())
-                  .filter(Boolean)
+                .split(",")
+                .map((g: string) => g.trim())
+                .filter(Boolean)
               : [];
         if (userGroups.length) {
           createdUsers.push({ email: u.email, groups: userGroups });
@@ -957,22 +957,22 @@ function UsersManagement() {
                     <tr key={i} className="border-b border-gray-100 last:border-0">
                       <td className="py-3 text-gray-900">{u.username}</td>
                       <td className="py-3 text-gray-700">{u.name}</td>
-                    <td className="py-3 text-gray-600">{u.email}</td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
-                        {u.role || "—"}
-                      </span>
-                    </td>
-                    <td className="py-3 text-gray-600">
-                      {u.groups && u.groups.length
-                        ? u.groups.join(", ")
-                        : (u as any).groups || "—"}
-                    </td>
-                    <td className="py-3">
-                      <span
-                        className={`text-xs ${u.status.includes("created")
-                          ? "text-green-600"
-                          : u.status.includes("error")
+                      <td className="py-3 text-gray-600">{u.email}</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+                          {u.role || "—"}
+                        </span>
+                      </td>
+                      <td className="py-3 text-gray-600">
+                        {u.groups && u.groups.length
+                          ? u.groups.join(", ")
+                          : (u as any).groups || "—"}
+                      </td>
+                      <td className="py-3">
+                        <span
+                          className={`text-xs ${u.status.includes("created")
+                            ? "text-green-600"
+                            : u.status.includes("error")
                               ? "text-rose-600"
                               : "text-gray-400"
                             }`}
