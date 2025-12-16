@@ -15,6 +15,13 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+    networks:
+      default:
+        aliases:
+          - kc.localhost
+          - api.localhost
+          - app.localhost
+
 
   db:
     build:
@@ -102,7 +109,7 @@ services:
     build:
       context: ../keycloak
       dockerfile: Dockerfile
-    command: start-dev --import-realm
+    command: start-dev --import-realm --proxy-headers=xforwarded
     container_name: keycloak
     restart: unless-stopped
     environment:
@@ -119,7 +126,8 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
 
       KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME: ${KEYCLOAK_HOSTNAME}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HOSTNAME: ${KEYCLOAK_URL}
       KC_HOSTNAME_STRICT: "false"
 
       KC_HEALTH_ENABLED: "true"
