@@ -18,10 +18,9 @@ services:
     networks:
       default:
         aliases:
-          - kc.localhost
-          - api.localhost
-          - app.localhost
-
+          - kc.securelearning.pt
+          - api.securelearning.pt
+          - app.securelearning.pt
 
   db:
     build:
