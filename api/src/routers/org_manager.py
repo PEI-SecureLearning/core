@@ -50,7 +50,7 @@ def _validate_realm_access(token: str, realm: str) -> None:
 
 
 @router.get(
-    "/{realm}/users", dependencies=[Depends(valid_resource_access("org_manager"))]
+    "/{realm}/users", dependencies=[Depends(valid_resource_access("org_manager", "view"))]
 )
 def list_users(realm: str, token: str = Depends(oauth_2_scheme)):
     """List users in the realm using the user's token."""
@@ -59,7 +59,7 @@ def list_users(realm: str, token: str = Depends(oauth_2_scheme)):
 
 
 @router.post(
-    "/{realm}/users", dependencies=[Depends(valid_resource_access("org_manager"))]
+    "/{realm}/users", dependencies=[Depends(valid_resource_access("org_manager", "manage"))]
 )
 def create_user(
     realm: str,
@@ -84,7 +84,7 @@ def create_user(
 @router.delete(
     "/{realm}/users/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
 )
 def delete_user(
     realm: str, user_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
@@ -95,7 +95,7 @@ def delete_user(
     return None
 
 
-@router.get("/{realm}/campaigns", dependencies=[Depends(valid_resource_access("org_manager"))])
+@router.get("/{realm}/campaigns", dependencies=[Depends(valid_resource_access("org_manager" , "view"))])
 def list_realm_campaigns(realm: str, session: SessionDep, token: str = Depends(oauth_2_scheme)):
     """List campaigns for the specified realm (org manager scope)."""
     _validate_realm_access(token, realm)
@@ -106,7 +106,7 @@ def list_realm_campaigns(realm: str, session: SessionDep, token: str = Depends(o
 
 @router.get(
     "/{realm}/campaigns/{campaign_id}",
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "view"))],
 )
 async def get_realm_campaign_detail(
     realm: str, campaign_id: int, session: SessionDep, token: str = Depends(oauth_2_scheme)
@@ -149,7 +149,7 @@ async def get_realm_campaign_detail(
 @router.delete(
     "/{realm}/campaigns/{campaign_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
 )
 def delete_realm_campaign(
     realm: str, campaign_id: int, session: SessionDep, token: str = Depends(oauth_2_scheme)
@@ -161,7 +161,7 @@ def delete_realm_campaign(
     return None
 
 
-@router.post("/upload", dependencies=[Depends(valid_resource_access("org_manager"))])
+@router.post("/upload", dependencies=[Depends(valid_resource_access("org_manager", "manage"))])
 def upload_user_csv(file: UploadFile = File(...)):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
     reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
@@ -174,7 +174,7 @@ def upload_user_csv(file: UploadFile = File(...)):
 
 
 @router.get(
-    "/{realm}/groups", dependencies=[Depends(valid_resource_access("org_manager"))]
+    "/{realm}/groups", dependencies=[Depends(valid_resource_access("org_manager", "view"))]
 )
 def list_groups(realm: str, token: str = Depends(oauth_2_scheme)):
     """List groups in the realm using the user's token."""
@@ -185,7 +185,7 @@ def list_groups(realm: str, token: str = Depends(oauth_2_scheme)):
 @router.post(
     "/{realm}/groups",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
 )
 def create_group(
     realm: str,
@@ -201,7 +201,7 @@ def create_group(
 @router.delete(
     "/{realm}/groups/{group_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
 )
 def delete_group(
     realm: str, group_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
@@ -215,7 +215,7 @@ def delete_group(
 @router.put(
     "/{realm}/groups/{group_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
 )
 def update_group(
     realm: str,
@@ -235,7 +235,7 @@ def update_group(
 @router.post(
     "/{realm}/groups/{group_id}/members/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
 )
 def add_user_to_group(
     realm: str, group_id: str, user_id: str, token: str = Depends(oauth_2_scheme)
@@ -248,7 +248,7 @@ def add_user_to_group(
 
 @router.get(
     "/{realm}/groups/{group_id}/members",
-    dependencies=[Depends(valid_resource_access("org_manager"))],
+    dependencies=[Depends(valid_resource_access("org_manager", "view"))],
 )
 def list_group_members(realm: str, group_id: str, token: str = Depends(oauth_2_scheme)):
     """List members of a group using the user's token."""
