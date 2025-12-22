@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 from src.core.deps import SessionDep
 from src.models.realm import Realm, RealmCreate
-from src.core.admin import Admin
+from src.services.admin import Admin
 from src.models.user import User
 from src.core.db import engine
 from src.models.user_group import UserGroup

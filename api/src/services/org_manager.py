@@ -1,25 +1,23 @@
 """
 Org Manager Service - Business logic for org manager operations.
+
+This module provides business logic for organization management operations.
+Uses KeycloakClient for all Keycloak API calls.
 """
 
 import secrets
-
-from requests import session
 from fastapi import HTTPException
-from sqlmodel import Session, select
-from src.core.org_manager import OrgManager
+from sqlmodel import Session
+
+from dotenv import load_dotenv
+
 from src.models.user import User
 from src.models.user_group import UserGroup
 from src.core.db import engine
 from src.models.realm import Realm
+from src.services.keycloak_client import get_keycloak_client
 
-# Singleton instance
-_org_manager = OrgManager()
-
-
-def get_org_manager() -> OrgManager:
-    """Get the OrgManager instance."""
-    return _org_manager
+load_dotenv()
 
 
 # ============ User Operations ============
@@ -27,14 +25,15 @@ def get_org_manager() -> OrgManager:
 
 def list_users(realm: str, token: str) -> dict:
     """List users in the realm."""
-    users = _org_manager.list_users(realm, token)
+    kc = get_keycloak_client()
+    users = kc.list_users(realm, token)
 
     simplified = []
     for u in users:
         uid = u.get("id")
         is_org_manager = False
         try:
-            roles = _org_manager.get_user_realm_roles(realm, token, uid) if uid else []
+            roles = kc.get_user_realm_roles(realm, token, uid) if uid else []
             is_org_manager = any(r.get("name") == "ORG_MANAGER" for r in roles)
         except Exception:
             is_org_manager = False
@@ -64,6 +63,7 @@ def create_user(
     group_id: str | None = None,
 ) -> dict:
     """Create a new user in the realm."""
+    kc = get_keycloak_client()
     allowed_roles = {"ORG_MANAGER", "CONTENT_MANAGER", "DEFAULT_USER"}
     role_clean = (role or "").strip().upper()
     username_clean = (username or "").strip()
@@ -75,7 +75,7 @@ def create_user(
 
     # Ensure email is unique within the realm (Keycloak will also enforce, but we surface a clearer message).
     try:
-        kc_users = _org_manager.list_users(realm, token)
+        kc_users = kc.list_users(realm, token)
         if any((u.get("email") or "").lower() == (email or "").lower() for u in kc_users):
             raise HTTPException(status_code=400, detail="Email already exists in this realm.")
     except HTTPException:
@@ -136,7 +136,7 @@ def create_user(
     }
     user_data = {k: v for k, v in user_data.items() if v not in (None, {}, [])}
 
-    response = _org_manager.create_user(realm, token, user_data)
+    response = kc.create_user(realm, token, user_data)
 
     if response.status_code not in (201, 204, 409):
         raise HTTPException(
@@ -156,7 +156,7 @@ def create_user(
     # Persist the user locally (upsert by keycloak_id). If Location header missing, look up by username.
     if not user_id:
         try:
-            kc_users = _org_manager.list_users(realm, token)
+            kc_users = kc.list_users(realm, token)
             match = next((u for u in kc_users if u.get("username") == username), None)
             user_id = match.get("id") if match else None
         except Exception:
@@ -165,34 +165,34 @@ def create_user(
     if user_id:
         if group_id:
             try:
-                _org_manager.add_user_to_group(realm, token, user_id, group_id)
+                kc.add_user_to_group(realm, token, user_id, group_id)
             except Exception:
                 # Ignore group assignment errors; they can be retried separately.
                 pass
 
         try:
-            role_repr = _org_manager.get_realm_role(realm, token, role_clean)
+            role_repr = kc.get_realm_role(realm, token, role_clean)
             if role_repr:
-                _org_manager.assign_realm_roles(realm, token, user_id, [role_repr])
+                kc.assign_realm_roles(realm, token, user_id, [role_repr])
             if role_clean == "ORG_MANAGER":
-                    client = _org_manager.get_client_by_client_id(realm, token, "realm-management")
-                    if client and client.get("id"):
-                        client_role = _org_manager.get_client_role(realm, token, client["id"], "realm-admin")
-                        if client_role:
-                            _org_manager.assign_client_roles(realm, token, user_id, client["id"], [client_role])
+                client = kc.get_client_by_client_id(realm, token, "realm-management")
+                if client and client.get("id"):
+                    client_role = kc.get_client_role(realm, token, client["id"], "realm-admin")
+                    if client_role:
+                        kc.assign_client_roles(realm, token, user_id, client["id"], [client_role])
         except Exception:
             pass
 
-        with Session(engine) as session:
-            if realm and not session.get(Realm, realm):
-                session.add(Realm(name=realm, domain=f"{realm}.local"))
-            existing = session.get(User, user_id)
+        with Session(engine) as db_session:
+            if realm and not db_session.get(Realm, realm):
+                db_session.add(Realm(name=realm, domain=f"{realm}.local"))
+            existing = db_session.get(User, user_id)
             if existing:
                 existing.email = email
                 existing.is_org_manager = role_clean == "ORG_MANAGER"
             else:
-                session.add(User(keycloak_id=user_id, email=email, is_org_manager=(role_clean == "ORG_MANAGER")))
-            session.commit()
+                db_session.add(User(keycloak_id=user_id, email=email, is_org_manager=(role_clean == "ORG_MANAGER")))
+            db_session.commit()
 
     return {
         "realm": realm,
@@ -204,8 +204,9 @@ def create_user(
 
 def delete_user(realm: str, token: str, user_id: str, session: Session) -> None:
     """Delete a user from the realm."""
+    kc = get_keycloak_client()
     try:
-        roles = _org_manager.get_user_realm_roles(realm, token, user_id)
+        roles = kc.get_user_realm_roles(realm, token, user_id)
         if any(r.get("name") == "ORG_MANAGER" for r in roles):
             raise HTTPException(status_code=403, detail="Cannot delete another org manager.")
     except HTTPException:
@@ -214,12 +215,12 @@ def delete_user(realm: str, token: str, user_id: str, session: Session) -> None:
         # If we fail to retrieve roles, proceed and let Keycloak enforce permissions.
         pass
 
-    _org_manager.delete_user(realm, token, user_id)
-    with Session(engine) as session:
-        db_user = session.get(User, user_id)
+    kc.delete_user(realm, token, user_id)
+    with Session(engine) as db_session:
+        db_user = db_session.get(User, user_id)
         if db_user:
-            session.delete(db_user)
-            session.commit()
+            db_session.delete(db_user)
+            db_session.commit()
 
 
 # ============ Group Operations ============
@@ -227,7 +228,8 @@ def delete_user(realm: str, token: str, user_id: str, session: Session) -> None:
 
 def list_groups(realm: str, token: str) -> dict:
     """List groups in the realm."""
-    groups = _org_manager.list_groups(realm, token)
+    kc = get_keycloak_client()
+    groups = kc.list_groups(realm, token)
 
     simplified = []
     for g in groups:
@@ -239,7 +241,8 @@ def list_groups(realm: str, token: str) -> dict:
 
 def create_group(session: Session, realm: str, token: str, name: str) -> dict:
     """Create a group in the realm."""
-    response = _org_manager.create_group(realm, token, name)
+    kc = get_keycloak_client()
+    response = kc.create_group(realm, token, name)
 
     if response.status_code not in (201, 204):
         raise HTTPException(
@@ -261,32 +264,37 @@ def create_group(session: Session, realm: str, token: str, name: str) -> dict:
 
 def delete_group(session: Session, realm: str, token: str, group_id: str) -> None:
     """Delete a group from the realm."""
-    _org_manager.delete_group(realm, token, group_id)
-    with Session(engine) as session:
-        db_group = session.get(UserGroup, group_id)
+    kc = get_keycloak_client()
+    kc.delete_group(realm, token, group_id)
+    with Session(engine) as db_session:
+        db_group = db_session.get(UserGroup, group_id)
         if db_group:
-            session.delete(db_group)
-            session.commit()
+            db_session.delete(db_group)
+            db_session.commit()
 
 
 def update_group(realm: str, token: str, group_id: str, name: str) -> None:
     """Update a group's name."""
-    _org_manager.update_group(realm, token, group_id, name)
+    kc = get_keycloak_client()
+    kc.update_group(realm, token, group_id, name)
 
 
 def add_user_to_group(realm: str, token: str, user_id: str, group_id: str) -> None:
     """Add a user to a group."""
-    _org_manager.add_user_to_group(realm, token, user_id, group_id)
+    kc = get_keycloak_client()
+    kc.add_user_to_group(realm, token, user_id, group_id)
 
 
 def remove_user_from_group(realm: str, token: str, user_id: str, group_id: str) -> None:
     """Remove a user from a group."""
-    _org_manager.remove_user_from_group(realm, token, user_id, group_id)
+    kc = get_keycloak_client()
+    kc.remove_user_from_group(realm, token, user_id, group_id)
 
 
 def list_group_members(realm: str, token: str, group_id: str) -> dict:
     """List members of a group."""
-    members = _org_manager.list_group_members(realm, token, group_id)
+    kc = get_keycloak_client()
+    members = kc.list_group_members(realm, token, group_id)
 
     simplified = []
     for m in members:

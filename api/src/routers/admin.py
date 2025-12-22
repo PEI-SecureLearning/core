@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
-from core.admin import Admin
-from core.security import valid_access_token
+from src.services.admin import Admin
+from src.core.security import valid_access_token
 from src.core.deps import SessionDep
 
 router = APIRouter()
