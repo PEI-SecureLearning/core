@@ -23,6 +23,12 @@ def get_templates_collection() -> AsyncIOMotorCollection:
     return db[settings.MONGODB_COLLECTION_TEMPLATES]
 
 
+def get_tenant_logos_collection() -> AsyncIOMotorCollection:
+    client = _get_client()
+    db = client[settings.MONGODB_DB]
+    return db[settings.MONGODB_COLLECTION_TENANT_LOGOS]
+
+
 async def close_mongo_client() -> None:
     """Close the Mongo client when the app shuts down."""
     global _client
@@ -48,5 +54,17 @@ def serialize_document(doc: dict[str, Any]) -> dict[str, Any]:
         "description": doc.get("description"),
         "html": doc.get("html"),
         "created_at": doc.get("created_at"),
+        "updated_at": doc.get("updated_at"),
+    }
+
+
+def serialize_logo_document(doc: dict[str, Any]) -> dict[str, Any]:
+    """Convert tenant logo document into a JSON-serializable dict."""
+    return {
+        "id": str(doc.get("_id", "")),
+        "realm": doc.get("realm"),
+        "filename": doc.get("filename"),
+        "content_type": doc.get("content_type"),
+        "size": doc.get("size"),
         "updated_at": doc.get("updated_at"),
     }

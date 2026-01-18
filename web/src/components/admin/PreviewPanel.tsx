@@ -7,6 +7,7 @@ import { PreviewPanelDetails } from './PreviewPanelDetails'
 interface PreviewPanelProps {
     realmName: string
     features: { phishing: boolean; lms: boolean }
+    logoPreviewUrl: string | null
     isLoading: boolean
     handleSubmit: (e: React.FormEvent) => void
 }
@@ -14,6 +15,7 @@ interface PreviewPanelProps {
 export function PreviewPanel({
     realmName,
     features,
+    logoPreviewUrl,
     isLoading,
     handleSubmit
 }: PreviewPanelProps) {
@@ -21,7 +23,7 @@ export function PreviewPanel({
         <div className="w-80 flex flex-col gap-4">
             <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border border-purple-100/50 overflow-hidden shadow-xl shadow-purple-100/30">
                 <PreviewPanelHeader />
-                <PreviewPanelLogo />
+                <PreviewPanelLogo logoPreviewUrl={logoPreviewUrl} />
                 <PreviewPanelDetails
                     realmName={realmName}
                     features={features}

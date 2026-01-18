@@ -13,6 +13,7 @@ interface Tenant {
     domain: string | null
     enabled: boolean
     features: Record<string, boolean>
+    logoUpdatedAt?: string | null
 }
 
 interface TenantsResponse {
@@ -23,6 +24,7 @@ interface TenantsResponse {
         domain: string | null
         enabled: boolean
         features: Record<string, boolean>
+        logoUpdatedAt?: string | null
     }>
 }
 
@@ -31,7 +33,9 @@ export function TenantList() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [deleting, setDeleting] = useState<string | null>(null)
+    const [logoError, setLogoError] = useState<Record<string, boolean>>({})
     const confirm = useConfirm()
+    const API_BASE = import.meta.env.VITE_API_URL
 
     const container = {
         hidden: { opacity: 0 },
@@ -61,8 +65,10 @@ export function TenantList() {
                 domain: realm.domain,
                 enabled: realm.enabled,
                 features: realm.features || {},
+                logoUpdatedAt: realm.logoUpdatedAt,
             }))
             setTenants(mappedTenants)
+            setLogoError({})
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to load tenants')
         } finally {
@@ -192,8 +198,20 @@ export function TenantList() {
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600">
-                                            <Building2 size={24} />
+                                        <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                                            {!logoError[tenant.realm] ? (
+                                                <img
+                                                    src={`${API_BASE}/realms/${encodeURIComponent(tenant.realm)}/logo${tenant.logoUpdatedAt ? `?v=${encodeURIComponent(tenant.logoUpdatedAt)}` : ''}`}
+                                                    alt={`${tenant.displayName} logo`}
+                                                    className="w-full h-full object-contain"
+                                                    onError={() =>
+                                                        setLogoError((prev) => ({ ...prev, [tenant.realm]: true }))
+                                                    }
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <Building2 size={24} />
+                                            )}
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-gray-900">{tenant.displayName}</h3>

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
   MONGODB_URI: str = "mongodb://template_user:template_pass@mongo:27017/securelearning?authSource=securelearning"
   MONGODB_DB: str = "securelearning"
   MONGODB_COLLECTION_TEMPLATES: str = "templates"
+  MONGODB_COLLECTION_TENANT_LOGOS: str = "tenant_logos"
 
   # RabbitMQ
   RABBITMQ_HOST: str
