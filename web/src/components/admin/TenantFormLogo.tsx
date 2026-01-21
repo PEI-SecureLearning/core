@@ -75,14 +75,13 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                 className="hidden"
                 onChange={handleInputChange}
             />
-            <div
+            <button
+                type="button"
                 className="flex-1 border-2 border-dashed border-blue-200/70 rounded-2xl flex flex-col items-center justify-center p-6 bg-white/60 backdrop-blur-sm cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all duration-300 group min-h-[140px] overflow-hidden"
                 onClick={handleClick}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={handleDrop}
                 onKeyDown={handleKeyDown}
-                role="button"
-                tabIndex={0}
                 aria-label="Upload tenant logo"
             >
                 {logoPreviewUrl ? (
@@ -104,7 +103,7 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                         </p>
                     </>
                 )}
-            </div>
+            </button>
 
             {error && (
                 <p className="text-xs text-red-600 mt-2">{error}</p>

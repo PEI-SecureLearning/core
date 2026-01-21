@@ -292,6 +292,24 @@ class Admin:
             )
         return None
 
+    def _extract_realm_attributes(self, realm: dict) -> tuple[str | None, str | None]:
+        attrs = realm.get("attributes") or {}
+        if not isinstance(attrs, dict):
+            return None, None
+        tenant_domain = None
+        tenant_logo_updated_at = None
+        raw_domain = attrs.get("tenant-domain")
+        if isinstance(raw_domain, list) and raw_domain:
+            tenant_domain = raw_domain[0]
+        elif isinstance(raw_domain, str):
+            tenant_domain = raw_domain
+        raw_logo_updated_at = attrs.get("tenant-logo-updated-at")
+        if isinstance(raw_logo_updated_at, list) and raw_logo_updated_at:
+            tenant_logo_updated_at = raw_logo_updated_at[0]
+        elif isinstance(raw_logo_updated_at, str):
+            tenant_logo_updated_at = raw_logo_updated_at
+        return tenant_domain, tenant_logo_updated_at
+
     def list_realms(self, exclude_system: bool = True) -> list[dict]:
         """
         List all realms from Keycloak.
@@ -316,22 +334,9 @@ class Admin:
                 if exclude_system and realm_name.lower() in ("master", "platform"):
                     continue
 
-                attrs = realm.get("attributes") or {}
-                tenant_domain = None
-                tenant_logo_updated_at = None
-                if isinstance(attrs, dict):
-                    raw = attrs.get("tenant-domain")
-                    if isinstance(raw, list) and raw:
-                        tenant_domain = raw[0]
-                    elif isinstance(raw, str):
-                        tenant_domain = raw
-                    raw_logo_updated_at = attrs.get("tenant-logo-updated-at")
-                    if isinstance(raw_logo_updated_at, list) and raw_logo_updated_at:
-                        tenant_logo_updated_at = raw_logo_updated_at[0]
-                    elif isinstance(raw_logo_updated_at, str):
-                        tenant_logo_updated_at = raw_logo_updated_at
-
-                # Fetch feature flags for this realm
+                tenant_domain, tenant_logo_updated_at = self._extract_realm_attributes(
+                    realm
+                )
                 features = self.get_realm_features(realm_name)
 
                 result.append(
