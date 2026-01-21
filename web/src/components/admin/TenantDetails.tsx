@@ -35,6 +35,10 @@ export function TenantDetails() {
   const [error, setError] = useState<string | null>(null);
   const [logoError, setLogoError] = useState(false);
   const API_BASE = import.meta.env.VITE_API_URL;
+  const logoVersion = info?.logoUpdatedAt ? encodeURIComponent(info.logoUpdatedAt) : "";
+  const logoQuery = logoVersion ? `?v=${logoVersion}` : "";
+  const logoUrl = `${API_BASE}/realms/${encodeURIComponent(realmName)}/logo${logoQuery}`;
+  const hasLogoError = logoError;
 
   const fetchInfo = useCallback(async () => {
     setLoading(true);
@@ -160,16 +164,16 @@ export function TenantDetails() {
           <ArrowLeft size={24} className="text-gray-600" />
         </Link>
         <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
-          {!logoError ? (
+          {hasLogoError ? (
+            <Building2 size={24} />
+          ) : (
             <img
-              src={`${API_BASE}/realms/${encodeURIComponent(realmName)}/logo${info?.logoUpdatedAt ? `?v=${encodeURIComponent(info.logoUpdatedAt)}` : ''}`}
+              src={logoUrl}
               alt={`${info?.displayName || realmName} logo`}
               className="w-full h-full object-contain"
               onError={() => setLogoError(true)}
               loading="lazy"
             />
-          ) : (
-            <Building2 size={24} />
           )}
         </div>
         <div>

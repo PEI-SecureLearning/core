@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react'
 import { Upload, Image } from 'lucide-react'
 
-interface TenantFormLogoProps {
+type TenantFormLogoProps = Readonly<{
     logoPreviewUrl: string | null
     onLogoSelect: (file: File | null) => void
-}
+}>
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml']
 const MAX_LOGO_BYTES = 2 * 1024 * 1024
@@ -49,6 +49,12 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
     }
 
     const handleClick = () => fileInputRef.current?.click()
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            handleClick()
+        }
+    }
 
     return (
         <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 p-5 rounded-2xl border border-blue-100/50 flex flex-col h-full">
@@ -74,6 +80,10 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                 onClick={handleClick}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={handleDrop}
+                onKeyDown={handleKeyDown}
+                role="button"
+                tabIndex={0}
+                aria-label="Upload tenant logo"
             >
                 {logoPreviewUrl ? (
                     <img

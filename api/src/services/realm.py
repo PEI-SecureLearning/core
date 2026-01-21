@@ -1,6 +1,6 @@
 import secrets
 import jwt
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import HTTPException
 from bson import Binary, ObjectId
 from sqlmodel import Session, select
@@ -677,7 +677,7 @@ async def upsert_tenant_logo(
     filename: str | None = None,
 ) -> str:
     collection = get_tenant_logos_collection()
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     payload = {
         "realm": realm_name,
         "filename": filename,

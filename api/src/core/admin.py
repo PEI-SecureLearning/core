@@ -1,5 +1,6 @@
 import requests
 import json
+from urllib.parse import quote
 from fastapi import HTTPException
 import os
 from dotenv import load_dotenv
@@ -376,7 +377,8 @@ class Admin:
         merged_attrs = {**existing_attrs, **attributes}
         realm_info["attributes"] = merged_attrs
 
-        url = f"{self.keycloak_url}/admin/realms/{realm_name}"
+        encoded_realm = quote(realm_name, safe="")
+        url = f"{self.keycloak_url}/admin/realms/{encoded_realm}"
         try:
             r = requests.put(
                 url,

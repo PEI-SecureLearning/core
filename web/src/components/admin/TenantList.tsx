@@ -37,6 +37,12 @@ export function TenantList() {
     const confirm = useConfirm()
     const API_BASE = import.meta.env.VITE_API_URL
 
+    const getLogoUrl = (realm: string, updatedAt?: string | null) => {
+        const version = updatedAt ? encodeURIComponent(updatedAt) : ''
+        const query = version ? `?v=${version}` : ''
+        return `${API_BASE}/realms/${encodeURIComponent(realm)}/logo${query}`
+    }
+
     const container = {
         hidden: { opacity: 0 },
         show: {
@@ -199,9 +205,11 @@ export function TenantList() {
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
-                                            {!logoError[tenant.realm] ? (
+                                            {logoError[tenant.realm] ? (
+                                                <Building2 size={24} />
+                                            ) : (
                                                 <img
-                                                    src={`${API_BASE}/realms/${encodeURIComponent(tenant.realm)}/logo${tenant.logoUpdatedAt ? `?v=${encodeURIComponent(tenant.logoUpdatedAt)}` : ''}`}
+                                                    src={getLogoUrl(tenant.realm, tenant.logoUpdatedAt)}
                                                     alt={`${tenant.displayName} logo`}
                                                     className="w-full h-full object-contain"
                                                     onError={() =>
@@ -209,8 +217,6 @@ export function TenantList() {
                                                     }
                                                     loading="lazy"
                                                 />
-                                            ) : (
-                                                <Building2 size={24} />
                                             )}
                                         </div>
                                         <div>

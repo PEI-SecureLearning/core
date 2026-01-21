@@ -1,6 +1,6 @@
-interface PreviewPanelLogoProps {
+type PreviewPanelLogoProps = Readonly<{
     logoPreviewUrl: string | null
-}
+}>
 
 export function PreviewPanelLogo({ logoPreviewUrl }: PreviewPanelLogoProps) {
     return (
