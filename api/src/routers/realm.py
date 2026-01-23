@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from src.core.deps import SessionDep
@@ -7,6 +8,9 @@ from src.core.security import oauth_2_scheme
 from src.services import realm as realm_service
 
 router = APIRouter()
+
+ALLOWED_LOGO_TYPES = {"image/png", "image/jpeg", "image/svg+xml"}
+MAX_LOGO_BYTES = 2 * 1024 * 1024
 
 
 class RealmResponse(BaseModel):
@@ -57,6 +61,44 @@ def delete_realm(realm: str, session: SessionDep):
     """Delete a tenant realm from Keycloak."""
     realm_service.delete_realm_from_keycloak(realm, session)
     return None
+
+
+@router.post("/realms/{realm}/logo", status_code=status.HTTP_201_CREATED)
+async def upload_realm_logo(
+    realm: str,
+    file: UploadFile = File(...),
+    token: str = Depends(oauth_2_scheme),
+):
+    if file.content_type not in ALLOWED_LOGO_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid logo type. Use PNG, JPG, or SVG.",
+        )
+
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Logo file is empty.")
+    if len(data) > MAX_LOGO_BYTES:
+        raise HTTPException(status_code=400, detail="Logo exceeds 2MB limit.")
+
+    logo_id = await realm_service.upsert_tenant_logo(
+        realm_name=realm,
+        data=data,
+        content_type=file.content_type,
+        filename=file.filename,
+    )
+    return {"id": logo_id}
+
+
+@router.get("/realms/{realm}/logo")
+async def get_realm_logo(realm: str):
+    doc = await realm_service.get_tenant_logo(realm)
+    if not doc or not doc.get("data"):
+        raise HTTPException(status_code=404, detail="Tenant logo not found")
+
+    content_type = doc.get("content_type") or "application/octet-stream"
+    data = bytes(doc.get("data"))
+    return StreamingResponse(iter([data]), media_type=content_type)
 
 
 @router.post("/realms/users")

@@ -1,5 +1,6 @@
 import requests
 import json
+from urllib.parse import quote
 from fastapi import HTTPException
 import os
 from dotenv import load_dotenv
@@ -291,6 +292,24 @@ class Admin:
             )
         return None
 
+    def _extract_realm_attributes(self, realm: dict) -> tuple[str | None, str | None]:
+        attrs = realm.get("attributes") or {}
+        if not isinstance(attrs, dict):
+            return None, None
+        tenant_domain = None
+        tenant_logo_updated_at = None
+        raw_domain = attrs.get("tenant-domain")
+        if isinstance(raw_domain, list) and raw_domain:
+            tenant_domain = raw_domain[0]
+        elif isinstance(raw_domain, str):
+            tenant_domain = raw_domain
+        raw_logo_updated_at = attrs.get("tenant-logo-updated-at")
+        if isinstance(raw_logo_updated_at, list) and raw_logo_updated_at:
+            tenant_logo_updated_at = raw_logo_updated_at[0]
+        elif isinstance(raw_logo_updated_at, str):
+            tenant_logo_updated_at = raw_logo_updated_at
+        return tenant_domain, tenant_logo_updated_at
+
     def list_realms(self, exclude_system: bool = True) -> list[dict]:
         """
         List all realms from Keycloak.
@@ -315,16 +334,9 @@ class Admin:
                 if exclude_system and realm_name.lower() in ("master", "platform"):
                     continue
 
-                attrs = realm.get("attributes") or {}
-                tenant_domain = None
-                if isinstance(attrs, dict):
-                    raw = attrs.get("tenant-domain")
-                    if isinstance(raw, list) and raw:
-                        tenant_domain = raw[0]
-                    elif isinstance(raw, str):
-                        tenant_domain = raw
-
-                # Fetch feature flags for this realm
+                tenant_domain, tenant_logo_updated_at = self._extract_realm_attributes(
+                    realm
+                )
                 features = self.get_realm_features(realm_name)
 
                 result.append(
@@ -335,6 +347,7 @@ class Admin:
                         "domain": tenant_domain,
                         "enabled": realm.get("enabled", True),
                         "features": features,
+                        "logoUpdatedAt": tenant_logo_updated_at,
                     }
                 )
             return result
@@ -355,6 +368,37 @@ class Admin:
         if isinstance(raw, str):
             return raw
         return None
+
+    def update_realm_attributes(self, realm_name: str, attributes: dict[str, str]) -> None:
+        """Update realm attributes, preserving existing configuration."""
+        token = self._get_admin_token()
+        realm_info = self.get_realm(realm_name)
+        if not realm_info:
+            raise HTTPException(status_code=404, detail="Realm not found")
+
+        existing_attrs = realm_info.get("attributes") or {}
+        if not isinstance(existing_attrs, dict):
+            existing_attrs = {}
+        merged_attrs = {**existing_attrs, **attributes}
+        realm_info["attributes"] = merged_attrs
+
+        encoded_realm = quote(realm_name, safe="")
+        url = f"{self.keycloak_url}/admin/realms/{encoded_realm}"
+        try:
+            r = requests.put(
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                },
+                json=realm_info,
+            )
+            if r.status_code not in (204, 200):
+                r.raise_for_status()
+        except requests.exceptions.RequestException:
+            raise HTTPException(
+                status_code=500, detail="Failed to update realm attributes in Keycloak"
+            )
 
     def get_user_realm_roles(self, realm_name: str, user_id: str) -> list[dict]:
         """Return realm roles assigned to the given user."""

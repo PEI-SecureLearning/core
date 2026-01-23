@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "pei-securelearning",
+        "projectKey": "PEI-SecureLearning_core"
+    }
+}

@@ -11,6 +11,8 @@ interface TenantFormProps {
     setAdminEmail: (value: string) => void
     features: { phishing: boolean; lms: boolean }
     setFeatures: React.Dispatch<React.SetStateAction<{ phishing: boolean; lms: boolean }>>
+    logoPreviewUrl: string | null
+    onLogoSelect: (file: File | null) => void
     handleSubmit: (e: React.FormEvent) => void
 }
 
@@ -19,6 +21,8 @@ export function TenantForm({
     domain, setDomain,
     adminEmail, setAdminEmail,
     features, setFeatures,
+    logoPreviewUrl,
+    onLogoSelect,
     handleSubmit
 }: TenantFormProps) {
     return (
@@ -32,7 +36,10 @@ export function TenantForm({
 
                 <div className="grid grid-cols-2 gap-6">
                     <TenantFormFeatures features={features} setFeatures={setFeatures} />
-                    <TenantFormLogo />
+                    <TenantFormLogo
+                        logoPreviewUrl={logoPreviewUrl}
+                        onLogoSelect={onLogoSelect}
+                    />
                 </div>
             </form>
         </div>
