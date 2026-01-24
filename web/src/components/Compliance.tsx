@@ -141,11 +141,15 @@ export default function ComplianceFlow() {
     };
   }, []);
 
+  const realmRoles = (keycloak.tokenParsed?.realm_access?.roles || []).map((r) =>
+    String(r).toLowerCase()
+  );
   const isAdminContext =
     typeof window !== "undefined" &&
     (window.location.pathname.startsWith("/admin") ||
       keycloak.tokenParsed?.iss?.includes("/realms/master") ||
-      keycloak.tokenParsed?.realm_access?.roles?.includes("admin"));
+      realmRoles.includes("admin"));
+  const isOrgManager = realmRoles.includes("org_manager");
 
   const slugify = (text: string) =>
     text
@@ -279,7 +283,7 @@ export default function ComplianceFlow() {
   useEffect(() => {
     if (!initialized) return;
     if (!keycloak.authenticated || !keycloak.token) return;
-    if (isAdminContext) return; // skip compliance for platform admin context
+    if (isAdminContext || isOrgManager) return; // skip compliance for admin/org manager
     void loadStatusAndData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialized, keycloak.authenticated, keycloak.token]);
@@ -374,7 +378,7 @@ export default function ComplianceFlow() {
     }
   };
 
-  if (isAdminContext) {
+  if (isAdminContext || isOrgManager) {
     return null;
   }
 
@@ -685,7 +689,7 @@ export default function ComplianceFlow() {
                   <CheckCircle2 className="h-5 w-5" />
                   <div>
                     <p className="font-semibold">Quiz passed</p>
-                    <p className="text-sm">Score {result.score}%. Please attest to finish.</p>
+                    <p className="text-sm">Your Score: {result.score}%. Please attest to finish.</p>
                   </div>
                 </div>
               </div>

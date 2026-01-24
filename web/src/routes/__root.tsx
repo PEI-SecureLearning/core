@@ -5,18 +5,17 @@ import ComplianceFlow from "@/components/Compliance";
 
 
 const RootLayout = () => (
-  <>
-
-    <div className="h-screen bg-white shadow-md rounded-xl">
-      <Navbar />
-      <div className="h-[92%] flex flex-row">
-        <Sidebar />
+  <div className="h-screen bg-white shadow-md rounded-xl">
+    <Navbar />
+    <div className="h-[92%] flex flex-row">
+      <Sidebar />
+      <div className="flex-1 overflow-y-auto">
         <Outlet />
-        <ComplianceFlow />
       </div>
-      {/* <TanStackRouterDevtools /> */}
+      <ComplianceFlow />
     </div>
-  </>
+    {/* <TanStackRouterDevtools /> */}
+  </div>
 );
 
 export const Route = createRootRoute({ component: RootLayout });

@@ -1,126 +1,36 @@
 import hashlib
+import json
 import random
-from datetime import datetime, timedelta
-from importlib import resources
+from datetime import datetime
 from typing import Dict, List, Tuple
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from src.core.deps import SessionDep
 from src.core.security import oauth_2_scheme
-from src.models import ComplianceAcceptance
+from src.models import ComplianceAcceptance, TenantComplianceQuiz
+from src.services.compliance_defaults import DEFAULT_PASSING_SCORE
+from src.services.compliance_store import ensure_tenant_policy, ensure_tenant_quiz
 
 router = APIRouter()
 
 # Constants
-RESOURCE_PACKAGE = "src.resources"
-RESOURCE_NAME = "compliance.md"
-PASSING_SCORE = 80
-QUESTION_COUNT = 5
 COOLDOWN_SECONDS = 60
 
 # Simple in-memory cooldown tracker: (user_id, version) -> last_failed_at
 _cooldowns: Dict[Tuple[str, str], datetime] = {}
 
 
-# Question bank derived from Compliance1.md
+# Question bank derived from Compliance1.md (stored in DB per tenant)
 class Question(BaseModel):
     id: str
     prompt: str
     options: List[str]
     answer_index: int  # kept server-side
     feedback: str
-
-
-QUESTION_BANK: List[Question] = [
-    Question(
-        id="device-auth",
-        prompt="Which control is mandatory for devices used for company work?",
-        options=[
-            "Guest Wi-Fi access",
-            "Strong authentication (passwords/PIN/biometric)",
-            "No lock screen",
-            "Public hotspot auto-connect",
-        ],
-        answer_index=1,
-        feedback="Devices must be protected with strong authentication (password, PIN, biometrics).",
-    ),
-    Question(
-        id="vpn-public",
-        prompt="When on public or untrusted networks, what is required?",
-        options=[
-            "Nothing special, public Wi‑Fi is fine",
-            "Use a company-approved VPN at all times",
-            "Disable the lock screen",
-            "Share credentials over email",
-        ],
-        answer_index=1,
-        feedback="Always use the company-approved VPN when on public/untrusted networks.",
-    ),
-    Question(
-        id="auto-wifi",
-        prompt="What should be disabled regarding Wi‑Fi on public hotspots?",
-        options=[
-            "Wi‑Fi entirely",
-            "Automatic connection to known public hotspots",
-            "VPN",
-            "Antivirus updates",
-        ],
-        answer_index=1,
-        feedback="Disable automatic connection to known public hotspots to avoid unsafe access.",
-    ),
-    Question(
-        id="data-storage",
-        prompt="Where is it forbidden to store company data?",
-        options=[
-            "Approved cloud platforms or VPN-protected servers",
-            "Local folders on unapproved personal devices",
-            "Company servers via VPN",
-            "Authorized web portals",
-        ],
-        answer_index=1,
-        feedback="Do not store company data on unapproved personal devices or local folders.",
-    ),
-    Question(
-        id="personal-cloud",
-        prompt="What is the rule about syncing company data to personal cloud accounts?",
-        options=[
-            "Allowed if password-protected",
-            "Allowed with manager approval only",
-            "Not allowed unless explicitly approved",
-            "Always allowed",
-        ],
-        answer_index=2,
-        feedback="Syncing to personal cloud (e.g., Dropbox/iCloud) is not allowed without explicit approval.",
-    ),
-    Question(
-        id="incident-report",
-        prompt="What must you do if a device is lost or information is suspected compromised?",
-        options=[
-            "Wait 24 hours",
-            "Report immediately to the Information Security team",
-            "Try to fix it yourself",
-            "Ignore unless confirmed breach",
-        ],
-        answer_index=1,
-        feedback="Incidents must be reported immediately to the Information Security team.",
-    ),
-    Question(
-        id="screen-visibility",
-        prompt="What is required for a secure workspace setup at home?",
-        options=[
-            "Screens visible to family/guests",
-            "Use open/public Wi‑Fi",
-            "Screens not visible to unauthorized people",
-            "Disable VPN",
-        ],
-        answer_index=2,
-        feedback="Maintain a dedicated workspace where screens are not visible to unauthorized people.",
-    ),
-]
 
 
 class ComplianceDocumentResponse(BaseModel):
@@ -181,32 +91,17 @@ class ComplianceStatusResponse(BaseModel):
     score: int | None
 
 
-def _read_compliance_content() -> str:
-    # Primary: packaged resource (works in production builds)
-    try:
-        with resources.files(RESOURCE_PACKAGE).joinpath(RESOURCE_NAME).open(
-            "r", encoding="utf-8"
-        ) as f:
-            content = f.read()
-            if content:
-                return content
-    except FileNotFoundError:
-        pass
-
-    # Fallback: local file in src/resources for dev runs
-    fallback_path = Path(__file__).resolve().parents[1] / "resources" / RESOURCE_NAME
-    if fallback_path.exists():
-        content = fallback_path.read_text(encoding="utf-8")
-        if content:
-            return content
-
-    raise HTTPException(
-        status_code=500, detail="Compliance document not found or empty."
-    )
-
-
-def _compute_version(content: str) -> str:
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+def _compute_version(
+    content: str, quiz_bank: list[dict], passing_score: int, question_count: int
+) -> str:
+    payload = {
+        "content": content,
+        "quiz": quiz_bank,
+        "passing_score": passing_score,
+        "question_count": question_count,
+    }
+    serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
 def _extract_title(content: str) -> str:
@@ -243,47 +138,100 @@ def _get_user_and_tenant(token: str) -> Tuple[str, str | None]:
     return user_identifier, tenant
 
 
-def _select_questions() -> List[Question]:
-    if len(QUESTION_BANK) <= QUESTION_COUNT:
-        return QUESTION_BANK.copy()
-    return random.sample(QUESTION_BANK, QUESTION_COUNT)
+def _require_tenant(tenant: str | None) -> str:
+    if not tenant:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tenant could not be resolved from token.",
+        )
+    return tenant
+
+
+def _question_bank_from_record(record: TenantComplianceQuiz) -> List[Question]:
+    try:
+        return [Question(**q) for q in (record.question_bank or [])]
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500, detail="Invalid quiz data stored for tenant."
+        ) from exc
+
+
+def _select_questions(
+    question_bank: List[Question], question_count: int
+) -> List[Question]:
+    if len(question_bank) <= question_count:
+        return question_bank.copy()
+    return random.sample(question_bank, question_count)
+
+
+def _score_options(question_count: int) -> list[int]:
+    return sorted({int((i / question_count) * 100) for i in range(question_count + 1)})
+
+
+def _normalize_quiz_settings(
+    question_count: int | None, passing_score: int | None, bank_len: int
+) -> tuple[int, int]:
+    effective_count = max(1, min(question_count or 1, max(1, bank_len)))
+    options = _score_options(effective_count)
+    base_score = passing_score if passing_score is not None else DEFAULT_PASSING_SCORE
+    if base_score in options:
+        return effective_count, base_score
+    # Choose the closest allowed score to avoid unexpected failures
+    closest = min(options, key=lambda score: abs(score - base_score))
+    return effective_count, closest
 
 
 @router.get("/compliance/latest", response_model=ComplianceDocumentResponse)
-def get_latest_compliance():
-    content = _read_compliance_content()
-    version = _compute_version(content)
+def get_latest_compliance(
+    session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
+    _, tenant = _get_user_and_tenant(token)
+    tenant = _require_tenant(tenant)
+
+    policy = ensure_tenant_policy(session, tenant)
+    quiz = ensure_tenant_quiz(session, tenant)
+    content = policy.content_md
+    question_count, passing_score = _normalize_quiz_settings(
+        quiz.question_count, quiz.passing_score, len(quiz.question_bank or [])
+    )
+    version = _compute_version(
+        content,
+        quiz.question_bank or [],
+        passing_score,
+        question_count,
+    )
     title = _extract_title(content)
-    try:
-        updated_at = datetime.utcfromtimestamp(
-            resources.files(RESOURCE_PACKAGE).joinpath(RESOURCE_NAME).stat().st_mtime
-        )
-    except FileNotFoundError:
-        try:
-            fallback_path = (
-                Path(__file__).resolve().parents[1] / "resources" / RESOURCE_NAME
-            )
-            updated_at = datetime.utcfromtimestamp(fallback_path.stat().st_mtime)
-        except FileNotFoundError:
-            updated_at = datetime.utcnow()
     word_count = len(content.split())
     return ComplianceDocumentResponse(
         version=version,
         title=title,
-        updated_at=updated_at,
+        updated_at=policy.updated_at,
         word_count=word_count,
         content=content,
     )
 
 
 @router.get("/compliance/latest/quiz", response_model=QuizResponse)
-def get_latest_quiz():
-    content = _read_compliance_content()
-    version = _compute_version(content)
-    selected = _select_questions()
+def get_latest_quiz(session: SessionDep, token: str = Depends(oauth_2_scheme)):
+    _, tenant = _get_user_and_tenant(token)
+    tenant = _require_tenant(tenant)
+
+    policy = ensure_tenant_policy(session, tenant)
+    quiz = ensure_tenant_quiz(session, tenant)
+    question_bank = _question_bank_from_record(quiz)
+    question_count, passing_score = _normalize_quiz_settings(
+        quiz.question_count, quiz.passing_score, len(question_bank)
+    )
+    selected = _select_questions(question_bank, question_count)
+    version = _compute_version(
+        policy.content_md,
+        quiz.question_bank or [],
+        passing_score,
+        question_count,
+    )
     return QuizResponse(
         version=version,
-        required_score=PASSING_SCORE,
+        required_score=passing_score,
         question_count=len(selected),
         cooldown_seconds=COOLDOWN_SECONDS,
         questions=[
@@ -294,16 +242,29 @@ def get_latest_quiz():
 
 
 @router.post("/compliance/submit", response_model=SubmitResponse)
-def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
-    content = _read_compliance_content()
-    version = _compute_version(content)
+def submit_quiz(
+    payload: SubmitRequest, session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
+    user_id, tenant = _get_user_and_tenant(token)
+    tenant = _require_tenant(tenant)
+
+    policy = ensure_tenant_policy(session, tenant)
+    quiz = ensure_tenant_quiz(session, tenant)
+    question_count, passing_score = _normalize_quiz_settings(
+        quiz.question_count, quiz.passing_score, len(quiz.question_bank or [])
+    )
+    version = _compute_version(
+        policy.content_md,
+        quiz.question_bank or [],
+        passing_score,
+        question_count,
+    )
     if payload.version != version:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Outdated compliance version. Refresh and retry.",
         )
 
-    user_id, _ = _get_user_and_tenant(token)
     cooldown_key = (user_id, version)
     now = datetime.utcnow()
     last_failed_at = _cooldowns.get(cooldown_key)
@@ -315,8 +276,9 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
                 detail=f"Please wait {remaining} seconds before retrying the quiz.",
             )
 
-    question_map = {q.id: q for q in QUESTION_BANK}
-    if len(payload.answers) < min(QUESTION_COUNT, len(QUESTION_BANK)):
+    question_bank = _question_bank_from_record(quiz)
+    question_map = {q.id: q for q in question_bank}
+    if len(payload.answers) < min(question_count, len(question_bank)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Not enough answers provided.",
@@ -349,7 +311,7 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
 
     total = len(payload.answers)
     score = int((correct / total) * 100) if total else 0
-    passed = score >= PASSING_SCORE
+    passed = score >= passing_score
 
     if not passed:
         _cooldowns[cooldown_key] = now
@@ -363,7 +325,7 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
     return SubmitResponse(
         passed=passed,
         score=score,
-        required_score=PASSING_SCORE,
+        required_score=passing_score,
         cooldown_seconds_remaining=remaining_cooldown,
         feedback=feedback,
     )
@@ -371,9 +333,19 @@ def submit_quiz(payload: SubmitRequest, token: str = Depends(oauth_2_scheme)):
 
 @router.get("/compliance/status", response_model=ComplianceStatusResponse)
 def get_compliance_status(session: SessionDep, token: str = Depends(oauth_2_scheme)):
-    content = _read_compliance_content()
-    version = _compute_version(content)
     user_id, tenant = _get_user_and_tenant(token)
+    tenant = _require_tenant(tenant)
+    policy = ensure_tenant_policy(session, tenant)
+    quiz = ensure_tenant_quiz(session, tenant)
+    question_count, passing_score = _normalize_quiz_settings(
+        quiz.question_count, quiz.passing_score, len(quiz.question_bank or [])
+    )
+    version = _compute_version(
+        policy.content_md,
+        quiz.question_bank or [],
+        passing_score,
+        question_count,
+    )
 
     stmt = select(ComplianceAcceptance).where(
         ComplianceAcceptance.user_identifier == user_id,
@@ -394,21 +366,30 @@ def get_compliance_status(session: SessionDep, token: str = Depends(oauth_2_sche
 def accept_compliance(
     payload: AcceptRequest, session: SessionDep, token: str = Depends(oauth_2_scheme)
 ):
-    content = _read_compliance_content()
-    version = _compute_version(content)
+    user_id, tenant = _get_user_and_tenant(token)
+    tenant = _require_tenant(tenant)
+    policy = ensure_tenant_policy(session, tenant)
+    quiz = ensure_tenant_quiz(session, tenant)
+    question_count, passing_score = _normalize_quiz_settings(
+        quiz.question_count, quiz.passing_score, len(quiz.question_bank or [])
+    )
+    version = _compute_version(
+        policy.content_md,
+        quiz.question_bank or [],
+        passing_score,
+        question_count,
+    )
     if payload.version != version:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Outdated compliance version. Refresh and retry.",
         )
 
-    if payload.score < PASSING_SCORE:
+    if payload.score < passing_score:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Quiz must be passed before acceptance.",
         )
-
-    user_id, tenant = _get_user_and_tenant(token)
 
     stmt = select(ComplianceAcceptance).where(
         ComplianceAcceptance.user_identifier == user_id,

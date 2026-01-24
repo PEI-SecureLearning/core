@@ -11,6 +11,7 @@ from src.models.user import User
 from src.core.db import engine
 from src.core.mongo import get_tenant_logos_collection
 from src.models.user_group import UserGroup
+from src.services.compliance_store import ensure_tenant_policy, ensure_tenant_quiz
 
 
 # Singleton admin instance
@@ -155,6 +156,13 @@ def create_realm_in_keycloak(realm: RealmCreate, session: Session) -> RealmCreat
         except Exception:
             pass
 
+        # Seed default compliance policy + quiz for the tenant
+        try:
+            ensure_tenant_policy(session, realm.name)
+            ensure_tenant_quiz(session, realm.name)
+        except Exception:
+            pass
+
     return realm
 
 
@@ -187,6 +195,12 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
         session.add(db_realm)
         session.commit()
         session.refresh(db_realm)
+
+    try:
+        ensure_tenant_policy(session, realm_in.name)
+        ensure_tenant_quiz(session, realm_in.name)
+    except Exception:
+        pass
 
     # Ensure platform/admin users from Keycloak exist locally for FK usage
     try:
