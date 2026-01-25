@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import apiClient from "@/helper/header-injector";
 
@@ -11,12 +11,20 @@ type CompliancePolicyResponse = {
   updated_by?: string | null;
 };
 
+type ComplianceImportResponse = {
+  content_md: string;
+};
+
 type QuizQuestion = {
   id: string;
   prompt: string;
   options: string[];
   answer_index: number;
   feedback: string;
+};
+
+type QuizQuestionDraft = QuizQuestion & {
+  local_id: string;
 };
 
 type ComplianceQuizResponse = {
@@ -99,7 +107,7 @@ function ComplianceOrgManager() {
   const [policy, setPolicy] = useState<CompliancePolicyResponse | null>(null);
   const [policyDraft, setPolicyDraft] = useState("");
   const [quiz, setQuiz] = useState<ComplianceQuizResponse | null>(null);
-  const [quizDraft, setQuizDraft] = useState<QuizQuestion[]>([]);
+  const [quizDraft, setQuizDraft] = useState<QuizQuestionDraft[]>([]);
   const [quizSettings, setQuizSettings] = useState({
     question_count: 5,
     passing_score: 80,
@@ -108,10 +116,12 @@ function ComplianceOrgManager() {
   const [savingPolicy, setSavingPolicy] = useState(false);
   const [savingQuiz, setSavingQuiz] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [importingPolicy, setImportingPolicy] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [expandedQuestions, setExpandedQuestions] = useState<Set<string>>(
     () => new Set()
   );
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const policyUpdated = policy?.updated_at
     ? new Date(policy.updated_at).toLocaleString()
@@ -127,6 +137,12 @@ function ComplianceOrgManager() {
       raw.add(Math.floor((i / safeCount) * 100));
     }
     return Array.from(raw).sort((a, b) => a - b);
+  }, []);
+  const createLocalId = useCallback(() => {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+      return crypto.randomUUID();
+    }
+    return `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }, []);
   const possiblePassingScores = useMemo(
     () => scoreOptionsForCount(quizSettings.question_count || 1),
@@ -175,7 +191,12 @@ function ComplianceOrgManager() {
       setPolicy(policyRes);
       setPolicyDraft(policyRes.content_md || "");
       setQuiz(quizRes);
-      setQuizDraft(quizRes.question_bank || []);
+      setQuizDraft(
+        (quizRes.question_bank || []).map((question) => ({
+          ...question,
+          local_id: createLocalId(),
+        }))
+      );
       const initialCount = Math.min(
         Math.max(1, quizRes.question_count || 1),
         Math.max(1, quizRes.question_bank?.length || 1)
@@ -193,7 +214,7 @@ function ComplianceOrgManager() {
     } finally {
       setLoading(false);
     }
-  }, [realm, scoreOptionsForCount]);
+  }, [realm, scoreOptionsForCount, createLocalId]);
 
   useEffect(() => {
     if (!keycloak.authenticated) return;
@@ -226,6 +247,64 @@ function ComplianceOrgManager() {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!realm) {
+      setMessage("Realm not resolved.");
+      return;
+    }
+
+    setMessage(null);
+    setImportingPolicy(true);
+    try {
+      const filename = file.name.toLowerCase();
+      if (filename.endsWith(".md") || filename.endsWith(".markdown")) {
+        const text = await file.text();
+        if (!text.trim()) {
+          setMessage("Markdown file is empty.");
+          return;
+        }
+        setPolicyDraft(text);
+        setMessage("File imported. Review and click Save Policy.");
+        return;
+      }
+
+      if (filename.endsWith(".pdf") || file.type === "application/pdf") {
+        const formData = new FormData();
+        formData.append("file", file);
+        const resp = await apiClient
+          .post<ComplianceImportResponse>(
+            `/org-manager/${encodeURIComponent(realm)}/compliance/policy/import`,
+            formData,
+            { headers: { "Content-Type": "multipart/form-data" } }
+          )
+          .then((r) => r.data);
+        if (!resp.content_md?.trim()) {
+          setMessage("Imported PDF has no usable text.");
+          return;
+        }
+        setPolicyDraft(resp.content_md);
+        setMessage("PDF imported. Review and click Save Policy.");
+        return;
+      }
+
+      setMessage("Unsupported file type. Upload PDF or Markdown.");
+    } catch (err) {
+      console.error(err);
+      setMessage("Failed to import file.");
+    } finally {
+      setImportingPolicy(false);
+    }
+  };
+
   const saveQuiz = async () => {
     if (!realm) return;
     if (!quizDraft.length) {
@@ -235,18 +314,30 @@ function ComplianceOrgManager() {
     setSavingQuiz(true);
     setMessage(null);
     try {
+      const payloadQuestions = quizDraft.map((question) => ({
+        id: question.id,
+        prompt: question.prompt,
+        options: question.options,
+        answer_index: question.answer_index,
+        feedback: question.feedback,
+      }));
       const resp = await apiClient
         .put<ComplianceQuizResponse>(
           `/org-manager/${encodeURIComponent(realm)}/compliance/quiz`,
           {
-            question_bank: quizDraft,
+            question_bank: payloadQuestions,
             question_count: quizSettings.question_count,
             passing_score: quizSettings.passing_score,
           }
         )
         .then((r) => r.data);
       setQuiz(resp);
-      setQuizDraft(resp.question_bank || []);
+      setQuizDraft(
+        (resp.question_bank || []).map((question) => ({
+          ...question,
+          local_id: createLocalId(),
+        }))
+      );
       setQuizSettings({
         question_count: Math.min(
           Math.max(1, resp.question_count),
@@ -267,15 +358,6 @@ function ComplianceOrgManager() {
     setQuizDraft((prev) => {
       const next = [...prev];
       next[index] = { ...next[index], ...patch };
-      if (patch.id && patch.id !== prev[index].id) {
-        setExpandedQuestions((current) => {
-          if (!current.has(prev[index].id)) return current;
-          const nextSet = new Set(current);
-          nextSet.delete(prev[index].id);
-          nextSet.add(patch.id as string);
-          return nextSet;
-        });
-      }
       if (patch.options) {
         const maxIndex = Math.max(0, patch.options.length - 1);
         if (next[index].answer_index > maxIndex) {
@@ -288,21 +370,23 @@ function ComplianceOrgManager() {
 
   const addQuestion = () => {
     const newId = `q-${Date.now()}`;
+    const localId = createLocalId();
     setQuizDraft((prev) => [
       ...prev,
       {
         id: newId,
+        local_id: localId,
         prompt: "",
         options: ["", ""],
         answer_index: 0,
         feedback: "",
       },
     ]);
-    setExpandedQuestions((current) => new Set(current).add(newId));
+    setExpandedQuestions((current) => new Set(current).add(localId));
   };
 
   const removeQuestion = (index: number) => {
-    const removedId = quizDraft[index]?.id;
+    const removedId = quizDraft[index]?.local_id;
     setQuizDraft((prev) => prev.filter((_, idx) => idx !== index));
     if (removedId) {
       setExpandedQuestions((current) => {
@@ -362,13 +446,30 @@ function ComplianceOrgManager() {
               Last updated: {policyUpdated}
             </p>
           </div>
-          <button
-            className="px-4 py-2 rounded-lg bg-purple-700 text-white text-sm hover:bg-purple-800 disabled:opacity-60"
-            onClick={savePolicy}
-            disabled={savingPolicy}
-          >
-            {savingPolicy ? "Saving…" : "Save Policy"}
-          </button>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.markdown,.pdf,application/pdf,text/markdown"
+              className="hidden"
+              onChange={handleImportFile}
+            />
+            <button
+              type="button"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
+              onClick={handleImportClick}
+              disabled={importingPolicy}
+            >
+              {importingPolicy ? "Importing…" : "Import file"}
+            </button>
+            <button
+              className="px-4 py-2 rounded-lg bg-purple-700 text-white text-sm hover:bg-purple-800 disabled:opacity-60 cursor-pointer"
+              onClick={savePolicy}
+              disabled={savingPolicy}
+            >
+              {savingPolicy ? "Saving…" : "Save Policy"}
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <textarea
@@ -380,7 +481,7 @@ function ComplianceOrgManager() {
             <div className="flex justify-end pb-2">
               <button
                 type="button"
-                className="text-xs text-purple-700 hover:text-purple-800"
+                className="text-xs text-purple-700 hover:text-purple-800 cursor-pointer"
                 onClick={() => setShowPreviewModal(true)}
               >
                 Open full preview
@@ -406,13 +507,13 @@ function ComplianceOrgManager() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 cursor-pointer"
               onClick={addQuestion}
             >
               Add question
             </button>
             <button
-              className="px-4 py-2 rounded-lg bg-purple-700 text-white text-sm hover:bg-purple-800 disabled:opacity-60"
+              className="px-4 py-2 rounded-lg bg-purple-700 text-white text-sm hover:bg-purple-800 disabled:opacity-60 cursor-pointer"
               onClick={saveQuiz}
               disabled={savingQuiz}
             >
@@ -441,7 +542,7 @@ function ComplianceOrgManager() {
             <div className="mt-3 flex items-center justify-center gap-4">
               <button
                 type="button"
-                className="h-12 w-12 rounded-full border border-gray-200 text-xl font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-12 w-12 rounded-full border border-gray-200 text-xl font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 onClick={() =>
                   setQuizSettings((prev) => {
                     const nextCount = Math.max(1, prev.question_count - 1);
@@ -468,7 +569,7 @@ function ComplianceOrgManager() {
               </div>
               <button
                 type="button"
-                className="h-12 w-12 rounded-full bg-purple-700 text-white text-xl font-semibold hover:bg-purple-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-12 w-12 rounded-full bg-purple-700 text-white text-xl font-semibold hover:bg-purple-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 onClick={() =>
                   setQuizSettings((prev) => {
                     const nextCount = Math.min(
@@ -512,7 +613,7 @@ function ComplianceOrgManager() {
             <div className="mt-3 flex items-center justify-center gap-4">
               <button
                 type="button"
-                className="h-12 w-12 rounded-full border border-gray-200 text-xl font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-12 w-12 rounded-full border border-gray-200 text-xl font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 onClick={() =>
                   setQuizSettings((prev) => {
                     const options = scoreOptionsForCount(prev.question_count);
@@ -539,7 +640,7 @@ function ComplianceOrgManager() {
               </div>
               <button
                 type="button"
-                className="h-12 w-12 rounded-full bg-purple-700 text-white text-xl font-semibold hover:bg-purple-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-12 w-12 rounded-full bg-purple-700 text-white text-xl font-semibold hover:bg-purple-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 onClick={() =>
                   setQuizSettings((prev) => {
                     const options = scoreOptionsForCount(prev.question_count);
@@ -568,23 +669,23 @@ function ComplianceOrgManager() {
 
         {quizDraft.map((question, qIndex) => {
           const baseId = `question-${qIndex}`;
-          const isExpanded = expandedQuestions.has(question.id);
+          const isExpanded = expandedQuestions.has(question.local_id);
           return (
             <div
-              key={question.id}
+              key={question.local_id}
               className="rounded-lg border border-gray-200 bg-white p-4 space-y-3"
             >
               <div className="flex items-center justify-between gap-4">
                 <button
                   type="button"
-                  className="flex-1 text-left"
+                  className="flex-1 text-left cursor-pointer"
                   onClick={() =>
                     setExpandedQuestions((current) => {
                       const next = new Set(current);
-                      if (next.has(question.id)) {
-                        next.delete(question.id);
+                      if (next.has(question.local_id)) {
+                        next.delete(question.local_id);
                       } else {
-                        next.add(question.id);
+                        next.add(question.local_id);
                       }
                       return next;
                     })
@@ -600,14 +701,14 @@ function ComplianceOrgManager() {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className="text-xs text-purple-700 hover:text-purple-800"
+                    className="text-xs text-purple-700 hover:text-purple-800 cursor-pointer"
                     onClick={() =>
                       setExpandedQuestions((current) => {
                         const next = new Set(current);
-                        if (next.has(question.id)) {
-                          next.delete(question.id);
+                        if (next.has(question.local_id)) {
+                          next.delete(question.local_id);
                         } else {
-                          next.add(question.id);
+                          next.add(question.local_id);
                         }
                         return next;
                       })
@@ -617,7 +718,7 @@ function ComplianceOrgManager() {
                   </button>
                   <button
                     type="button"
-                    className="text-xs text-red-600 hover:text-red-700"
+                    className="text-xs text-red-600 hover:text-red-700 cursor-pointer"
                     onClick={() => removeQuestion(qIndex)}
                   >
                     Remove
@@ -668,7 +769,7 @@ function ComplianceOrgManager() {
                       <p className="text-xs text-gray-500">Options</p>
                       <button
                         type="button"
-                        className="text-xs text-purple-700 hover:text-purple-800"
+                        className="text-xs text-purple-700 hover:text-purple-800 cursor-pointer"
                         onClick={() => addOption(qIndex)}
                       >
                         Add option
@@ -690,7 +791,7 @@ function ComplianceOrgManager() {
                         />
                         <button
                           type="button"
-                          className="text-xs text-red-600 hover:text-red-700 px-2"
+                          className="text-xs text-red-600 hover:text-red-700 px-2 cursor-pointer"
                           onClick={() => removeOption(qIndex, optIndex)}
                         >
                           Remove
@@ -761,7 +862,7 @@ function ComplianceOrgManager() {
               </div>
               <button
                 type="button"
-                className="text-sm text-gray-600 hover:text-gray-800"
+                className="text-sm text-gray-600 hover:text-gray-800 cursor-pointer"
                 onClick={() => setShowPreviewModal(false)}
               >
                 Close

@@ -26,11 +26,16 @@ from src.services.compliance_store import (
     upsert_tenant_policy,
     upsert_tenant_quiz,
 )
+from src.services.pdf_to_markdown import pdf_bytes_to_markdown
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.services import templates as template_service
 
 router = APIRouter()
+
+MAX_POLICY_UPLOAD_BYTES = 5 * 1024 * 1024
+ALLOWED_PDF_TYPES = {"application/pdf"}
+ALLOWED_MD_TYPES = {"text/markdown", "text/plain"}
 
 
 class UserCreateRequest(BaseModel):
@@ -440,6 +445,56 @@ def update_compliance_policy(
         updated_at=record.updated_at,
         updated_by=record.updated_by,
     )
+
+
+@router.post(
+    "/{realm}/compliance/policy/import",
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
+)
+async def import_compliance_policy(
+    realm: str,
+    file: UploadFile = File(...),
+    token: str = Depends(oauth_2_scheme),
+):
+    _validate_realm_access(token, realm)
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="No file uploaded.")
+
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    if len(data) > MAX_POLICY_UPLOAD_BYTES:
+        raise HTTPException(status_code=400, detail="File exceeds 5MB limit.")
+
+    filename = file.filename.lower()
+    content_type = (file.content_type or "").lower()
+
+    if filename.endswith((".md", ".markdown")) or content_type in ALLOWED_MD_TYPES:
+        try:
+            content_md = data.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise HTTPException(
+                status_code=400, detail="Markdown file must be UTF-8 encoded."
+            ) from exc
+    elif filename.endswith(".pdf") or content_type in ALLOWED_PDF_TYPES:
+        try:
+            content_md = pdf_bytes_to_markdown(data)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to extract text from PDF.",
+            ) from exc
+    else:
+        raise HTTPException(
+            status_code=400, detail="Unsupported file type. Upload PDF or Markdown."
+        )
+
+    if not content_md.strip():
+        raise HTTPException(
+            status_code=400, detail="Uploaded file has no usable text."
+        )
+
+    return {"content_md": content_md}
 
 
 @router.get(
