@@ -1,7 +1,7 @@
 import hashlib
 import json
 import random
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Dict, List, Tuple
 
 import jwt
@@ -147,6 +147,11 @@ def _require_tenant(tenant: str | None) -> str:
     return tenant
 
 
+def _utcnow() -> datetime:
+    """Return a naive UTC datetime (backwards compatible with existing schema)."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 def _question_bank_from_record(record: TenantComplianceQuiz) -> List[Question]:
     try:
         return [Question(**q) for q in (record.question_bank or [])]
@@ -179,6 +184,66 @@ def _normalize_quiz_settings(
     # Choose the closest allowed score to avoid unexpected failures
     closest = min(options, key=lambda score: abs(score - base_score))
     return effective_count, closest
+
+
+def _enforce_version(expected: str, provided: str) -> None:
+    if provided != expected:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Outdated compliance version. Refresh and retry.",
+        )
+
+
+def _enforce_cooldown(user_id: str, version: str) -> datetime:
+    cooldown_key = (user_id, version)
+    now = _utcnow()
+    last_failed_at = _cooldowns.get(cooldown_key)
+    if last_failed_at:
+        remaining = COOLDOWN_SECONDS - int((now - last_failed_at).total_seconds())
+        if remaining > 0:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"Please wait {remaining} seconds before retrying the quiz.",
+            )
+    return now
+
+
+def _evaluate_answers(
+    answers: List[Answer], question_map: dict[str, Question], required_count: int
+) -> tuple[int, int, List[QuestionFeedback]]:
+    if len(answers) < required_count:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough answers provided.",
+        )
+
+    correct = 0
+    feedback: List[QuestionFeedback] = []
+    evaluated_questions: set[str] = set()
+
+    for ans in answers:
+        question = question_map.get(ans.id)
+        if not question:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown question id: {ans.id}",
+            )
+        if ans.id in evaluated_questions:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Duplicate answer for question id: {ans.id}",
+            )
+        evaluated_questions.add(ans.id)
+
+        is_correct = ans.choice == question.answer_index
+        if is_correct:
+            correct += 1
+        feedback.append(
+            QuestionFeedback(id=ans.id, correct=is_correct, feedback=question.feedback)
+        )
+
+    total = len(answers)
+    return correct, total, feedback
 
 
 @router.get("/compliance/latest", response_model=ComplianceDocumentResponse)
@@ -259,60 +324,19 @@ def submit_quiz(
         passing_score,
         question_count,
     )
-    if payload.version != version:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Outdated compliance version. Refresh and retry.",
-        )
-
-    cooldown_key = (user_id, version)
-    now = datetime.utcnow()
-    last_failed_at = _cooldowns.get(cooldown_key)
-    if last_failed_at:
-        remaining = COOLDOWN_SECONDS - int((now - last_failed_at).total_seconds())
-        if remaining > 0:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Please wait {remaining} seconds before retrying the quiz.",
-            )
+    _enforce_version(version, payload.version)
+    now = _enforce_cooldown(user_id, version)
 
     question_bank = _question_bank_from_record(quiz)
     question_map = {q.id: q for q in question_bank}
-    if len(payload.answers) < min(question_count, len(question_bank)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough answers provided.",
-        )
-
-    correct = 0
-    feedback: List[QuestionFeedback] = []
-    evaluated_questions = set()
-
-    for ans in payload.answers:
-        question = question_map.get(ans.id)
-        if not question:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Unknown question id: {ans.id}",
-            )
-        if ans.id in evaluated_questions:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Duplicate answer for question id: {ans.id}",
-            )
-        evaluated_questions.add(ans.id)
-
-        is_correct = ans.choice == question.answer_index
-        if is_correct:
-            correct += 1
-        feedback.append(
-            QuestionFeedback(id=ans.id, correct=is_correct, feedback=question.feedback)
-        )
-
-    total = len(payload.answers)
+    required_answers = min(question_count, len(question_bank))
+    correct, total, feedback = _evaluate_answers(
+        payload.answers, question_map, required_answers
+    )
     score = int((correct / total) * 100) if total else 0
     passed = score >= passing_score
 
+    cooldown_key = (user_id, version)
     if not passed:
         _cooldowns[cooldown_key] = now
     else:
@@ -397,7 +421,7 @@ def accept_compliance(
         ComplianceAcceptance.version == version,
     )
     existing = session.exec(stmt).first()
-    now = datetime.utcnow()
+    now = _utcnow()
 
     if existing:
         existing.accepted_at = now

@@ -141,15 +141,18 @@ export default function ComplianceFlow() {
     };
   }, []);
 
-  const realmRoles = (keycloak.tokenParsed?.realm_access?.roles || []).map((r) =>
-    String(r).toLowerCase()
-  );
+  const realmRoles = useMemo(() => {
+    const roles = (keycloak.tokenParsed?.realm_access?.roles || []).map((r) =>
+      String(r).toLowerCase()
+    );
+    return new Set(roles);
+  }, [keycloak.tokenParsed]);
   const isAdminContext =
     typeof window !== "undefined" &&
     (window.location.pathname.startsWith("/admin") ||
       keycloak.tokenParsed?.iss?.includes("/realms/master") ||
-      realmRoles.includes("admin"));
-  const isOrgManager = realmRoles.includes("org_manager");
+      realmRoles.has("admin"));
+  const isOrgManager = realmRoles.has("org_manager");
 
   const slugify = (text: string) =>
     text
@@ -273,7 +276,7 @@ export default function ComplianceFlow() {
           }
         }
       }
-    } catch (err) {
+    } catch {
       setError("Unable to load compliance data. Please try again.");
     } finally {
       setLoading(false);

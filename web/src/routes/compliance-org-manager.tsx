@@ -218,7 +218,9 @@ function ComplianceOrgManager() {
 
   useEffect(() => {
     if (!keycloak.authenticated) return;
-    void loadCompliance();
+    loadCompliance().catch((err) => {
+      console.error(err);
+    });
   }, [keycloak.authenticated, loadCompliance]);
 
   const savePolicy = async () => {

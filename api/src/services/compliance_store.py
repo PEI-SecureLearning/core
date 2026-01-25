@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlmodel import Session, select
 
@@ -9,6 +9,11 @@ from src.services.compliance_defaults import (
     DEFAULT_QUESTION_BANK,
     read_default_policy_markdown,
 )
+
+
+def _utcnow() -> datetime:
+    """Return a naive UTC datetime (backwards compatible with existing schema)."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 def ensure_tenant_policy(session: Session, tenant: str) -> TenantCompliancePolicy:
@@ -57,7 +62,7 @@ def upsert_tenant_policy(
 ) -> TenantCompliancePolicy:
     stmt = select(TenantCompliancePolicy).where(TenantCompliancePolicy.tenant == tenant)
     record = session.exec(stmt).first()
-    now = datetime.utcnow()
+    now = _utcnow()
     if record:
         record.content_md = content_md
         record.updated_at = now
@@ -87,7 +92,7 @@ def upsert_tenant_quiz(
 ) -> TenantComplianceQuiz:
     stmt = select(TenantComplianceQuiz).where(TenantComplianceQuiz.tenant == tenant)
     record = session.exec(stmt).first()
-    now = datetime.utcnow()
+    now = _utcnow()
     if record:
         record.question_bank = question_bank
         if question_count is not None:
