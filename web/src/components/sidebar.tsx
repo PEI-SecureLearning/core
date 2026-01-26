@@ -68,6 +68,12 @@ const userLinks: SidebarLinkProps[] = [
     roles: ["ORG_MANAGER"],
   },
   {
+    href: "/compliance-org-manager",
+    label: "Compliance",
+    icon: ShieldCheck,
+    roles: ["ORG_MANAGER"],
+  },
+  {
     href: "/tenants-org-manager",
     label: "User Management",
     icon: Users,

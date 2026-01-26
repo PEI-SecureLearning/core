@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TenantsOrgManagerRouteImport } from './routes/tenants-org-manager'
+import { Route as ComplianceOrgManagerRouteImport } from './routes/compliance-org-manager'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -42,6 +43,11 @@ import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants
 const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
   id: '/tenants-org-manager',
   path: '/tenants-org-manager',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplianceOrgManagerRoute = ComplianceOrgManagerRouteImport.update({
+  id: '/compliance-org-manager',
+  path: '/compliance-org-manager',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TemplatesRoute = TemplatesRouteImport.update({
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
@@ -224,6 +231,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
+  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/terms': typeof AdminTermsRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/compliance-org-manager'
     | '/tenants-org-manager'
     | '/admin/logs'
     | '/admin/terms'
@@ -319,6 +329,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/compliance-org-manager'
     | '/tenants-org-manager'
     | '/admin/logs'
     | '/admin/terms'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
+    | '/compliance-org-manager'
     | '/tenants-org-manager'
     | '/admin/logs'
     | '/admin/terms'
@@ -382,6 +394,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
+  ComplianceOrgManagerRoute: typeof ComplianceOrgManagerRoute
   TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewRoute: typeof CampaignsNewRoute
@@ -400,6 +413,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/compliance-org-manager': {
+      id: '/compliance-org-manager'
+      path: '/compliance-org-manager'
+      fullPath: '/compliance-org-manager'
+      preLoaderRoute: typeof ComplianceOrgManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tenants-org-manager': {
       id: '/tenants-org-manager'
       path: '/tenants-org-manager'
@@ -637,6 +657,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
+  ComplianceOrgManagerRoute: ComplianceOrgManagerRoute,
   TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewRoute: CampaignsNewRoute,

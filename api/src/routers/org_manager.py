@@ -5,6 +5,12 @@ These endpoints use the user's access token for Keycloak authorization
 instead of the admin service account.
 """
 
+from datetime import datetime
+import os
+from urllib.parse import urlparse, urlunparse
+
+import jwt
+from jwt import PyJWKClient
 from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
 import csv
 import codecs
@@ -17,11 +23,23 @@ from src.core.deps import SessionDep
 from src.services import org_manager as org_manager_service
 from src.services.campaign import CampaignService
 from src.services.realm import realm_from_token
+from src.services.compliance_store import (
+    ensure_tenant_policy,
+    ensure_tenant_quiz,
+    upsert_tenant_policy,
+    upsert_tenant_quiz,
+)
+from src.services.pdf_to_markdown import pdf_bytes_to_markdown
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.services import templates as template_service
 
 router = APIRouter()
+
+MAX_POLICY_UPLOAD_BYTES = 5 * 1024 * 1024
+ALLOWED_PDF_TYPES = {"application/pdf"}
+ALLOWED_MD_TYPES = {"text/markdown", "text/plain"}
+AUTH_SERVER_URL = os.getenv("KEYCLOAK_INTERNAL_URL") or os.getenv("KEYCLOAK_URL")
 
 
 class UserCreateRequest(BaseModel):
@@ -36,6 +54,40 @@ class GroupCreateRequest(BaseModel):
     name: str
 
 
+class CompliancePolicyPayload(BaseModel):
+    content_md: str
+
+
+class QuizQuestionPayload(BaseModel):
+    id: str
+    prompt: str
+    options: list[str]
+    answer_index: int
+    feedback: str
+
+
+class ComplianceQuizPayload(BaseModel):
+    question_bank: list[QuizQuestionPayload]
+    question_count: int | None = None
+    passing_score: int | None = None
+
+
+class CompliancePolicyResponse(BaseModel):
+    tenant: str
+    content_md: str
+    updated_at: datetime
+    updated_by: str | None = None
+
+
+class ComplianceQuizResponse(BaseModel):
+    tenant: str
+    question_bank: list[QuizQuestionPayload]
+    question_count: int
+    passing_score: int
+    updated_at: datetime
+    updated_by: str | None = None
+
+
 def _validate_realm_access(token: str, realm: str) -> None:
     """Validate that the token's realm matches the requested realm."""
     token_realm = realm_from_token(token)
@@ -44,6 +96,130 @@ def _validate_realm_access(token: str, realm: str) -> None:
             status_code=403,
             detail="Realm mismatch: token realm does not match requested realm.",
         )
+
+
+def _with_docker_host(base_url: str) -> str | None:
+    parsed = urlparse(base_url)
+    if parsed.hostname not in {"localhost", "127.0.0.1"}:
+        return None
+    host = "host.docker.internal"
+    netloc = f"{host}:{parsed.port}" if parsed.port else host
+    return urlunparse((parsed.scheme, netloc, parsed.path, "", "", ""))
+
+
+def _decode_token_verified(token: str, realm: str) -> dict:
+    if not AUTH_SERVER_URL:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="KEYCLOAK_URL is not configured",
+        )
+    candidates = [AUTH_SERVER_URL]
+    extra_candidates: list[str] = []
+    for base_url in candidates:
+        docker_host = _with_docker_host(base_url)
+        if docker_host and docker_host not in candidates and docker_host not in extra_candidates:
+            extra_candidates.append(docker_host)
+    if extra_candidates:
+        candidates.extend(extra_candidates)
+
+    last_exc: Exception | None = None
+    for base_url in candidates:
+        jwks_url = f"{base_url}/realms/{realm}/protocol/openid-connect/certs"
+        try:
+            jwk_client = PyJWKClient(jwks_url)
+            signing_key = jwk_client.get_signing_key_from_jwt(token)
+            return jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=["RS256"],
+                options={"verify_aud": False},
+            )
+        except Exception as exc:
+            last_exc = exc
+            continue
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+    ) from last_exc
+
+
+def _resolve_user_identifier(token: str, realm: str) -> str | None:
+    try:
+        decoded = _decode_token_verified(token, realm)
+    except Exception:
+        return None
+    return (
+        decoded.get("preferred_username") or decoded.get("email") or decoded.get("sub")
+    )
+
+
+def _validate_question_bank(questions: list[QuizQuestionPayload]) -> list[dict]:
+    if not questions:
+        raise HTTPException(
+            status_code=400, detail="Quiz question bank cannot be empty."
+        )
+    seen_ids: set[str] = set()
+    for question in questions:
+        if not question.id.strip():
+            raise HTTPException(status_code=400, detail="Question id is required.")
+        if question.id in seen_ids:
+            raise HTTPException(
+                status_code=400, detail=f"Duplicate question id: {question.id}"
+            )
+        seen_ids.add(question.id)
+        if not question.prompt.strip():
+            raise HTTPException(
+                status_code=400, detail=f"Question '{question.id}' is missing a prompt."
+            )
+        if len(question.options) < 2:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Question '{question.id}' must have at least two options.",
+            )
+        if question.answer_index < 0 or question.answer_index >= len(question.options):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Question '{question.id}' has an invalid answer_index.",
+            )
+        if not question.feedback.strip():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Question '{question.id}' is missing feedback text.",
+            )
+    return [q.model_dump() for q in questions]
+
+
+def _quiz_score_options(question_count: int) -> list[int]:
+    return sorted({int((i / question_count) * 100) for i in range(question_count + 1)})
+
+
+def _validate_quiz_settings(
+    question_count: int | None, passing_score: int | None, bank_len: int
+) -> tuple[int | None, int | None]:
+    if question_count is not None and question_count <= 0:
+        raise HTTPException(
+            status_code=400, detail="Question count must be a positive integer."
+        )
+    if question_count is not None and question_count > bank_len:
+        raise HTTPException(
+            status_code=400,
+            detail="Question count cannot exceed the number of questions in the bank.",
+        )
+    if passing_score is not None and not (0 <= passing_score <= 100):
+        raise HTTPException(
+            status_code=400, detail="Passing score must be between 0 and 100."
+        )
+    if (
+        passing_score is not None
+        and question_count is not None
+        and passing_score not in _quiz_score_options(question_count)
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Passing score must match possible quiz outcomes.",
+        )
+    return question_count, passing_score
 
 
 # ============ User Endpoints ============
@@ -165,7 +341,7 @@ def delete_realm_campaign(
 def upload_user_csv(file: UploadFile = File(...)):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
     reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
-    data = [row for row in reader]
+    data = list(reader)
     file.file.close()
     return data
 
@@ -267,3 +443,164 @@ def remove_user_from_group(
     _validate_realm_access(token, realm)
     org_manager_service.remove_user_from_group(realm, token, user_id, group_id)
     return None
+
+
+# ============ Compliance (Tenant) Endpoints ============
+
+
+@router.get(
+    "/{realm}/compliance/policy",
+    response_model=CompliancePolicyResponse,
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
+)
+def get_compliance_policy(
+    realm: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
+    _validate_realm_access(token, realm)
+    record = ensure_tenant_policy(session, realm)
+    return CompliancePolicyResponse(
+        tenant=realm,
+        content_md=record.content_md,
+        updated_at=record.updated_at,
+        updated_by=record.updated_by,
+    )
+
+
+@router.put(
+    "/{realm}/compliance/policy",
+    response_model=CompliancePolicyResponse,
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
+)
+def update_compliance_policy(
+    realm: str,
+    payload: CompliancePolicyPayload,
+    session: SessionDep,
+    token: str = Depends(oauth_2_scheme),
+):
+    _validate_realm_access(token, realm)
+    content = (payload.content_md or "").strip()
+    if not content:
+        raise HTTPException(
+            status_code=400, detail="Compliance policy Markdown cannot be empty."
+        )
+    updated_by = _resolve_user_identifier(token, realm)
+    record = upsert_tenant_policy(
+        session, realm, content, updated_by=updated_by, published=True
+    )
+    return CompliancePolicyResponse(
+        tenant=realm,
+        content_md=record.content_md,
+        updated_at=record.updated_at,
+        updated_by=record.updated_by,
+    )
+
+
+@router.post(
+    "/{realm}/compliance/policy/import",
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
+)
+async def import_compliance_policy(
+    realm: str,
+    file: UploadFile = File(...),
+    token: str = Depends(oauth_2_scheme),
+):
+    _validate_realm_access(token, realm)
+    if not file or not file.filename:
+        raise HTTPException(status_code=400, detail="No file uploaded.")
+
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    if len(data) > MAX_POLICY_UPLOAD_BYTES:
+        raise HTTPException(status_code=400, detail="File exceeds 5MB limit.")
+
+    filename = file.filename.lower()
+    content_type = (file.content_type or "").lower()
+
+    if filename.endswith((".md", ".markdown")) or content_type in ALLOWED_MD_TYPES:
+        try:
+            content_md = data.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise HTTPException(
+                status_code=400, detail="Markdown file must be UTF-8 encoded."
+            ) from exc
+    elif filename.endswith(".pdf") or content_type in ALLOWED_PDF_TYPES:
+        try:
+            content_md = pdf_bytes_to_markdown(data)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to extract text from PDF.",
+            ) from exc
+    else:
+        raise HTTPException(
+            status_code=400, detail="Unsupported file type. Upload PDF or Markdown."
+        )
+
+    if not content_md.strip():
+        raise HTTPException(
+            status_code=400, detail="Uploaded file has no usable text."
+        )
+
+    return {"content_md": content_md}
+
+
+@router.get(
+    "/{realm}/compliance/quiz",
+    response_model=ComplianceQuizResponse,
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
+)
+def get_compliance_quiz(
+    realm: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
+):
+    _validate_realm_access(token, realm)
+    record = ensure_tenant_quiz(session, realm)
+    question_bank = [
+        QuizQuestionPayload(**q) for q in (record.question_bank or [])
+    ]
+    return ComplianceQuizResponse(
+        tenant=realm,
+        question_bank=question_bank,
+        question_count=record.question_count,
+        passing_score=record.passing_score,
+        updated_at=record.updated_at,
+        updated_by=record.updated_by,
+    )
+
+
+@router.put(
+    "/{realm}/compliance/quiz",
+    response_model=ComplianceQuizResponse,
+    dependencies=[Depends(valid_resource_access("org_manager", "manage"))],
+)
+def update_compliance_quiz(
+    realm: str,
+    payload: ComplianceQuizPayload,
+    session: SessionDep,
+    token: str = Depends(oauth_2_scheme),
+):
+    _validate_realm_access(token, realm)
+    question_bank = _validate_question_bank(payload.question_bank)
+    question_count, passing_score = _validate_quiz_settings(
+        payload.question_count, payload.passing_score, len(question_bank)
+    )
+    updated_by = _resolve_user_identifier(token, realm)
+    record = upsert_tenant_quiz(
+        session,
+        realm,
+        question_bank,
+        question_count=question_count,
+        passing_score=passing_score,
+        updated_by=updated_by,
+    )
+    question_bank_payload = [
+        QuizQuestionPayload(**q) for q in (record.question_bank or [])
+    ]
+    return ComplianceQuizResponse(
+        tenant=realm,
+        question_bank=question_bank_payload,
+        question_count=record.question_count,
+        passing_score=record.passing_score,
+        updated_at=record.updated_at,
+        updated_by=record.updated_by,
+    )
