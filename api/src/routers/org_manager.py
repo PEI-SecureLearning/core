@@ -6,8 +6,11 @@ instead of the admin service account.
 """
 
 from datetime import datetime
+import os
+from urllib.parse import urlparse, urlunparse
 
 import jwt
+from jwt import PyJWKClient
 from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
 import csv
 import codecs
@@ -36,6 +39,7 @@ router = APIRouter()
 MAX_POLICY_UPLOAD_BYTES = 5 * 1024 * 1024
 ALLOWED_PDF_TYPES = {"application/pdf"}
 ALLOWED_MD_TYPES = {"text/markdown", "text/plain"}
+AUTH_SERVER_URL = os.getenv("KEYCLOAK_INTERNAL_URL") or os.getenv("KEYCLOAK_URL")
 
 
 class UserCreateRequest(BaseModel):
@@ -94,11 +98,55 @@ def _validate_realm_access(token: str, realm: str) -> None:
         )
 
 
-def _resolve_user_identifier(token: str) -> str | None:
-    try:
-        decoded = jwt.decode(
-            token, options={"verify_signature": False, "verify_aud": False}
+def _with_docker_host(base_url: str) -> str | None:
+    parsed = urlparse(base_url)
+    if parsed.hostname not in {"localhost", "127.0.0.1"}:
+        return None
+    host = "host.docker.internal"
+    netloc = f"{host}:{parsed.port}" if parsed.port else host
+    return urlunparse((parsed.scheme, netloc, parsed.path, "", "", ""))
+
+
+def _decode_token_verified(token: str, realm: str) -> dict:
+    if not AUTH_SERVER_URL:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="KEYCLOAK_URL is not configured",
         )
+    candidates = [AUTH_SERVER_URL]
+    extra_candidates: list[str] = []
+    for base_url in candidates:
+        docker_host = _with_docker_host(base_url)
+        if docker_host and docker_host not in candidates and docker_host not in extra_candidates:
+            extra_candidates.append(docker_host)
+    if extra_candidates:
+        candidates.extend(extra_candidates)
+
+    last_exc: Exception | None = None
+    for base_url in candidates:
+        jwks_url = f"{base_url}/realms/{realm}/protocol/openid-connect/certs"
+        try:
+            jwk_client = PyJWKClient(jwks_url)
+            signing_key = jwk_client.get_signing_key_from_jwt(token)
+            return jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=["RS256"],
+                options={"verify_aud": False},
+            )
+        except Exception as exc:
+            last_exc = exc
+            continue
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+    ) from last_exc
+
+
+def _resolve_user_identifier(token: str, realm: str) -> str | None:
+    try:
+        decoded = _decode_token_verified(token, realm)
     except Exception:
         return None
     return (
@@ -293,7 +341,7 @@ def delete_realm_campaign(
 def upload_user_csv(file: UploadFile = File(...)):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
     reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
-    data = [row for row in reader]
+    data = list(reader)
     file.file.close()
     return data
 
@@ -435,7 +483,7 @@ def update_compliance_policy(
         raise HTTPException(
             status_code=400, detail="Compliance policy Markdown cannot be empty."
         )
-    updated_by = _resolve_user_identifier(token)
+    updated_by = _resolve_user_identifier(token, realm)
     record = upsert_tenant_policy(
         session, realm, content, updated_by=updated_by, published=True
     )
@@ -536,7 +584,7 @@ def update_compliance_quiz(
     question_count, passing_score = _validate_quiz_settings(
         payload.question_count, payload.passing_score, len(question_bank)
     )
-    updated_by = _resolve_user_identifier(token)
+    updated_by = _resolve_user_identifier(token, realm)
     record = upsert_tenant_quiz(
         session,
         realm,

@@ -186,12 +186,10 @@ def _decode_token_verified(token: str) -> dict:
         try:
             jwk_client = PyJWKClient(jwks_url)
             signing_key = jwk_client.get_signing_key_from_jwt(token)
-            header = jwt.get_unverified_header(token)
-            algorithm = header.get("alg") or "RS256"
             decoded = jwt.decode(
                 token,
                 signing_key.key,
-                algorithms=[algorithm],
+                algorithms=["RS256"],
                 options={"verify_aud": False},
             )
             return decoded
