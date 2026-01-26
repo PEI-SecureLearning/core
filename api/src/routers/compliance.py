@@ -1,10 +1,14 @@
+import base64
 import hashlib
 import json
+import os
 import random
 from datetime import UTC, datetime
 from typing import Dict, List, Tuple
+from urllib.parse import urlparse, urlunparse
 
 import jwt
+from jwt import PyJWKClient
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import select
@@ -19,6 +23,8 @@ router = APIRouter()
 
 # Constants
 COOLDOWN_SECONDS = 60
+REALM_PATH = "/realms/"
+AUTH_SERVER_URL = os.getenv("KEYCLOAK_INTERNAL_URL") or os.getenv("KEYCLOAK_URL")
 
 # Simple in-memory cooldown tracker: (user_id, version) -> last_failed_at
 _cooldowns: Dict[Tuple[str, str], datetime] = {}
@@ -111,15 +117,96 @@ def _extract_title(content: str) -> str:
     return "Compliance Policy"
 
 
-def _get_user_and_tenant(token: str) -> Tuple[str, str | None]:
+def _parse_unverified_claims(token: str) -> dict:
     try:
-        claims = jwt.decode(
-            token, options={"verify_signature": False, "verify_aud": False}
-        )
+        parts = token.split(".")
+        if len(parts) != 3:
+            raise ValueError("Malformed JWT")
+        payload = parts[1]
+        padding = "=" * (-len(payload) % 4)
+        decoded = base64.urlsafe_b64decode(payload + padding)
+        return json.loads(decoded)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         ) from exc
+
+
+def _get_realm_from_iss(iss: str | None) -> str:
+    if not iss or REALM_PATH not in iss:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token: missing issuer",
+        )
+    return iss.split(REALM_PATH)[-1]
+
+
+def _get_issuer_base(iss: str | None) -> str | None:
+    if not iss:
+        return None
+    if REALM_PATH in iss:
+        return iss.split(REALM_PATH)[0]
+    return iss.rsplit("/", 1)[0] if "/" in iss else None
+
+
+def _with_docker_host(base_url: str) -> str | None:
+    parsed = urlparse(base_url)
+    if parsed.hostname not in {"localhost", "127.0.0.1"}:
+        return None
+    host = "host.docker.internal"
+    netloc = f"{host}:{parsed.port}" if parsed.port else host
+    return urlunparse((parsed.scheme, netloc, parsed.path, "", "", ""))
+
+
+def _decode_token_verified(token: str) -> dict:
+    claims = _parse_unverified_claims(token)
+    realm = _get_realm_from_iss(claims.get("iss"))
+    issuer_base = _get_issuer_base(claims.get("iss"))
+    candidates = []
+    if AUTH_SERVER_URL:
+        candidates.append(AUTH_SERVER_URL)
+    if issuer_base and issuer_base not in candidates:
+        candidates.append(issuer_base)
+    extra_candidates: list[str] = []
+    for base_url in candidates:
+        docker_host = _with_docker_host(base_url)
+        if docker_host and docker_host not in candidates and docker_host not in extra_candidates:
+            extra_candidates.append(docker_host)
+    if extra_candidates:
+        candidates.extend(extra_candidates)
+    if not candidates:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="KEYCLOAK_URL is not configured",
+        )
+
+    last_exc: Exception | None = None
+    for base_url in candidates:
+        jwks_url = f"{base_url}/realms/{realm}/protocol/openid-connect/certs"
+        try:
+            jwk_client = PyJWKClient(jwks_url)
+            signing_key = jwk_client.get_signing_key_from_jwt(token)
+            header = jwt.get_unverified_header(token)
+            algorithm = header.get("alg") or "RS256"
+            decoded = jwt.decode(
+                token,
+                signing_key.key,
+                algorithms=[algorithm],
+                options={"verify_aud": False},
+            )
+            return decoded
+        except Exception as exc:
+            last_exc = exc
+            continue
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token",
+    ) from last_exc
+
+
+def _get_user_and_tenant(token: str) -> Tuple[str, str | None]:
+    claims = _decode_token_verified(token)
 
     user_identifier = (
         claims.get("preferred_username") or claims.get("email") or claims.get("sub")
@@ -130,10 +217,7 @@ def _get_user_and_tenant(token: str) -> Tuple[str, str | None]:
             detail="Unable to resolve user identifier from token",
         )
 
-    iss = claims.get("iss")
-    tenant = None
-    if iss and "/realms/" in iss:
-        tenant = iss.split("/realms/")[-1]
+    tenant = _get_realm_from_iss(claims.get("iss"))
     tenant = claims.get("tenant", tenant)
     return user_identifier, tenant
 
