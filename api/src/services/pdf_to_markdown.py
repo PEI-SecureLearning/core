@@ -31,7 +31,7 @@ _META_KEYS = {
     "Document Owner",
     "Last Reviewed",
 }
-_TOC_LEADER_PATTERN = r"\.{4,}\s*\d+$"
+_TOC_DOT_COUNT = 4
 
 
 def _collapse_blank_lines(lines: list[str]) -> list[str]:
@@ -75,13 +75,39 @@ def _is_title_line(line: str) -> bool:
 
 
 def _format_metadata(line: str) -> str | None:
-    match = re.match(r"^([A-Za-z ]+):\s*(.+)$", line)
-    if not match:
+    if ":" not in line:
         return None
-    key, value = match.group(1).strip(), match.group(2).strip()
-    if key not in _META_KEYS:
+    key_raw, value_raw = line.split(":", 1)
+    key = key_raw.strip()
+    if not key or any(not (ch.isalpha() or ch.isspace()) for ch in key):
+        return None
+    value = value_raw.strip()
+    if not value or key not in _META_KEYS:
         return None
     return f"**{key}:** {value}"
+
+
+def _strip_toc_leader(line: str) -> str | None:
+    stripped = line.rstrip()
+    if not stripped:
+        return None
+    idx = len(stripped) - 1
+    while idx >= 0 and stripped[idx].isdigit():
+        idx -= 1
+    if idx == len(stripped) - 1:
+        return None
+    while idx >= 0 and stripped[idx].isspace():
+        idx -= 1
+    dot_end = idx
+    while idx >= 0 and stripped[idx] == ".":
+        idx -= 1
+    dot_count = dot_end - idx
+    if dot_count < _TOC_DOT_COUNT:
+        return None
+    if idx >= 0 and not stripped[idx].isspace():
+        return None
+    cleaned = stripped[: idx + 1].rstrip()
+    return cleaned or None
 
 
 def _normalize_line(line: str) -> str | None:
@@ -95,9 +121,9 @@ def _normalize_line(line: str) -> str | None:
     if "Page |" in stripped or re.search(r"Page\s*\|\s*\d+", stripped):
         return None
 
-    if re.search(_TOC_LEADER_PATTERN, stripped):
-        stripped = re.sub(_TOC_LEADER_PATTERN, "", stripped).strip()
-        return stripped or None
+    toc_stripped = _strip_toc_leader(stripped)
+    if toc_stripped is not None:
+        return toc_stripped or None
 
     meta = _format_metadata(stripped)
     if meta:
@@ -244,7 +270,7 @@ def _convert_line(raw_line: str, state: _ConversionState) -> list[str]:
 def _convert_toc_line(
     raw_line: str, line: str, normalized: str, state: _ConversionState
 ) -> list[str]:
-    is_toc_line = bool(re.search(_TOC_LEADER_PATTERN, line))
+    is_toc_line = _strip_toc_leader(line) is not None
     if (
         state.toc_entries > 0
         and not is_toc_line

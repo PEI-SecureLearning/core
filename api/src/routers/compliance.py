@@ -248,7 +248,7 @@ def _select_questions(
 ) -> List[Question]:
     if len(question_bank) <= question_count:
         return question_bank.copy()
-    return random.sample(question_bank, question_count)
+    return random.SystemRandom().sample(question_bank, question_count)
 
 
 def _score_options(question_count: int) -> list[int]:

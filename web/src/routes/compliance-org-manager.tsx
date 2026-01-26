@@ -139,10 +139,17 @@ function ComplianceOrgManager() {
     return Array.from(raw).sort((a, b) => a - b);
   }, []);
   const createLocalId = useCallback(() => {
-    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-      return crypto.randomUUID();
+    const cryptoObj = (globalThis as typeof globalThis & { crypto?: Crypto }).crypto;
+    if (cryptoObj?.randomUUID) {
+      return cryptoObj.randomUUID();
     }
-    return `q-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    if (cryptoObj?.getRandomValues) {
+      const buf = new Uint32Array(2);
+      cryptoObj.getRandomValues(buf);
+      const rand = Array.from(buf).map((n) => n.toString(36)).join("");
+      return `q-${Date.now()}-${rand.slice(0, 8)}`;
+    }
+    return `q-${Date.now()}`;
   }, []);
   const possiblePassingScores = useMemo(
     () => scoreOptionsForCount(quizSettings.question_count || 1),
