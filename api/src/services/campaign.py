@@ -37,7 +37,7 @@ class CampaignService:
     def create_campaign(
         self, campaign: CampaignCreate, current_realm: str, session: Session
     ) -> Campaign:
-        """Create a new campaign with scheduled email sendings."""
+        """Create a new campaign. Email sendings are created by scheduled tasks."""
         self._ensure_realm_exists(session, current_realm)
 
         email_template_id = self._get_or_create_email_template(
@@ -60,6 +60,7 @@ class CampaignService:
 
         self._validate_campaign(enriched_campaign, session)
 
+        # Calculate interval based on user count from groups
         users = self._collect_users_from_groups(campaign.user_group_ids, current_realm)
         interval = self._calculate_interval(campaign, len(users))
 
@@ -73,14 +74,11 @@ class CampaignService:
                 }
             ),
             sending_interval_seconds=interval,
-            total_recipients=len(users),
+            total_recipients=0,  # Will be set when emails are created by scheduler
             realm_name=current_realm,
+            status=CampaignStatus.SCHEDULED,  # Explicitly set to SCHEDULED
         )
         session.add(new_campaign)
-        session.flush()
-
-        email_sendings = self._create_email_sendings(session, new_campaign, users)
-        self._send_emails_to_rabbitmq(session, new_campaign, email_sendings)
         session.commit()
 
         return new_campaign
