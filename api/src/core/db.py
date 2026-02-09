@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlmodel import create_engine, SQLModel, Session, select
 from src.core.settings import settings
 
@@ -14,6 +15,8 @@ from src.models import (
     CustomHeader,
     SendingProfile,
     ComplianceAcceptance,
+    TenantCompliancePolicy,
+    TenantComplianceQuiz,
 )
 
 engine = create_engine(str(settings.PGSQL_DATABASE_URI))
@@ -21,6 +24,24 @@ engine = create_engine(str(settings.PGSQL_DATABASE_URI))
 
 async def init_db():
     SQLModel.metadata.create_all(engine)
+    # Ensure new quiz settings columns exist for existing databases
+    with engine.connect() as conn:
+        try:
+            conn.execute(
+                text(
+                    "ALTER TABLE tenant_compliance_quiz "
+                    "ADD COLUMN IF NOT EXISTS question_count INTEGER NOT NULL DEFAULT 5"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE tenant_compliance_quiz "
+                    "ADD COLUMN IF NOT EXISTS passing_score INTEGER NOT NULL DEFAULT 80"
+                )
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
 
     # Ensure at least one sending profile exists for testing flows
     with Session(engine) as session:

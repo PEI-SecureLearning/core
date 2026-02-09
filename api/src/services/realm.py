@@ -1,13 +1,17 @@
 import secrets
 import jwt
+from datetime import datetime, timezone
 from fastapi import HTTPException
+from bson import Binary, ObjectId
 from sqlmodel import Session, select
 from src.core.deps import SessionDep
 from src.models.realm import Realm, RealmCreate
 from src.core.admin import Admin
 from src.models.user import User
 from src.core.db import engine
+from src.core.mongo import get_tenant_logos_collection
 from src.models.user_group import UserGroup
+from src.services.compliance_store import ensure_tenant_policy, ensure_tenant_quiz
 
 
 # Singleton admin instance
@@ -152,6 +156,13 @@ def create_realm_in_keycloak(realm: RealmCreate, session: Session) -> RealmCreat
         except Exception:
             pass
 
+        # Seed default compliance policy + quiz for the tenant
+        try:
+            ensure_tenant_policy(session, realm.name)
+            ensure_tenant_quiz(session, realm.name)
+        except Exception:
+            pass
+
     return realm
 
 
@@ -184,6 +195,12 @@ def create_realm(session: Session, realm_in: RealmCreate) -> Realm:
         session.add(db_realm)
         session.commit()
         session.refresh(db_realm)
+
+    try:
+        ensure_tenant_policy(session, realm_in.name)
+        ensure_tenant_quiz(session, realm_in.name)
+    except Exception:
+        pass
 
     # Ensure platform/admin users from Keycloak exist locally for FK usage
     try:
@@ -633,6 +650,7 @@ def get_realm_info(realm_name: str) -> dict | None:
 
         features = _admin.get_realm_features(realm_name)
         domain = _admin.get_domain_for_realm(realm_name)
+        logo_updated_at = _get_realm_attribute(realm_name, "tenant-logo-updated-at")
 
         try:
             users = list_users_in_realm(realm_name).get("users", [])
@@ -645,11 +663,81 @@ def get_realm_info(realm_name: str) -> dict | None:
             "enabled": realm.get("enabled", True),
             "domain": domain,
             "features": features,
+            "logoUpdatedAt": logo_updated_at,
             "user_count": len(users),
             "users": users,
         }
     except Exception:
         return None
+
+
+def _get_realm_attribute(realm_name: str, key: str) -> str | None:
+    realm_info = _admin.get_realm(realm_name)
+    attrs = realm_info.get("attributes") or {}
+    if not isinstance(attrs, dict):
+        return None
+    raw = attrs.get(key)
+    if isinstance(raw, list) and raw:
+        return raw[0]
+    if isinstance(raw, str):
+        return raw
+    return None
+
+
+async def upsert_tenant_logo(
+    realm_name: str,
+    data: bytes,
+    content_type: str,
+    filename: str | None = None,
+) -> str:
+    collection = get_tenant_logos_collection()
+    now = datetime.now(timezone.utc)
+    payload = {
+        "realm": realm_name,
+        "filename": filename,
+        "content_type": content_type,
+        "size": len(data),
+        "data": Binary(data),
+        "updated_at": now,
+    }
+    await collection.update_one(
+        {"realm": realm_name},
+        {
+            "$set": payload,
+            "$setOnInsert": {"created_at": now},
+        },
+        upsert=True,
+    )
+    doc = await collection.find_one({"realm": realm_name})
+    if not doc or not doc.get("_id"):
+        raise HTTPException(status_code=500, detail="Failed to store tenant logo")
+
+    logo_id = str(doc["_id"])
+    _admin.update_realm_attributes(
+        realm_name,
+        {
+            "tenant-logo-id": logo_id,
+            "tenant-logo-updated-at": now.isoformat(),
+        },
+    )
+    return logo_id
+
+
+async def get_tenant_logo(realm_name: str) -> dict | None:
+    collection = get_tenant_logos_collection()
+    logo_id = _get_realm_attribute(realm_name, "tenant-logo-id")
+
+    doc = None
+    if logo_id:
+        try:
+            doc = await collection.find_one({"_id": ObjectId(logo_id)})
+        except Exception:
+            doc = None
+
+    if not doc:
+        doc = await collection.find_one({"realm": realm_name})
+
+    return doc
 
 
 def update_user_role_in_realm(

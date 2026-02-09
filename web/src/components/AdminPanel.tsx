@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useKeycloak } from '@react-keycloak/web'
 import { TenantForm } from './admin/TenantForm'
@@ -10,11 +10,35 @@ export function CreateTenantPage() {
     const [realmName, setRealmName] = useState('')
     const [domain, setDomain] = useState('')
     const [adminEmail, setAdminEmail] = useState('')
+    const [logoFile, setLogoFile] = useState<File | null>(null)
+    const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
     const [features, setFeatures] = useState({
         phishing: true,
         lms: true
     })
     const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+        return () => {
+            if (logoPreviewUrl) {
+                URL.revokeObjectURL(logoPreviewUrl)
+            }
+        }
+    }, [logoPreviewUrl])
+
+    const handleLogoSelect = (file: File | null) => {
+        if (logoPreviewUrl) {
+            URL.revokeObjectURL(logoPreviewUrl)
+        }
+        if (!file) {
+            setLogoFile(null)
+            setLogoPreviewUrl(null)
+            return
+        }
+        const previewUrl = URL.createObjectURL(file)
+        setLogoFile(file)
+        setLogoPreviewUrl(previewUrl)
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -34,10 +58,29 @@ export function CreateTenantPage() {
                     },
                 }
             )
+            if (logoFile) {
+                const formData = new FormData()
+                formData.append('file', logoFile)
+                try {
+                    await axios.post(
+                        `${import.meta.env.VITE_API_URL}/realms/${encodeURIComponent(realmName)}/logo`,
+                        formData,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${keycloak.token}`,
+                            },
+                        }
+                    )
+                } catch (logoError) {
+                    console.error('Error uploading logo:', logoError)
+                    toast.error('Tenant created, but logo upload failed')
+                }
+            }
             toast.success('Realm created successfully!')
             setRealmName('')
             setDomain('')
             setAdminEmail('')
+            handleLogoSelect(null)
         } catch (error) {
             console.error('Error creating realm:', error)
             toast.error('Failed to create realm')
@@ -60,6 +103,8 @@ export function CreateTenantPage() {
                         setAdminEmail={setAdminEmail}
                         features={features}
                         setFeatures={setFeatures}
+                        logoPreviewUrl={logoPreviewUrl}
+                        onLogoSelect={handleLogoSelect}
                         handleSubmit={handleSubmit}
                     />
                 </div>
@@ -69,6 +114,7 @@ export function CreateTenantPage() {
                     <PreviewPanel
                         realmName={realmName}
                         features={features}
+                        logoPreviewUrl={logoPreviewUrl}
                         isLoading={isLoading}
                         handleSubmit={handleSubmit}
                     />
