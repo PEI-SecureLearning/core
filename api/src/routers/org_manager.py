@@ -16,10 +16,10 @@ import csv
 import codecs
 from pydantic import BaseModel
 
-from src.core.deps import SessionDep
+from src.core.dependencies import SessionDep
 from src.core.security import oauth_2_scheme
 from src.core.security import oauth_2_scheme, valid_resource_access
-from src.core.deps import SessionDep
+from src.core.dependencies import SessionDep
 from src.services import org_manager as org_manager_service
 from src.services.campaign import CampaignService
 from src.services.realm import realm_from_token

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import RedirectResponse, Response
 
-from src.core.deps import SessionDep
+from src.core.dependencies import SessionDep
 from src.services.tracking import TrackingService
 from src.services import templates as TemplateService
 

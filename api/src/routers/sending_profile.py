@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse, Response
 
-from src.core.deps import CurrentRealm, SessionDep
+from src.core.dependencies import CurrentRealm, SessionDep
 from src.models.sending_profile import SendingProfileCreate
 from src.services.sending_profile import SendingProfileService
 

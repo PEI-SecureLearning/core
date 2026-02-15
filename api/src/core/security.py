@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, Request
 
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")  # ex: http://keycloak:8080
+AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
 RESOURCE_SERVER_ID = "api"
 
 
@@ -37,14 +37,12 @@ def check_keycloak_permission(
     url = f"{AUTH_SERVER_URL}/realms/{realm_name}/protocol/openid-connect/token"
 
     headers = {
-        # CORREÇÃO: tem de ter "Bearer "
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/x-www-form-urlencoded",
     }
 
     data = {
         "grant_type": "urn:ietf:params:oauth:grant-type:uma-ticket",
-        # CORREÇÃO: "resource#scope" quando há scopes definidos no resource
         "permission": permission,
         "audience": RESOURCE_SERVER_ID,
     }
@@ -56,12 +54,6 @@ def check_keycloak_permission(
             payload = response.json()
             return "access_token" in payload
 
-        # Log detalhado para perceber 401/403/400
-        logging.error(
-            "Keycloak UMA denied. status=%s body=%s",
-            response.status_code,
-            response.text,
-        )
         return False
 
     except requests.RequestException as e:
@@ -87,7 +79,6 @@ class valid_resource_access:
         request: Request,
         access_token: str = Depends(oauth_2_scheme),
     ):
-        # Allow pre-flight requests
         if request.method == "OPTIONS":
             return
 
@@ -104,7 +95,6 @@ class valid_resource_access:
 
         permission = f"{self.resource}#{self.scope}"
 
-        # If org_manager role is present at realm level, accept without UMA
         if self.resource == "org_manager" and _has_org_manager_role(decoded):
             return {"authorized": True}
 

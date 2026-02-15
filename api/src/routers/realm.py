@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status, File, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from src.core.deps import SessionDep
+from src.core.dependencies import SessionDep
 from src.models.realm import RealmCreate
 from src.core.security import oauth_2_scheme
 from src.services import realm as realm_service

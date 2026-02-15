@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from src.core.deps import CurrentRealm, SessionDep
+from src.core.dependencies import CurrentRealm, SessionDep
 from src.models.campaign import CampaignCreate
 from src.services.campaign import CampaignService
 

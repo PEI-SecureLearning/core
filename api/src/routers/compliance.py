@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import select
 
-from src.core.deps import SessionDep
+from src.core.dependencies import SessionDep
 from src.core.security import oauth_2_scheme
 from src.models import ComplianceAcceptance, TenantComplianceQuiz
 from src.services.compliance_defaults import DEFAULT_PASSING_SCORE

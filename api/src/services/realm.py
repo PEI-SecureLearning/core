@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 from bson import Binary, ObjectId
 from sqlmodel import Session, select
-from src.core.deps import SessionDep
+from src.core.dependencies import SessionDep
 from src.models.realm import Realm, RealmCreate
 from src.services.admin import Admin
 from src.models.user import User
