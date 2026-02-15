@@ -108,7 +108,6 @@ class Admin:
         except requests.exceptions.RequestException:
             pass
 
-        # Next, get all non-system realms and fetch their events
         tenant_realms = self.list_realms(exclude_system=True)
 
         for realm_info in tenant_realms:
@@ -174,7 +173,6 @@ class Admin:
             except requests.exceptions.RequestException:
                 pass
 
-            # Fetch login/auth events for this realm
             login_events_url = f"{self.keycloak_url}/admin/realms/{realm_name}/events"
             try:
                 r = requests.get(

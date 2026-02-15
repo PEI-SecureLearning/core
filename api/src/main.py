@@ -13,7 +13,6 @@ from src.routers import (
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
-from src.core.security import valid_resource_access
 from src.tasks import start_scheduler, shutdown_scheduler
 import os
 from jwt import PyJWKClient
