@@ -11,13 +11,6 @@ from src.services.keycloak_client import get_keycloak_client
 load_dotenv()
 
 
-def _load_realm_template() -> dict:
-    """Load the realm template from the external JSON file."""
-    
-    template_path = Path(__file__).resolve().parent.parent / "realm_template.json"
-    
-    with open(template_path, "r") as f:
-        return json.load(f)
 
 
 class Base_handler:
@@ -56,3 +49,19 @@ class Base_handler:
             raise HTTPException(status_code=r.status_code, detail=str(e))
         
         return r
+
+    def _load_realm_template(self,**substitutions) -> dict:
+        """Load the realm template from the external JSON file.
+        
+        Any keyword arguments are used to replace {key} placeholders in the template.
+        """
+        
+        template_path = Path(__file__).resolve().parent / "realm_template.json"
+
+        with open(template_path, "r") as f:
+            raw = f.read()
+        
+        for key, value in substitutions.items():
+            raw = raw.replace(f"{{{key}}}", value)
+        
+        return json.loads(raw)

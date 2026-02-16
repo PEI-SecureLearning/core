@@ -520,5 +520,94 @@
             "name": "DEFAULT_USER",
             "description": "Custom role for read-only access"
         }
+    ],
+    "clients": [
+        {
+            "clientId": "react-app",
+            "enabled": true,
+            "publicClient": true,
+            "redirectUris": ["{web_url}/*"],
+            "webOrigins": ["{web_url}"],
+            "standardFlowEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "protocolMappers": [
+                {
+                    "name": "api-audience",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-audience-mapper",
+                    "consentRequired": false,
+                    "config": {
+                        "included.client.audience": "api",
+                        "id.token.claim": "false",
+                        "access.token.claim": "true",
+                        "introspection.token.claim": "true"
+                    }
+                }
+            ]
+        },
+        {
+            "clientId": "api",
+            "enabled": true,
+            "publicClient": false,
+            "redirectUris": ["{api_url}/*"],
+            "webOrigins": ["{api_url}"],
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": true,
+            "serviceAccountsEnabled": true,
+            "authorizationServicesEnabled": true,
+            "authorizationSettings": {
+                "allowRemoteResourceManagement": true,
+                "policyEnforcementMode": "ENFORCING",
+                "resources": [
+                    {
+                        "name": "org_manager",
+                        "type": "urn:api:resources:org_manager",
+                        "ownerManagedAccess": false,
+                        "displayName": "Organization Manager Resource",
+                        "attributes": {},
+                        "uris": ["/api/org-manager/*"],
+                        "scopes": [{"name": "view"}, {"name": "manage"}]
+                    }
+                ],
+                "policies": [
+                    {
+                        "name": "ORG_MANAGER Role Policy",
+                        "description": "Policy that grants access to users with ORG_MANAGER role",
+                        "type": "role",
+                        "logic": "POSITIVE",
+                        "decisionStrategy": "UNANIMOUS",
+                        "config": {
+                            "roles": "[{\"id\":\"ORG_MANAGER\",\"required\":false}]"
+                        }
+                    },
+                    {
+                        "name": "org_manager Permission",
+                        "description": "Permission for org_manager resource",
+                        "type": "resource",
+                        "logic": "POSITIVE",
+                        "decisionStrategy": "UNANIMOUS",
+                        "config": {
+                            "resources": "[\"org_manager\"]",
+                            "applyPolicies": "[\"ORG_MANAGER Role Policy\"]"
+                        }
+                    }
+                ],
+                "scopes": [{"name": "view"}, {"name": "manage"}]
+            }
+        }
+    ],
+    "users": [
+        {
+            "username": "Org_manager",
+            "enabled": true,
+            "firstName": "Org",
+            "lastName": "Manager",
+            "email": "{admin_email}",
+            "credentials": [
+                {"type": "password", "value": "1234", "temporary": true}
+            ],
+            "realmRoles": ["ORG_MANAGER"],
+            "clientRoles": {"realm-management": ["realm-admin"]}
+        }
     ]
 }
