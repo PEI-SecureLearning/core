@@ -41,35 +41,18 @@ class Base_handler:
         """Get admin service account token."""
         return get_keycloak_client().get_admin_token()
 
-    def _make_request(self,method:str,url:str,token:str,params:dict=None):
+    def _make_request(self,method:str,url:str,token:str,params:dict=None,json:dict=None):
         
         headers = {
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
             }
+            
+        r = requests.request(method,url,headers=headers,params=params,json=json)
 
-        if method == "GET":
-            r = requests.get(url,
-            headers=headers,
-            params=params,
-        )
-
-        elif method == "POST":
-            r = requests.post(url,
-            headers=headers,
-            params=params,
-        )
-
-        elif method == "PUT":
-            r = requests.put(url,
-            headers=headers,
-            params=params,
-        )
-
-        elif method == "DELETE":
-            r = requests.delete(url,
-            headers=headers,
-            params=params,
-        )
+        try:
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(status_code=r.status_code, detail=str(e))
         
         return r

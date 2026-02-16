@@ -32,11 +32,7 @@ class Event_handler:
         
         master_admin_url = f"{self.keycloak_url}/admin/realms/master/admin-events"
 
-        try:
-            r = self._make_request("GET",master_admin_url,token,params={"max": max_results // 3})
-            r.raise_for_status()
-        except requests.exceptions.RequestException:
-            pass
+        r = self._make_request("GET",master_admin_url,token,params={"max": max_results // 3})
 
         events = r.json()
 
@@ -44,21 +40,19 @@ class Event_handler:
             resource_type = event.get("resourceType", "")
             operation = event.get("operationType", "Unknown")
 
-        if operation in ("CREATE", "UPDATE"):
-            level = "info"
-        elif operation == "DELETE":
-            level = "warning"
-        else:
-            level = "info"
+            if operation == "DELETE":
+                level = "warning"
+            else:
+                level = "info"
 
-        resource_path = event.get("resourcePath", "")
-        resource_name = resource_path.split("/")[-1] if resource_path else ""
+            resource_path = event.get("resourcePath", "")
+            resource_name = resource_path.split("/")[-1] if resource_path else ""
 
-        message = f"{resource_type} {operation}"
-        if resource_name:
-            message += f": {resource_name}"
+            message = f"{resource_type} {operation}"
+            if resource_name:
+                message += f": {resource_name}"
 
-        all_events.append(
+            all_events.append(
             {
                 "id": event.get("id", f"master-admin-{event.get('time', 0)}"),
                 "timestamp": event.get("time"),
@@ -91,11 +85,7 @@ class Event_handler:
             f"{self.keycloak_url}/admin/realms/{realm_name}/admin-events"
         )
 
-        try:
-            r = self._make_request("GET",admin_events_url,token,params={"max": max_results // 3})
-            r.raise_for_status()
-        except requests.exceptions.RequestException:
-            pass
+        r = self._make_request("GET",admin_events_url,token,params={"max": max_results // 3})
 
         events = r.json()
         
@@ -104,13 +94,9 @@ class Event_handler:
                 self.proccess_admin_event(event,realm_name)
             )
 
-
         login_events_url = f"{self.keycloak_url}/admin/realms/{realm_name}/events"
-        try:
-            r = self._make_request("GET",login_events_url,token,params={"max": max_results // 3})
-            r.raise_for_status()
-        except requests.exceptions.RequestException:
-            pass
+        
+        r = self._make_request("GET",login_events_url,token,params={"max": max_results // 3})
 
         events = r.json()
         
