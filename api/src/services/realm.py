@@ -6,7 +6,7 @@ from bson import Binary, ObjectId
 from sqlmodel import Session, select
 from src.core.dependencies import SessionDep
 from src.models.realm import Realm, RealmCreate
-from src.services.admin import Admin
+from src.services.admin_service import Admin_Service
 from src.models.user import User
 from src.core.db import engine
 from src.core.mongo import get_tenant_logos_collection
@@ -15,10 +15,10 @@ from src.services.compliance_store import ensure_tenant_policy, ensure_tenant_qu
 
 
 # Singleton admin instance
-_admin = Admin()
+_admin = Admin_Service()
 
 
-def get_admin() -> Admin:
+def get_admin() -> Admin_Service:
     """Get the Admin instance for Keycloak operations."""
     return _admin
 
