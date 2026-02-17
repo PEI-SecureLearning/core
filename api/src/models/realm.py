@@ -17,3 +17,21 @@ class RealmCreate(SQLModel):
     domain: str
     adminEmail: str
     features: dict | None = None
+
+
+class RealmResponse(SQLModel):
+    realm: str
+
+
+class UserCreateRequest(SQLModel):
+    realm: str
+    username: str
+    name: str
+    email: str
+    dept: str
+    role: str
+    group_id: str | None = None
+
+
+class GroupCreateRequest(SQLModel):
+    name: str
