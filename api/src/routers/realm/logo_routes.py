@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import StreamingResponse
 
+from src.core.dependencies import SafeRealm
 from src.core.security import oauth_2_scheme
 from src.services.platform_admin import get_platform_admin_service
 
@@ -16,7 +17,7 @@ MAX_LOGO_BYTES = 2 * 1024 * 1024
 
 @router.post("/realms/{realm}/logo", status_code=status.HTTP_201_CREATED)
 async def upload_realm_logo(
-    realm: str,
+    realm: SafeRealm,
     file: UploadFile = File(...),
     token: str = Depends(oauth_2_scheme),
 ):
@@ -42,7 +43,7 @@ async def upload_realm_logo(
 
 
 @router.get("/realms/{realm}/logo")
-async def get_realm_logo(realm: str):
+async def get_realm_logo(realm: SafeRealm):
     doc = await realm_service.get_tenant_logo(realm)
     if not doc or not doc.get("data"):
         raise HTTPException(status_code=404, detail="Tenant logo not found")
