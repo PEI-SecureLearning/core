@@ -251,22 +251,6 @@ class Campaign_handler:
             if existing:
                 return existing.id  # type: ignore[return-value]
 
-        #TODO remove
-        realm_fk = realm if session.get(Realm, realm) else None
-        placeholder = SendingProfile(
-            name="Placeholder SMTP",
-            smtp_host="smtp.example.com",
-            smtp_port=587,
-            username="placeholder",
-            password="placeholder",
-            from_fname="Secure",
-            from_lname="Learning",
-            from_email="noreply@example.com",
-            realm_name=realm_fk,
-        )
-        session.add(placeholder)
-        session.flush()
-        return placeholder.id  # type: ignore[return-value]
 
     def _ensure_realm_exists(self, session: Session, realm_name: str) -> None:
         """Ensure a Realm row exists before assigning FK fields."""

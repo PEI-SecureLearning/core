@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, status
 
-from src.core.dependencies import SessionDep
+from src.core.dependencies import SafeRealm, SessionDep
 from src.models.realm import RealmCreate, RealmResponse
 from src.services.platform_admin import get_platform_admin_service
 
@@ -37,14 +37,14 @@ def create_realm(realm: RealmCreate, session: SessionDep):
 
 
 @router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_realm(realm: str, session: SessionDep):
+def delete_realm(realm: SafeRealm, session: SessionDep):
     """Delete a tenant realm from Keycloak."""
     realm_service.delete_realm_from_keycloak(realm, session)
     return None
 
 
 @router.get("/realms/{realm}/info")
-def get_realm_info(realm: str):
+def get_realm_info(realm: SafeRealm):
     """Return realm metadata including domain and feature flags."""
     realm = realm_service.get_realm_info(realm)
     if not realm:

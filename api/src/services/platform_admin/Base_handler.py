@@ -1,8 +1,8 @@
-import jwt
 from fastapi import HTTPException
 from sqlmodel import Session
 
 from src.services.keycloak_admin import get_keycloak_admin
+from src.services.compliance.token_helpers import decode_token_verified, get_realm_from_iss
 from src.models.realm import Realm
 from src.models.user import User
 
@@ -33,17 +33,10 @@ class Base_handler:
 
 
     def _realm_from_token(self, access_token: str) -> str | None:
-        """Parse realm from token issuer without verifying signature (Keycloak managed)."""
+        """Extract realm from token issuer after verifying signature via JWKS."""
         try:
-            decoded = jwt.decode(
-                access_token, options={"verify_signature": False, "verify_aud": False}
-            )
-            iss = decoded.get("iss")
-
-            parts = iss.split("/realms/")
-
-            return parts[1] if len(parts) > 1 else None
-
+            claims = decode_token_verified(access_token)
+            return get_realm_from_iss(claims.get("iss"))
         except Exception:
             raise HTTPException(status_code=400, detail="Invalid access token.")
 
