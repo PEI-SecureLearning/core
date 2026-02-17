@@ -3,10 +3,8 @@ import json
 from pathlib import Path
 from fastapi import HTTPException
 from dotenv import load_dotenv
-import requests
-
-
 from src.services.keycloak_client import get_keycloak_client
+
 
 load_dotenv()
 
@@ -20,6 +18,7 @@ class Base_handler:
         self.admin_secret = os.getenv("CLIENT_SECRET")
         self.web_url = os.getenv("WEB_URL", "http://localhost:3000")
         self.api_url = os.getenv("API_URL", "http://localhost:8080")
+        self.keycloak_client = get_keycloak_client()
 
         if not self.keycloak_url:
             raise HTTPException(
@@ -32,23 +31,8 @@ class Base_handler:
 
     def _get_admin_token(self) -> str:
         """Get admin service account token."""
-        return get_keycloak_client().get_admin_token()
+        return self.keycloak_client.get_admin_token()
 
-    def _make_request(self,method:str,url:str,token:str,params:dict=None,json:dict=None):
-        
-        headers = {
-                "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
-            }
-            
-        r = requests.request(method,url,headers=headers,params=params,json=json)
-
-        try:
-            r.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            raise HTTPException(status_code=r.status_code, detail=str(e))
-        
-        return r
 
     def _load_realm_template(self,**substitutions) -> dict:
         """Load the realm template from the external JSON file.

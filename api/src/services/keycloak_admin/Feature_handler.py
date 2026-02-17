@@ -1,4 +1,4 @@
-import requests
+
 
 
 class Feature_handler:
@@ -13,14 +13,14 @@ class Feature_handler:
 
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes"
     
-        r = self._make_request("GET",url,token)
+        r = self.keycloak_client._make_request("GET",url,token)
   
         scope_id = self.find_feature_scope(r.json())
 
         # Get the protocol mappers for this scope
         mappers_url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models"
         
-        r = self._make_request("GET",mappers_url,token)
+        r = self.keycloak_client._make_request("GET",mappers_url,token)
 
         mappers = r.json()
 
@@ -58,7 +58,7 @@ class Feature_handler:
 
         # Get the realm-feature-flags scope
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes"
-        r = self._make_request("GET",url,token)
+        r = self.keycloak_client._make_request("GET",url,token)
 
         scope_id = self.find_feature_scope(r.json())
 
@@ -68,7 +68,7 @@ class Feature_handler:
         # Get existing mappers
         mappers_url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models"
        
-        r = self._make_request("GET",mappers_url,token)
+        r = self.keycloak_client._make_request("GET",mappers_url,token)
         
         mappers = r.json()
 
@@ -88,7 +88,7 @@ class Feature_handler:
             
             existing_mapper["config"]["claim.value"] = str(enabled).lower()
             
-            r = self._make_request("PUT",update_url,token,json=existing_mapper)
+            r = self.keycloak_client._make_request("PUT",update_url,token,json_data=existing_mapper)
             
             return r.status_code in (204, 200)
 
@@ -115,7 +115,7 @@ class Feature_handler:
             },
         }
 
-        r = self._make_request("POST",url,token,json=payload)
+        r = self.keycloak_client._make_request("POST",url,token,json_data=payload)
         
         location = r.headers.get("Location", "")
         scope_id = location.split("/")[-1] if location else None
@@ -149,7 +149,7 @@ class Feature_handler:
             },
         }
 
-        r = self._make_request("POST",url,token,json=payload)
+        r = self.keycloak_client._make_request("POST",url,token,json_data=payload)
         
         return r.status_code in (201, 204)
 

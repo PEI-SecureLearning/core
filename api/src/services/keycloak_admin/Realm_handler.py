@@ -10,7 +10,7 @@ class Realm_handler:
         
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
-        r = self._make_request("GET", url, token)
+        r = self.keycloak_client._make_request("GET", url, token)
         
         return r.json()
 
@@ -25,7 +25,7 @@ class Realm_handler:
         
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
         
-        self._make_request("DELETE", url, token)
+        self.keycloak_client._make_request("DELETE", url, token)
 
         session.exec(select(Realm).where(Realm.name == realm_name)).one()
         session.commit()
@@ -40,7 +40,7 @@ class Realm_handler:
         
         url = f"{self.keycloak_url}/admin/realms"
         
-        r = self._make_request("GET", url, token)
+        r = self.keycloak_client._make_request("GET", url, token)
         
         realms = r.json()
         
@@ -62,7 +62,7 @@ class Realm_handler:
         """
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms"
-        r = self._make_request("GET", url, token)
+        r = self.keycloak_client._make_request("GET", url, token)
         realms = r.json()
 
         result = []
@@ -105,7 +105,7 @@ class Realm_handler:
         attrs.update(new_attributes)
 
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
-        self._make_request("PUT", url, token, json={"attributes": attrs})
+        self.keycloak_client._make_request("PUT", url, token, json_data={"attributes": attrs})
 
 
     def extract_tenant_domain(self, realm_info: dict) -> str | None:
@@ -203,7 +203,7 @@ class Realm_handler:
             "users": template["users"],
         }
 
-        r = self._make_request("POST", url, token, json=payload)
+        r = self.keycloak_client._make_request("POST", url, token, json_data=payload)
 
 
         return r

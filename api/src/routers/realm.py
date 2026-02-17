@@ -5,7 +5,9 @@ from pydantic import BaseModel
 from src.core.dependencies import SessionDep
 from src.models.realm import RealmCreate
 from src.core.security import oauth_2_scheme
-from src.services import realm as realm_service
+from src.services.platform_admin import get_platform_admin_service
+
+realm_service = get_platform_admin_service()
 
 router = APIRouter()
 
@@ -119,10 +121,10 @@ def create_user_in_realm(
 
 
 @router.get("/realms/{realm}/users")
-def list_users_in_realm(realm: str, token: str = Depends(oauth_2_scheme)):
+def list_users_in_realm(session: SessionDep, realm: str, token: str = Depends(oauth_2_scheme)):
     """List users inside the specified Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, realm)
-    return realm_service.list_users_in_realm(realm)
+    return realm_service.list_users_in_realm(session, realm)
 
 
 @router.get("/realms/{realm}/users/{user_id}")

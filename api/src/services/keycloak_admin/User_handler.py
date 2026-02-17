@@ -3,7 +3,6 @@ from sqlmodel import Session, select
 
 from src.models.realm import Realm
 from src.models.user import User
-from src.services.keycloak_client import get_keycloak_client
 
 
 class User_handler:
@@ -11,30 +10,21 @@ class User_handler:
     def list_users(self, realm_name: str) -> list[dict]:
         """List users in a realm (basic fields only)."""
         token = self._get_admin_token()
-        return get_keycloak_client().list_users(realm_name, token)
+        return self.keycloak_client.list_users(realm_name, token)
 
     def get_user_count(self, realm_name: str) -> int:
         """Return the total number of users in a realm."""
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/count"
-        try:
-            r = requests.get(
-                url,
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
-                },
-            )
-            r.raise_for_status()
-            return r.json()
-        except Exception:
-            # Fallback: count via list
-            return len(self.list_users(realm_name))
+        
+        r = self.keycloak_client._make_request("GET", url, token)
+        
+        return r.json()
 
     def delete_user(self, session: Session, realm_name: str, user_id: str):
         """Delete a user from a realm."""
         token = self._get_admin_token()
-        get_keycloak_client().delete_user(realm_name, token, user_id)
+        self.keycloak_client.delete_user(realm_name, token, user_id)
         session.delete(
             session.exec(select(User).where(User.keycloak_id == user_id)).one()
         )
@@ -42,12 +32,12 @@ class User_handler:
     def get_user_realm_roles(self, realm_name: str, user_id: str) -> list[dict]:
         """Return realm roles assigned to the given user."""
         token = self._get_admin_token()
-        return get_keycloak_client().get_user_realm_roles(realm_name, token, user_id)
+        return self.keycloak_client.get_user_realm_roles(realm_name, token, user_id)
 
     def assign_realm_role_to_user(self, realm_name: str, user_id: str, role_name: str):
         """Assign a realm role to a user."""
         token = self._get_admin_token()
-        kc = get_keycloak_client()
+        kc = self.keycloak_client
         role_repr = kc.get_realm_role(realm_name, token, role_name)
         if role_repr:
             kc.assign_realm_roles(realm_name, token, user_id, [role_repr])
@@ -98,7 +88,7 @@ class User_handler:
             ],
         }
 
-        # Remove empty attributes so Keycloak is not sent null values
+
         payload = {k: v for k, v in payload.items() if v not in (None, {}, [])}
 
         r = kc.create_user(realm_name, token, payload)

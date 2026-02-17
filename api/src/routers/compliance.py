@@ -16,8 +16,8 @@ from sqlmodel import select
 from src.core.dependencies import SessionDep
 from src.core.security import oauth_2_scheme
 from src.models import ComplianceAcceptance, TenantComplianceQuiz
-from src.services.compliance_defaults import DEFAULT_PASSING_SCORE
-from src.services.compliance_store import ensure_tenant_policy, ensure_tenant_quiz
+from src.services.compliance import DEFAULT_PASSING_SCORE
+from src.services.compliance import ensure_tenant_policy, ensure_tenant_quiz
 
 router = APIRouter()
 

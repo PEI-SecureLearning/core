@@ -1,4 +1,4 @@
-import requests
+
 
 class Event_handler:
 
@@ -32,7 +32,7 @@ class Event_handler:
         
         master_admin_url = f"{self.keycloak_url}/admin/realms/master/admin-events"
 
-        r = self._make_request("GET",master_admin_url,token,params={"max": max_results // 3})
+        r = self.keycloak_client._make_request("GET",master_admin_url,token,params={"max": max_results // 3})
 
         events = r.json()
 
@@ -85,7 +85,7 @@ class Event_handler:
             f"{self.keycloak_url}/admin/realms/{realm_name}/admin-events"
         )
 
-        r = self._make_request("GET",admin_events_url,token,params={"max": max_results // 3})
+        r = self.keycloak_client._make_request("GET",admin_events_url,token,params={"max": max_results // 3})
 
         events = r.json()
         
@@ -96,7 +96,7 @@ class Event_handler:
 
         login_events_url = f"{self.keycloak_url}/admin/realms/{realm_name}/events"
         
-        r = self._make_request("GET",login_events_url,token,params={"max": max_results // 3})
+        r = self.keycloak_client._make_request("GET",login_events_url,token,params={"max": max_results // 3})
 
         events = r.json()
         

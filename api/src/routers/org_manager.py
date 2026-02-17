@@ -20,16 +20,18 @@ from src.core.dependencies import SessionDep
 from src.core.security import oauth_2_scheme
 from src.core.security import oauth_2_scheme, Roles
 from src.core.dependencies import SessionDep
-from src.services import org_manager as org_manager_service
+from src.services.org_manager import get_org_manager_service
+
+org_manager_service = get_org_manager_service()
 from src.services.campaign import CampaignService
-from src.services.realm import realm_from_token
-from src.services.compliance_store import (
+from src.services.platform_admin import get_platform_admin_service
+from src.services.compliance import (
     ensure_tenant_policy,
     ensure_tenant_quiz,
     upsert_tenant_policy,
     upsert_tenant_quiz,
 )
-from src.services.pdf_to_markdown import pdf_bytes_to_markdown
+from src.services.compliance import pdf_bytes_to_markdown
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.services import templates as template_service
@@ -90,7 +92,7 @@ class ComplianceQuizResponse(BaseModel):
 
 def _validate_realm_access(token: str, realm: str) -> None:
     """Validate that the token's realm matches the requested realm."""
-    token_realm = realm_from_token(token)
+    token_realm = get_platform_admin_service()._realm_from_token(token)
     if token_realm and token_realm != realm:
         raise HTTPException(
             status_code=403,
