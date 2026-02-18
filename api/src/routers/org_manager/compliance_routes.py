@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, Depends, File, UploadFile
 
-from src.core.dependencies import SessionDep
-from src.core.security import oauth_2_scheme, Roles
+from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
+, Roles
 from src.models.org_manager_schemas import (
     CompliancePolicyPayload,
     CompliancePolicyResponse,
@@ -22,7 +22,7 @@ router = APIRouter()
     dependencies=[Depends(Roles("org_manager", "manage"))],
 )
 def get_compliance_policy(
-    realm: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
+    realm: str, session: SessionDep, token: OAuth2Scheme
 ):
     validate_realm_access(token, realm)
     return compliance_handler.get_compliance_policy(session, realm)
@@ -37,7 +37,7 @@ def update_compliance_policy(
     realm: str,
     payload: CompliancePolicyPayload,
     session: SessionDep,
-    token: str = Depends(oauth_2_scheme),
+    token: OAuth2Scheme,
 ):
     validate_realm_access(token, realm)
     return compliance_handler.update_compliance_policy(
@@ -51,8 +51,8 @@ def update_compliance_policy(
 )
 async def import_compliance_policy(
     realm: str,
+    token: OAuth2Scheme,
     file: UploadFile = File(...),
-    token: str = Depends(oauth_2_scheme),
 ):
     validate_realm_access(token, realm)
     return await compliance_handler.import_compliance_policy(realm, file)
@@ -64,7 +64,7 @@ async def import_compliance_policy(
     dependencies=[Depends(Roles("org_manager", "manage"))],
 )
 def get_compliance_quiz(
-    realm: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
+    realm: str, session: SessionDep, token: OAuth2Scheme
 ):
     validate_realm_access(token, realm)
     return compliance_handler.get_compliance_quiz(session, realm)
@@ -79,7 +79,7 @@ def update_compliance_quiz(
     realm: str,
     payload: ComplianceQuizPayload,
     session: SessionDep,
-    token: str = Depends(oauth_2_scheme),
+    token: OAuth2Scheme,
 ):
     validate_realm_access(token, realm)
     return compliance_handler.update_compliance_quiz(session, realm, payload, token)

@@ -66,5 +66,5 @@ class AcceptRequest(BaseModel):
 class ComplianceStatusResponse(BaseModel):
     required_version: str
     accepted: bool
-    accepted_at: datetime | None
-    score: int | None
+    accepted_at: datetime | None = None
+    score: int | None = None

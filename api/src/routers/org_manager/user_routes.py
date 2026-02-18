@@ -5,8 +5,8 @@ import codecs
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
-from src.core.dependencies import SessionDep
-from src.core.security import oauth_2_scheme, Roles
+from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
+, Roles
 from src.models.org_manager_schemas import UserCreateRequest
 from src.services.org_manager import get_org_manager_service
 from src.services.org_manager.Validation_handler import validate_realm_access
@@ -19,7 +19,7 @@ router = APIRouter()
 @router.get(
     "/{realm}/users", dependencies=[Depends(Roles("org_manager", "view"))]
 )
-def list_users(realm: str, token: str = Depends(oauth_2_scheme)):
+def list_users(realm: str, token: OAuth2Scheme):
     """List users in the realm using the user's token."""
     validate_realm_access(token, realm)
     return org_manager_service.list_users(realm, token)
@@ -32,7 +32,7 @@ def create_user(
     realm: str,
     user: UserCreateRequest,
     session: SessionDep,
-    token: str = Depends(oauth_2_scheme),
+    token: OAuth2Scheme,
 ):
     """Create a user in the realm using the user's token."""
     validate_realm_access(token, realm)
@@ -54,7 +54,7 @@ def create_user(
     dependencies=[Depends(Roles("org_manager", "manage"))],
 )
 def delete_user(
-    realm: str, user_id: str, session: SessionDep, token: str = Depends(oauth_2_scheme)
+    realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
 ):
     """Delete a user from the realm using the user's token."""
     validate_realm_access(token, realm)

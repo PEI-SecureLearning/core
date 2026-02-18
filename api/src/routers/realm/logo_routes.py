@@ -3,8 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import StreamingResponse
 
-from src.core.dependencies import SafeRealm
-from src.core.security import oauth_2_scheme
+from src.core.dependencies import SafeRealm, OAuth2Scheme
 from src.services.platform_admin import get_platform_admin_service
 
 realm_service = get_platform_admin_service()
@@ -15,11 +14,15 @@ ALLOWED_LOGO_TYPES = {"image/png", "image/jpeg", "image/svg+xml"}
 MAX_LOGO_BYTES = 2 * 1024 * 1024
 
 
-@router.post("/realms/{realm}/logo", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/realms/{realm}/logo", 
+    status_code=status.HTTP_201_CREATED,
+    responses={400: {"description": "Invalid logo file"}},
+)
 async def upload_realm_logo(
     realm: SafeRealm,
+    token: OAuth2Scheme,
     file: UploadFile = File(...),
-    token: str = Depends(oauth_2_scheme),
 ):
     if file.content_type not in ALLOWED_LOGO_TYPES:
         raise HTTPException(
@@ -42,7 +45,10 @@ async def upload_realm_logo(
     return {"id": logo_id}
 
 
-@router.get("/realms/{realm}/logo")
+@router.get(
+    "/realms/{realm}/logo",
+    responses={404: {"description": "Tenant logo not found"}},
+)
 async def get_realm_logo(realm: SafeRealm):
     doc = await realm_service.get_tenant_logo(realm)
     if not doc or not doc.get("data"):

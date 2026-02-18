@@ -1,9 +1,9 @@
-from src.services.keycloak_admin.Base_handler import Base_handler
-from src.services.keycloak_admin.Realm_handler import Realm_handler
+from api.src.services.keycloak_admin.base_handler import Base_handler
+from api.src.services.keycloak_admin.realm_handler import Realm_handler
 from src.services.keycloak_admin.User_handler import User_handler
-from src.services.keycloak_admin.Groups_handler import Groups_handler
-from src.services.keycloak_admin.Event_handler import Event_handler
-from src.services.keycloak_admin.Feature_handler import Feature_handler
+from api.src.services.keycloak_admin.groups_handler import Groups_handler
+from api.src.services.keycloak_admin.event_handler import Event_handler
+from api.src.services.keycloak_admin.feature_handler import Feature_handler
 
 
 class KeycloakAdmin(Base_handler, Realm_handler, User_handler, Groups_handler, Event_handler, Feature_handler):

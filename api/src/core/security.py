@@ -19,7 +19,7 @@ class Roles:
         self.resource = resource
         self.scope = scope
 
-    async def __call__(self, request: Request, access_token: str = Depends(oauth_2_scheme)):
+    async def __call__(self, request: Request, access_token: OAuth2Scheme):
 
         try:
             decoded = jwt.decode(

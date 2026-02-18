@@ -2,8 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.core.dependencies import SessionDep
-from src.core.security import oauth_2_scheme, Roles
+from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
+, Roles
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.services import templates as template_service
@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.get("/{realm}/campaigns", dependencies=[Depends(Roles("org_manager", "view"))])
-def list_realm_campaigns(realm: str, session: SessionDep, token: str = Depends(oauth_2_scheme)):
+def list_realm_campaigns(realm: str, session: SessionDep, token: OAuth2Scheme):
     """List campaigns for the specified realm (org manager scope)."""
     validate_realm_access(token, realm)
     service = CampaignService()
@@ -25,9 +25,10 @@ def list_realm_campaigns(realm: str, session: SessionDep, token: str = Depends(o
 @router.get(
     "/{realm}/campaigns/{campaign_id}",
     dependencies=[Depends(Roles("org_manager", "view"))],
+    responses={404: {"description": "Campaign not found"}},
 )
 async def get_realm_campaign_detail(
-    realm: str, campaign_id: int, session: SessionDep, token: str = Depends(oauth_2_scheme)
+    realm: str, campaign_id: int, session: SessionDep, token: OAuth2Scheme
 ):
     """Get campaign detail including linked templates for the specified realm."""
     validate_realm_access(token, realm)
@@ -70,7 +71,7 @@ async def get_realm_campaign_detail(
     dependencies=[Depends(Roles("org_manager", "manage"))],
 )
 def delete_realm_campaign(
-    realm: str, campaign_id: int, session: SessionDep, token: str = Depends(oauth_2_scheme)
+    realm: str, campaign_id: int, session: SessionDep, token: OAuth2Scheme
 ):
     """Delete a campaign from the realm using the user's token."""
     validate_realm_access(token, realm)

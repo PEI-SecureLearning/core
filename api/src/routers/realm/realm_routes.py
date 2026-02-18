@@ -23,7 +23,11 @@ def get_platform_logs(max_results: int = 100):
     return realm_service.get_platform_logs(max_results)
 
 
-@router.get("/realms", response_model=RealmResponse)
+@router.get(
+    "/realms",
+    responses={404: {"description": "Realm not found for this domain"}}, 
+    response_model=RealmResponse
+)
 def get_realms_by_domain(domain: str):
     realm = realm_service.find_realm_by_domain(domain)
     if not realm:
@@ -43,7 +47,11 @@ def delete_realm(realm: SafeRealm, session: SessionDep):
     return None
 
 
-@router.get("/realms/{realm}/info")
+@router.get(
+    "/realms/{realm}/info",
+    responses={404: {"description": "Realm not found"}},
+    response_model=RealmResponse
+)
 def get_realm_info(realm: SafeRealm):
     """Return realm metadata including domain and feature flags."""
     realm = realm_service.get_realm_info(realm)
