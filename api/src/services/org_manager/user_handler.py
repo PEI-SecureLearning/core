@@ -84,7 +84,7 @@ class user_handler:
 
         response = self.kc.create_user(realm, token, user_data)
 
-        _, user_id = self.get_user_object(response, realm, token, username_clean)
+        _, user_id = self.get_user_object(response)
 
         if group_id:
             self.kc.add_user_to_group(realm, token, user_id, group_id)

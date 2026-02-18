@@ -34,7 +34,7 @@ class campaign_handler:
             session, campaign.landing_page_template_id, campaign.landing_page_template
         )
         sending_profile_id = self._get_or_create_sending_profile(
-            session, campaign.sending_profile_id, current_realm
+            session, campaign.sending_profile_id
         )
 
         enriched_campaign = campaign.model_copy(

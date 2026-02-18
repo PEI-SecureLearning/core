@@ -1,5 +1,6 @@
 """Tenant logo upload and retrieval routes."""
 
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, status, File, UploadFile
 from fastapi.responses import StreamingResponse
 
@@ -22,7 +23,7 @@ MAX_LOGO_BYTES = 2 * 1024 * 1024
 async def upload_realm_logo(
     realm: SafeRealm,
     token: OAuth2Scheme,
-    file: UploadFile = File(...),
+    file: UploadFile = Annotated[File],
 ):
     if file.content_type not in ALLOWED_LOGO_TYPES:
         raise HTTPException(
