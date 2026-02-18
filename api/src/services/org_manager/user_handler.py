@@ -185,7 +185,7 @@ class user_handler:
             if db_realm and db_realm.domain:
                 return db_realm.domain
         except Exception:
-            return None
+            return ""
 
 
     def delete_user(self, realm: str, token: str, user_id: str, session: Session) -> None:
