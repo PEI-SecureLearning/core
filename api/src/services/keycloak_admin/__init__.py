@@ -1,15 +1,15 @@
-from api.src.services.keycloak_admin.base_handler import Base_handler
-from api.src.services.keycloak_admin.realm_handler import Realm_handler
-from api.src.services.keycloak_admin.user_handler import User_handler
-from api.src.services.keycloak_admin.groups_handler import Groups_handler
-from api.src.services.keycloak_admin.event_handler import Event_handler
-from api.src.services.keycloak_admin.feature_handler import Feature_handler
+from src.services.keycloak_admin.base_handler import base_handler
+from src.services.keycloak_admin.realm_handler import realm_handler
+from src.services.keycloak_admin.user_handler import user_handler
+from src.services.keycloak_admin.groups_handler import groups_handler
+from src.services.keycloak_admin.event_handler import event_handler
+from src.services.keycloak_admin.feature_handler import feature_handler
 
 
-class KeycloakAdmin(Base_handler, Realm_handler, User_handler, Groups_handler, Event_handler, Feature_handler):
+class KeycloakAdmin(base_handler, realm_handler, user_handler, groups_handler, event_handler, feature_handler):
 
     def __init__(self):
-        Base_handler.__init__(self)
+        base_handler.__init__(self)
 
 
 _instance: KeycloakAdmin | None = None

@@ -3,15 +3,15 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
-, Roles
+from src.core.security import Roles
 from src.models.org_manager_schemas import (
     CompliancePolicyPayload,
     CompliancePolicyResponse,
     ComplianceQuizPayload,
     ComplianceQuizResponse,
 )
-from api.src.services.org_manager import compliance_handler as compliance_handler
-from api.src.services.org_manager.validation_handler import validate_realm_access
+from src.services.org_manager import compliance_handler as compliance_handler
+from src.services.org_manager.validation_handler import validate_realm_access
 
 router = APIRouter()
 

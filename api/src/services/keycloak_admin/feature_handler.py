@@ -1,4 +1,4 @@
-
+from fastapi import HTTPException
 
 
 class feature_handler:
@@ -36,7 +36,7 @@ class feature_handler:
                     feature_name = claim_name.replace("features.", "")
                     features[feature_name] = claim_value.lower() == "true"
 
-            return features
+        return features
 
 
     def find_feature_scope(self,scopes):
@@ -152,5 +152,4 @@ class feature_handler:
         r = self.keycloak_client._make_request("POST",url,token,json_data=payload)
         
         return r.status_code in (201, 204)
-
 

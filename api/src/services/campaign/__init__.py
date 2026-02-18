@@ -1,8 +1,8 @@
-from api.src.services.campaign.campaign_handler import Campaign_handler
-from api.src.services.campaign.stats_handler import Stats_handler
-from api.src.services.campaign.email_handler import Email_handler
+from src.services.campaign.campaign_handler import campaign_handler
+from src.services.campaign.stats_handler import stats_handler
+from src.services.campaign.email_handler import email_handler
 
 
-class CampaignService(Campaign_handler, Stats_handler, Email_handler):
+class CampaignService(campaign_handler, stats_handler, email_handler):
     """Unified campaign service composing all domain handlers."""
     pass

@@ -45,7 +45,7 @@ class user_handler:
     def remove_realm_role_from_user(self, realm_name: str, user_id: str, role_name: str):
         """Remove a realm role from a user."""
         token = self._get_admin_token()
-        kc = get_keycloak_client()
+        kc = self.keycloak_client
         role_repr = kc.get_realm_role(realm_name, token, role_name)
         if role_repr:
             kc.remove_realm_roles(realm_name, token, user_id, [role_repr])
@@ -61,7 +61,7 @@ class user_handler:
         role: str | None = None,
     ):
         token = self._get_admin_token()
-        kc = get_keycloak_client()
+        kc = self.keycloak_client
 
         first_name = None
         last_name = None

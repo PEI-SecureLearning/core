@@ -4,7 +4,6 @@ from sqlmodel import Session
 
 from src.models.user import User
 from src.models.realm import Realm
-from src.core.db import engine
 
 
 class user_handler:
@@ -53,12 +52,13 @@ class user_handler:
 
         """Create a new user in the realm."""
         username_clean = (username or "").strip()
+        email_clean = (email or "").strip().lower()
+        role_clean = self.is_valid_role(role)
+        first_name = ""
+        last_name = ""
 
         self.is_valid_username(username_clean)
-        
-        self.is_valid_email(realm,session,token,email)
-
-        self.is_valid_role(role)
+        self.is_valid_email(realm, session, token, email_clean)
 
         temporary_password = secrets.token_urlsafe(12)
 
@@ -73,7 +73,7 @@ class user_handler:
         user_data = {
             "username": username_clean,
             "enabled": True,
-            "email": email,
+            "email": email_clean,
             "firstName": first_name,
             "lastName": last_name,
             "credentials": [
@@ -84,7 +84,7 @@ class user_handler:
 
         response = self.kc.create_user(realm, token, user_data)
 
-        _, user_id = self.get_user_object(response)
+        user_id = self.get_user_object(response)
 
         if group_id:
             self.kc.add_user_to_group(realm, token, user_id, group_id)
@@ -108,35 +108,46 @@ class user_handler:
 
         existing = session.get(User, user_id)
         if existing:
-            existing.email = email
+            existing.email = email_clean
             existing.is_org_manager = role_clean == "ORG_MANAGER"
         else:
-            session.add(User(keycloak_id=user_id, email=email, is_org_manager=(role_clean == "ORG_MANAGER")))
+            session.add(
+                User(
+                    keycloak_id=user_id,
+                    email=email_clean,
+                    is_org_manager=(role_clean == "ORG_MANAGER"),
+                )
+            )
         session.commit()
 
         return {
             "realm": realm,
-            "username": username,
+            "username": username_clean,
             "status": "created" if response.status_code in (201, 204) else "exists",
             "temporary_password": temporary_password,
         }
 
 
-    def get_user_object(self, response):
+    def get_user_object(self, response) -> str:
+        if response.status_code == 409:
+            raise HTTPException(status_code=409, detail="User already exists.")
+        if response.status_code not in (201, 204):
+            raise HTTPException(
+                status_code=response.status_code,
+                detail="Failed to create user in Keycloak.",
+            )
+
         user_id = None
         location = response.headers.get("Location")
         if location:
             user_id = location.rstrip("/").split("/")[-1]
-            user = User(keycloak_id=user_id, email=email, is_org_manager=(role_clean == "ORG_MANAGER"))
-            session.add(user)
-            session.commit()
 
         if not user_id:
             raise HTTPException(status_code=400, detail="User ID not found.")
-        
-        return user,user_id
 
-    def is_valid_role(self,role: str) -> bool:
+        return user_id
+
+    def is_valid_role(self, role: str) -> str:
 
         allowed_roles = {"ORG_MANAGER", "CONTENT_MANAGER", "DEFAULT_USER"}
         role_clean = (role or "").strip().upper()
@@ -148,9 +159,10 @@ class user_handler:
                 status_code=400,
                 detail=f"Invalid role '{role_clean}'. Must be one of {', '.join(sorted(allowed_roles))}.",
             )
+        return role_clean
 
 
-    def is_valid_username(self,username: str) -> bool:
+    def is_valid_username(self, username: str) -> None:
 
         if len(username) < 3:
             raise HTTPException(status_code=400, detail="Username must be at least 3 characters.")
@@ -158,7 +170,9 @@ class user_handler:
             raise HTTPException(status_code=400, detail="Username must be 255 characters or fewer.")
 
 
-    def is_valid_email(self,realm,session,token,email: str) -> bool:
+    def is_valid_email(self, realm: str, session: Session, token: str, email: str) -> None:
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required.")
         
         kc_users = self.kc.list_users(realm, token)
         
@@ -186,6 +200,7 @@ class user_handler:
                 return db_realm.domain
         except Exception:
             return ""
+        return ""
 
 
     def delete_user(self, realm: str, token: str, user_id: str, session: Session) -> None:

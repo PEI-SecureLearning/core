@@ -3,12 +3,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
-, Roles
+from src.core.security import Roles
 from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.services import templates as template_service
 from src.services.campaign import CampaignService
-from api.src.services.org_manager.validation_handler import validate_realm_access
+from src.services.org_manager.validation_handler import validate_realm_access
 
 router = APIRouter()
 

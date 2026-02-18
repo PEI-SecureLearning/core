@@ -28,7 +28,6 @@ class realm_handler:
     def create_realm_in_keycloak(self, realm: RealmCreate, session: Session) -> RealmCreate:
         """Create a realm in Keycloak."""
         _ = self.admin.create_realm(
-            session,
             realm_name=realm.name,
             admin_email=realm.adminEmail,
             domain=realm.domain,
@@ -65,7 +64,7 @@ class realm_handler:
         session.commit()
 
 
-    def get_realm_info(self, realm_name: str) -> dict | None:
+    def get_realm_info(self, session: Session, realm_name: str) -> dict | None:
         """Return realm metadata plus users for admin/management views."""
 
         realm = self.admin.get_realm(realm_name)
@@ -76,7 +75,7 @@ class realm_handler:
         domain = self.admin.get_domain_for_realm(realm_name)
         logo_updated_at = self._get_realm_attribute(realm_name, "tenant-logo-updated-at")
 
-        users = self.list_users_in_realm(realm_name).get("users", [])
+        users = self.list_users_in_realm(session, realm_name).get("users", [])
     
 
         return {

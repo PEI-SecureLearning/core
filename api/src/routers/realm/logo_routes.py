@@ -23,7 +23,7 @@ MAX_LOGO_BYTES = 2 * 1024 * 1024
 async def upload_realm_logo(
     realm: SafeRealm,
     token: OAuth2Scheme,
-    file: UploadFile = Annotated[File],
+    file: UploadFile = Annotated[File, File(...)],
 ):
     if file.content_type not in ALLOWED_LOGO_TYPES:
         raise HTTPException(

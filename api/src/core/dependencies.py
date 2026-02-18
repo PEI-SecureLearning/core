@@ -1,6 +1,7 @@
 from collections.abc import Generator
 from typing import Annotated
 from urllib.parse import quote
+from src.core.security import oauth_2_scheme
 
 from fastapi import Depends
 from sqlmodel import Session
@@ -11,6 +12,7 @@ from src.services.compliance.token_helpers import (
     get_realm_from_iss,
 )
 
+OAuth2Scheme = Annotated[str, Depends(oauth_2_scheme)]
 
 def get_db() -> Generator[Session, None, None]:
     with Session(engine) as session:
@@ -31,4 +33,3 @@ def safe_realm(realm: str) -> str:
 SessionDep = Annotated[Session, Depends(get_db)]
 CurrentRealm = Annotated[str, Depends(get_current_realm)]
 SafeRealm = Annotated[str, Depends(safe_realm)]
-OAuth2Scheme = Annotated[str, Depends(oauth_2_scheme)]

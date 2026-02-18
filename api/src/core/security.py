@@ -4,6 +4,7 @@ import jwt
 import requests
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, Request
+from typing import Annotated
 
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -19,7 +20,7 @@ class Roles:
         self.resource = resource
         self.scope = scope
 
-    async def __call__(self, request: Request, access_token: OAuth2Scheme):
+    async def __call__(self, request: Request, access_token: Annotated[str, Depends(oauth_2_scheme)]):
 
         try:
             decoded = jwt.decode(

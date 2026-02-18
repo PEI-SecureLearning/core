@@ -27,7 +27,8 @@ class group_handler:
         response = self.admin.create_group(session, realm, group_name)
 
         location = response.headers.get("Location")
-
+        if not location:
+            raise HTTPException(status_code=500, detail="Failed to create group in Keycloak")
         group_id = location.rstrip("/").split("/")[-1]
 
         existing_local = session.get(UserGroup, group_id)
@@ -42,16 +43,14 @@ class group_handler:
 
         # Persist group locally
         try:
-            location = response.headers.get("Location")
-            group_id = location.rstrip("/").split("/")[-1] if location else None
             with Session(engine) as session:
                 self._ensure_realm(session, realm, f"{realm}.local")
-                if group_id and not session.get(UserGroup, group_id):
+                if not session.get(UserGroup, group_id):
                     session.add(UserGroup(keycloak_id=group_id))
                     session.commit()
         except Exception:
             pass
-        return group or UserGroup(keycloak_id=group_id if 'group_id' in locals() else "")
+        return group or UserGroup(keycloak_id=group_id)
 
 
     def add_user_to_group_in_realm(self, realm: str, user_id: str, group_id: str) -> None:
@@ -98,4 +97,3 @@ class group_handler:
     def remove_user_from_group_in_realm(self, realm: str, user_id: str, group_id: str) -> None:
         """Remove a user from a group in the realm."""
         self.admin.remove_user_from_group(realm, user_id, group_id)
-

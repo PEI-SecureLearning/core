@@ -17,7 +17,7 @@ from src.services.compliance import (
     upsert_tenant_quiz,
 )
 from src.services.compliance.token_helpers import resolve_user_identifier
-from api.src.services.org_manager.validation_handler import (
+from src.services.org_manager.validation_handler import (
     validate_question_bank,
     validate_quiz_settings,
 )

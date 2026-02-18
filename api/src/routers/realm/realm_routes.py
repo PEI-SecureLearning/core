@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from src.core.dependencies import SafeRealm, SessionDep
-from src.models.realm import RealmCreate, RealmResponse
+from src.models.realm import RealmCreate, RealmInfoResponse, RealmResponse
 from src.services.platform_admin import get_platform_admin_service
 
 realm_service = get_platform_admin_service()
@@ -50,11 +50,11 @@ def delete_realm(realm: SafeRealm, session: SessionDep):
 @router.get(
     "/realms/{realm}/info",
     responses={404: {"description": "Realm not found"}},
-    response_model=RealmResponse
+    response_model=RealmInfoResponse
 )
-def get_realm_info(realm: SafeRealm):
+def get_realm_info(realm: SafeRealm, session: SessionDep):
     """Return realm metadata including domain and feature flags."""
-    realm = realm_service.get_realm_info(realm)
+    realm = realm_service.get_realm_info(session, realm)
     if not realm:
         raise HTTPException(status_code=404, detail="Realm not found")
     return {"realm": realm}

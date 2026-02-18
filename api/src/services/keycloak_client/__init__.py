@@ -1,15 +1,15 @@
-from api.src.services.keycloak_client.base_handler import Base_handler
-from api.src.services.keycloak_client.user_handler import User_handler
-from api.src.services.keycloak_client.group_handler import Group_handler
-from api.src.services.keycloak_client.role_handler import Role_handler
-from api.src.services.keycloak_client.client_handler import Client_handler
+from src.services.keycloak_client.base_handler import base_handler
+from src.services.keycloak_client.user_handler import user_handler
+from src.services.keycloak_client.group_handler import group_handler
+from src.services.keycloak_client.role_handler import role_handler
+from src.services.keycloak_client.client_handler import client_handler
 
 
-class KeycloakClient(Base_handler, User_handler, Group_handler, Role_handler, Client_handler):
+class KeycloakClient(base_handler, user_handler, group_handler, role_handler, client_handler):
     """Unified Keycloak API client."""
 
     def __init__(self):
-        Base_handler.__init__(self)
+        base_handler.__init__(self)
 
 
 # Singleton instance

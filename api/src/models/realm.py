@@ -23,6 +23,21 @@ class RealmResponse(SQLModel):
     realm: str
 
 
+class RealmInfo(SQLModel):
+    realm: str
+    displayName: str
+    enabled: bool = True
+    domain: str | None = None
+    features: dict[str, bool] = Field(default_factory=dict)
+    logoUpdatedAt: str | None = None
+    user_count: int = 0
+    users: list[dict] = Field(default_factory=list)
+
+
+class RealmInfoResponse(SQLModel):
+    realm: RealmInfo
+
+
 class UserCreateRequest(SQLModel):
     realm: str
     username: str
