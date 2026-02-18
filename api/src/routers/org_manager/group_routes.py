@@ -6,7 +6,7 @@ from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
 , Roles
 from src.models.org_manager_schemas import GroupCreateRequest
 from src.services.org_manager import get_org_manager_service
-from src.services.org_manager.Validation_handler import validate_realm_access
+from api.src.services.org_manager.validation_handler import validate_realm_access
 
 org_manager_service = get_org_manager_service()
 

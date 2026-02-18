@@ -8,7 +8,7 @@ from src.models.email_template import EmailTemplate
 from src.models.landing_page_template import LandingPageTemplate
 from src.services import templates as template_service
 from src.services.campaign import CampaignService
-from src.services.org_manager.Validation_handler import validate_realm_access
+from api.src.services.org_manager.validation_handler import validate_realm_access
 
 router = APIRouter()
 

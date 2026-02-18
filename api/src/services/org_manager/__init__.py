@@ -1,6 +1,6 @@
-from src.services.org_manager.Base_handler import Base_handler
-from src.services.org_manager.User_handler import User_handler
-from src.services.org_manager.Group_handler import Group_handler
+from api.src.services.org_manager.base_handler import Base_handler
+from api.src.services.org_manager.user_handler import User_handler
+from api.src.services.org_manager.group_handler import Group_handler
 
 
 class OrgManagerService(Base_handler, User_handler, Group_handler):

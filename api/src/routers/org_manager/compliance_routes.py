@@ -10,8 +10,8 @@ from src.models.org_manager_schemas import (
     ComplianceQuizPayload,
     ComplianceQuizResponse,
 )
-from src.services.org_manager import Compliance_handler as compliance_handler
-from src.services.org_manager.Validation_handler import validate_realm_access
+from api.src.services.org_manager import compliance_handler as compliance_handler
+from api.src.services.org_manager.validation_handler import validate_realm_access
 
 router = APIRouter()
 

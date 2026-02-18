@@ -1,9 +1,9 @@
-from src.services.platform_admin.Base_handler import Base_handler
-from src.services.platform_admin.Realm_handler import Realm_handler
-from src.services.platform_admin.User_handler import User_handler
-from src.services.platform_admin.Group_handler import Group_handler
-from src.services.platform_admin.Logo_handler import Logo_handler
-from src.services.platform_admin.Event_handler import Event_handler
+from api.src.services.platform_admin.base_handler import Base_handler
+from api.src.services.platform_admin.realm_handler import Realm_handler
+from api.src.services.platform_admin.user_handler import User_handler
+from api.src.services.platform_admin.group_handler import Group_handler
+from api.src.services.platform_admin.logo_handler import Logo_handler
+from api.src.services.platform_admin.event_handler import Event_handler
 
 
 class PlatformAdminService(Base_handler, Realm_handler, User_handler, Group_handler, Logo_handler, Event_handler):

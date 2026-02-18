@@ -1,8 +1,8 @@
-from src.services.keycloak_client.Base_handler import Base_handler
-from src.services.keycloak_client.User_handler import User_handler
-from src.services.keycloak_client.Group_handler import Group_handler
-from src.services.keycloak_client.Role_handler import Role_handler
-from src.services.keycloak_client.Client_handler import Client_handler
+from api.src.services.keycloak_client.base_handler import Base_handler
+from api.src.services.keycloak_client.user_handler import User_handler
+from api.src.services.keycloak_client.group_handler import Group_handler
+from api.src.services.keycloak_client.role_handler import Role_handler
+from api.src.services.keycloak_client.client_handler import Client_handler
 
 
 class KeycloakClient(Base_handler, User_handler, Group_handler, Role_handler, Client_handler):

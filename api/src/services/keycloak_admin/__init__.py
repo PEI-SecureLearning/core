@@ -1,6 +1,6 @@
 from api.src.services.keycloak_admin.base_handler import Base_handler
 from api.src.services.keycloak_admin.realm_handler import Realm_handler
-from src.services.keycloak_admin.User_handler import User_handler
+from api.src.services.keycloak_admin.user_handler import User_handler
 from api.src.services.keycloak_admin.groups_handler import Groups_handler
 from api.src.services.keycloak_admin.event_handler import Event_handler
 from api.src.services.keycloak_admin.feature_handler import Feature_handler
