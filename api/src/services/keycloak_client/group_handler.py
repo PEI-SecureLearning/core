@@ -1,7 +1,7 @@
 import requests
 
 
-class Group_handler:
+class group_handler:
     """Keycloak group operations."""
 
     def list_groups(self, realm: str, token: str) -> list[dict]:

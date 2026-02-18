@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 
-class Role_handler:
+class role_handler:
     """Keycloak realm role operations."""
 
     def get_realm_role(self, realm: str, token: str, role_name: str) -> dict | None:

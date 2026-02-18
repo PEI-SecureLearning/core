@@ -5,7 +5,7 @@ from src.models.user_group import UserGroup
 from src.core.db import engine
 
 
-class Group_handler:
+class group_handler:
 
     def list_groups(self, realm: str, token: str) -> dict:
         """List groups in the realm."""

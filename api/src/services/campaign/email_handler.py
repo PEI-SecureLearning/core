@@ -14,7 +14,7 @@ from src.services.rabbit import RabbitMQService
 rabbitmq_service = RabbitMQService()
 
 
-class Email_handler:
+class email_handler:
 
     def _send_emails_to_rabbitmq(
         self, session: Session, campaign: Campaign, email_sendings: list[EmailSending]

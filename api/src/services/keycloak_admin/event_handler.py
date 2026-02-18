@@ -1,6 +1,6 @@
 
 
-class Event_handler:
+class event_handler:
 
     def get_events(self, max_results: int = 100) -> list[dict]:
         """

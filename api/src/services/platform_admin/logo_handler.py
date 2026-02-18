@@ -5,7 +5,7 @@ from bson import Binary, ObjectId
 from src.core.mongo import get_tenant_logos_collection
 
 
-class Logo_handler:
+class logo_handler:
 
     async def upsert_tenant_logo(
         self,

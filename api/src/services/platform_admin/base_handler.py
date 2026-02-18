@@ -7,7 +7,7 @@ from src.models.realm import Realm
 from src.models.user import User
 
 
-class Base_handler:
+class base_handler:
 
     def __init__(self):
         self.admin = get_keycloak_admin()

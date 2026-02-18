@@ -5,7 +5,7 @@ from src.models.user_group import UserGroup
 from src.core.db import engine
 
 
-class Group_handler:
+class group_handler:
 
     def list_groups_in_realm(self, realm: str) -> dict:
         """List groups inside the specified Keycloak realm/tenant."""

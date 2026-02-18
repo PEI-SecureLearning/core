@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from src.models.user_group import UserGroup
 
 
-class Groups_handler:
+class groups_handler:
 
     def list_groups(self, realm_name: str) -> list[dict]:
         """List groups in a realm."""

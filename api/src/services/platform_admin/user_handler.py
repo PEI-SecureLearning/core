@@ -7,7 +7,7 @@ from src.models.realm import Realm
 from src.core.db import engine
 
 
-class User_handler:
+class user_handler:
 
     def create_user_in_realm(
         self,

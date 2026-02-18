@@ -5,7 +5,7 @@ from src.models.realm import Realm
 from src.models.user import User
 
 
-class User_handler:
+class user_handler:
 
     def list_users(self, realm_name: str) -> list[dict]:
         """List users in a realm (basic fields only)."""

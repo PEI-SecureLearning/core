@@ -60,7 +60,7 @@ def update_compliance_policy(
 
 
 async def import_compliance_policy(
-    realm: str, file: UploadFile
+    file: UploadFile
 ) -> dict:
     if not file or not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded.")

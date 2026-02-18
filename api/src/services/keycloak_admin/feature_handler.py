@@ -1,7 +1,7 @@
 
 
 
-class Feature_handler:
+class feature_handler:
 
     def get_realm_features(self, realm_name: str) -> dict[str, bool]:
         """

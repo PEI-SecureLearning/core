@@ -11,7 +11,7 @@ load_dotenv()
 
 
 
-class Base_handler:
+class base_handler:
     def __init__(self):
         
         self.keycloak_url = os.getenv("KEYCLOAK_URL")

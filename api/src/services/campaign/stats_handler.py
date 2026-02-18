@@ -13,7 +13,7 @@ from src.models.campaign import (
 from src.models.email_sending import EmailSending, UserSendingInfo
 
 
-class Stats_handler:
+class stats_handler:
 
     def get_global_stats(
         self, current_realm: str, session: Session
@@ -23,7 +23,7 @@ class Stats_handler:
             select(Campaign).where(Campaign.realm_name == current_realm)
         ).all()
 
-        status_counts = {status: 0 for status in CampaignStatus}
+        status_counts = dict.fromkeys(CampaignStatus, 0)
         for c in campaigns:
             status_counts[c.status] += 1
 
@@ -38,10 +38,10 @@ class Stats_handler:
         total_sent = sum(1 for s in all_sendings if s.sent_at)
         total_failed = sum(1 for s in all_sendings if s.status.value == "failed")
 
-        unique_users = set(s.user_id for s in all_sendings)
-        users_opened = set(s.user_id for s in all_sendings if s.opened_at)
-        users_clicked = set(s.user_id for s in all_sendings if s.clicked_at)
-        users_phished = set(s.user_id for s in all_sendings if s.phished_at)
+        unique_users = {s.user_id for s in all_sendings}
+        users_opened = {s.user_id for s in all_sendings if s.opened_at}
+        users_clicked = {s.user_id for s in all_sendings if s.clicked_at}
+        users_phished = {s.user_id for s in all_sendings if s.phished_at}
 
         repeat_offenders = self._find_repeat_offenders(list(campaigns))
 

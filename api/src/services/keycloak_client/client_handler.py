@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 
 
-class Client_handler:
+class client_handler:
     """Keycloak client role operations."""
 
     def get_client_by_client_id(self, realm: str, token: str, client_id: str) -> dict | None:

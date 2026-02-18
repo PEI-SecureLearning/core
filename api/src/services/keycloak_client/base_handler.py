@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-class Base_handler:
+class base_handler:
     """Base handler with shared configuration and HTTP helpers."""
 
     def __init__(self):

@@ -2,7 +2,7 @@ import requests
 from fastapi import HTTPException
 
 
-class User_handler:
+class user_handler:
     """Keycloak user operations."""
 
     def list_users(self, realm: str, token: str) -> list[dict]:

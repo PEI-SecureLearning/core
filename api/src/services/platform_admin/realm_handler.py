@@ -7,7 +7,7 @@ from src.core.db import engine
 from src.services.compliance import ensure_tenant_policy, ensure_tenant_quiz
 
 
-class Realm_handler:
+class realm_handler:
 
     def list_realms(self) -> dict:
         """List all tenant realms from Keycloak (excluding master and platform)."""
@@ -27,7 +27,7 @@ class Realm_handler:
 
     def create_realm_in_keycloak(self, realm: RealmCreate, session: Session) -> RealmCreate:
         """Create a realm in Keycloak."""
-        response = self.admin.create_realm(
+        _ = self.admin.create_realm(
             session,
             realm_name=realm.name,
             admin_email=realm.adminEmail,

@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from src.models.realm import Realm
 
 
-class Realm_handler:
+class realm_handler:
 
     def get_realm(self, realm_name: str) -> dict:
         
@@ -128,7 +128,6 @@ class Realm_handler:
 
     def create_realm(
         self,
-        session: Session,
         realm_name: str,
         admin_email: str,
         domain: str,

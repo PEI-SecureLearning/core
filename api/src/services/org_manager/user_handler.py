@@ -7,7 +7,7 @@ from src.models.realm import Realm
 from src.core.db import engine
 
 
-class User_handler:
+class user_handler:
 
     def list_users(self, realm: str, token: str) -> dict:
         """List users in the realm."""
@@ -70,7 +70,6 @@ class User_handler:
             else:
                 last_name = ""
 
-        #TODO actually send temporary password to user
         user_data = {
             "username": username_clean,
             "enabled": True,
@@ -85,7 +84,7 @@ class User_handler:
 
         response = self.kc.create_user(realm, token, user_data)
 
-        user, user_id = self.get_user_object(response, realm, token, username_clean)
+        _, user_id = self.get_user_object(response, realm, token, username_clean)
 
         if group_id:
             self.kc.add_user_to_group(realm, token, user_id, group_id)
@@ -123,7 +122,7 @@ class User_handler:
         }
 
 
-    def get_user_object(self,response, realm: str, token: str, username: str):
+    def get_user_object(self, response):
         user_id = None
         location = response.headers.get("Location")
         if location:
@@ -192,8 +191,6 @@ class User_handler:
     def delete_user(self, realm: str, token: str, user_id: str, session: Session) -> None:
         """Delete a user from the realm."""
         
-        roles = self.kc.get_user_realm_roles(realm, token, user_id)
-
         self.kc.delete_user(realm, token, user_id)
 
         db_user = session.get(User, user_id)

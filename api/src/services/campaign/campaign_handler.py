@@ -19,7 +19,7 @@ from src.models.user import User
 from src.services.platform_admin import get_platform_admin_service
 
 
-class Campaign_handler:
+class campaign_handler:
 
     def create_campaign(
         self, campaign: CampaignCreate, current_realm: str, session: Session
@@ -243,7 +243,7 @@ class Campaign_handler:
         return template.id  # type: ignore[return-value]
 
     def _get_or_create_sending_profile(
-        self, session: Session, existing_id: int | None, realm: str
+        self, session: Session, existing_id: int | None
     ) -> int:
         """Use provided sending profile or create a placeholder for the realm."""
         if existing_id is not None:

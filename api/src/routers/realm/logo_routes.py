@@ -1,6 +1,6 @@
 """Tenant logo upload and retrieval routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi import APIRouter, HTTPException, status, File, UploadFile
 from fastapi.responses import StreamingResponse
 
 from src.core.dependencies import SafeRealm, OAuth2Scheme
