@@ -10,6 +10,7 @@ type RealmInfo = {
   domain?: string;
   features?: Record<string, boolean>;
   attributes?: Record<string, unknown>;
+  logoUpdatedAt?: string | null;
   user_count?: number;
   users?: Array<{
     id?: string;
@@ -32,7 +33,12 @@ export function TenantDetails() {
   const [managers, setManagers] = useState<{ id?: string; name: string; email?: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState(false);
   const API_BASE = import.meta.env.VITE_API_URL;
+  const logoVersion = info?.logoUpdatedAt ? encodeURIComponent(info.logoUpdatedAt) : "";
+  const logoQuery = logoVersion ? `?v=${logoVersion}` : "";
+  const logoUrl = `${API_BASE}/realms/${encodeURIComponent(realmName)}/logo${logoQuery}`;
+  const hasLogoError = logoError;
 
   const fetchInfo = useCallback(async () => {
     setLoading(true);
@@ -65,11 +71,13 @@ export function TenantDetails() {
         domain: payload?.domain,
         features: payload?.features || {},
         attributes: payload?.attributes || {},
+        logoUpdatedAt: payload?.logoUpdatedAt,
         user_count: payload?.user_count ?? mappedUsers.length,
         users: mappedUsers,
       };
 
       setInfo(infoData);
+      setLogoError(false);
 
       const orgManagers = mappedUsers
         .filter((u: { is_org_manager?: boolean }) => u.is_org_manager)
@@ -155,6 +163,19 @@ export function TenantDetails() {
         <Link to="/admin/tenants" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
           <ArrowLeft size={24} className="text-gray-600" />
         </Link>
+        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+          {hasLogoError ? (
+            <Building2 size={24} />
+          ) : (
+            <img
+              src={logoUrl}
+              alt={`${info?.displayName || realmName} logo`}
+              className="w-full h-full object-contain"
+              onError={() => setLogoError(true)}
+              loading="lazy"
+            />
+          )}
+        </div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{info?.displayName || realmName}</h2>
           <div className="flex items-center gap-2 text-gray-500">

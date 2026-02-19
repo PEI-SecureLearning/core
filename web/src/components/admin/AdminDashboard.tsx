@@ -27,8 +27,8 @@ export function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-full w-full bg-gray-50/50 p-8">
-            <div className="max-w-6xl mx-auto space-y-8">
+        <div className="min-h-full w-full bg-gray-50/50">
+            <div className="max-w-6xl mx-auto space-y-8 ">
                 {/* Header Section */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
