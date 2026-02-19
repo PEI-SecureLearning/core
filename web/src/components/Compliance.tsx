@@ -4,6 +4,7 @@ import { AlertTriangle, BookOpen, CheckCircle2, Loader2, ShieldCheck, Timer, Rot
 import { useKeycloak } from "@react-keycloak/web";
 import ReactMarkdown from "react-markdown";
 import apiClient from "../helper/header-injector";
+import { useLocation } from "@tanstack/react-router";
 
 const LOCAL_STORAGE_KEY = "compliance-quiz-failure";
 
@@ -141,9 +142,11 @@ export default function ComplianceFlow() {
     };
   }, []);
 
+  const location = useLocation();
+
   const isAdminContext =
     typeof window !== "undefined" &&
-    (window.location.pathname.startsWith("/admin") ||
+    (location.pathname.startsWith("/admin") ||
       keycloak.tokenParsed?.iss?.includes("/realms/master") ||
       keycloak.tokenParsed?.realm_access?.roles?.includes("admin"));
 

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
+import { useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Megaphone,
@@ -15,6 +16,9 @@ import {
   Building2,
   ScrollText,
   ShieldCheck,
+  BookOpen,
+  Blocks,
+  FileStack,
 } from "lucide-react";
 
 interface SidebarLinkProps {
@@ -22,6 +26,7 @@ interface SidebarLinkProps {
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   roles?: string[];
+  exact?: boolean;
 }
 
 const adminLinks: SidebarLinkProps[] = [
@@ -30,6 +35,7 @@ const adminLinks: SidebarLinkProps[] = [
     label: "Dashboard",
     icon: LayoutDashboard,
     roles: ["ADMIN"],
+    exact: true,
   },
   {
     href: "/admin/tenants",
@@ -48,7 +54,7 @@ const adminLinks: SidebarLinkProps[] = [
 ];
 
 const userLinks: SidebarLinkProps[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   {
     href: "/campaigns",
     label: "Campaigns",
@@ -83,27 +89,57 @@ const userLinks: SidebarLinkProps[] = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
+const contentManagerLinks: SidebarLinkProps[] = [
+  {
+    href: "/content-manager",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    roles: ["CONTENT_MANAGER"],
+    exact: true,
+  },
+  {
+    href: "/content-manager/courses",
+    label: "Courses",
+    icon: BookOpen,
+    roles: ["CONTENT_MANAGER"],
+  },
+  {
+    href: "/content-manager/modules",
+    label: "Modules",
+    icon: Blocks,
+    roles: ["CONTENT_MANAGER"],
+  },
+  {
+    href: "/content-manager/content",
+    label: "Content",
+    icon: FileStack,
+    roles: ["CONTENT_MANAGER"],
+  },
+];
+
 function SidebarLink({
   href,
   label,
   icon: Icon,
   isCollapsed,
+  exact,
 }: SidebarLinkProps & { isCollapsed: boolean }) {
   return (
     <Link
       to={href}
+      activeOptions={{ exact: !!exact }}
       activeProps={{
         className: "text-purple-700 bg-purple-50 font-medium px-2",
       }}
       inactiveProps={{
         className: "text-gray-700 hover:bg-gray-100",
       }}
-      className="flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md transition-colors group"
+      className="flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md group"
       title={isCollapsed ? label : undefined}
     >
       <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-300" />
       <span
-        className={`truncate transition-all duration-700 ease-in-out whitespace-nowrap ${isCollapsed
+        className={`truncate transition-[opacity,width] duration-700 ease-in-out whitespace-nowrap ${isCollapsed
           ? "opacity-0 w-0 overflow-hidden"
           : "opacity-100 delay-150"
           }`}
@@ -118,9 +154,10 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { keycloak } = useKeycloak();
-
+  const location = useLocation();
   const shouldShowContent = !isCollapsed || isHovered;
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const isContentManagerRoute = location.pathname.startsWith("/content-manager");
 
   const getUserRoles = () => {
     if (!keycloak.tokenParsed) return [];
@@ -130,12 +167,16 @@ export function Sidebar() {
 
   const userRoles = getUserRoles();
 
-  const linksToDisplay = isAdminRoute
-    ? adminLinks
-    : userLinks.filter((link) => {
+  const getLinksToDisplay = () => {
+    if (isAdminRoute) return adminLinks;
+    if (isContentManagerRoute) return contentManagerLinks;
+    return userLinks.filter((link) => {
       if (!link.roles) return true;
       return link.roles.some((role) => userRoles.includes(role));
     });
+  };
+
+  const linksToDisplay = getLinksToDisplay();
 
   return (
     <aside
