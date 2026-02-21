@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import type { MouseEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink, Loader2, Trash2 } from 'lucide-react'
 import { apiClient } from '../../lib/api-client'
@@ -33,7 +34,9 @@ export function TenantList() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [deleting, setDeleting] = useState<string | null>(null)
+    const [confirmingRealm, setConfirmingRealm] = useState<string | null>(null)
     const [logoError, setLogoError] = useState<Record<string, boolean>>({})
+    const deleteInFlight = useRef<Set<string>>(new Set())
     const confirm = useConfirm()
     const API_BASE = import.meta.env.VITE_API_URL
 
@@ -87,6 +90,10 @@ export function TenantList() {
     }, [])
 
     const deleteTenant = async (tenant: Tenant) => {
+        if (deleteInFlight.current.has(tenant.realm) || deleting === tenant.realm || confirmingRealm === tenant.realm) {
+            return
+        }
+        setConfirmingRealm(tenant.realm)
         const confirmed = await confirm({
             title: 'Delete Tenant',
             message: `Are you sure you want to delete "${tenant.displayName}"? This action cannot be undone and will permanently remove the organization and all its users.`,
@@ -94,21 +101,39 @@ export function TenantList() {
             cancelText: 'Cancel',
             variant: 'danger'
         })
+        setConfirmingRealm(null)
 
         if (!confirmed) return
 
         try {
+            if (deleteInFlight.current.has(tenant.realm)) return
+            deleteInFlight.current.add(tenant.realm)
             setDeleting(tenant.realm)
             await apiClient.delete(`/realms/${tenant.realm}`)
             toast.success(`Tenant "${tenant.displayName}" deleted successfully`)
             // Refresh the tenant list
             await fetchTenants()
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Failed to delete tenant')
-            setError(err instanceof Error ? err.message : 'Failed to delete tenant')
+            const message = err instanceof Error ? err.message : 'Failed to delete tenant'
+            const lower = message.toLowerCase()
+            if (lower.includes('404') || lower.includes('not found')) {
+                // Treat duplicate delete as idempotent success.
+                toast.success(`Tenant "${tenant.displayName}" was already deleted`)
+                await fetchTenants()
+            } else {
+                toast.error(message)
+                setError(message)
+            }
         } finally {
+            deleteInFlight.current.delete(tenant.realm)
             setDeleting(null)
         }
+    }
+
+    const handleDeleteClick = (event: MouseEvent<HTMLButtonElement>, tenant: Tenant) => {
+        event.preventDefault()
+        event.stopPropagation()
+        void deleteTenant(tenant)
     }
 
     const toggleFeature = (tenantId: string, feature: string) => {
@@ -260,10 +285,10 @@ export function TenantList() {
 
                                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
                                     <button
-                                        onClick={() => deleteTenant(tenant)}
-                                        disabled={deleting === tenant.realm}
+                                        onClick={(event) => handleDeleteClick(event, tenant)}
+                                        disabled={deleting === tenant.realm || confirmingRealm === tenant.realm}
                                         className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
+                                        >
                                         {deleting === tenant.realm ? (
                                             <Loader2 className="animate-spin" size={14} />
                                         ) : (

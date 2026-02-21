@@ -27,14 +27,26 @@ class realm_handler:
 
     def create_realm_in_keycloak(self, realm: RealmCreate, session: Session) -> RealmCreate:
         """Create a realm in Keycloak."""
+        normalized_domain = (realm.domain or "").strip().lower()
+        if not normalized_domain:
+            raise HTTPException(status_code=400, detail="Domain is required.")
+
+        existing_realm = self.find_realm_by_domain(normalized_domain)
+        existing_local = self.get_realm_by_domain(session, normalized_domain)
+        if existing_realm or existing_local:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Domain '{normalized_domain}' is already in use.",
+            )
+
         _ = self.admin.create_realm(
             realm_name=realm.name,
             admin_email=realm.adminEmail,
-            domain=realm.domain,
+            domain=normalized_domain,
             features=realm.features,
         )
 
-        self._ensure_realm(session, realm.name, realm.domain)
+        self._ensure_realm(session, realm.name, normalized_domain)
 
         
         session.commit()
