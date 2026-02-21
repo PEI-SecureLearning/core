@@ -123,3 +123,4 @@ async def delete_template(template_id: str) -> None:
     result = await collection.delete_one({"_id": oid})
     if result.deleted_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
+
