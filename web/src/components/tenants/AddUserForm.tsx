@@ -100,7 +100,6 @@ const FormFields = memo(function FormFields({
         >
           <option value="">Select a role</option>
           <option value="ORG_MANAGER">Organization manager</option>
-          <option value="CONTENT_MANAGER">Content manager</option>
           <option value="DEFAULT_USER">User</option>
         </select>
       </div>

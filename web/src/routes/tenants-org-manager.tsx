@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   Users,
   Plus,
@@ -51,14 +52,12 @@ interface BulkUser {
 
 function mapRole(
   value: string | undefined
-): "ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | "" {
+): "ORG_MANAGER" | "DEFAULT_USER" | "" {
   const v = (value || "").trim().toLowerCase();
   if (
     ["org_manager", "org manager", "organization manager", "org"].includes(v)
   )
     return "ORG_MANAGER";
-  if (["content_manager", "content manager", "content"].includes(v))
-    return "CONTENT_MANAGER";
   if (["default_user", "default user", "user", "default"].includes(v))
     return "DEFAULT_USER";
   return "";
@@ -79,7 +78,7 @@ function UsersManagement() {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserUsername, setNewUserUsername] = useState("");
   const [newUserRole, setNewUserRole] = useState<
-    "ORG_MANAGER" | "CONTENT_MANAGER" | "DEFAULT_USER" | ""
+    "ORG_MANAGER" | "DEFAULT_USER" | ""
   >("");
   const [newUserGroupId, setNewUserGroupId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -226,10 +225,10 @@ function UsersManagement() {
       }
 
       const data = await res.json();
-      setCreateStatus({
-        type: "success",
-        message: `User created! Temporary password: ${data?.temporary_password ?? "N/A"}`,
-      });
+      toast.success(
+        `User created! Temporary password: ${data?.temporary_password ?? "N/A"}`,
+        { position: "top-right" }
+      );
 
       // Reset form
       setNewUserName("");
@@ -237,13 +236,9 @@ function UsersManagement() {
       setNewUserUsername("");
       setNewUserRole("");
       setNewUserGroupId("");
+      setCreateStatus(null);
+      setShowNewUserModal(false);
       fetchUsers(realm);
-
-      // Close modal after delay
-      setTimeout(() => {
-        setShowNewUserModal(false);
-        setCreateStatus(null);
-      }, 3000);
     } catch (err) {
       setCreateStatus({
         type: "error",
@@ -471,7 +466,6 @@ function UsersManagement() {
 
   const roleOptions = [
     { value: "ORG_MANAGER", label: "Organization Manager" },
-    { value: "CONTENT_MANAGER", label: "Content Manager" },
     { value: "DEFAULT_USER", label: "User" },
   ];
 
@@ -823,7 +817,6 @@ function UsersManagement() {
                         setNewUserRole(
                           option.value as
                           | "ORG_MANAGER"
-                          | "CONTENT_MANAGER"
                           | "DEFAULT_USER"
                         )
                       }
