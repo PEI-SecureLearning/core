@@ -43,57 +43,42 @@ export function CreateTenantPage() {
     }
 
     const getCreateTenantErrorMessage = (error: unknown): string => {
-        if (axios.isAxiosError(error)) {
-            const axiosError = error as AxiosError<{ detail?: unknown }>
-            const status = axiosError.response?.status
-            const detail = axiosError.response?.data?.detail
-            const axiosMessage = (axiosError.message || '').toLowerCase()
-
-            if (Array.isArray(detail) && detail.length > 0) {
-                const first = detail[0] as { loc?: unknown[]; msg?: unknown } | string
-                if (typeof first === 'object' && first) {
-                    const loc = Array.isArray(first.loc) ? first.loc.map(String) : []
-                    const msg = typeof first.msg === 'string' ? first.msg : 'is invalid'
-                    if (loc.includes('name')) return `Tenant name ${msg.toLowerCase()}.`
-                    if (loc.includes('domain')) return `Domain ${msg.toLowerCase()}.`
-                    if (loc.includes('adminEmail')) return `Admin email ${msg.toLowerCase()}.`
-                    return `Some tenant details are invalid: ${msg}`
-                }
-                if (typeof first === 'string' && first.trim()) {
-                    return `Some tenant details are invalid: ${first}`
-                }
-            }
-
-            if (typeof detail === 'string' && detail.trim() && detail.toLowerCase() !== 'error') {
-                const lowered = detail.toLowerCase()
-                if (
-                    lowered.includes('already exists') ||
-                    lowered.includes('duplicate') ||
-                    lowered.includes('conflict')
-                ) {
-                    return `A tenant named "${realmName}" already exists. Please choose another name.`
-                }
-                if (lowered.includes('domain')) {
-                    return `The domain "${domain}" is invalid or already in use.`
-                }
-                if (lowered.includes('email')) {
-                    return `The admin email "${adminEmail}" is invalid for this tenant.`
-                }
-                return detail
-            }
-
-            if (axiosMessage.includes('409') || axiosMessage.includes('conflict')) {
-                return `A tenant named "${realmName}" already exists. Please choose another name.`
-            }
-            if (status === 400 || status === 422) return 'Some tenant details are invalid. Please review the form.'
-            if (status === 401) return 'Your session expired. Please log in again and retry.'
-            if (status === 403) return 'You do not have permission to create tenants.'
-            if (status === 409) return `A tenant named "${realmName}" already exists.`
-            if (status && status >= 500) return 'Server error while creating tenant. Please try again in a moment.'
-            if (!axiosError.response) return 'Could not reach the server. Check your connection and try again.'
+        if (!axios.isAxiosError(error)) {
+            return 'Failed to create tenant. Please try again.'
         }
 
-        return 'Failed to create tenant. Please try again.'
+        const axiosError = error as AxiosError<{ detail?: unknown }>
+        const status = axiosError.response?.status
+        const detail = axiosError.response?.data?.detail
+
+        let detailText = ''
+        if (typeof detail === 'string') {
+            detailText = detail.trim()
+        } else if (Array.isArray(detail) && detail.length > 0) {
+            const first = detail[0] as { msg?: unknown } | string
+            detailText = typeof first === 'string'
+                ? first
+                : typeof first?.msg === 'string'
+                    ? first.msg
+                    : ''
+        }
+
+        const lowered = `${detailText} ${axiosError.message || ''}`.toLowerCase()
+        if (lowered.includes('already exists') || lowered.includes('duplicate') || lowered.includes('conflict') || status === 409) {
+            return `A tenant named "${realmName}" already exists. Please choose another name.`
+        }
+        if (lowered.includes('domain')) {
+            return `The domain "${domain}" is invalid or already in use.`
+        }
+        if (lowered.includes('email')) {
+            return `The admin email "${adminEmail}" is invalid for this tenant.`
+        }
+        if (status === 401) return 'Your session expired. Please log in again and retry.'
+        if (status === 403) return 'You do not have permission to create tenants.'
+        if (status === 400 || status === 422) return 'Some tenant details are invalid. Please review the form.'
+        if (status && status >= 500) return 'Server error while creating tenant. Please try again in a moment.'
+        if (!axiosError.response) return 'Could not reach the server. Check your connection and try again.'
+        return detailText || 'Failed to create tenant. Please try again.'
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
