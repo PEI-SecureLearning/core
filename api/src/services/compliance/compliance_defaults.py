@@ -108,7 +108,7 @@ def read_default_policy_markdown() -> str:
     except FileNotFoundError:
         pass
 
-    fallback_path = Path(__file__).resolve().parents[1] / "resources" / RESOURCE_NAME
+    fallback_path = Path(__file__).resolve().parents[2] / "resources" / RESOURCE_NAME
     if fallback_path.exists():
         content = fallback_path.read_text(encoding="utf-8")
         if content:

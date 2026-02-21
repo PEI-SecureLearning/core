@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from sqlmodel import Session, select
 
 from src.models import TenantCompliancePolicy, TenantComplianceQuiz
-from src.services.compliance_defaults import (
+from src.services.compliance.compliance_defaults import (
     DEFAULT_PASSING_SCORE,
     DEFAULT_QUESTION_COUNT,
     DEFAULT_QUESTION_BANK,
