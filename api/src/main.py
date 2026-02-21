@@ -13,7 +13,6 @@ from src.routers import (
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
-from src.core.security import valid_resource_access
 from src.tasks import start_scheduler, shutdown_scheduler
 import os
 from jwt import PyJWKClient
@@ -40,9 +39,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+origins = [
+    os.getenv("WEB_URL"),
+    os.getenv("API_URL"),
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("WEB_URL")],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
