@@ -6,9 +6,10 @@ from .user import User
 from .custom_header import CustomHeader
 from .sending_profile import SendingProfile
 from .email_template import EmailTemplate
-from .landing_page_template import LandingPageTemplate
+from .landing_page import LandingPageTemplate
+from .phishing_kit import PhishingKit, PhishingKitCreate, PhishingKitDisplayInfo, CampaignPhishingKitLink
 from .campaign import Campaign, CampaignCreate, CampaignStatus
-from .email_sending import EmailSending, EmailSendingCreate, RabbitMQEmailMessage, SMTPConfig
+from .email_sending import EmailSending, RabbitMQEmailMessage, SMTPConfig
 from .compliance import ComplianceAcceptance
 from .tenant_compliance import TenantCompliancePolicy, TenantComplianceQuiz
 
@@ -20,11 +21,15 @@ __all__ = [
     "Campaign",
     "CampaignCreate",
     "CampaignStatus",
+    # PhishingKit
+    "PhishingKit",
+    "PhishingKitCreate",
+    "PhishingKitDisplayInfo",
+    "CampaignPhishingKitLink",
     # Email Template
     "EmailTemplate",
     # Email Sending
     "EmailSending",
-    "EmailSendingCreate",
     "RabbitMQEmailMessage",
     "SMTPConfig",
     # Custom Header

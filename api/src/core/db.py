@@ -12,6 +12,8 @@ from src.models import (
     EmailSending,
     CustomHeader,
     SendingProfile,
+    PhishingKit,
+    CampaignPhishingKitLink,
     ComplianceAcceptance,
     TenantCompliancePolicy,
     TenantComplianceQuiz,
@@ -40,4 +42,3 @@ async def init_db():
             conn.commit()
         except Exception:
             conn.rollback()
-

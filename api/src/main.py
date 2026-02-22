@@ -2,6 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from jwt import PyJWKClient
+import jwt
+from typing import Annotated
+
 from src.routers import (
     realm,
     compliance,
@@ -14,10 +19,6 @@ from src.routers import (
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.tasks import start_scheduler, shutdown_scheduler
-import os
-from jwt import PyJWKClient
-import jwt
-from typing import Annotated
 
 
 @asynccontextmanager

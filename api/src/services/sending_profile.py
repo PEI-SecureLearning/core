@@ -22,8 +22,9 @@ class SendingProfileService:
         session.refresh(profile)
 
         for header_data in profile_data.custom_headers:
-            header = CustomHeader.model_validate(header_data)
-            header.profile_id = profile.id
+            header = CustomHeader(
+                name=header_data.name, value=header_data.value, profile_id=profile.id
+            )
             session.add(header)
 
         session.commit()
@@ -63,24 +64,12 @@ class SendingProfileService:
         for key, value in profile_data.model_dump(exclude={"custom_headers"}).items():
             setattr(profile, key, value)
 
+        profile.custom_headers = [
+            CustomHeader(name=h.name, value=h.value, profile_id=profile.id)
+            for h in profile_data.custom_headers
+        ]
+
         session.add(profile)
-        session.commit()
-        session.refresh(profile)
-
-        # Delete existing headers
-        existing_headers = session.exec(
-            select(CustomHeader).where(CustomHeader.profile_id == profile.id)
-        ).all()
-        for header in existing_headers:
-            session.delete(header)
-
-        # Add new headers
-        for header_data in profile_data.custom_headers:
-            header = CustomHeader(
-                name=header_data.name, value=header_data.value, profile_id=profile.id
-            )
-            session.add(header)
-
         session.commit()
         session.refresh(profile)
 

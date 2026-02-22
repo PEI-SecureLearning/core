@@ -96,7 +96,11 @@ async def track_click(si: str, session: SessionDep):
     """
     sending = service.record_click(si, session)
 
-    template = await TemplateService.get_template(sending.campaign.landing_page_template.content_link)
+    kit = sending.phishing_kit
+    if not kit or not kit.landing_page_template:
+        raise HTTPException(status_code=404, detail="Page not found")
+
+    template = await TemplateService.get_template(kit.landing_page_template.content_link)
 
     if template is None:
         raise HTTPException(status_code=404, detail="Page not found")

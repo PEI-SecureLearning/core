@@ -10,6 +10,7 @@ class Realm(SQLModel, table=True):
 
     campaigns: list["Campaign"] = Relationship(back_populates="realm")
     sending_profiles: list["SendingProfile"] = Relationship(back_populates="realm")
+    phishing_kits: list["PhishingKit"] = Relationship(back_populates="realm")
 
 
 class RealmCreate(SQLModel):

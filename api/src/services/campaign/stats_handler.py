@@ -193,19 +193,12 @@ class stats_handler:
             sending_interval_seconds=campaign.sending_interval_seconds,
             status=campaign.status,
             realm_name=campaign.realm_name,
-            email_template_id=campaign.email_template_id,
-            landing_page_template_id=campaign.landing_page_template_id,
             sending_profile_name=(
                 campaign.sending_profile.name if campaign.sending_profile else None
             ),
-            email_template_name=(
-                campaign.email_template.name if campaign.email_template else None
-            ),
-            landing_page_template_name=(
-                campaign.landing_page_template.name
-                if campaign.landing_page_template
-                else None
-            ),
+            phishing_kit_names=[
+                kit.name for kit in campaign.phishing_kits
+            ],
             total_recipients=total_recipients,
             total_sent=total_sent,
             total_opened=total_opened,
