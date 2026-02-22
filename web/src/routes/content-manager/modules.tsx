@@ -1,35 +1,58 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import { BookOpen } from 'lucide-react'
-
+import { Blocks } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Toolbar } from '@/components/content-manager/ToolBar';
 
 export const Route = createFileRoute('/content-manager/modules')({
     component: RouteComponent,
 })
 
+const transition = {
+    type: "spring" as const,
+    stiffness: 300,
+    damping: 40,
+    mass: 1
+}
+
+import { ModuleDisplay } from '@/components/content-manager/ModuleDisplay';
+import { ModuleTitle } from '@/components/content-manager/ModuleTitle';
+
 function RouteComponent() {
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        setIsLoaded(true);
+    }, []);
+
     return (
+
         <motion.div
             layoutId="card-Modules"
-            className="w-full h-full p-10"
-            style={{ background: 'linear-gradient(130deg, ...)' }}
-        >
-            <div className="flex justify-between">
-                <div>
-                    <motion.h1 layoutId="title-Modules" className="text-6xl font-bold text-white">Modules</motion.h1>
-                    <motion.p layoutId="sub-Modules" className="text-white">Detailed list of modules...</motion.p>
-                </div>
+            transition={transition}
 
-                {/* The icon will fly to this new position */}
-                <motion.div layoutId="icon-Modules" className="opacity-20">
-                    <BookOpen className="w-40 h-40" />
-                </motion.div>
+            className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative"
+        >
+
+            <div className='w-full h-[8%] flex flex-row relative z-10'>
+                <ModuleTitle />
+
+                <div className='w-[70%] flex flex-row gap-4 justify-end'>
+                    <Toolbar />
+                </div>
             </div>
 
-            {/* Rest of your page content fades in */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                <h1>modules</h1>
-            </motion.div>
+            <div className={`w-full h-[92%] rounded-lg p-10 relative overflow-y-auto transition-colors duration-[500ms] ease-[cubic-bezier(0.4,0,0.2,1)] 
+        ${isLoaded ? 'bg-gray-100' : 'bg-purple-500/50'} z-10 border-1 border-gray-200`}
+            >
+                <ModuleDisplay />
+            </div>
+
+            <motion.div
+                layoutId="icon-Modules"
+                transition={transition}
+            />
         </motion.div>
+
     )
 }

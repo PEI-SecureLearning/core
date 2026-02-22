@@ -19,6 +19,8 @@ import {
   BookOpen,
   Blocks,
   FileStack,
+  Send,
+  User
 } from "lucide-react";
 
 interface SidebarLinkProps {
@@ -64,7 +66,7 @@ const userLinks: SidebarLinkProps[] = [
   {
     href: "/sending-profiles",
     label: "Sending Profiles",
-    icon: Users,
+    icon: Send,
     roles: ["ORG_MANAGER"],
   },
   {
@@ -82,7 +84,7 @@ const userLinks: SidebarLinkProps[] = [
   {
     href: "/tenants-org-manager",
     label: "User Management",
-    icon: Users,
+    icon: User,
     roles: ["ORG_MANAGER"],
   },
   {

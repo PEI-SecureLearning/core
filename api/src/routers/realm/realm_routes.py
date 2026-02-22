@@ -43,9 +43,8 @@ def create_realm(realm: RealmCreate, session: SessionDep):
 @router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_realm(realm: SafeRealm, session: SessionDep):
     """Delete a tenant realm from Keycloak."""
-    realm_service.delete_realm_from_keycloak(realm, session)
-    return None
-
+    return realm_service.delete_realm_from_keycloak(realm, session)
+    
 
 @router.get(
     "/realms/{realm}/info",

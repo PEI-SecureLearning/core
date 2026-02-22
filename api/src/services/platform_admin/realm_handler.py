@@ -45,23 +45,26 @@ class realm_handler:
         return realm
 
 
-    def delete_realm_from_keycloak(self, realm_name: str, session: Session) -> None:
+    def delete_realm_from_keycloak(self, realm_name: str, session: Session) -> dict:
         """Delete a realm from Keycloak."""
-        self.admin.delete_realm(session, realm_name)
-        # Remove realm and related users locally
+
         kc_users = self.admin.list_users(realm_name)
         kc_ids = [u.get("id") for u in kc_users if u.get("id")]
-      
+
+        response = self.admin.delete_realm(realm_name)
 
         if kc_ids:
             for uid in kc_ids:
                 user = session.get(User, uid)
                 if user:
                     session.delete(user)
+                    
         db_realm = session.get(Realm, realm_name)
         if db_realm:
             session.delete(db_realm)
         session.commit()
+
+        return response
 
 
     def get_realm_info(self, session: Session, realm_name: str) -> dict | None:

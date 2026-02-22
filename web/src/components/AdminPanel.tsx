@@ -4,9 +4,11 @@ import { useKeycloak } from '@react-keycloak/web'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { toast } from 'sonner'
+import { useNavigate } from '@tanstack/react-router'
 
 export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
+    const navigate = useNavigate()
     const [realmName, setRealmName] = useState('')
     const [domain, setDomain] = useState('')
     const [adminEmail, setAdminEmail] = useState('')
@@ -77,6 +79,7 @@ export function CreateTenantPage() {
                 }
             }
             toast.success('Realm created successfully!')
+            navigate({ to: '/admin/tenants' })
             setRealmName('')
             setDomain('')
             setAdminEmail('')
