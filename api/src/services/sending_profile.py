@@ -1,6 +1,7 @@
 from typing import Optional, Tuple
 
-import ssl, smtplib
+import ssl
+import smtplib
 
 from sqlmodel import Session, select
 from src.models.custom_header import CustomHeader
@@ -24,6 +25,7 @@ class SendingProfileService:
         
         try:
             context = ssl.create_default_context()
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
 
             if profile.smtp_port == 465:
                 with smtplib.SMTP_SSL(profile.smtp_host, profile.smtp_port, context=context, timeout=10) as smtp:
