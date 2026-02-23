@@ -24,7 +24,7 @@ const getButtonContent = (isLoading: boolean | undefined): ButtonContent => {
   return { icon: <Save className="h-4 w-4" />, text: "Save Changes" };
 };
 
-function EditProfileFooter({ onSave, onDelete, isValid, isLoading, status }: Props) {
+function EditProfileFooter({ onSave, onDelete, isValid, isLoading, status }: Readonly<Props>) {
   const buttonContent = getButtonContent(isLoading);
 
   return (

@@ -1,11 +1,11 @@
-import { type SendingProfile } from "@/types/sendingProfile";
+import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 import SendingProfileCard from "./SendingProfileCard";
 import { Send } from "lucide-react";
 
 type Props = {
-  profiles: SendingProfile[];
-  isLoading?: boolean;
-  onDelete?: (id: number) => void;
+  readonly profiles: SendingProfileDisplayInfo[];
+  readonly isLoading?: boolean;
+  readonly onDelete?: (id: number) => void;
 };
 
 export default function SendingProfilesGrid({

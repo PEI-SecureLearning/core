@@ -2,6 +2,7 @@
 import {
   type SendingProfile,
   type SendingProfileCreate,
+  type SendingProfileDisplayInfo,
 } from "@/types/sendingProfile";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -65,7 +66,7 @@ export async function fetchSendingProfiles(_realm: string, token?: string) {
   const res = await fetch(`${API_URL}/sending-profiles`, { headers });
 
   if (!res.ok) throw new Error("Failed to fetch profiles");
-  return res.json() as Promise<SendingProfile[]>;
+  return res.json() as Promise<SendingProfileDisplayInfo[]>;
 }
 
 // 3. READ ONE (GET)

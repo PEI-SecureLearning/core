@@ -57,7 +57,7 @@ export default function SendingProfileLayout({
   onTest, isTesting, testStatus,
   customHeaders, onAddHeader, onRemoveHeader,
   footer,
-}: Props) {
+}: Readonly<Props>) {
   return (
     <div className="liquid-glass-container h-full w-full animate-fade-in relative overflow-hidden">
       {/* Background blobs */}
