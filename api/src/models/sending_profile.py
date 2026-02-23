@@ -54,3 +54,5 @@ class SendingProfileDisplayInfo(SQLModel):
     from_fname: str
     from_lname: str
     from_email: str
+    smtp_host: str
+    smtp_port: int

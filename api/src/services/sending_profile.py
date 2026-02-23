@@ -8,7 +8,6 @@ from src.models.sending_profile import (
     SendingProfile,
     SendingProfileCreate,
     SendingProfileDisplayInfo,
-    SendingProfileDisplayInfo,
 )
 
 
