@@ -520,10 +520,23 @@ function UsersManagement() {
     );
   };
 
-  const roleOptions = [
+  const roleOptions: Array<{
+    value: "ORG_MANAGER" | "DEFAULT_USER";
+    label: string;
+  }> = [
     { value: "ORG_MANAGER", label: "Organization Manager" },
     { value: "DEFAULT_USER", label: "User" },
   ];
+
+  const getRoleOptionClass = (value: "ORG_MANAGER" | "DEFAULT_USER"): string => {
+    if (newUserRole === value) {
+      return "bg-purple-100 border-2 border-purple-400";
+    }
+    if (createFieldError === "role") {
+      return "bg-rose-50 border border-rose-300 hover:bg-rose-100/70";
+    }
+    return "bg-gray-50 border border-gray-200 hover:bg-gray-100";
+  };
 
   return (
     <div className="h-full w-full flex flex-col animate-fade-in">
@@ -921,11 +934,7 @@ function UsersManagement() {
                       ref={option.value === "ORG_MANAGER" ? roleFirstOptionRef : undefined}
                       type="button"
                       onClick={() =>
-                        setNewUserRole(
-                          option.value as
-                          | "ORG_MANAGER"
-                          | "DEFAULT_USER"
-                        )
+                        setNewUserRole(option.value)
                       }
                       onFocus={() => {
                         if (createFieldError === "role") {
@@ -933,12 +942,7 @@ function UsersManagement() {
                           setCreateStatus(null);
                         }
                       }}
-                      className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center justify-between ${newUserRole === option.value
-                        ? "bg-purple-100 border-2 border-purple-400"
-                        : createFieldError === "role"
-                          ? "bg-rose-50 border border-rose-300 hover:bg-rose-100/70"
-                          : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
-                        } cursor-pointer`}
+                      className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center justify-between ${getRoleOptionClass(option.value)} cursor-pointer`}
                     >
                       <span
                         className={`font-medium text-[14px] ${newUserRole === option.value ? "text-purple-700" : "text-gray-700"}`}
