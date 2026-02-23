@@ -1,6 +1,7 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
+import { toast } from "sonner";
 
 // Componentes Visuais
 import ProfileBasicInfo from "@/components/sending-profiles/new/ProfileBasicInfo";
@@ -10,7 +11,7 @@ import ProfilePreview from "@/components/sending-profiles/new/ProfilePreview";
 import ProfileFooter from "@/components/sending-profiles/new/ProfileFooter";
 
 // API e Tipos
-import { createSendingProfile } from "@/services/sendingProfilesApi";
+import { createSendingProfile, testSendingProfileConfiguration } from "@/services/sendingProfilesApi";
 import {
   type SendingProfileCreate,
   type CustomHeader,
@@ -44,7 +45,19 @@ export default function NewSendingProfile() {
   const [customHeaders, setCustomHeaders] = useState<CustomHeader[]>([]);
 
   const [status, setStatus] = useState<string | null>(null);
+  const [testStatus, setTestStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testPassed, setTestPassed] = useState(false);
+
+  // --- Reset test status when SMTP fields change ---
+  useEffect(() => {
+    if (testPassed) {
+      setTestPassed(false);
+      setTestStatus(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smtpHost, smtpPort, username, password]);
 
   // --- Handlers de Headers ---
   const addHeader = useCallback((header: CustomHeader) => {
@@ -55,8 +68,63 @@ export default function NewSendingProfile() {
     setCustomHeaders((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  // --- Handler de Test Configuration ---
+  const handleTest = async () => {
+    // 1. Validação Básica
+    if (!realm) {
+      toast.error("Could not determine Realm. Are you logged in?");
+      return;
+    }
+
+    if (!name || !fromEmail || !smtpHost || !username || !password) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    setIsTesting(true);
+    setTestStatus(null);
+    setTestPassed(false);
+
+    // 2. Preparar o Payload
+    const payload: SendingProfileCreate = {
+      name,
+      from_fname: fromFname,
+      from_lname: fromLname,
+      from_email: fromEmail,
+      smtp_host: smtpHost,
+      smtp_port: smtpPort,
+      username,
+      password,
+      custom_headers: customHeaders.map((h) => ({
+        name: h.name,
+        value: h.value,
+      })),
+    };
+
+    try {
+      // 3. Testar configuração
+      const result = await testSendingProfileConfiguration(payload, keycloak.token);
+      setTestStatus(result.message);
+      setTestPassed(true);
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage = err.message || "Failed to test configuration. Check SMTP settings.";
+      toast.error(errorMessage);
+      setTestStatus(errorMessage);
+      setTestPassed(false);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   // --- Handler de Submit (A Integração da API) ---
   const handleSubmit = async () => {
+    // Check if test passed
+    if (!testPassed) {
+      toast.warning("Please test the configuration first before creating the profile.");
+      return;
+    }
+    
     // 1. Validação Básica
     if (!realm) {
       setStatus("Error: Could not determine Realm. Are you logged in?");
@@ -150,6 +218,9 @@ export default function NewSendingProfile() {
               setUsername={setUsername}
               password={password}
               setPassword={setPassword}
+              onTest={handleTest}
+              isTesting={isTesting}
+              testStatus={testStatus}
             />
           </div>
 

@@ -6,6 +6,31 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// TEST SENDING PROFILE CONFIGURATION
+export async function testSendingProfileConfiguration(
+  data: SendingProfileCreate,
+  token?: string
+) {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}/sending-profiles/test`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(data),
+  });
+
+  const message = await res.text();
+  
+  if (!res.ok) {
+    throw new Error(message || "Failed to test profile configuration");
+  }
+  
+  return { success: true, message };
+}
+
 // 1. CREATE (POST)
 export async function createSendingProfile(
   _realm: string,

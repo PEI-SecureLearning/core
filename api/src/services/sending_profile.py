@@ -1,4 +1,6 @@
-from typing import Optional
+from typing import Optional, Tuple
+
+import ssl, smtplib
 
 from sqlmodel import Session, select
 from src.models.custom_header import CustomHeader
@@ -11,6 +13,41 @@ from src.models.sending_profile import (
 
 
 class SendingProfileService:
+
+    def _test_sending_profile_configuration(self, profile: SendingProfileCreate) -> Tuple[bool, str]:
+        """
+        Tests the SMTP configuration by attempting to connect and authenticate with the provided settings.
+        
+        Returns a tuple (is_valid, message) where:
+        - is_valid: A boolean indicating whether the configuration is valid.
+        - message: A string providing details about the validation result.
+        """
+        
+        try:
+            context = ssl.create_default_context()
+
+            if profile.smtp_port == 465:
+                with smtplib.SMTP_SSL(profile.smtp_host, profile.smtp_port, context=context, timeout=10) as smtp:
+                    smtp.login(profile.username, profile.password)
+            else:
+                with smtplib.SMTP(profile.smtp_host, profile.smtp_port, timeout=10) as smtp:
+                    smtp.ehlo()
+                    smtp.starttls(context=context)
+                    smtp.ehlo()
+                    smtp.login(profile.username, profile.password)
+
+            return (True, "SMTP configuration is valid")
+
+        except smtplib.SMTPAuthenticationError:
+            return (False, "Invalid credentials")
+        except smtplib.SMTPConnectError:
+            return (False, "Could not connect to the SMTP server")
+        except smtplib.SMTPServerDisconnected:
+            return (False, "Server disconnected unexpectedly")
+        except TimeoutError:
+            return (False, "Connection timed out")
+        except Exception as e:
+            return (False, str(e))
 
     def create_sending_profile(
         self, profile_data: SendingProfileCreate, current_realm: str, session: Session

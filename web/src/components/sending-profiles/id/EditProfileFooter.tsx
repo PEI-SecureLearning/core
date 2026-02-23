@@ -17,13 +17,31 @@ const StatusMessage = memo(function StatusMessage({
 }) {
   const isError =
     status.toLowerCase().includes("failed") ||
-    status.toLowerCase().includes("error");
+    status.toLowerCase().includes("error") ||
+    status.toLowerCase().includes("invalid") ||
+    status.toLowerCase().includes("fill");
+  const isSuccess = 
+    status.toLowerCase().includes("success") || 
+    status.toLowerCase().includes("valid");
+  
   return (
     <div
-      className={`text-sm px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border ${isError ? "text-red-600 border-red-200/30" : "text-gray-600 border-blue-200/30"}`}
+      className={`text-sm px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border ${
+        isError 
+          ? "text-red-600 border-red-200/30" 
+          : isSuccess 
+          ? "text-green-600 border-green-200/30"
+          : "text-gray-600 border-blue-200/30"
+      }`}
     >
       <span
-        className={`inline-block w-2 h-2 rounded-full mr-2 animate-pulse ${isError ? "bg-red-500" : "bg-blue-400"}`}
+        className={`inline-block w-2 h-2 rounded-full mr-2 animate-pulse ${
+          isError 
+            ? "bg-red-500" 
+            : isSuccess 
+            ? "bg-green-500"
+            : "bg-blue-400"
+        }`}
       ></span>
       {status}
     </div>
@@ -45,7 +63,8 @@ function EditProfileFooter({
         {/* Botão de Perigo (Apagar) */}
         <button
           onClick={onDelete}
-          className="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          disabled={isLoading}
+          className="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
         >
           <Trash2 className="h-4 w-4" />
@@ -59,6 +78,7 @@ function EditProfileFooter({
           >
             Cancel
           </Link>
+          
           <button
             onClick={onSave}
             disabled={!isValid || isLoading}

@@ -16,13 +16,31 @@ const StatusMessage = memo(function StatusMessage({
 }) {
   const isError =
     status.toLowerCase().includes("failed") ||
-    status.toLowerCase().includes("fill");
+    status.toLowerCase().includes("fill") ||
+    status.toLowerCase().includes("invalid") ||
+    status.toLowerCase().includes("error");
+  const isSuccess = 
+    status.toLowerCase().includes("success") || 
+    status.toLowerCase().includes("valid");
+  
   return (
     <div
-      className={`text-sm px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border ${isError ? "text-red-600 border-red-200/30" : "text-gray-600 border-blue-200/30"}`}
+      className={`text-sm px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border ${
+        isError 
+          ? "text-red-600 border-red-200/30" 
+          : isSuccess 
+          ? "text-green-600 border-green-200/30"
+          : "text-gray-600 border-blue-200/30"
+      }`}
     >
       <span
-        className={`inline-block w-2 h-2 rounded-full mr-2 animate-pulse ${isError ? "bg-red-500" : "bg-blue-400"}`}
+        className={`inline-block w-2 h-2 rounded-full mr-2 animate-pulse ${
+          isError 
+            ? "bg-red-500" 
+            : isSuccess 
+            ? "bg-green-500"
+            : "bg-blue-400"
+        }`}
       ></span>
       {status}
     </div>
@@ -41,6 +59,7 @@ function ProfileFooter({ onSubmit, isValid, isLoading, status }: Props) {
         >
           Cancel
         </Link>
+        
         <button
           onClick={onSubmit}
           disabled={!isValid || isLoading}

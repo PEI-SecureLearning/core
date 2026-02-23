@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 // Componentes Visuais (Reutilizamos os do 'new' porque são iguais!)
 import ProfileBasicInfo from "@/components/sending-profiles/new/ProfileBasicInfo";
@@ -17,6 +18,7 @@ import {
   fetchSendingProfileById,
   updateSendingProfile,
   deleteSendingProfile,
+  testSendingProfileConfiguration,
 } from "@/services/sendingProfilesApi";
 import {
   type SendingProfileCreate,
@@ -55,8 +57,20 @@ export default function EditSendingProfile() {
   const [customHeaders, setCustomHeaders] = useState<CustomHeader[]>([]);
 
   const [status, setStatus] = useState<string | null>(null);
+  const [testStatus, setTestStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [testPassed, setTestPassed] = useState(false);
+
+  // --- Reset test status when SMTP fields change ---
+  useEffect(() => {
+    if (testPassed) {
+      setTestPassed(false);
+      setTestStatus(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smtpHost, smtpPort, username, password]);
 
   // --- Carregar Dados Iniciais ---
   useEffect(() => {
@@ -106,8 +120,60 @@ export default function EditSendingProfile() {
     setCustomHeaders((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
+  // --- Handler de Test Configuration ---
+  const handleTest = async () => {
+    if (!realm) {
+      toast.error("Could not determine Realm. Are you logged in?");
+      return;
+    }
+
+    if (!name || !fromEmail || !smtpHost || !username || !password) {
+      toast.error("Please fill in all required fields including password.");
+      return;
+    }
+
+    setIsTesting(true);
+    setTestStatus(null);
+    setTestPassed(false);
+
+    const payload: SendingProfileCreate = {
+      name,
+      from_fname: fromFname,
+      from_lname: fromLname,
+      from_email: fromEmail,
+      smtp_host: smtpHost,
+      smtp_port: smtpPort,
+      username,
+      password,
+      custom_headers: customHeaders.map((h) => ({
+        name: h.name,
+        value: h.value,
+      })),
+    };
+
+    try {
+      const result = await testSendingProfileConfiguration(payload, keycloak.token);
+      setTestStatus(result.message);
+      setTestPassed(true);
+    } catch (err: any) {
+      console.error(err);
+      const errorMessage = err.message || "Failed to test configuration. Check SMTP settings.";
+      toast.error(errorMessage);
+      setTestStatus(errorMessage);
+      setTestPassed(false);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   // --- Update (PUT) ---
   const handleSave = async () => {
+    // Check if test passed when password is provided
+    if (password && !testPassed) {
+      toast.warning("Please test the configuration first before saving changes.");
+      return;
+    }
+    
     if (!realm) return;
 
     // Validação simples
@@ -219,6 +285,9 @@ export default function EditSendingProfile() {
               setUsername={setUsername}
               password={password}
               setPassword={setPassword}
+              onTest={handleTest}
+              isTesting={isTesting}
+              testStatus={testStatus}
             />
           </div>
 
@@ -254,7 +323,7 @@ export default function EditSendingProfile() {
         <EditProfileFooter
           onSave={handleSave}
           onDelete={handleDelete}
-          isValid={!!name && !!fromEmail && !!smtpHost && !!username} // Password pode ser opcional na edição dependendo da tua lógica
+          isValid={!!name && !!fromEmail && !!smtpHost && !!username}
           isLoading={isSaving}
           status={status}
         />
