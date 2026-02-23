@@ -54,70 +54,30 @@ class user_handler:
         username_clean = (username or "").strip()
         email_clean = (email or "").strip().lower()
         role_clean = self.is_valid_role(role)
-        first_name = ""
-        last_name = ""
 
         self.is_valid_username(username_clean)
         self.is_valid_email(realm, session, token, email_clean)
 
         temporary_password = secrets.token_urlsafe(12)
+        first_name, last_name = self._split_name(name)
+        user_data = self._build_user_data(
+            username=username_clean,
+            email=email_clean,
+            first_name=first_name,
+            last_name=last_name,
+            temporary_password=temporary_password,
+        )
 
-        if name:
-            parts = name.strip().split(" ", 1)
-            first_name = parts[0]
-            if len(parts) > 1:
-                last_name = parts[1]
-            else:
-                last_name = ""
-
-        user_data = {
-            "username": username_clean,
-            "enabled": True,
-            "email": email_clean,
-            "firstName": first_name,
-            "lastName": last_name,
-            "credentials": [
-                {"type": "password", "value": temporary_password, "temporary": True}
-            ],
-        }
-        user_data = {k: v for k, v in user_data.items() if v not in (None, {}, [])}
-
-        response = self.kc.create_user(realm, token, user_data)
+        response = self._create_keycloak_user(realm, token, user_data)
 
         user_id = self.get_user_object(response)
 
         if group_id:
             self.kc.add_user_to_group(realm, token, user_id, group_id)
 
-
-        role_repr = self.kc.get_realm_role(realm, token, role_clean)
-        
-        if role_repr:
-            self.kc.assign_realm_roles(realm, token, user_id, [role_repr])
-        
-        if role_clean == "ORG_MANAGER":
-            client = self.kc.get_client_by_client_id(realm, token, "realm-management")
-            if client and client.get("id"):
-                client_role = self.kc.get_client_role(realm, token, client["id"], "realm-admin")
-                if client_role:
-                    self.kc.assign_client_roles(realm, token, user_id, client["id"], [client_role])
-
-
-        if realm and not session.get(Realm, realm):
-            session.add(Realm(name=realm, domain=f"{realm}.local"))
-
-        existing = session.get(User, user_id)
-        if existing:
-            existing.email = email_clean
-            existing.is_org_manager = role_clean == "ORG_MANAGER"
-        else:
-            session.add(
-                User(
-                    keycloak_id=user_id,
-                    email=email_clean,
-                    is_org_manager=(role_clean == "ORG_MANAGER"),
-                )
-            )
+        self._assign_roles(realm, token, user_id, role_clean)
+        self._ensure_realm_exists(session, realm)
+        self._upsert_user_record(session, user_id, email_clean, role_clean)
         session.commit()
 
         return {
@@ -126,6 +86,86 @@ class user_handler:
             "status": "created" if response.status_code in (201, 204) else "exists",
             "temporary_password": temporary_password,
         }
+
+    def _split_name(self, name: str) -> tuple[str, str]:
+        if not name:
+            return "", ""
+
+        parts = name.strip().split(" ", 1)
+        if len(parts) == 1:
+            return parts[0], ""
+        return parts[0], parts[1]
+
+    def _build_user_data(
+        self,
+        username: str,
+        email: str,
+        first_name: str,
+        last_name: str,
+        temporary_password: str,
+    ) -> dict:
+        user_data = {
+            "username": username,
+            "enabled": True,
+            "email": email,
+            "firstName": first_name,
+            "lastName": last_name,
+            "credentials": [
+                {"type": "password", "value": temporary_password, "temporary": True}
+            ],
+        }
+        return {k: v for k, v in user_data.items() if v not in (None, {}, [])}
+
+    def _create_keycloak_user(self, realm: str, token: str, user_data: dict):
+        try:
+            return self.kc.create_user(realm, token, user_data)
+        except HTTPException as exc:
+            if exc.status_code == 409:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Username already exists in this organization.",
+                )
+            raise
+
+    def _assign_roles(
+        self, realm: str, token: str, user_id: str, role_clean: str
+    ) -> None:
+        role_repr = self.kc.get_realm_role(realm, token, role_clean)
+        if role_repr:
+            self.kc.assign_realm_roles(realm, token, user_id, [role_repr])
+
+        if role_clean != "ORG_MANAGER":
+            return
+
+        client = self.kc.get_client_by_client_id(realm, token, "realm-management")
+        client_id = client.get("id") if client else None
+        if not client_id:
+            return
+
+        client_role = self.kc.get_client_role(realm, token, client_id, "realm-admin")
+        if client_role:
+            self.kc.assign_client_roles(realm, token, user_id, client_id, [client_role])
+
+    def _ensure_realm_exists(self, session: Session, realm: str) -> None:
+        if realm and not session.get(Realm, realm):
+            session.add(Realm(name=realm, domain=f"{realm}.local"))
+
+    def _upsert_user_record(
+        self, session: Session, user_id: str, email: str, role_clean: str
+    ) -> None:
+        existing = session.get(User, user_id)
+        if existing:
+            existing.email = email
+            existing.is_org_manager = role_clean == "ORG_MANAGER"
+            return
+
+        session.add(
+            User(
+                keycloak_id=user_id,
+                email=email,
+                is_org_manager=(role_clean == "ORG_MANAGER"),
+            )
+        )
 
 
     def get_user_object(self, response) -> str:
@@ -166,8 +206,8 @@ class user_handler:
 
         if len(username) < 3:
             raise HTTPException(status_code=400, detail="Username must be at least 3 characters.")
-        if len(username) > 255:
-            raise HTTPException(status_code=400, detail="Username must be 255 characters or fewer.")
+        if len(username) > 40:
+            raise HTTPException(status_code=400, detail="Username must be 40 characters or fewer.")
 
 
     def is_valid_email(self, realm: str, session: Session, token: str, email: str) -> None:
@@ -177,7 +217,7 @@ class user_handler:
         kc_users = self.kc.list_users(realm, token)
         
         if any((u.get("email") or "").lower() == (email or "").lower() for u in kc_users):
-            raise HTTPException(status_code=400, detail="Email already exists in this realm.")
+            raise HTTPException(status_code=400, detail="Email already exists in this organization.")
 
         realm_domain = self.get_realm_domain(realm, session)
 
