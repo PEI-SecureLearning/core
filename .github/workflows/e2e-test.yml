@@ -21,7 +21,7 @@ jobs:
           cache: 'npm'     
 
       - name: Start containers
-        run: docker-compose -f deployment/docker-compose.dev.yml up -d --build
+        run: docker compose -f deployment/docker-compose.dev.yml up -d --build
 
       - name: Wait for services to be ready
         run: npx wait-on http://localhost:5173 --timeout 60000
