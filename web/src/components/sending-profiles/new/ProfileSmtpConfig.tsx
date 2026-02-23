@@ -1,4 +1,5 @@
 import { memo } from "react";
+import type { ReactElement } from "react";
 import { Server, Lock, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 interface Props {
@@ -15,6 +16,64 @@ interface Props {
   readonly testStatus?: string | null;
 }
 
+type ButtonState = 'success' | 'error' | 'default' | 'testing';
+
+interface ButtonStateConfig {
+  className: string;
+  title: string;
+  icon?: ReactElement;
+}
+
+const BUTTON_BASE_CLASSES = "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:cursor-not-allowed";
+const BORDER_BASE = "border-2 bg-white";
+
+const BUTTON_STATES: Record<ButtonState, ButtonStateConfig> = {
+  success: {
+    className: `${BORDER_BASE} border-green-500 text-green-700`,
+    title: "Test passed",
+    icon: <CheckCircle className="h-4 w-4" />,
+  },
+  error: {
+    className: `${BORDER_BASE} border-red-500 text-red-700 hover:bg-red-50`,
+    title: "Test failed - click to retry",
+    icon: <XCircle className="h-4 w-4" />,
+  },
+  testing: {
+    className: `${BORDER_BASE} border-amber-500 text-amber-700`,
+    title: "Testing connection",
+    icon: <Loader2 className="h-4 w-4 animate-spin" />,
+  },
+  default: {
+    className: `${BORDER_BASE} border-amber-500 text-amber-700 hover:bg-amber-50 disabled:opacity-50`,
+    title: "Test SMTP connection",
+  },
+};
+
+const getButtonState = (
+  isTesting: boolean | undefined,
+  isError: boolean,
+  isSuccess: boolean
+): ButtonState => {
+  if (isTesting) return 'testing';
+  if (isSuccess) return 'success';
+  if (isError) return 'error';
+  return 'default';
+};
+
+const isErrorStatus = (status: string | null | undefined): boolean => {
+  if (!status) return false;
+  const lowerStatus = status.toLowerCase();
+  return lowerStatus.includes("failed") || 
+         lowerStatus.includes("error") || 
+         lowerStatus.includes("invalid");
+};
+
+const isSuccessStatus = (status: string | null | undefined, isError: boolean): boolean => {
+  if (!status || isError) return false;
+  const lowerStatus = status.toLowerCase();
+  return lowerStatus.includes("success") || lowerStatus.includes("valid");
+};
+
 function ProfileSmtpConfig({ 
   host, setHost, 
   port, setPort, 
@@ -25,61 +84,12 @@ function ProfileSmtpConfig({
   testStatus,
 }: Props) {
   const isValid = host && port && username && password;
+  const isError = isErrorStatus(testStatus);
+  const isSuccess = isSuccessStatus(testStatus, isError);
   
-  const isError =
-    testStatus &&
-    (testStatus.toLowerCase().includes("failed") ||
-      testStatus.toLowerCase().includes("error") ||
-      testStatus.toLowerCase().includes("invalid"));
-  
-  const isSuccess =
-    testStatus &&
-    !isError &&
-    (testStatus.toLowerCase().includes("success") ||
-      testStatus.toLowerCase().includes("valid"));
-
-  // Determine button styling
-  let buttonClassName = "border-2 border-amber-500 text-amber-700 bg-white hover:bg-amber-50 disabled:opacity-50";
-  if (isSuccess) {
-    buttonClassName = "border-2 border-green-500 text-green-700 bg-white";
-  } else if (isError) {
-    buttonClassName = "border-2 border-red-500 text-red-700 bg-white hover:bg-red-50";
-  }
-
-  // Determine button title
-  let buttonTitle = "Test SMTP connection";
-  if (isSuccess) {
-    buttonTitle = testStatus || "Test passed";
-  } else if (isError) {
-    buttonTitle = "Test failed - click to retry";
-  }
-
-  // Determine button content
-  let buttonContent;
-  if (isTesting) {
-    buttonContent = (
-      <>
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Testing...
-      </>
-    );
-  } else if (isSuccess) {
-    buttonContent = (
-      <>
-        Test
-        <CheckCircle className="h-4 w-4" />
-      </>
-    );
-  } else if (isError) {
-    buttonContent = (
-      <>
-        Test
-        <XCircle className="h-4 w-4" />
-      </>
-    );
-  } else {
-    buttonContent = <>Test</>;
-  }
+  const buttonState = getButtonState(isTesting, isError, isSuccess);
+  const config = BUTTON_STATES[buttonState];
+  const buttonTitle = isSuccess && testStatus ? testStatus : config.title;
 
   return (
     <div className="liquid-glass-card p-6 relative z-10">
@@ -92,11 +102,21 @@ function ProfileSmtpConfig({
         {onTest && (
           <button
             onClick={onTest}
-            disabled={!isValid || isTesting || !!isSuccess}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:cursor-not-allowed ${buttonClassName}`}
+            disabled={!isValid || isTesting || isSuccess}
+            className={`${BUTTON_BASE_CLASSES} ${config.className}`}
             title={buttonTitle}
           >
-            {buttonContent}
+            {buttonState === 'testing' ? (
+              <>
+                {config.icon}
+                Testing...
+              </>
+            ) : (
+              <>
+                Test
+                {config.icon}
+              </>
+            )}
           </button>
         )}
       </div>
