@@ -1,6 +1,6 @@
 import { Users, Mail, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 interface UserGroupCardProps {
   id?: string;
@@ -20,6 +20,7 @@ export function UserGroupCard({
   onDelete,
 }: UserGroupCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   const colorClasses = {
     purple: "from-purple-400 to-purple-600",
@@ -40,7 +41,7 @@ export function UserGroupCard({
     >
       {/* Colorful top decoration */}
       <div className={`h-2 bg-gradient-to-r ${bgClass}`}></div>
-      
+
       <div className="p-5">
         {/* Header with menu */}
         <div className="flex items-start justify-between mb-4">
@@ -48,7 +49,7 @@ export function UserGroupCard({
           <div className={`h-12 w-12 rounded-full bg-gradient-to-br ${bgClass} flex items-center justify-center shadow-md transform group-hover:scale-110 transition-transform duration-300`}>
             <Users className="h-6 w-6 text-white" />
           </div>
-          
+
           {/* More menu */}
           <div className="relative">
             <button
@@ -60,22 +61,22 @@ export function UserGroupCard({
             >
               <MoreVertical className="h-4 w-4 text-gray-400" />
             </button>
-            
+
             {showMenu && (
               <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-            <Link
-              to="/usergroups/$id"
-              params={{ id: id || "group" }}
-              className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-            >
-              <Edit className="h-3.5 w-3.5" />
-              Edit
-            </Link>
-            <button
-              onClick={(e) => {
-                e.preventDefault(); // Prevent navigation
-                onDelete?.();
-                setShowMenu(false);
+                <Link
+                  to="/usergroups/$id"
+                  params={{ id: id || "group" }}
+                  className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  Edit
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent navigation
+                    onDelete?.();
+                    setShowMenu(false);
                   }}
                   className="w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                 >
@@ -105,10 +106,13 @@ export function UserGroupCard({
           <span className="text-xs text-gray-400">
             Updated {lastUpdated}
           </span>
-          
+
           {/* Send campaign button */}
-          <button 
-            onClick={(e) => e.preventDefault()} // Prevent navigation
+          <button
+            onClick={(e) => {
+              e.preventDefault(); // Prevent the outer card link from firing
+              navigate({ to: "/campaigns/new", search: { groupId: id } });
+            }}
             className="flex items-center gap-1.5 text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors opacity-0 group-hover:opacity-100"
           >
             <Mail className="h-3.5 w-3.5" />

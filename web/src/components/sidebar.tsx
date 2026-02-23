@@ -46,7 +46,6 @@ const adminLinks: SidebarLinkProps[] = [
     roles: ["ADMIN"],
   },
   { href: "/admin/logs", label: "Logs", icon: ScrollText, roles: ["ADMIN"] },
-  { href: "/admin/terms", label: "Terms", icon: ShieldCheck, roles: ["ADMIN"] },
   {
     href: "/admin/settings",
     label: "Settings",
