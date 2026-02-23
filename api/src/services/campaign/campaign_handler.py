@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from src.models.campaign import (
-    MIN_INTERVAL,
+    MIN_INTERVAL_SECONDS,
     Campaign,
     CampaignCreate,
     CampaignStatus,
@@ -22,26 +22,16 @@ class campaign_handler:
     def create_campaign(
         self, campaign: CampaignCreate, current_realm: str, session: Session
     ) -> Campaign:
-        """Create a new campaign with scheduled email sendings."""
+        """Create a new campaign"""
         self._ensure_realm_exists(session, current_realm)
 
-        sending_profile_id = self._get_or_create_sending_profile(
-            session, campaign.sending_profile_id
-        )
-
-        enriched_campaign = campaign.model_copy(
-            update={
-                "sending_profile_id": sending_profile_id,
-            }
-        )
-
-        self._validate_campaign(enriched_campaign, session)
+        self._validate_campaign(campaign, session)
 
         users = self._collect_users_from_groups(campaign.user_group_ids, current_realm)
         interval = self._calculate_interval(campaign, len(users))
 
         new_campaign = Campaign(
-            **enriched_campaign.model_dump(
+            **campaign.model_dump(
                 exclude={
                     "user_group_ids",
                     "sending_interval_seconds",
@@ -61,9 +51,6 @@ class campaign_handler:
             if kit:
                 new_campaign.phishing_kits.append(kit)
         session.flush()
-
-        email_sendings = self._create_email_sendings(session, new_campaign, users)
-        self._send_emails_to_rabbitmq(session, new_campaign, email_sendings)
         session.commit()
 
         return new_campaign
@@ -173,18 +160,10 @@ class campaign_handler:
         total_seconds = (campaign.end_date - campaign.begin_date).total_seconds()
         return max(
             campaign.sending_interval_seconds,
-            math.ceil(total_seconds / user_count) if user_count else MIN_INTERVAL,
-            MIN_INTERVAL,
+            math.ceil(total_seconds / user_count) if user_count else MIN_INTERVAL_SECONDS,
+            MIN_INTERVAL_SECONDS,
         )
 
-    def _get_or_create_sending_profile(
-        self, session: Session, existing_id: int | None
-    ) -> int:
-        """Use provided sending profile or create a placeholder for the realm."""
-        if existing_id is not None:
-            existing = session.get(SendingProfile, existing_id)
-            if existing:
-                return existing.id  # type: ignore[return-value]
 
     def _ensure_realm_exists(self, session: Session, realm_name: str) -> None:
         """Ensure a Realm row exists before assigning FK fields."""

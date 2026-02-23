@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from src.models.user_group import UserGroup
 
 
-MIN_INTERVAL = 6
+MIN_INTERVAL_SECONDS = 6
 
 
 class CampaignStatus(StrEnum):
@@ -31,7 +31,7 @@ class Campaign(SQLModel, table=True):
     description: Optional[str] = Field(default=None)
     begin_date: datetime
     end_date: datetime
-    sending_interval_seconds: int = Field(default=MIN_INTERVAL)
+    sending_interval_seconds: int = Field(default=MIN_INTERVAL_SECONDS)
     status: CampaignStatus = Field(default=CampaignStatus.SCHEDULED)
     total_recipients: int = Field(default=0)
     total_sent: int = Field(default=0)
@@ -73,7 +73,7 @@ class CampaignCreate(SQLModel):
     description: Optional[str] = None
     begin_date: datetime
     end_date: datetime
-    sending_interval_seconds: int = MIN_INTERVAL
+    sending_interval_seconds: int = MIN_INTERVAL_SECONDS
     sending_profile_id: Optional[int] = None
     creator_id: Optional[str] = None
     phishing_kit_ids: list[int] = []
