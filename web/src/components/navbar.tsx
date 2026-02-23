@@ -104,6 +104,7 @@ export function Navbar() {
                 </span>
                 <span className="text-[10px] lg:text-xs text-gray-500">
                   {keycloak.tokenParsed?.realm_access?.roles?.includes('admin') ? 'Admin' :
+                    keycloak.tokenParsed?.realm_access?.roles?.includes('content_manager') ? 'Content Manager' :
                     keycloak.tokenParsed?.realm_access?.roles?.includes('org_manager') ? 'Manager' : 'User'}
                 </span>
               </div>

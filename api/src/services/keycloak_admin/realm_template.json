@@ -513,10 +513,6 @@
             "description": "Custom administrator role for the organization"
         },
         {
-            "name": "CONTENT_MANAGER",
-            "description": "Custom role for read-only access"
-        },
-        {
             "name": "DEFAULT_USER",
             "description": "Custom role for read-only access"
         }

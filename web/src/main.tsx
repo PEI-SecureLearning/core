@@ -104,7 +104,9 @@ const App = () => {
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  const isAdminRoute =
+    window.location.pathname.startsWith("/admin") ||
+    window.location.pathname.startsWith("/content");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 

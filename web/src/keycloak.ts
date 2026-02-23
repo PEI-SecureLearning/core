@@ -1,6 +1,8 @@
 import Keycloak from 'keycloak-js'
 
-const isAdminRoute = window.location.pathname.startsWith("/admin");
+const isAdminRoute =
+    window.location.pathname.startsWith("/admin") ||
+    window.location.pathname.startsWith("/content");
 const userRealm = localStorage.getItem('user_realm');
 
 const realm = isAdminRoute ? 'platform' : (userRealm || 'placeholder');

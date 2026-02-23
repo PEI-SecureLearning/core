@@ -37,6 +37,12 @@ const adminLinks: SidebarLinkProps[] = [
     icon: Building2,
     roles: ["ADMIN"],
   },
+  {
+    href: "/content",
+    label: "Content",
+    icon: FileText,
+    roles: ["content_manager"],
+  },
   { href: "/admin/logs", label: "Logs", icon: ScrollText, roles: ["ADMIN"] },
   { href: "/admin/terms", label: "Terms", icon: ShieldCheck, roles: ["ADMIN"] },
   {
@@ -126,7 +132,9 @@ export function Sidebar() {
   const { keycloak } = useKeycloak();
 
   const shouldShowContent = !isCollapsed || isHovered;
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  const isAdminRoute =
+    window.location.pathname.startsWith("/admin") ||
+    window.location.pathname.startsWith("/content");
 
   const getUserRoles = () => {
     if (!keycloak.tokenParsed) return [];
@@ -136,12 +144,10 @@ export function Sidebar() {
 
   const userRoles = getUserRoles();
 
-  const linksToDisplay = isAdminRoute
-    ? adminLinks
-    : userLinks.filter((link) => {
-      if (!link.roles) return true;
-      return link.roles.some((role) => userRoles.includes(role));
-    });
+  const linksToDisplay = (isAdminRoute ? adminLinks : userLinks).filter((link) => {
+    if (!link.roles) return true;
+    return link.roles.some((role) => userRoles.includes(role));
+  });
 
   return (
     <aside
