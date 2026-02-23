@@ -2,13 +2,17 @@ import { memo } from "react";
 import { Server, Lock, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 interface Props {
-  host: string; setHost: (v: string) => void;
-  port: number; setPort: (v: number) => void;
-  username: string; setUsername: (v: string) => void;
-  password: string; setPassword: (v: string) => void;
-  onTest?: () => void;
-  isTesting?: boolean;
-  testStatus?: string | null;
+  readonly host: string;
+  readonly setHost: (v: string) => void;
+  readonly port: number;
+  readonly setPort: (v: number) => void;
+  readonly username: string;
+  readonly setUsername: (v: string) => void;
+  readonly password: string;
+  readonly setPassword: (v: string) => void;
+  readonly onTest?: () => void;
+  readonly isTesting?: boolean;
+  readonly testStatus?: string | null;
 }
 
 function ProfileSmtpConfig({ 
@@ -34,6 +38,49 @@ function ProfileSmtpConfig({
     (testStatus.toLowerCase().includes("success") ||
       testStatus.toLowerCase().includes("valid"));
 
+  // Determine button styling
+  let buttonClassName = "border-2 border-amber-500 text-amber-700 bg-white hover:bg-amber-50 disabled:opacity-50";
+  if (isSuccess) {
+    buttonClassName = "border-2 border-green-500 text-green-700 bg-white";
+  } else if (isError) {
+    buttonClassName = "border-2 border-red-500 text-red-700 bg-white hover:bg-red-50";
+  }
+
+  // Determine button title
+  let buttonTitle = "Test SMTP connection";
+  if (isSuccess) {
+    buttonTitle = testStatus || "Test passed";
+  } else if (isError) {
+    buttonTitle = "Test failed - click to retry";
+  }
+
+  // Determine button content
+  let buttonContent;
+  if (isTesting) {
+    buttonContent = (
+      <>
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Testing...
+      </>
+    );
+  } else if (isSuccess) {
+    buttonContent = (
+      <>
+        Test
+        <CheckCircle className="h-4 w-4" />
+      </>
+    );
+  } else if (isError) {
+    buttonContent = (
+      <>
+        Test
+        <XCircle className="h-4 w-4" />
+      </>
+    );
+  } else {
+    buttonContent = <>Test</>;
+  }
+
   return (
     <div className="liquid-glass-card p-6 relative z-10">
       <div className="flex items-center justify-between mb-4">
@@ -46,41 +93,10 @@ function ProfileSmtpConfig({
           <button
             onClick={onTest}
             disabled={!isValid || isTesting || !!isSuccess}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:cursor-not-allowed ${
-              isSuccess
-                ? "border-2 border-green-500 text-green-700 bg-white"
-                : isError
-                ? "border-2 border-red-500 text-red-700 bg-white hover:bg-red-50"
-                : "border-2 border-amber-500 text-amber-700 bg-white hover:bg-amber-50 disabled:opacity-50"
-            }`}
-            title={
-              isSuccess 
-                ? testStatus || "Test passed" 
-                : isError 
-                ? "Test failed - click to retry" 
-                : "Test SMTP connection"
-            }
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:cursor-not-allowed ${buttonClassName}`}
+            title={buttonTitle}
           >
-            {isTesting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Testing...
-              </>
-            ) : isSuccess ? (
-              <>
-                Test
-                <CheckCircle className="h-4 w-4" />
-              </>
-            ) : isError ? (
-              <>
-                Test
-                <XCircle className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Test
-              </>
-            )}
+            {buttonContent}
           </button>
         )}
       </div>

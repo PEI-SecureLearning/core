@@ -57,7 +57,7 @@ async def import_compliance_policy(
     file: Annotated[UploadFile, File(...)],
 ):
     validate_realm_access(token, realm)
-    return await compliance_handler.import_compliance_policy(realm, file)
+    return await compliance_handler.import_compliance_policy(file)
 
 
 @router.get(
