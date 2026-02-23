@@ -26,7 +26,7 @@ export function TenantForm({
     handleSubmit
 }: TenantFormProps) {
     return (
-        <div className="h-full flex-1 bg-white rounded-xl p-6 shadow-sm overflow-y-auto">
+        <div className="flex-1 bg-white rounded-xl p-4 sm:p-6 shadow-sm">
             <form onSubmit={handleSubmit} className="space-y-8">
                 <TenantFormOrganization
                     realmName={realmName} setRealmName={setRealmName}
@@ -34,7 +34,7 @@ export function TenantForm({
                     adminEmail={adminEmail} setAdminEmail={setAdminEmail}
                 />
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <TenantFormFeatures features={features} setFeatures={setFeatures} />
                     <TenantFormLogo
                         logoPreviewUrl={logoPreviewUrl}

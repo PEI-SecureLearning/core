@@ -1,17 +1,22 @@
 import { ChevronRight, User, LogOut } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import { useRouterState, Link } from "@tanstack/react-router";
+import "../css/navbar.css";
 
 
 export function Logo() {
   return (
-    <div className="flex items-center space-x-1 sm:space-x-2">
-      <span className="font-semibold text-sm sm:text-base lg:text-lg whitespace-nowrap">
-        Secure
-      </span>
-      <span className="font-semibold text-sm sm:text-base lg:text-lg text-purple-600 whitespace-nowrap">
-        Learning
-      </span>
+    <div className="flex items-center space-x-1 sm:space-x-2 -translate-x-4 -translate-y-1">
+      <img src="/Hatlogo.png" alt="Logo" className="h-17 w-17" />
+
+      <div className="flex flex-col">
+        <span className="text-outline font-bold text-white text-sm sm:text-base lg:text-2xl z-10 translate-y-3 -translate-x-2">
+          Secure
+        </span>
+        <span className="font-bold text-sm sm:text-base lg:text-xl text-purple-700 z-10 translate-x-3">
+          Learning
+        </span>
+      </div>
     </div>
   );
 }
@@ -24,13 +29,11 @@ export function Navbar() {
   const currentPath = routerState.location.pathname;
   const BASE_URL = import.meta.env.VITE_WEB_URL;
 
-  // Split the current path into parts (e.g. "/campaigns/new-campaign" → ["campaigns", "new-campaign"])
   const parts = currentPath.split("/").filter(Boolean);
 
   const handleLogout = async () => {
     try {
       await keycloak.logout({
-        // This property corresponds to the post_logout_redirect_uri parameter.
         redirectUri: BASE_URL,
       });
 
@@ -54,7 +57,7 @@ export function Navbar() {
   );
 
   return (
-    <nav className="h-[8%] py-2 w-full border-b bg-white rounded-xl">
+    <nav className="h-[8%] py-2 w-full border-b bg">
       <div className="flex flex-row justify-between h-full mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex-1 flex items-center justify-between gap-2 lg:gap-4">
           {/* Logo/Brand with Breadcrumb */}

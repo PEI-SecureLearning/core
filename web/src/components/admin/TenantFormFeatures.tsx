@@ -20,28 +20,28 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
             onClick={onToggle}
             className={`
                 relative cursor-pointer group
-                p-4 rounded-2xl border-2 transition-all duration-300 ease-out
+                p-3 rounded-xl border-2 transition-all duration-300 ease-out
                 ${enabled
-                    ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-white shadow-lg shadow-purple-100/50'
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                    ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-white shadow-md shadow-purple-100/50'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
                 }
             `}
         >
             {/* Selection indicator */}
             <div className={`
-                absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center
+                absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center
                 transition-all duration-300
                 ${enabled
                     ? 'bg-gradient-to-br from-purple-500 to-purple-600 scale-100'
                     : 'bg-gray-200 scale-90 group-hover:scale-100'
                 }
             `}>
-                <Check className={`w-3.5 h-3.5 ${enabled ? 'text-white' : 'text-gray-400'}`} />
+                <Check className={`w-3 h-3 ${enabled ? 'text-white' : 'text-gray-400'}`} />
             </div>
 
             {/* Icon */}
             <div className={`
-                w-12 h-12 rounded-xl flex items-center justify-center mb-3
+                w-8 h-8 rounded-lg flex items-center justify-center mb-2
                 transition-transform duration-300 group-hover:scale-110
                 ${iconBg}
             `}>
@@ -49,12 +49,12 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
             </div>
 
             {/* Content */}
-            <h4 className="text-sm font-semibold text-gray-900 mb-1">{title}</h4>
-            <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
+            <h4 className="text-xs font-semibold text-gray-900 mb-0.5 pr-5">{title}</h4>
+            <p className="text-[11px] text-gray-400 leading-relaxed">{description}</p>
 
             {/* Status badge */}
             <div className={`
-                mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+                mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium
                 transition-all duration-300
                 ${enabled
                     ? 'bg-purple-100 text-purple-700'
@@ -83,11 +83,11 @@ export function TenantFormFeatures({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-2">
                 <FeatureCard
                     title="Phishing Campaign"
                     description="Simulate phishing attacks to test and train your users' security awareness"
-                    icon={<Shield className="w-6 h-6 text-orange-600" />}
+                    icon={<Shield className="w-4 h-4 text-orange-600" />}
                     iconBg="bg-gradient-to-br from-orange-100 to-orange-50"
                     enabled={features.phishing}
                     onToggle={() => setFeatures(f => ({ ...f, phishing: !f.phishing }))}
@@ -96,7 +96,7 @@ export function TenantFormFeatures({
                 <FeatureCard
                     title="Learning Management"
                     description="Deliver security training courses with progress tracking and certifications"
-                    icon={<BookOpen className="w-6 h-6 text-blue-600" />}
+                    icon={<BookOpen className="w-4 h-4 text-blue-600" />}
                     iconBg="bg-gradient-to-br from-blue-100 to-blue-50"
                     enabled={features.lms}
                     onToggle={() => setFeatures(f => ({ ...f, lms: !f.lms }))}

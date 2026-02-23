@@ -5,6 +5,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { toast } from 'sonner'
+import { useNavigate } from '@tanstack/react-router'
 
 export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
@@ -155,10 +156,10 @@ export function CreateTenantPage() {
     }
 
     return (
-        <div className="h-full w-full bg-gradient-to-br from-gray-50 to-purple-50/30 flex">
-            <div className="h-full w-full max-w-6xl mx-auto p-6 flex gap-8">
+        <div className="h-full w-full bg-gradient-to-br from-gray-50 to-purple-50/30 overflow-y-auto">
+            <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 flex flex-col lg:flex-row gap-6 lg:gap-8">
                 {/* Scrollable form section */}
-                <div className="flex-1 h-full overflow-y-auto pr-2">
+                <div className="flex-1 min-w-0">
                     <TenantForm
                         realmName={realmName}
                         setRealmName={setRealmName}
@@ -174,8 +175,8 @@ export function CreateTenantPage() {
                     />
                 </div>
 
-                {/* Fixed preview panel - doesn't scroll */}
-                <div className="flex-shrink-0">
+                {/* Preview panel - stacks below form on small screens */}
+                <div className="w-full lg:w-80 lg:flex-shrink-0">
                     <PreviewPanel
                         realmName={realmName}
                         features={features}

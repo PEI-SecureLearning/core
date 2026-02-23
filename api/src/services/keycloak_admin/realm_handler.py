@@ -1,7 +1,4 @@
 from fastapi import HTTPException
-from sqlmodel import Session, select
-
-from src.models.realm import Realm
 
 
 class realm_handler:
@@ -15,21 +12,19 @@ class realm_handler:
         return r.json()
 
 
-    def delete_realm(self, session: Session, realm_name: str) -> None:
-        """Delete a realm from Keycloak."""
+    def delete_realm(self, realm_name: str) -> None:
+        """Delete a realm from Keycloak. DB cleanup is handled by the caller."""
 
         if realm_name.lower() in ("master", "platform"):
             raise HTTPException(status_code=403, detail="Cannot delete system realms")
 
         token = self._get_admin_token()
-        
+
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
-        
-        self.keycloak_client._make_request("DELETE", url, token)
 
-        session.exec(select(Realm).where(Realm.name == realm_name)).one()
-        session.commit()
+        response = self.keycloak_client._make_request("DELETE", url, token)
 
+        return response
 
     def find_realm_by_domain(self, domain: str) -> str | None:
         """

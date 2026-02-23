@@ -141,7 +141,7 @@ export function LogViewer() {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gray-50 font-mono">
+                                    <tr key={log.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{formatTimestamp(log.timestamp)}</td>
                                         <td className="px-6 py-3 whitespace-nowrap">
                                             <div className="flex items-center gap-2">

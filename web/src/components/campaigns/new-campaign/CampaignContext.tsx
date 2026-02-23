@@ -62,7 +62,7 @@ function getDefaultDates() {
   };
 }
 
-const getInitialCampaignData = (): CampaignData => {
+const getInitialCampaignData = (initialGroupIds: string[] = []): CampaignData => {
   const { begin_date, end_date } = getDefaultDates();
   return {
     name: "",
@@ -72,7 +72,7 @@ const getInitialCampaignData = (): CampaignData => {
     email_template: null,
     landing_page_template: null,
     sending_profile_id: null,
-    user_group_ids: [],
+    user_group_ids: initialGroupIds,
     begin_date,
     end_date,
     sending_interval_seconds: 60, // default 1 minute
@@ -85,11 +85,13 @@ const CampaignContext = createContext<CampaignContextType | undefined>(
 
 export function CampaignProvider({
   children,
+  initialGroupIds,
 }: {
   children: ReactNode;
+  initialGroupIds?: string[];
 }) {
   const [data, setData] = useState<CampaignData>(
-    getInitialCampaignData()
+    getInitialCampaignData(initialGroupIds)
   );
 
   const updateData = (updates: Partial<CampaignData>) => {
@@ -97,7 +99,7 @@ export function CampaignProvider({
   };
 
   const resetData = () => {
-    setData(getInitialCampaignData());
+    setData(getInitialCampaignData(initialGroupIds));
   };
 
   const getValidationErrors = (): string[] => {
