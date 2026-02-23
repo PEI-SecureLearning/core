@@ -23,6 +23,7 @@ class Settings(BaseSettings):
   MONGODB_DB: str = "securelearning"
   MONGODB_COLLECTION_TEMPLATES: str = "templates"
   MONGODB_COLLECTION_TENANT_LOGOS: str = "tenant_logos"
+  MONGODB_COLLECTION_CONTENT: str = "content_pieces"
 
   # RabbitMQ
   RABBITMQ_HOST: str

@@ -40,6 +40,7 @@ import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
+import { Route as ContentManagerContentContentPieceIdRouteImport } from './routes/content-manager/content.$contentPieceId'
 import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
 import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
 
@@ -198,6 +199,12 @@ const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
   path: '/tenants/',
   getParentRoute: () => AdminRoute,
 } as any)
+const ContentManagerContentContentPieceIdRoute =
+  ContentManagerContentContentPieceIdRouteImport.update({
+    id: '/$contentPieceId',
+    path: '/$contentPieceId',
+    getParentRoute: () => ContentManagerContentRoute,
+  } as any)
 const AdminTenantsNewTenantRoute = AdminTenantsNewTenantRouteImport.update({
   id: '/tenants/new-tenant',
   path: '/tenants/new-tenant',
@@ -225,7 +232,7 @@ export interface FileRoutesByFullPath {
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
-  '/content-manager/content': typeof ContentManagerContentRoute
+  '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/usergroups': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -259,7 +267,7 @@ export interface FileRoutesByTo {
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
-  '/content-manager/content': typeof ContentManagerContentRoute
+  '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -276,6 +284,7 @@ export interface FileRoutesByTo {
   '/usergroups': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
 }
 export interface FileRoutesById {
@@ -295,7 +304,7 @@ export interface FileRoutesById {
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
-  '/content-manager/content': typeof ContentManagerContentRoute
+  '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -312,6 +321,7 @@ export interface FileRoutesById {
   '/usergroups/': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
   '/admin/tenants/': typeof AdminTenantsIndexRoute
 }
 export interface FileRouteTypes {
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/usergroups'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
+    | '/content-manager/content/$contentPieceId'
     | '/admin/tenants'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/usergroups'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
+    | '/content-manager/content/$contentPieceId'
     | '/admin/tenants'
   id:
     | '__root__'
@@ -418,6 +430,7 @@ export interface FileRouteTypes {
     | '/usergroups/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
+    | '/content-manager/content/$contentPieceId'
     | '/admin/tenants/'
   fileRoutesById: FileRoutesById
 }
@@ -435,7 +448,7 @@ export interface RootRouteChildren {
   CampaignsIdRoute: typeof CampaignsIdRoute
   CampaignsNewRoute: typeof CampaignsNewRoute
   CampaignsTimelineRoute: typeof CampaignsTimelineRoute
-  ContentManagerContentRoute: typeof ContentManagerContentRoute
+  ContentManagerContentRoute: typeof ContentManagerContentRouteWithChildren
   ContentManagerCoursesRoute: typeof ContentManagerCoursesRoute
   ContentManagerModulesRoute: typeof ContentManagerModulesRoute
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
@@ -670,6 +683,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTenantsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/content-manager/content/$contentPieceId': {
+      id: '/content-manager/content/$contentPieceId'
+      path: '/$contentPieceId'
+      fullPath: '/content-manager/content/$contentPieceId'
+      preLoaderRoute: typeof ContentManagerContentContentPieceIdRouteImport
+      parentRoute: typeof ContentManagerContentRoute
+    }
     '/admin/tenants/new-tenant': {
       id: '/admin/tenants/new-tenant'
       path: '/tenants/new-tenant'
@@ -707,6 +727,20 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ContentManagerContentRouteChildren {
+  ContentManagerContentContentPieceIdRoute: typeof ContentManagerContentContentPieceIdRoute
+}
+
+const ContentManagerContentRouteChildren: ContentManagerContentRouteChildren = {
+  ContentManagerContentContentPieceIdRoute:
+    ContentManagerContentContentPieceIdRoute,
+}
+
+const ContentManagerContentRouteWithChildren =
+  ContentManagerContentRoute._addFileChildren(
+    ContentManagerContentRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -721,7 +755,7 @@ const rootRouteChildren: RootRouteChildren = {
   CampaignsIdRoute: CampaignsIdRoute,
   CampaignsNewRoute: CampaignsNewRoute,
   CampaignsTimelineRoute: CampaignsTimelineRoute,
-  ContentManagerContentRoute: ContentManagerContentRoute,
+  ContentManagerContentRoute: ContentManagerContentRouteWithChildren,
   ContentManagerCoursesRoute: ContentManagerCoursesRoute,
   ContentManagerModulesRoute: ContentManagerModulesRoute,
   SendingProfilesIdRoute: SendingProfilesIdRoute,

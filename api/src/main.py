@@ -8,6 +8,7 @@ from src.routers import (
     org_manager,
     campaign,
     tracking,
+    content,
     templates,
     sending_profile
 )
@@ -66,5 +67,6 @@ app.include_router(compliance.router, prefix="/api", tags=["compliance"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
 app.include_router(tracking.router, prefix="/api", tags=["tracking"])
+app.include_router(content.router, prefix="/api", tags=["content"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
 app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])

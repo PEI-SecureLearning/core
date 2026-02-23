@@ -1,60 +1,73 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
+import { useKeycloak } from '@react-keycloak/web';
+import { motion } from 'framer-motion';
 import { FileStack } from 'lucide-react';
+import { toast } from 'sonner';
 
-const CONTENT = [
-    {
-        id: 1,
-        title: "React Hooks Deep Dive",
-        category: "Video",
-        image: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&auto=format&fit=crop&q=60",
-        desc: "A comprehensive video walkthrough of all React hooks."
-    },
-    {
-        id: 2,
-        title: "CSS Grid Cheat Sheet",
-        category: "Document",
-        image: "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=800&auto=format&fit=crop&q=60",
-        desc: "Quick reference PDF for CSS Grid layout properties."
-    },
-    {
-        id: 3,
-        title: "TypeScript Best Practices",
-        category: "Article",
-        image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&auto=format&fit=crop&q=60",
-        desc: "Guidelines for writing clean and maintainable TypeScript."
-    },
-    {
-        id: 4,
-        title: "Node.js Performance Tuning",
-        category: "Video",
-        image: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=800&auto=format&fit=crop&q=60",
-        desc: "Optimize your Node.js applications for maximum throughput."
-    },
-    {
-        id: 5,
-        title: "Design Tokens Guide",
-        category: "Document",
-        image: "https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&auto=format&fit=crop&q=60",
-        desc: "How to build and manage a design token system."
-    },
-    {
-        id: 6,
-        title: "Git Workflow Handbook",
-        category: "Article",
-        image: "https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=800&auto=format&fit=crop&q=60",
-        desc: "Branching strategies and collaboration best practices."
-    },
-];
+const API_BASE = import.meta.env.VITE_API_URL;
 
+type ContentItem = {
+    id: string;
+    content_piece_id: string;
+    path: string;
+    title: string;
+    description: string | null;
+    content_format: string;
+    created_at: string;
+    file: {
+        filename: string;
+        content_type: string;
+        size: number;
+        data_base64?: string | null;
+    } | null;
+};
 
-export function ContentDisplay() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState("title");
+interface ContentDisplayProps {
+    searchQuery: string;
+    sortBy: string;
+    refreshKey: number;
+    onViewContent: (contentPieceId: string) => void;
+}
 
-    const filteredContent = CONTENT
-        .filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => (a[sortBy as keyof typeof a] > b[sortBy as keyof typeof b] ? 1 : -1));
+export function ContentDisplay({ searchQuery, sortBy, refreshKey, onViewContent }: ContentDisplayProps) {
+    const { keycloak } = useKeycloak();
+    const [items, setItems] = useState<ContentItem[]>([]);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            try {
+                const res = await fetch(`${API_BASE}/content`, {
+                    headers: {
+                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+                    },
+                });
+                if (!res.ok) {
+                    throw new Error("Failed to fetch content");
+                }
+                const data = await res.json() as ContentItem[];
+                setItems(data);
+            } catch {
+                toast.error("Could not load content.");
+            }
+        };
+
+        void fetchContent();
+    }, [keycloak.token, refreshKey]);
+
+    const filteredContent = useMemo(() => {
+        const filtered = items.filter((item) =>
+            item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.path.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+        if (sortBy === "id") {
+            return [...filtered].sort(
+                (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+        }
+
+        return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    }, [items, searchQuery, sortBy]);
 
     return (
         <motion.div
@@ -69,14 +82,35 @@ export function ContentDisplay() {
                         {/* Image Container */}
                         <div className="relative h-48 w-full overflow-hidden bg-white">
                             <div className="absolute inset-0 bg-purple-900/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
-                            <img
-                                src={item.image}
-                                alt={item.title}
-                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
-                            />
+                            {item.file?.data_base64 && item.file.content_type?.startsWith("image/") ? (
+                                <img
+                                    src={`data:${item.file.content_type};base64,${item.file.data_base64}`}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                                />
+                            ) : item.file?.data_base64 && item.file.content_type?.startsWith("video/") ? (
+                                <video
+                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                                    muted
+                                    loop
+                                    autoPlay
+                                    playsInline
+                                >
+                                    <source
+                                        src={`data:${item.file.content_type};base64,${item.file.data_base64}`}
+                                        type={item.file.content_type}
+                                    />
+                                </video>
+                            ) : (
+                                <img
+                                    src={`https://picsum.photos/seed/${item.content_piece_id}/1200/800`}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                                />
+                            )}
                             <div className="absolute top-3 left-3 z-20">
                                 <span className="px-3 py-1 bg-white/85 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-purple-800 border border-purple-500/30">
-                                    {item.category}
+                                    {item.content_format}
                                 </span>
                             </div>
                         </div>
@@ -87,15 +121,18 @@ export function ContentDisplay() {
                                 {item.title}
                             </h3>
                             <p className="text-sm text-gray-400 line-clamp-2 mb-4">
-                                {item.desc}
+                                {item.description || "No description"}
                             </p>
 
                             <div className="mt-auto pt-4 border-t border-purple-500/10 flex justify-between items-center">
                                 <div className="flex items-center gap-2 text-xs text-purple-400">
                                     <FileStack className="w-3 h-3" />
-                                    <span>3 Files</span>
+                                    <span>{item.path || item.content_piece_id}</span>
                                 </div>
-                                <button className="text-xs font-bold text-purple-700 hover:text-purple-300 transition-colors">
+                                <button
+                                    onClick={() => onViewContent(item.content_piece_id)}
+                                    className="text-xs font-bold text-purple-700 hover:text-purple-300 transition-colors"
+                                >
                                     VIEW CONTENT →
                                 </button>
                             </div>
