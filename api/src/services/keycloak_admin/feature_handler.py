@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 
+CLAIM_NAME = "claim.name"
+CLAIM_VALUE = "claim.value"
 
 class feature_handler:
 
@@ -28,8 +30,8 @@ class feature_handler:
         for mapper in mappers:
             if mapper.get("protocolMapper") == "oidc-hardcoded-claim-mapper":
                 config = mapper.get("config", {})
-                claim_name = config.get("claim.name", "")
-                claim_value = config.get("claim.value", "false")
+                claim_name = config.get(CLAIM_NAME, "")
+                claim_value = config.get(CLAIM_VALUE, "false")
 
                 # Extract feature name from claim name (e.g., "features.phishing" -> "phishing")
                 if claim_name.startswith("features."):
@@ -77,7 +79,7 @@ class feature_handler:
             
             config = mapper.get("config", {})
             
-            if config.get("claim.name") == f"features.{feature_name}":
+            if config.get(CLAIM_NAME) == f"features.{feature_name}":
                 existing_mapper = mapper
                 break
 
@@ -86,7 +88,7 @@ class feature_handler:
             mapper_id = existing_mapper.get("id")
             update_url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models/{mapper_id}"
             
-            existing_mapper["config"]["claim.value"] = str(enabled).lower()
+            existing_mapper["config"][CLAIM_VALUE] = str(enabled).lower()
             
             r = self.keycloak_client._make_request("PUT",update_url,token,json_data=existing_mapper)
             
@@ -140,8 +142,8 @@ class feature_handler:
             "protocolMapper": "oidc-hardcoded-claim-mapper",
             "consentRequired": False,
             "config": {
-                "claim.name": f"features.{feature_name}",
-                "claim.value": str(feature_value).lower(),
+                CLAIM_NAME: f"features.{feature_name}",
+                CLAIM_VALUE: str(feature_value).lower(),
                 "jsonType.label": "boolean",
                 "id.token.claim": "true",
                 "access.token.claim": "true",
