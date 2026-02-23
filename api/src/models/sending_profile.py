@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Final, Optional
 from sqlmodel import Relationship, SQLModel, Field
 
 from src.models.custom_header import CustomHeaderCreate
@@ -54,3 +54,5 @@ class SendingProfileDisplayInfo(SQLModel):
     from_fname: str
     from_lname: str
     from_email: str
+    smtp_host: Final[str]
+    smtp_port: Final[int]

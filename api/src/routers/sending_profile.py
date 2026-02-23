@@ -2,13 +2,21 @@ from fastapi import APIRouter
 from fastapi.responses import RedirectResponse, Response
 
 from src.core.dependencies import CurrentRealm, SessionDep
-from src.models.sending_profile import SendingProfileCreate
+from src.models.sending_profile import SendingProfileCreate, SendingProfile
 from src.services.sending_profile import SendingProfileService
 
 
 router = APIRouter()
 
 service = SendingProfileService()
+
+
+@router.post("/sending-profiles/test", description="Test sending profile configuration")
+def test_sending_profile_configuration(
+    profile_data: SendingProfileCreate
+):
+    is_valid, message = service._test_sending_profile_configuration(profile_data)
+    return Response(content=message, status_code=200 if is_valid else 400)
 
 
 @router.post(

@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Send, Globe } from "lucide-react";
+import { Send } from "lucide-react";
 
 interface Props {
   name: string;
@@ -66,14 +66,6 @@ function ProfilePreview({
           <InfoRow label="SMTP Host" value={smtpHost} />
           <InfoRow label="Port" value={smtpPort} />
           <InfoRow label="Custom Headers" value={headerCount} />
-        </div>
-
-        {/* Status Indicator */}
-        <div className="mt-auto pt-4 border-t border-white/30">
-          <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50/50 p-2 rounded-lg border border-green-100">
-            <Globe className="h-4 w-4" />
-            <span className="font-medium">Ready to use in campaigns</span>
-          </div>
         </div>
       </div>
     </div>
