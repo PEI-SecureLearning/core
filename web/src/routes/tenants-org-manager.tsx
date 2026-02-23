@@ -557,7 +557,7 @@ function UsersManagement() {
               className={`p-2 rounded-md transition-colors ${view === "table"
                 ? "bg-white text-purple-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
-                }`}
+                } cursor-pointer`}
               aria-label="Table view"
             >
               <List className="h-4 w-4" />
@@ -567,7 +567,7 @@ function UsersManagement() {
               className={`p-2 rounded-md transition-colors ${view === "grid"
                 ? "bg-white text-purple-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
-                }`}
+                } cursor-pointer`}
               aria-label="Grid view"
             >
               <LayoutGrid className="h-4 w-4" />
@@ -593,7 +593,7 @@ function UsersManagement() {
           {/* Bulk Import Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm"
+            className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm cursor-pointer"
           >
             <Upload className="h-4 w-4" />
             <span className="hidden lg:inline">Bulk Import</span>
@@ -602,7 +602,7 @@ function UsersManagement() {
           {/* Create Button */}
           <button
             onClick={() => setShowNewUserModal(true)}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New User</span>
@@ -700,7 +700,7 @@ function UsersManagement() {
                           <button
                             onClick={() => handleDeleteUser(id)}
                             disabled={isDeleting}
-                            className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
+                            className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {isDeleting ? (
                               <Loader2 size={16} className="animate-spin" />
@@ -744,7 +744,7 @@ function UsersManagement() {
                       <button
                         onClick={() => handleDeleteUser(id)}
                         disabled={isDeleting}
-                        className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-50"
+                        className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isDeleting ? (
                           <Loader2 size={16} className="animate-spin" />
@@ -792,7 +792,7 @@ function UsersManagement() {
                   setCreateStatus(null);
                   setCreateFieldError(null);
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -938,7 +938,7 @@ function UsersManagement() {
                         : createFieldError === "role"
                           ? "bg-rose-50 border border-rose-300 hover:bg-rose-100/70"
                           : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
-                        }`}
+                        } cursor-pointer`}
                     >
                       <span
                         className={`font-medium text-[14px] ${newUserRole === option.value ? "text-purple-700" : "text-gray-700"}`}
@@ -1004,7 +1004,7 @@ function UsersManagement() {
                   setCreateStatus(null);
                   setCreateFieldError(null);
                 }}
-                className="px-5 py-2.5 rounded-xl text-[14px] font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all"
+                className="px-5 py-2.5 rounded-xl text-[14px] font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -1013,7 +1013,7 @@ function UsersManagement() {
                 disabled={
                   !newUserName || !newUserEmail || !newUserRole || isCreating
                 }
-                className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+                className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
               >
                 {isCreating ? (
                   <span className="flex items-center gap-2">
@@ -1049,7 +1049,7 @@ function UsersManagement() {
                   setShowBulkModal(false);
                   setBulkUsers([]);
                 }}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -1109,7 +1109,7 @@ function UsersManagement() {
                   setShowBulkModal(false);
                   setBulkUsers([]);
                 }}
-                className="px-5 py-2.5 rounded-lg text-[14px] font-medium text-gray-600 bg-white hover:bg-gray-100 transition-all border border-gray-200"
+                className="px-5 py-2.5 rounded-lg text-[14px] font-medium text-gray-600 bg-white hover:bg-gray-100 transition-all border border-gray-200 cursor-pointer"
               >
                 Close
               </button>
@@ -1118,7 +1118,7 @@ function UsersManagement() {
                   await handleBulkCreate();
                 }}
                 disabled={isBulkLoading || bulkUsers.every((u) => u.status !== "pending")}
-                className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+                className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
               >
                 {isBulkLoading ? (
                   <span className="flex items-center gap-2">
