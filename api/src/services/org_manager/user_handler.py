@@ -82,7 +82,15 @@ class user_handler:
         }
         user_data = {k: v for k, v in user_data.items() if v not in (None, {}, [])}
 
-        response = self.kc.create_user(realm, token, user_data)
+        try:
+            response = self.kc.create_user(realm, token, user_data)
+        except HTTPException as exc:
+            if exc.status_code == 409:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Username already exists in this organization.",
+                )
+            raise
 
         user_id = self.get_user_object(response)
 
@@ -166,8 +174,8 @@ class user_handler:
 
         if len(username) < 3:
             raise HTTPException(status_code=400, detail="Username must be at least 3 characters.")
-        if len(username) > 255:
-            raise HTTPException(status_code=400, detail="Username must be 255 characters or fewer.")
+        if len(username) > 40:
+            raise HTTPException(status_code=400, detail="Username must be 40 characters or fewer.")
 
 
     def is_valid_email(self, realm: str, session: Session, token: str, email: str) -> None:
@@ -177,7 +185,7 @@ class user_handler:
         kc_users = self.kc.list_users(realm, token)
         
         if any((u.get("email") or "").lower() == (email or "").lower() for u in kc_users):
-            raise HTTPException(status_code=400, detail="Email already exists in this realm.")
+            raise HTTPException(status_code=400, detail="Email already exists in this organization.")
 
         realm_domain = self.get_realm_domain(realm, session)
 

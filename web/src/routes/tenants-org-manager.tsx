@@ -50,6 +50,8 @@ interface BulkUser {
   status: string;
 }
 
+type CreateUserField = "name" | "email" | "username" | "role" | "group" | null;
+
 function mapRole(
   value: string | undefined
 ): "ORG_MANAGER" | "DEFAULT_USER" | "" {
@@ -86,12 +88,18 @@ function UsersManagement() {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [createFieldError, setCreateFieldError] = useState<CreateUserField>(null);
 
   // Bulk Import State
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [bulkUsers, setBulkUsers] = useState<BulkUser[]>([]);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const roleFirstOptionRef = useRef<HTMLButtonElement>(null);
+  const groupSelectRef = useRef<HTMLSelectElement>(null);
 
   const tokenRealm = useMemo(() => {
     const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
@@ -150,6 +158,33 @@ function UsersManagement() {
     }
   }, [realm]);
 
+  useEffect(() => {
+    if (createStatus?.type !== "error" || !createFieldError) return;
+
+    let target: HTMLElement | null;
+    switch (createFieldError) {
+      case "name":
+        target = nameInputRef.current;
+        break;
+      case "email":
+        target = emailInputRef.current;
+        break;
+      case "username":
+        target = usernameInputRef.current;
+        break;
+      case "role":
+        target = roleFirstOptionRef.current;
+        break;
+      case "group":
+        target = groupSelectRef.current;
+        break;
+      default:
+        target = null;
+    }
+
+    target?.focus();
+  }, [createStatus, createFieldError]);
+
 
 
   const handleDeleteUser = async (id: string) => {
@@ -187,18 +222,28 @@ function UsersManagement() {
   const handleCreateUser = async () => {
     if (!realm) {
       setCreateStatus({ type: "error", message: "Realm not resolved." });
+      setCreateFieldError(null);
       return;
     }
-    if (!newUserName || !newUserEmail || !newUserRole) {
-      setCreateStatus({
-        type: "error",
-        message: "Name, email, and role are required.",
-      });
+    if (!newUserName) {
+      setCreateStatus({ type: "error", message: "Name is required." });
+      setCreateFieldError("name");
+      return;
+    }
+    if (!newUserEmail) {
+      setCreateStatus({ type: "error", message: "Email is required." });
+      setCreateFieldError("email");
+      return;
+    }
+    if (!newUserRole) {
+      setCreateStatus({ type: "error", message: "Role is required." });
+      setCreateFieldError("role");
       return;
     }
 
     setIsCreating(true);
     setCreateStatus(null);
+    setCreateFieldError(null);
 
     try {
       const res = await fetch(
@@ -240,9 +285,20 @@ function UsersManagement() {
       setShowNewUserModal(false);
       fetchUsers(realm);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create user";
+      const lowerError = errorMessage.toLowerCase();
+      let errorField: CreateUserField = null;
+      if (lowerError.includes("email")) errorField = "email";
+      else if (lowerError.includes("username")) errorField = "username";
+      else if (lowerError.includes("role")) errorField = "role";
+      else if (lowerError.includes("group")) errorField = "group";
+      else if (lowerError.includes("name")) errorField = "name";
+
+      setCreateFieldError(errorField);
       setCreateStatus({
         type: "error",
-        message: err instanceof Error ? err.message : "Failed to create user",
+        message: errorMessage,
       });
     } finally {
       setIsCreating(false);
@@ -734,6 +790,7 @@ function UsersManagement() {
                 onClick={() => {
                   setShowNewUserModal(false);
                   setCreateStatus(null);
+                  setCreateFieldError(null);
                 }}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
               >
@@ -754,13 +811,29 @@ function UsersManagement() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                   <input
+                    ref={nameInputRef}
                     type="text"
                     value={newUserName}
-                    onChange={(e) => setNewUserName(e.target.value)}
+                    onChange={(e) => {
+                      setNewUserName(e.target.value);
+                      if (createFieldError === "name") {
+                        setCreateFieldError(null);
+                        setCreateStatus(null);
+                      }
+                    }}
                     placeholder="John Doe"
-                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                    className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 text-[14px] placeholder:text-gray-400 focus:outline-none transition-all ${
+                      createFieldError === "name"
+                        ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
+                        : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    }`}
                   />
                 </div>
+                {createStatus?.type === "error" && createFieldError === "name" && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {createStatus.message}
+                  </p>
+                )}
               </div>
 
               {/* Email */}
@@ -774,13 +847,29 @@ function UsersManagement() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                   <input
+                    ref={emailInputRef}
                     type="email"
                     value={newUserEmail}
-                    onChange={(e) => setNewUserEmail(e.target.value)}
+                    onChange={(e) => {
+                      setNewUserEmail(e.target.value);
+                      if (createFieldError === "email") {
+                        setCreateFieldError(null);
+                        setCreateStatus(null);
+                      }
+                    }}
                     placeholder="john.doe@example.com"
-                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                    className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 text-[14px] placeholder:text-gray-400 focus:outline-none transition-all ${
+                      createFieldError === "email"
+                        ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
+                        : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    }`}
                   />
                 </div>
+                {createStatus?.type === "error" && createFieldError === "email" && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {createStatus.message}
+                  </p>
+                )}
               </div>
 
               {/* Username */}
@@ -794,13 +883,30 @@ function UsersManagement() {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                   <input
+                    ref={usernameInputRef}
                     type="text"
                     value={newUserUsername}
-                    onChange={(e) => setNewUserUsername(e.target.value)}
+                    onChange={(e) => {
+                      setNewUserUsername(e.target.value);
+                      if (createFieldError === "username") {
+                        setCreateFieldError(null);
+                        setCreateStatus(null);
+                      }
+                    }}
                     placeholder="Username"
-                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                    maxLength={40}
+                    className={`w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 text-[14px] placeholder:text-gray-400 focus:outline-none transition-all ${
+                      createFieldError === "username"
+                        ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
+                        : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    }`}
                   />
                 </div>
+                {createStatus?.type === "error" && createFieldError === "username" && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {createStatus.message}
+                  </p>
+                )}
               </div>
 
               {/* Role */}
@@ -812,6 +918,7 @@ function UsersManagement() {
                   {roleOptions.map((option) => (
                     <button
                       key={option.value}
+                      ref={option.value === "ORG_MANAGER" ? roleFirstOptionRef : undefined}
                       type="button"
                       onClick={() =>
                         setNewUserRole(
@@ -820,9 +927,17 @@ function UsersManagement() {
                           | "DEFAULT_USER"
                         )
                       }
+                      onFocus={() => {
+                        if (createFieldError === "role") {
+                          setCreateFieldError(null);
+                          setCreateStatus(null);
+                        }
+                      }}
                       className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center justify-between ${newUserRole === option.value
                         ? "bg-purple-100 border-2 border-purple-400"
-                        : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+                        : createFieldError === "role"
+                          ? "bg-rose-50 border border-rose-300 hover:bg-rose-100/70"
+                          : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
                         }`}
                     >
                       <span
@@ -836,6 +951,11 @@ function UsersManagement() {
                     </button>
                   ))}
                 </div>
+                {createStatus?.type === "error" && createFieldError === "role" && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {createStatus.message}
+                  </p>
+                )}
               </div>
 
               {/* Group */}
@@ -844,9 +964,20 @@ function UsersManagement() {
                   Group (Optional)
                 </label>
                 <select
+                  ref={groupSelectRef}
                   value={newUserGroupId}
-                  onChange={(e) => setNewUserGroupId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-[14px] focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 transition-all"
+                  onChange={(e) => {
+                    setNewUserGroupId(e.target.value);
+                    if (createFieldError === "group") {
+                      setCreateFieldError(null);
+                      setCreateStatus(null);
+                    }
+                  }}
+                  className={`w-full px-4 py-2.5 rounded-xl bg-gray-50 text-[14px] focus:outline-none transition-all ${
+                    createFieldError === "group"
+                      ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
+                      : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                  }`}
                 >
                   <option value="">No group</option>
                   {groups.map((g) => (
@@ -855,32 +986,23 @@ function UsersManagement() {
                     </option>
                   ))}
                 </select>
+                {createStatus?.type === "error" && createFieldError === "group" && (
+                  <p className="mt-1.5 text-[12px] text-rose-600">
+                    {createStatus.message}
+                  </p>
+                )}
               </div>
 
-              {/* Status Message */}
-              {createStatus && (
-                <div
-                  className={`flex items-center gap-2 p-3 rounded-xl text-[13px] ${createStatus.type === "success"
-                    ? "bg-green-50 text-green-700"
-                    : "bg-rose-50 text-rose-700"
-                    }`}
-                >
-                  {createStatus.type === "success" ? (
-                    <Check size={16} />
-                  ) : (
-                    <X size={16} />
-                  )}
-                  {createStatus.message}
-                </div>
-              )}
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-100 bg-white">
+              <div className="flex justify-end gap-3">
               <button
                 onClick={() => {
                   setShowNewUserModal(false);
                   setCreateStatus(null);
+                  setCreateFieldError(null);
                 }}
                 className="px-5 py-2.5 rounded-xl text-[14px] font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all"
               >
@@ -902,6 +1024,7 @@ function UsersManagement() {
                   "Create User"
                 )}
               </button>
+              </div>
             </div>
           </div>
         </div>
