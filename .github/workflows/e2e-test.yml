@@ -31,7 +31,7 @@ jobs:
         run: npm ci --prefix web
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps --prefix web
+        run: cd web && npx playwright install --with-deps
         
       - name: Run E2E tests
         run: npm run test:e2e --prefix web
