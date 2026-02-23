@@ -99,7 +99,7 @@ export function Navbar() {
 
           {/* User Profile & Logout */}
           <div className="flex items-center gap-2">
-            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0">
+            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0 cursor-pointer">
               {/* User info - hidden on small screens */}
               <div className="flex flex-col items-end">
                 <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
@@ -118,7 +118,7 @@ export function Navbar() {
 
             <button
               onClick={() => handleLogout()}
-              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
               title="Sign out"
             >
               <LogOut className="h-5 w-5" />

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import BasicInfo from "./newGroupBasicInfo";
 import NewGroupFooter from "./newGroupFooter";
 import Preview from "./newGroupPreview";
@@ -26,8 +28,31 @@ interface Color {
   bg: string;
 }
 
+function getCreateGroupErrorMessage(error: unknown, groupName: string): string {
+  const raw = (error instanceof Error ? error.message : String(error || "")).toLowerCase();
+
+  if (raw.includes("already exists") || raw.includes("409")) {
+    return `A group named "${groupName}" already exists. Try a different name.`;
+  }
+  if (raw.includes("realm mismatch") || raw.includes("403")) {
+    return "You don't have permission to create groups in this tenant.";
+  }
+  if (raw.includes("invalid access token") || raw.includes("401")) {
+    return "Your session expired. Please sign in again and retry.";
+  }
+  if (raw.includes("failed to fetch") || raw.includes("network")) {
+    return "Couldn't reach the server. Check your connection and try again.";
+  }
+  if (raw.includes("validation") || raw.includes("422")) {
+    return "Some group details are invalid. Please review and try again.";
+  }
+
+  return `Couldn't create "${groupName}". Please try again.`;
+}
+
 export default function NewUserGroup() {
   const { keycloak } = useKeycloak();
+  const navigate = useNavigate();
   const colors: Color[] = [
     {
       name: "purple",
@@ -107,11 +132,11 @@ export default function NewUserGroup() {
   const handleSubmit = async () => {
     const realm = tokenRealm || "";
     if (!realm) {
-      setStatus("Realm not resolved.");
+      setStatus("Couldn't detect your tenant. Refresh the page and try again.");
       return;
     }
     if (!groupName) {
-      setStatus("Group name is required.");
+      setStatus("Give your group a name before creating it.");
       return;
     }
     setIsLoading(true);
@@ -161,20 +186,21 @@ export default function NewUserGroup() {
           }
         }
 
-        setStatus(
-          `Group created. ${createdCount} users created, ${addedCount} existing users added.`
+        toast.success(
+          `Group created. ${addedCount} users added.`,
+          { position: "top-right" }
         );
       } else {
-        setStatus("Group created.");
+        toast.success("Group created.", { position: "top-right" });
       }
 
       setGroupName("");
       setDescription("");
       setSelectedMembers([]);
+      navigate({ to: "/usergroups" });
     } catch (err) {
       console.error(err);
-      const message = err instanceof Error ? err.message : "Failed to create group.";
-      setStatus(message);
+      setStatus(getCreateGroupErrorMessage(err, groupName));
     } finally {
       setIsLoading(false);
     }
