@@ -93,28 +93,29 @@ class stats_handler:
 
     def _find_repeat_offenders(self, campaigns: Iterable[Campaign]) -> list[str]:
         """Find users who clicked/phished in more than 50% of campaigns they were targeted in."""
-        user_campaigns: dict[str, dict] = {}
+        user_stats: dict[str, dict[str, int]] = {}
 
         for campaign in campaigns:
-            users_in_campaign = set()
-            users_fell_in_campaign = set()
+            # Track which users were targeted and which fell for this campaign
+            targeted_users = {s.user_id for s in campaign.email_sendings}
+            fallen_users = {
+                s.user_id for s in campaign.email_sendings 
+                if s.clicked_at or s.phished_at
+            }
 
-            for sending in campaign.email_sendings:
-                users_in_campaign.add(sending.user_id)
-                if sending.clicked_at or sending.phished_at:
-                    users_fell_in_campaign.add(sending.user_id)
+            # Update stats for each targeted user
+            for user_id in targeted_users:
+                if user_id not in user_stats:
+                    user_stats[user_id] = {"targeted": 0, "fell": 0}
+                user_stats[user_id]["targeted"] += 1
+                if user_id in fallen_users:
+                    user_stats[user_id]["fell"] += 1
 
-            for user_id in users_in_campaign:
-                if user_id not in user_campaigns:
-                    user_campaigns[user_id] = {"targeted": 0, "fell": 0}
-                user_campaigns[user_id]["targeted"] += 1
-                if user_id in users_fell_in_campaign:
-                    user_campaigns[user_id]["fell"] += 1
-
+        # Return users who fell for more than 50% of campaigns they were in
         return [
             user_id
-            for user_id, stats in user_campaigns.items()
-            if stats["targeted"] > 0 and stats["fell"] / stats["targeted"] > 0.5
+            for user_id, stats in user_stats.items()
+            if stats["fell"] / stats["targeted"] > 0.5
         ]
 
     def _calc_avg_time_delta(

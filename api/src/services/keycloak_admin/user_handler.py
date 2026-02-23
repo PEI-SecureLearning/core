@@ -94,25 +94,29 @@ class user_handler:
         r = kc.create_user(realm_name, token, payload)
 
         # If session is provided and user was created, add to local DB
-        if r.status_code in (201, 204) and session is not None:
-            location = r.headers.get("Location")
-            if location:
-                user_id = location.rstrip("/").split("/")[-1]
+        if r.status_code not in (201, 204) or not session:
+            return r
+            
+        location = r.headers.get("Location")
+        if not location:
+            return r
+        
+        user_id = location.rstrip("/").split("/")[-1]
 
-                # Determine org manager flag from requested role
-                is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"
+        # Determine org manager flag from requested role
+        is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"
 
-                # Ensure realm exists locally
-                if realm_name and not session.get(Realm, realm_name):
-                    session.add(Realm(name=realm_name, domain=f"{realm_name}.local"))
+        # Ensure realm exists locally
+        if realm_name and not session.get(Realm, realm_name):
+            session.add(Realm(name=realm_name, domain=f"{realm_name}.local"))
 
-                existing = session.get(User, user_id)
-                if existing:
-                    existing.email = email or existing.email
-                    existing.is_org_manager = is_org_manager
-                else:
-                    user = User(keycloak_id=user_id, email=email or "", is_org_manager=is_org_manager)
-                    session.add(user)
-                session.commit()
+        existing = session.get(User, user_id)
+        if existing:
+            existing.email = email or existing.email
+            existing.is_org_manager = is_org_manager
+        else:
+            user = User(keycloak_id=user_id, email=email or "", is_org_manager=is_org_manager)
+            session.add(user)
+        session.commit()
 
         return r

@@ -1,8 +1,10 @@
 """Compliance policy and quiz management routes for org managers."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, File, UploadFile
 
-from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
+from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles
 from src.models.org_manager_schemas import (
     CompliancePolicyPayload,
@@ -52,7 +54,7 @@ def update_compliance_policy(
 async def import_compliance_policy(
     realm: str,
     token: OAuth2Scheme,
-    file: UploadFile = File(...),
+    file: Annotated[UploadFile, File(...)],
 ):
     validate_realm_access(token, realm)
     return await compliance_handler.import_compliance_policy(realm, file)
