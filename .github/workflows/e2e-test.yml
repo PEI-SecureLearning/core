@@ -34,7 +34,7 @@ jobs:
         run: cd web && npx playwright install --with-deps
         
       - name: Run E2E tests
-        run: cd web && npx playwright test
+        run: cd web && npx playwright test --workers 4
         env:
           CI: true 
           URL: http://localhost:5173
