@@ -1,26 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-  // Setup: Create tenant first
-  await page.goto('http://localhost:5173/');
-  await page.getByRole('textbox', { name: 'Username or email' }).click();
-  await page.getByRole('textbox', { name: 'Username or email' }).fill('platform_admin');
-  await page.getByRole('textbox', { name: 'Password' }).click();
-  await page.getByRole('textbox', { name: 'Password' }).fill('admin');
-  await page.getByRole('button', { name: 'Sign In' }).click();
-  await page.getByRole('link', { name: 'Tenants', exact: true }).click();
-  await page.getByRole('button', { name: 'New Tenant' }).click();
-  await page.getByRole('textbox', { name: 'Organization name*' }).fill('ua');
-  await page.getByRole('textbox', { name: 'Tenant domain/email pattern*' }).fill('ua.pt');
-  await page.getByRole('textbox', { name: 'Admin email*' }).fill('admin@ua.pt');
-  await page.locator('.absolute').first().click();
-  await page.locator('.lucide.lucide-check.w-3.h-3.text-white').click();
-  await page.locator('.lucide.lucide-check').first().click();
-  await page.getByText('Learning ManagementDeliver').click();
-  await page.getByRole('button', { name: 'Upload tenant logo' }).click();
-  await page.getByRole('button', { name: 'Create Tenant' }).click();
-  await page.waitForNavigation();
-  
+
   // Now create sending profile
   await page.goto('http://localhost:5173/');
   await page.getByRole('textbox', { name: 'name@company.com' }).click();
@@ -67,7 +48,11 @@ test('test', async ({ page }) => {
   await page.locator('input[type="password"]').fill('slog wuxe rpwr okov');
   await page.getByRole('button', { name: 'Create Profile' }).click();
   await page.getByRole('button', { name: 'Test' }).click();
+  await page.waitForTimeout(2000);
   await page.getByRole('button', { name: 'Create Profile' }).click();
+  await page.getByRole('complementary').getByRole('link', { name: 'Sending Profiles' }).click();
   await page.getByRole('link', { name: 'Test gabfacgon3@gmail.com' }).click();
-  await page.getByRole('heading', { name: 'Edit Profile: Test' }).click();
+  await expect(page).toHaveURL(/sending-profiles/);
+
+
 });

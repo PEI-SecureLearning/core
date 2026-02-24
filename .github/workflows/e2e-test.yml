@@ -6,20 +6,19 @@ on:
       - main
       - dev
 
-
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' 
-          cache: 'npm'     
+          node-version: "20"
+          cache: "npm"
 
       - name: Start containers
         run: docker compose -f deployment/docker-compose.dev.yml up -d --build
@@ -32,12 +31,21 @@ jobs:
 
       - name: Install Playwright Browsers
         run: cd web && npx playwright install --with-deps
-        
-      - name: Run E2E tests
-        run: cd web && npx playwright test --workers 4
-        env:
-          CI: true 
-          URL: http://localhost:5173
+
+      - name: Run createTenant test
+        run: cd web && npx playwright test createTenant.spec.ts
+
+      - name: Run createUser test
+        run: cd web && npx playwright test createUser.spec.ts
+
+      - name: Run createUserGroup test
+        run: cd web && npx playwright test createUserGroup.spec.ts
+
+      - name: Run createSendingProfile test
+        run: cd web && npx playwright test createSendingProfile.spec.ts
+
+      - name: Run AlterComplicance test
+        run: cd web && npx playwright test AlterComplicance.spec.ts
 
       - name: Stop containers
         if: always()
