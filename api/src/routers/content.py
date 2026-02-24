@@ -49,6 +49,11 @@ async def upload_content(
     )
 
 
+@router.get("/content/{content_piece_id}/file")
+async def download_content_file(content_piece_id: str, _: CurrentRealm):
+    return await content_service.download_content_file(content_piece_id)
+
+
 @router.delete("/content/{content_piece_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_content(content_piece_id: str, _: CurrentRealm) -> None:
     await content_service.delete_content_piece(content_piece_id)

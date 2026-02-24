@@ -50,11 +50,19 @@ function RouteComponent() {
         body: string | null;
         source_url: string | null;
         tags: string[];
-        file: { filename: string; content_type: string; size: number; data_base64?: string | null } | null;
+        file: {
+            filename: string;
+            content_type: string;
+            size: number;
+            file_url?: string | null;
+            data_base64?: string | null;
+        } | null;
         created_at: string;
         updated_at: string;
     } | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [protectedPreviewUrl, setProtectedPreviewUrl] = useState<string | null>(null);
 
     const normalizeContentPath = (rawPath: string) => {
         const trimmed = rawPath.trim().replace(/^\/+/, "");
@@ -198,14 +206,99 @@ function RouteComponent() {
     const closeDetails = () => {
         setSelectedContentId(null);
         setSelectedContent(null);
+        setProtectedPreviewUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return null;
+        });
+    };
+
+    const handleDeleteContent = async (contentPieceId: string) => {
+        const confirmed = window.confirm("Delete this content piece?");
+        if (!confirmed) {
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const res = await fetch(
+                `${API_BASE}/content/${encodeURIComponent(contentPieceId)}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                throw new Error("Failed to delete content");
+            }
+
+            toast.success("Content deleted successfully.");
+            if (selectedContentId === contentPieceId) {
+                closeDetails();
+            }
+            setRefreshKey((prev) => prev + 1);
+        } catch {
+            toast.error("Could not delete content.");
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     const isImageFile = !!selectedContent?.file?.content_type?.startsWith("image/");
     const isVideoFile = !!selectedContent?.file?.content_type?.startsWith("video/");
-    const fileDataUrl =
+    const inlineFileDataUrl =
         selectedContent?.file?.data_base64 && selectedContent.file.content_type
             ? `data:${selectedContent.file.content_type};base64,${selectedContent.file.data_base64}`
             : null;
+    const previewFileUrl = inlineFileDataUrl || protectedPreviewUrl;
+
+    useEffect(() => {
+        const loadProtectedPreview = async () => {
+            if (!selectedContent?.file || inlineFileDataUrl) {
+                setProtectedPreviewUrl((prev) => {
+                    if (prev) URL.revokeObjectURL(prev);
+                    return null;
+                });
+                return;
+            }
+
+            try {
+                const res = await fetch(
+                    `${API_BASE}/content/${encodeURIComponent(selectedContent.content_piece_id)}/file`,
+                    {
+                        headers: {
+                            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+                        },
+                    }
+                );
+                if (!res.ok) {
+                    throw new Error("Failed to load protected preview");
+                }
+                const blob = await res.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                setProtectedPreviewUrl((prev) => {
+                    if (prev) URL.revokeObjectURL(prev);
+                    return objectUrl;
+                });
+            } catch {
+                setProtectedPreviewUrl((prev) => {
+                    if (prev) URL.revokeObjectURL(prev);
+                    return null;
+                });
+            }
+        };
+
+        void loadProtectedPreview();
+
+        return () => {
+            setProtectedPreviewUrl((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
+        };
+    }, [selectedContent?.content_piece_id, selectedContent?.file, inlineFileDataUrl, keycloak.token]);
 
     return (
 
@@ -242,6 +335,7 @@ function RouteComponent() {
                         sortBy={sortBy}
                         refreshKey={refreshKey}
                         onViewContent={handleViewContent}
+                        onDeleteContent={handleDeleteContent}
                     />
                 )}
 
@@ -264,9 +358,19 @@ function RouteComponent() {
                                         <h2 className="text-2xl font-bold text-purple-900">{selectedContent.title}</h2>
                                         <p className="text-sm text-gray-500 mt-1">{selectedContent.content_piece_id}</p>
                                     </div>
-                                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 uppercase">
-                                        {selectedContent.content_format}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 uppercase">
+                                            {selectedContent.content_format}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            disabled={isDeleting}
+                                            onClick={() => handleDeleteContent(selectedContent.content_piece_id)}
+                                            className="rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
+                                        >
+                                            {isDeleting ? "Deleting..." : "Delete"}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
@@ -313,25 +417,25 @@ function RouteComponent() {
                                             <p><span className="font-medium text-gray-900">Type:</span> {selectedContent.file.content_type}</p>
                                             <p><span className="font-medium text-gray-900">Size:</span> {selectedContent.file.size} bytes</p>
 
-                                            {fileDataUrl && isImageFile && (
+                                            {previewFileUrl && isImageFile && (
                                                 <div className="pt-3">
                                                     <p className="font-medium text-gray-900 mb-2">Preview</p>
                                                     <img
-                                                        src={fileDataUrl}
+                                                        src={previewFileUrl}
                                                         alt={selectedContent.file.filename}
                                                         className="max-h-96 w-auto rounded-lg border border-gray-200"
                                                     />
                                                 </div>
                                             )}
 
-                                            {fileDataUrl && isVideoFile && (
+                                            {previewFileUrl && isVideoFile && (
                                                 <div className="pt-3">
                                                     <p className="font-medium text-gray-900 mb-2">Preview</p>
                                                     <video
                                                         controls
                                                         className="max-h-96 w-full rounded-lg border border-gray-200 bg-black"
                                                     >
-                                                        <source src={fileDataUrl} type={selectedContent.file.content_type} />
+                                                        <source src={previewFileUrl} type={selectedContent.file.content_type} />
                                                         Your browser does not support the video element.
                                                     </video>
                                                 </div>

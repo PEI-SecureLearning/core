@@ -3,7 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+from motor.motor_asyncio import (
+    AsyncIOMotorClient,
+    AsyncIOMotorCollection,
+    AsyncIOMotorGridFSBucket,
+)
 
 from src.core.settings import settings
 
@@ -33,6 +37,12 @@ def get_content_collection() -> AsyncIOMotorCollection:
     client = _get_client()
     db = client[settings.MONGODB_DB]
     return db[settings.MONGODB_COLLECTION_CONTENT]
+
+
+def get_content_gridfs_bucket() -> AsyncIOMotorGridFSBucket:
+    client = _get_client()
+    db = client[settings.MONGODB_DB]
+    return AsyncIOMotorGridFSBucket(db, bucket_name=settings.MONGODB_GRIDFS_BUCKET)
 
 
 async def close_mongo_client() -> None:

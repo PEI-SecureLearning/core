@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { motion } from 'framer-motion';
-import { FileStack } from 'lucide-react';
+import { ChevronRight, Eye, FileStack, Folder, FolderOpen, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -27,11 +27,20 @@ interface ContentDisplayProps {
     sortBy: string;
     refreshKey: number;
     onViewContent: (contentPieceId: string) => void;
+    onDeleteContent: (contentPieceId: string) => void;
 }
 
-export function ContentDisplay({ searchQuery, sortBy, refreshKey, onViewContent }: ContentDisplayProps) {
+export function ContentDisplay({
+    searchQuery,
+    sortBy,
+    refreshKey,
+    onViewContent,
+    onDeleteContent,
+}: ContentDisplayProps) {
     const { keycloak } = useKeycloak();
     const [items, setItems] = useState<ContentItem[]>([]);
+    const [selectedDir, setSelectedDir] = useState("content");
+    const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(["content"]));
 
     useEffect(() => {
         const fetchContent = async () => {
@@ -69,77 +78,146 @@ export function ContentDisplay({ searchQuery, sortBy, refreshKey, onViewContent 
         return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
     }, [items, searchQuery, sortBy]);
 
+    const directoryPaths = useMemo(() => {
+        const dirs = new Set<string>(["content"]);
+        for (const item of filteredContent) {
+            const parts = item.path.replace(/^\/+/, "").split("/").filter(Boolean);
+            let current = "";
+            for (const part of parts) {
+                current = current ? `${current}/${part}` : part;
+                dirs.add(current);
+            }
+        }
+        return Array.from(dirs).sort();
+    }, [filteredContent]);
+
+    const directoryChildren = useMemo(() => {
+        const map = new Map<string, string[]>();
+        for (const dir of directoryPaths) {
+            const parts = dir.split("/");
+            const parent = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+            if (!map.has(parent)) {
+                map.set(parent, []);
+            }
+            map.get(parent)!.push(dir);
+        }
+        for (const [key, value] of map) {
+            map.set(key, value.sort());
+        }
+        return map;
+    }, [directoryPaths]);
+
+    const visibleItems = useMemo(
+        () =>
+            filteredContent.filter((item) =>
+                item.path === selectedDir || item.path.startsWith(`${selectedDir}/`)
+            ),
+        [filteredContent, selectedDir]
+    );
+
+    const toggleDir = (dir: string) => {
+        setExpandedDirs((prev) => {
+            const next = new Set(prev);
+            if (next.has(dir)) {
+                next.delete(dir);
+            } else {
+                next.add(dir);
+            }
+            return next;
+        });
+    };
+
+    const renderTree = (parent: string, level = 0): ReactNode[] => {
+        const children = directoryChildren.get(parent) || [];
+        return children.map((dir) => {
+            const isExpanded = expandedDirs.has(dir);
+            const isSelected = selectedDir === dir;
+            const label = dir.split("/").pop() || dir;
+            const hasChildren = (directoryChildren.get(dir) || []).length > 0;
+            return (
+                <div key={dir}>
+                    <button
+                        type="button"
+                        onClick={() => setSelectedDir(dir)}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-sm ${isSelected ? "bg-purple-100 text-purple-900" : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                        style={{ paddingLeft: `${8 + level * 14}px` }}
+                    >
+                        {hasChildren ? (
+                            <ChevronRight
+                                className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    toggleDir(dir);
+                                }}
+                            />
+                        ) : (
+                            <span className="w-3" />
+                        )}
+                        {isExpanded ? <FolderOpen className="w-4 h-4 text-amber-500" /> : <Folder className="w-4 h-4 text-amber-500" />}
+                        <span className="truncate">{label}</span>
+                    </button>
+                    {isExpanded && hasChildren && <div>{renderTree(dir, level + 1)}</div>}
+                </div>
+            );
+        });
+    };
+
     return (
         <motion.div
             animate={{ opacity: 1 }}
-            className="w-full h-full"
+            className="w-full h-full flex gap-4"
         >
+            <aside className="w-72 min-w-72 bg-white rounded-xl border border-gray-200 p-3 overflow-y-auto">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Directories</p>
+                <div className="space-y-1">{renderTree("")}</div>
+            </aside>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 overflow-y-auto">
-                {filteredContent.map((item) => (
-                    <div key={item.id} className="shadow-black/40 group flex flex-col bg-white rounded-2xl overflow-hidden border border-purple-500/20 hover:border-purple-500/50 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(168,85,247,0.15)]">
-                        {/* Image Container */}
-                        <div className="relative h-48 w-full overflow-hidden bg-white">
-                            <div className="absolute inset-0 bg-purple-900/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
-                            {item.file?.data_base64 && item.file.content_type?.startsWith("image/") ? (
-                                <img
-                                    src={`data:${item.file.content_type};base64,${item.file.data_base64}`}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
-                                />
-                            ) : item.file?.data_base64 && item.file.content_type?.startsWith("video/") ? (
-                                <video
-                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
-                                    muted
-                                    loop
-                                    autoPlay
-                                    playsInline
-                                >
-                                    <source
-                                        src={`data:${item.file.content_type};base64,${item.file.data_base64}`}
-                                        type={item.file.content_type}
-                                    />
-                                </video>
-                            ) : (
-                                <img
-                                    src={`https://picsum.photos/seed/${item.content_piece_id}/1200/800`}
-                                    alt={item.title}
-                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
-                                />
-                            )}
-                            <div className="absolute top-3 left-3 z-20">
-                                <span className="px-3 py-1 bg-white/85 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-purple-800 border border-purple-500/30">
+            <div className="flex-1 bg-white rounded-xl border border-gray-200 overflow-y-auto">
+                <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                    <div className="text-sm">
+                        <span className="font-semibold text-gray-900">{selectedDir}</span>
+                        <span className="text-gray-500"> ({visibleItems.length} items)</span>
+                    </div>
+                </div>
+                <div className="divide-y divide-gray-100">
+                    {visibleItems.map((item) => (
+                        <div key={item.id} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-gray-50">
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                                <p className="text-xs text-gray-500 truncate">{item.path}</p>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 uppercase">
                                     {item.content_format}
                                 </span>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-5 flex flex-col flex-grow">
-                            <h3 className="text-lg font-bold text-purple-900 mb-2 group-hover:text-white transition-colors">
-                                {item.title}
-                            </h3>
-                            <p className="text-sm text-gray-400 line-clamp-2 mb-4">
-                                {item.description || "No description"}
-                            </p>
-
-                            <div className="mt-auto pt-4 border-t border-purple-500/10 flex justify-between items-center">
-                                <div className="flex items-center gap-2 text-xs text-purple-400">
-                                    <FileStack className="w-3 h-3" />
-                                    <span>{item.path || item.content_piece_id}</span>
-                                </div>
                                 <button
                                     onClick={() => onViewContent(item.content_piece_id)}
-                                    className="text-xs font-bold text-purple-700 hover:text-purple-300 transition-colors"
+                                    aria-label="Open content"
+                                    title="Open"
+                                    className="p-1 rounded text-purple-700 hover:text-purple-900 hover:bg-purple-50"
                                 >
-                                    VIEW CONTENT →
+                                    <Eye className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => onDeleteContent(item.content_piece_id)}
+                                    aria-label="Delete content"
+                                    title="Delete"
+                                    className="p-1 rounded text-red-700 hover:text-red-900 hover:bg-red-50"
+                                >
+                                    <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
-                    </div>
-                ))}
-
+                    ))}
+                    {visibleItems.length === 0 && (
+                        <div className="px-4 py-8 text-sm text-gray-500 flex items-center gap-2">
+                            <FileStack className="w-4 h-4" />
+                            No content in this directory.
+                        </div>
+                    )}
+                </div>
             </div>
         </motion.div >
     );
