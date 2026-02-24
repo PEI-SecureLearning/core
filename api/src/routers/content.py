@@ -9,17 +9,17 @@ from src.services.content import ContentPieceCreate, ContentPieceOut
 router = APIRouter()
 
 
-@router.get("/content", response_model=list[ContentPieceOut])
+@router.get("/content")
 async def list_content(_: CurrentRealm) -> list[ContentPieceOut]:
     return await content_service.list_content_pieces()
 
 
-@router.get("/content/{content_piece_id}", response_model=ContentPieceOut)
+@router.get("/content/{content_piece_id}")
 async def get_content(content_piece_id: str, _: CurrentRealm) -> ContentPieceOut:
     return await content_service.get_content_piece(content_piece_id)
 
 
-@router.post("/content", response_model=ContentPieceOut, status_code=status.HTTP_201_CREATED)
+@router.post("/content", status_code=status.HTTP_201_CREATED)
 async def create_content(
     payload: ContentPieceCreate, _: CurrentRealm
 ) -> ContentPieceOut:
@@ -28,7 +28,6 @@ async def create_content(
 
 @router.post(
     "/content/upload",
-    response_model=ContentPieceOut,
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_content(

@@ -1,7 +1,7 @@
 import base64
 import binascii
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Literal
 from uuid import uuid4
 
@@ -19,7 +19,9 @@ from src.core.settings import settings
 
 
 ContentFormat = Literal["text", "markdown", "html", "link", "file"]
-
+CONTENT_DIR = "content/"
+CONTENT_NOT_FOUND = "Content not found"
+FILE_NOT_FOUND = "File not found"
 
 def _normalize_content_path(path: str) -> str:
     normalized = path.strip().lstrip("/")
@@ -28,9 +30,9 @@ def _normalize_content_path(path: str) -> str:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Path is required",
         )
-    if normalized in {"content", "content/"}:
-        return "content/"
-    if not normalized.startswith("content/"):
+    if normalized in {"content", CONTENT_DIR}:
+        return CONTENT_DIR
+    if not normalized.startswith(CONTENT_DIR):
         normalized = f"content/{normalized}"
     return normalized
 
@@ -101,7 +103,7 @@ async def get_content_piece(content_piece_id: str) -> ContentPieceOut:
         }
     )
     if not doc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Content not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=CONTENT_NOT_FOUND)
     return _to_content_out(doc)
 
 
@@ -119,7 +121,7 @@ async def create_content_piece(payload: ContentPieceCreate) -> ContentPieceOut:
 
     normalized_path = _normalize_content_path(payload.path)
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     document: dict[str, Any] = {
         "kind": "content_piece",
         "content_piece_id": _new_content_piece_id(),
@@ -159,7 +161,7 @@ async def upload_content_piece(
     if not raw:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty")
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     content_piece_id = _new_content_piece_id()
     filename = file.filename or "uploaded-content"
     content_type = file.content_type or "application/octet-stream"
@@ -230,11 +232,11 @@ async def download_content_file(content_piece_id: str) -> StreamingResponse:
         {"kind": "content_piece", "content_piece_id": content_piece_id}
     )
     if not doc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Content not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=CONTENT_NOT_FOUND)
 
     file_meta = doc.get("file")
     if not isinstance(file_meta, dict):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
 
     content_type = file_meta.get("content_type") or "application/octet-stream"
     filename = file_meta.get("filename") or f"{content_piece_id}.bin"
@@ -244,7 +246,7 @@ async def download_content_file(content_piece_id: str) -> StreamingResponse:
     if storage == "gridfs":
         gridfs_file_id = file_meta.get("gridfs_file_id")
         if not gridfs_file_id or not ObjectId.is_valid(gridfs_file_id):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
         bucket = get_content_gridfs_bucket()
         grid_out = await bucket.open_download_stream(ObjectId(gridfs_file_id))
         raw = await grid_out.read()
@@ -252,10 +254,10 @@ async def download_content_file(content_piece_id: str) -> StreamingResponse:
 
     data_base64 = file_meta.get("data_base64")
     if not isinstance(data_base64, str):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
     try:
         raw = base64.b64decode(data_base64)
-    except (ValueError, binascii.Error) as exc:
+    except (ValueError) as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Stored file data is corrupted",
@@ -272,7 +274,7 @@ async def delete_content_piece(content_piece_id: str) -> None:
         }
     )
     if not doc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Content not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=CONTENT_NOT_FOUND)
 
     file_meta = doc.get("file")
     if isinstance(file_meta, dict) and file_meta.get("storage") == "gridfs":
@@ -292,4 +294,4 @@ async def delete_content_piece(content_piece_id: str) -> None:
         }
     )
     if result.deleted_count == 0:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Content not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=CONTENT_NOT_FOUND)
