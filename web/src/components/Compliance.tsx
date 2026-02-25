@@ -55,6 +55,7 @@ function formatDate(iso?: string | null) {
 
 export default function ComplianceFlow() {
   const { keycloak, initialized } = useKeycloak();
+  const routerLocation = useLocation();
   const portalRef = useRef<HTMLElement | null>(null);
   const ownsPortalRef = useRef(false);
   const createdPortalRef = useRef(false);
@@ -148,12 +149,15 @@ export default function ComplianceFlow() {
     );
     return new Set(roles);
   }, [keycloak.tokenParsed]);
+  const issuer = String(keycloak.tokenParsed?.iss || "");
+  const isPlatformRealmUser = issuer.includes("/realms/platform") || issuer.includes("/realms/master");
   const isAdminContext =
-    typeof window !== "undefined" &&
-    (location.pathname.startsWith("/admin") ||
-      keycloak.tokenParsed?.iss?.includes("/realms/master") ||
-      realmRoles.has("admin"));
+    routerLocation.pathname.startsWith("/admin") ||
+    routerLocation.pathname.startsWith("/content-manager") ||
+    isPlatformRealmUser ||
+    realmRoles.has("admin");
   const isOrgManager = realmRoles.has("org_manager");
+  const isContentManager = realmRoles.has("content_manager");
 
   const slugify = (text: string) =>
     text
@@ -287,7 +291,7 @@ export default function ComplianceFlow() {
   useEffect(() => {
     if (!initialized) return;
     if (!keycloak.authenticated || !keycloak.token) return;
-    if (isAdminContext || isOrgManager) return; // skip compliance for admin/org manager
+    if (isAdminContext || isOrgManager || isContentManager) return; // skip compliance for platform/admin and org manager
     void loadStatusAndData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialized, keycloak.authenticated, keycloak.token]);
@@ -382,7 +386,7 @@ export default function ComplianceFlow() {
     }
   };
 
-  if (isAdminContext || isOrgManager) {
+  if (isAdminContext || isOrgManager || isContentManager) {
     return null;
   }
 
