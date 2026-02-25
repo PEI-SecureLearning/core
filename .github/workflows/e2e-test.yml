@@ -23,11 +23,15 @@ jobs:
       - name: Start containers
         run: docker compose -f deployment/docker-compose.dev.yml up -d --build
 
-      - name: Wait for services to be ready
-        run: npx wait-on http://localhost:5173 --timeout 60000
 
       - name: Install dependencies
         run: npm ci --prefix web
+
+      - name: Wait for backend
+        run: npx wait-on http://localhost:8000/health --timeout 60000
+
+      - name: Wait for services to be ready
+        run: npx wait-on http://localhost:5173 --timeout 60000
 
       - name: Install Playwright Browsers
         run: cd web && npx playwright install --with-deps
