@@ -2628,6 +2628,10 @@
         {
           "name": "admin",
           "description": "Platform administrator role"
+        },
+        {
+          "name": "CONTENT_MANAGER",
+          "description": "Content manager role"
         }
       ]
     },
@@ -2644,6 +2648,19 @@
         "realmRoles": [
           "admin"
         ]
+      },
+      {
+        "username": "content_manager",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "admin"
+          }
+        ],
+        "realmRoles": [
+          "CONTENT_MANAGER"
+        ]
       }
     ],
     "clients": [
@@ -2653,7 +2670,9 @@
         "publicClient": true,
         "redirectUris": [
           "${WEB_URL}/admin/*",
-          "${WEB_URL}/admin/"
+          "${WEB_URL}/admin/",
+          "${WEB_URL}/content-manager/*",
+          "${WEB_URL}/content-manager/"
         ],
         "webOrigins": [
           "${WEB_URL}"
@@ -2661,7 +2680,7 @@
         "standardFlowEnabled": true,
         "directAccessGrantsEnabled": true,
         "attributes": {
-          "post.logout.redirect.uris": "${WEB_URL}/admin/*",
+          "post.logout.redirect.uris": "${WEB_URL}/admin/*##${WEB_URL}/content-manager/*",
           "content.-security-policy": "frame-src 'self'; frame-ancestors 'self' ${WEB_URL}; object-src 'none'"
         },
         "protocolMappers": [

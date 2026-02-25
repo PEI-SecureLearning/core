@@ -41,13 +41,7 @@ const App = () => {
     const checkConnection = async () => {
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 800) // 800ms timeout for "instant" feel
-
-        // Construct the URL manually to be safe, or use keycloak instance properties if reliable
-        // keycloak.authServerUrl might be undefined if not initialized, so we use the config from keycloak.ts logic if possible, 
-        // but here we only have the instance. 
-        // Let's assume the instance has the config we passed.
-        // Actually, keycloak-js instance usually has 'authServerUrl' set from config.
+        const timeoutId = setTimeout(() => controller.abort(), 800)
 
         const url = `${keycloak.authServerUrl}/realms/${keycloak.realm}/.well-known/openid-configuration`
         const response = await fetch(url, {
@@ -104,7 +98,7 @@ const App = () => {
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  const isAdminRoute = window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/content-manager");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 

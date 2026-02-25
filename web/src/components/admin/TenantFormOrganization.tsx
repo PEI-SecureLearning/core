@@ -17,7 +17,7 @@ export function TenantFormOrganization({
 }: TenantFormOrganizationProps) {
     return (
         <div className="space-y-6">
-            <div className="h-20">
+            <div className="min-h-[5rem]">
                 <Label htmlFor="org-name" className="text-gray-700 block mb-2">Organization name<span className="text-red-500">*</span></Label>
                 <Input
                     id="org-name"
@@ -29,7 +29,7 @@ export function TenantFormOrganization({
                 />
             </div>
 
-            <div className="h-20">
+            <div className="min-h-[5rem]">
                 <Label htmlFor="domain" className="text-gray-700 block mb-2">Tenant domain/email pattern<span className="text-red-500">*</span></Label>
                 <Input
                     id="domain"
@@ -41,7 +41,7 @@ export function TenantFormOrganization({
                 />
             </div>
 
-            <div className="h-20">
+            <div className="min-h-[5rem]">
                 <Label htmlFor="admin-email" className="text-gray-700 block mb-2">Admin email<span className="text-red-500">*</span></Label>
                 <Input
                     id="admin-email"
