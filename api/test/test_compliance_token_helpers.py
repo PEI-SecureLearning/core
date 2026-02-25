@@ -12,7 +12,7 @@ def _mock_claims(iss: str, roles: list[str], preferred_username: str = "user") -
 
 
 def test_require_tenant_learner_context_blocks_platform_realm(monkeypatch):
-    claims = _mock_claims("http://keycloak:8080/realms/platform", roles=[])
+    claims = _mock_claims("https://keycloak:8080/realms/platform", roles=[])
     monkeypatch.setattr(token_helpers, "decode_token_verified", lambda _token: claims)
 
     try:
@@ -25,7 +25,7 @@ def test_require_tenant_learner_context_blocks_platform_realm(monkeypatch):
 
 def test_require_tenant_learner_context_blocks_content_manager_role(monkeypatch):
     claims = _mock_claims(
-        "http://keycloak:8080/realms/tenant-a",
+        "https://keycloak:8080/realms/tenant-a",
         roles=["CONTENT_MANAGER"],
     )
     monkeypatch.setattr(token_helpers, "decode_token_verified", lambda _token: claims)
@@ -40,7 +40,7 @@ def test_require_tenant_learner_context_blocks_content_manager_role(monkeypatch)
 
 def test_require_tenant_learner_context_blocks_org_manager_role(monkeypatch):
     claims = _mock_claims(
-        "http://keycloak:8080/realms/tenant-a",
+        "https://keycloak:8080/realms/tenant-a",
         roles=["ORG_MANAGER"],
     )
     monkeypatch.setattr(token_helpers, "decode_token_verified", lambda _token: claims)
@@ -55,7 +55,7 @@ def test_require_tenant_learner_context_blocks_org_manager_role(monkeypatch):
 
 def test_require_tenant_learner_context_allows_tenant_learner(monkeypatch):
     claims = _mock_claims(
-        "http://keycloak:8080/realms/tenant-a",
+        "https://keycloak:8080/realms/tenant-a",
         roles=["DEFAULT_USER"],
         preferred_username="learner-1",
     )
