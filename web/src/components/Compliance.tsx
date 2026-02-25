@@ -5,6 +5,7 @@ import { useKeycloak } from "@react-keycloak/web";
 import ReactMarkdown from "react-markdown";
 import apiClient from "../helper/header-injector";
 import { useLocation } from "@tanstack/react-router";
+import { isComplianceEligibleUser } from "@/lib/compliance-eligibility";
 
 const LOCAL_STORAGE_KEY = "compliance-quiz-failure";
 
@@ -143,21 +144,16 @@ export default function ComplianceFlow() {
     };
   }, []);
 
-  const realmRoles = useMemo(() => {
-    const roles = (keycloak.tokenParsed?.realm_access?.roles || []).map((r) =>
-      String(r).toLowerCase()
-    );
-    return new Set(roles);
-  }, [keycloak.tokenParsed]);
-  const issuer = String(keycloak.tokenParsed?.iss || "");
-  const isPlatformRealmUser = issuer.includes("/realms/platform") || issuer.includes("/realms/master");
-  const isAdminContext =
-    routerLocation.pathname.startsWith("/admin") ||
-    routerLocation.pathname.startsWith("/content-manager") ||
-    isPlatformRealmUser ||
-    realmRoles.has("admin");
-  const isOrgManager = realmRoles.has("org_manager");
-  const isContentManager = realmRoles.has("content_manager");
+  const isEligibleUser = useMemo(
+    () =>
+      isComplianceEligibleUser({
+        initialized,
+        authenticated: !!keycloak.authenticated,
+        tokenParsed: keycloak.tokenParsed,
+        pathname: routerLocation.pathname,
+      }),
+    [initialized, keycloak.authenticated, keycloak.tokenParsed, routerLocation.pathname]
+  );
 
   const slugify = (text: string) =>
     text
@@ -291,10 +287,10 @@ export default function ComplianceFlow() {
   useEffect(() => {
     if (!initialized) return;
     if (!keycloak.authenticated || !keycloak.token) return;
-    if (isAdminContext || isOrgManager || isContentManager) return; // skip compliance for platform/admin and org manager
+    if (!isEligibleUser) return;
     void loadStatusAndData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialized, keycloak.authenticated, keycloak.token]);
+  }, [initialized, keycloak.authenticated, keycloak.token, isEligibleUser]);
 
   useEffect(() => {
     if (result?.cooldown_seconds_remaining && !result.passed) {
@@ -386,7 +382,7 @@ export default function ComplianceFlow() {
     }
   };
 
-  if (isAdminContext || isOrgManager || isContentManager) {
+  if (!isEligibleUser) {
     return null;
   }
 
