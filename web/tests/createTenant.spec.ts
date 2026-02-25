@@ -13,13 +13,6 @@ test('test', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Last name' }).click();
     await page.getByRole('textbox', { name: 'Last name' }).fill('admin');
     await page.getByRole('button', { name: 'Submit' }).click();
-    await page.getByRole('textbox', { name: 'Email' }).click();
-    await page.getByRole('textbox', { name: 'Email' }).fill('admin@ua.pt');
-    await page.getByRole('textbox', { name: 'First name' }).click();
-    await page.getByRole('textbox', { name: 'First name' }).fill('Gabriel');
-    await page.getByRole('textbox', { name: 'Last name' }).click();
-    await page.getByRole('textbox', { name: 'Last name' }).fill('Gonçalves');
-    await page.getByRole('button', { name: 'Submit' }).click();
     await page.getByRole('link', { name: 'Tenants', exact: true }).click();
     await page.getByRole('button', { name: 'New Tenant' }).click();
     await page.getByRole('textbox', { name: 'Organization name*' }).click();
