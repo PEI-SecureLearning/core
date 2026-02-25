@@ -1,15 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
-    await page.getByRole('textbox', { name: 'Username or email' }).fill('platform_admin');
-    await page.getByRole('textbox', { name: 'Password' }).click();
-    await page.getByRole('textbox', { name: 'Username or email' }).fill('platform_admina');
-    await page.getByRole('textbox', { name: 'Password' }).fill('admin');
-    await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.goto('http://localhost:5173/admin');
     await page.getByRole('textbox', { name: 'Username or email' }).fill('platform_admin');
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('admin');
     await page.getByRole('button', { name: 'Sign In' }).click();
+    await page.getByRole('textbox', { name: 'Email' }).click();
+    await page.getByRole('textbox', { name: 'Email' }).fill('admin@admin.pt');
+    await page.getByRole('textbox', { name: 'First name' }).click();
+    await page.getByRole('textbox', { name: 'First name' }).fill('admin');
+    await page.getByRole('textbox', { name: 'Last name' }).click();
+    await page.getByRole('textbox', { name: 'Last name' }).fill('admin');
+    await page.getByRole('button', { name: 'Submit' }).click();
     await page.getByRole('textbox', { name: 'Email' }).click();
     await page.getByRole('textbox', { name: 'Email' }).fill('admin@ua.pt');
     await page.getByRole('textbox', { name: 'First name' }).click();
