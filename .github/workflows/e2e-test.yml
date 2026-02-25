@@ -32,6 +32,7 @@ jobs:
       - name: Install Playwright Browsers
         run: cd web && npx playwright install --with-deps
 
+
       - name: Run createTenant test
         run: cd web && npx playwright test createTenant.spec.ts
 
