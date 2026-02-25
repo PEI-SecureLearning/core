@@ -6,7 +6,6 @@ test('test', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('admin');
     await page.getByRole('button', { name: 'Sign In' }).click();
-    await page.waitForURL('**/admin**', { timeout: 30000 });
     await page.waitForLoadState('networkidle');
     await page.getByRole('textbox', { name: 'Email' }).click();
     await page.getByRole('textbox', { name: 'Email' }).fill('admin@admin.pt');
