@@ -1,8 +1,8 @@
-import { test } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
 
-    // Create user
+    // Login
     await page.goto('http://localhost:5173/');
     await page.getByRole('textbox', { name: 'name@company.com' }).click();
     await page.getByRole('textbox', { name: 'name@company.com' }).fill('user@ua.pt');
@@ -12,15 +12,19 @@ test('test', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Password' }).fill('1234');
     await page.getByRole('button', { name: 'Sign In' }).click();
 
-    // Now create user group
     await page.getByRole('complementary').getByRole('link', { name: 'User groups' }).click();
     await page.getByRole('link', { name: 'Create New Group' }).click();
     await page.getByRole('textbox', { name: 'Group Name *' }).click();
     await page.getByRole('textbox', { name: 'Group Name *' }).fill('teste2');
+
     await page.getByRole('textbox', { name: 'Search by name, email, or' }).click();
     await page.getByRole('textbox', { name: 'Search by name, email, or' }).fill('user');
-    await page.getByRole('button', { name: 'u user user@ua.pt' }).click();
+
+    const userResult = page.locator('button', { hasText: 'user@ua.pt' });
+    await userResult.waitFor({ state: 'visible' });
+    await userResult.click();
+
     await page.getByRole('button', { name: 'Create Group' }).click();
-    await page.getByRole('link', { name: 'teste2 1 member Updated 2' }).click();
-    await page.getByRole('heading', { name: 'teste2' }).click();
+
+    await expect(page.getByRole('heading', { name: 'teste2' })).toBeVisible();
 });
