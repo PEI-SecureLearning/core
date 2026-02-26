@@ -9,19 +9,19 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { type SendingProfile } from "@/types/sendingProfile";
+import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
 interface TableProps {
-  profiles: SendingProfile[];
-  onDelete?: (id: number) => void;
+  readonly profiles: SendingProfileDisplayInfo[];
+  readonly onDelete?: (id: number) => void;
 }
 
 function TableRow({
   profile,
   onDelete,
 }: {
-  profile: SendingProfile;
-  onDelete?: (id: number) => void;
+  readonly profile: SendingProfileDisplayInfo;
+  readonly onDelete?: (id: number) => void;
 }) {
   const [showMenu, setShowMenu] = useState(false);
 

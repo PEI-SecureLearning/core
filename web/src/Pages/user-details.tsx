@@ -7,7 +7,7 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import {
@@ -32,6 +32,7 @@ export default function UserGroupDetail() {
   const params = useParams({ from: "/usergroups/$id" });
   const groupId = params.id;
   const { keycloak } = useKeycloak();
+  const navigate = useNavigate();
 
   const [groupName, setGroupName] = useState<string>("Group");
   const [members, setMembers] = useState<Member[]>([]);
@@ -131,7 +132,10 @@ export default function UserGroupDetail() {
               <Trash2 className="h-4 w-4" />
               Delete
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <button
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              onClick={() => navigate({ to: "/campaigns/new", search: { groupId } })}
+            >
               <Send className="h-4 w-4" />
               <span className="hidden sm:inline">Send Campaign</span>
             </button>

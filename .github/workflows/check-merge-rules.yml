@@ -1,0 +1,17 @@
+name: "main branch gatekeeper"
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs: 
+  check-merge-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: verify source branch
+        if: github.head_ref != 'dev' && !startsWith(github.head_ref, 'hotfix')
+        run: |
+          echo "Error: Protected Merge."
+          echo "Only 'dev' or 'hotfix' branches can merge into 'main'."
+          exit 1

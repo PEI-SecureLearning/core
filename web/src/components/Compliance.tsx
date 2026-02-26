@@ -149,7 +149,7 @@ export default function ComplianceFlow() {
   }, [keycloak.tokenParsed]);
   const isAdminContext =
     typeof window !== "undefined" &&
-    (window.location.pathname.startsWith("/admin") ||
+    (location.pathname.startsWith("/admin") ||
       keycloak.tokenParsed?.iss?.includes("/realms/master") ||
       realmRoles.has("admin"));
   const isOrgManager = realmRoles.has("org_manager");

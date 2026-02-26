@@ -1,14 +1,115 @@
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 import {
     Building2,
     Users,
-    FileText,
     Activity,
     ArrowRight,
     Shield,
-    Settings
+    Settings,
+    AlertCircle,
+    CheckCircle,
+    Info,
+    Loader2,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { apiClient } from "../../lib/api-client";
+
+interface LogEntry {
+    id: string;
+    timestamp: number;
+    level: "info" | "warning" | "error" | "success";
+    message: string;
+    source: string;
+}
+
+const levelDot: Record<LogEntry["level"], string> = {
+    error: "bg-red-500",
+    warning: "bg-yellow-400",
+    success: "bg-green-500",
+    info: "bg-blue-400",
+};
+
+const levelIcon = (level: LogEntry["level"]) => {
+    const cls = "w-3.5 h-3.5 flex-shrink-0";
+    switch (level) {
+        case "error": return <AlertCircle className={`${cls} text-red-500`} />;
+        case "warning": return <AlertCircle className={`${cls} text-yellow-500`} />;
+        case "success": return <CheckCircle className={`${cls} text-green-500`} />;
+        default: return <Info className={`${cls} text-blue-400`} />;
+    }
+};
+
+function relativeTime(ts: number): string {
+    const diff = Date.now() - ts;
+    const s = Math.floor(diff / 1000);
+    if (s < 60) return `${s}s ago`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+}
+
+function SystemLogsCard({ item }: { item: Variants }) {
+    const [logs, setLogs] = useState<LogEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        apiClient
+            .get<{ logs: LogEntry[] }>("/logs?max_results=5")
+            .then((res) => setLogs((res.logs ?? []).slice(0, 5)))
+            .catch(() => setLogs([]))
+            .finally(() => setLoading(false));
+    }, []);
+
+    return (
+        <motion.div
+            variants={item}
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col"
+        >
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                        <Activity className="w-6 h-6 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">System Logs</h3>
+                </div>
+            </div>
+
+            <div className="flex-1 space-y-2 mb-4 min-h-[120px]">
+                {loading ? (
+                    <div className="flex items-center gap-2 text-gray-400 py-4 justify-center">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Loading…</span>
+                    </div>
+                ) : logs.length === 0 ? (
+                    <p className="text-sm text-gray-400 py-4 text-center">No recent events.</p>
+                ) : (
+                    logs.map((log) => (
+                        <div key={log.id} className="flex items-start gap-2 text-sm">
+                            <span
+                                className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${levelDot[log.level]}`}
+                            />
+                            <span className="flex-1 text-gray-700 truncate">{log.message}</span>
+                            <span className="text-xs text-gray-400 flex-shrink-0 flex items-center gap-1">
+                                {levelIcon(log.level)}
+                                {relativeTime(log.timestamp)}
+                            </span>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            <Link
+                to="/admin/logs"
+                className="text-green-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all text-sm mt-auto"
+            >
+                View all logs <ArrowRight className="w-4 h-4" />
+            </Link>
+        </motion.div>
+    );
+}
 
 export function AdminDashboard() {
     const container = {
@@ -27,8 +128,8 @@ export function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-full w-full bg-gray-50/50 p-8">
-            <div className="max-w-6xl mx-auto space-y-8">
+        <div className="min-h-full w-full bg-gray-50/50">
+            <div className="max-w-6xl mx-auto space-y-8 ">
                 {/* Header Section */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -56,62 +157,6 @@ export function AdminDashboard() {
                             Manage Tenants
                         </Link>
                     </div>
-                </motion.div>
-
-                {/* Quick Stats */}
-                <motion.div
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
-                    className="grid grid-cols-1 md:grid-cols-4 gap-4"
-                >
-                    <motion.div variants={item} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <Building2 className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-gray-900">—</p>
-                                <p className="text-sm text-gray-500">Active Tenants</p>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div variants={item} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                                <Users className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-gray-900">—</p>
-                                <p className="text-sm text-gray-500">Total Users</p>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div variants={item} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                                <FileText className="w-5 h-5 text-purple-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-gray-900">—</p>
-                                <p className="text-sm text-gray-500">Active Campaigns</p>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div variants={item} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
-                                <Activity className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-gray-900">—</p>
-                                <p className="text-sm text-gray-500">Events Today</p>
-                            </div>
-                        </div>
-                    </motion.div>
                 </motion.div>
 
                 {/* Action Cards Grid */}
@@ -143,27 +188,7 @@ export function AdminDashboard() {
                         </Link>
                     </motion.div>
 
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
-                            <Activity className="w-6 h-6 text-green-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">System Logs</h3>
-                        <p className="text-gray-500 mb-4">View system activity, audit logs, and monitor platform health.</p>
-                        <Link to="/admin/logs" className="text-green-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
-                            View Logs <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </motion.div>
-
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center mb-4">
-                            <FileText className="w-6 h-6 text-amber-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Terms & Policies</h3>
-                        <p className="text-gray-500 mb-4">Manage terms of service, privacy policies, and compliance documents.</p>
-                        <Link to="/admin/terms" className="text-amber-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
-                            Manage Terms <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </motion.div>
+                    <SystemLogsCard item={item} />
 
                     <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                         <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mb-4">

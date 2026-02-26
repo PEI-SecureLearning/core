@@ -1,11 +1,10 @@
 import { Send, Server, MoreVertical, Trash2, Edit, Mail } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-// Import corrigido para evitar erro circular:
-import { type SendingProfile } from "@/types/sendingProfile";
+import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
-interface SendingProfileCardProps extends SendingProfile {
-  onDelete?: () => void;
+interface SendingProfileCardProps extends SendingProfileDisplayInfo {
+  readonly onDelete?: () => void;
 }
 
 export default function SendingProfileCard({

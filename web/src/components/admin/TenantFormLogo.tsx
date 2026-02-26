@@ -42,14 +42,14 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
         }
     }
 
-    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    const handleDrop = (event: React.DragEvent<HTMLElement>) => {
         event.preventDefault()
         const file = event.dataTransfer.files?.[0] || null
         handleFile(file)
     }
 
     const handleClick = () => fileInputRef.current?.click()
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
             handleClick()
