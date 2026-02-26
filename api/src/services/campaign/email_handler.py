@@ -3,67 +3,59 @@ import random
 
 from sqlmodel import Session
 
-from src.models.campaign import Campaign
+from src.models.campaign import Campaign, CampaignStatus
 from src.models.email_sending import (
     EmailSending,
     RabbitMQEmailMessage,
     SMTPConfig,
 )
-from src.models.phishing_kit import PhishingKit
-from src.services import templates as TemplateService
 from src.services.rabbit import RabbitMQService
 
 rabbitmq_service = RabbitMQService()
 
 
-class email_handler:
+class EmailHandler:
 
-    def _send_emails_to_rabbitmq(
-        self, campaign: Campaign, email_sendings: list[EmailSending]
+    def _send_email_to_rabbitmq(
+        self, email_sending: EmailSending, campaign: Campaign
     ) -> None:
-        """Send emails to RabbitMQ.
+        """Send a single email to RabbitMQ.
 
-        Each email_sending already has a phishing_kit_id assigned (picked at random
+        The email_sending already has a phishing_kit_id assigned (picked at random
         during creation). We resolve the template and sending profile per-email
         from the assigned kit.
         """
-        for email_sending in email_sendings:
-            kit = email_sending.phishing_kit
-            # Resolve sending profile: kit-level > campaign-level
-            sending_profile = (
-                (kit.sending_profile if kit and kit.sending_profile else None)
-                or campaign.sending_profile
-            )
-            if not sending_profile:
-                raise ValueError(
-                    f"No sending profile for email_sending {email_sending.id}"
-                )
+        kit = email_sending.phishing_kit
+        profile = (kit and kit.sending_profile) or campaign.sending_profile
 
-            smtp_config = SMTPConfig(
-                host=sending_profile.smtp_host,
-                port=sending_profile.smtp_port,
-                user=sending_profile.username,
-                password=sending_profile.password,
-            )
+        if not profile:
+            raise ValueError(f"No sending profile for email_sending {email_sending.id}")
 
-            email_template = kit.email_template if kit else None
-            subject = email_template.subject if email_template else "Campaign Email"
+        template = kit and kit.email_template
+        
+        if not template:
+            raise ValueError(f"No email template for email_sending {email_sending.id}")
 
-            # Build template arguments: kit args + per-email context
-            template_args = dict(kit.args) if kit else {}
-            template_args["name"] = email_sending.user_id
-            template_args["tracking_id"] = email_sending.tracking_token
-
-            email_message = RabbitMQEmailMessage(
-                smtp_config=smtp_config,
-                sender_email=sending_profile.from_email,
+        rabbitmq_service.send_email(
+            RabbitMQEmailMessage(
+                smtp_config=SMTPConfig(
+                    host=profile.smtp_host,
+                    port=profile.smtp_port,
+                    user=profile.username,
+                    password=profile.password,
+                ),
+                sender_email=profile.from_email,
                 receiver_email=email_sending.email_to,
-                subject=subject,
-                template_id=email_template.content_link if email_template else "",
+                subject=template.subject if template else "Campaign Email",
+                template_id=template.content_link,
                 tracking_id=email_sending.tracking_token,
-                arguments=template_args,
+                arguments={
+                    **(kit.args if kit and kit.args else {}),
+                    "name": email_sending.user_id,
+                    "tracking_id": email_sending.tracking_token,
+                },
             )
-            rabbitmq_service.send_email(email_message)
+        )
 
     def _create_email_sendings(
         self,
@@ -76,23 +68,28 @@ class email_handler:
         Each user is assigned a randomly selected PhishingKit from the
         campaign's available kits.
         """
-        kits: list[PhishingKit] = campaign.phishing_kits
-        email_sendings = []
-        for i, (user_id, user_data) in enumerate(users.items()):
-            scheduled_date = campaign.begin_date + datetime.timedelta(
-                seconds=i * campaign.sending_interval_seconds
-            )
-            # Pick a random kit for this recipient
-            selected_kit = random.choice(kits) if kits else None
+        
+        if campaign.status != CampaignStatus.RUNNING:
+            raise ValueError("Campaign must be running to create email sendings")
+        
+        kits = campaign.phishing_kits
+        
+        if not kits:
+            raise ValueError("Campaign must have at least one phishing kit to create email sendings")
 
-            email_sending = EmailSending(
+        email_sendings = [
+            EmailSending(
                 user_id=user_id,
                 campaign_id=campaign.id,
-                phishing_kit_id=selected_kit.id if selected_kit else None,
-                scheduled_date=scheduled_date,
+                phishing_kit_id=random.choice(kits).id,
+                scheduled_date=campaign.begin_date
+                + datetime.timedelta(seconds=i * campaign.sending_interval_seconds),
                 email_to=user_data.get("email", ""),
             )
-            session.add(email_sending)
-            email_sendings.append(email_sending)
+            for i, (user_id, user_data) in enumerate(users.items())
+        ]
+
+        session.add_all(email_sendings)
         session.flush()
         return email_sendings
+

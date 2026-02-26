@@ -1,5 +1,4 @@
 import math
-
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
@@ -14,11 +13,11 @@ from src.models.phishing_kit import PhishingKit
 from src.models.sending_profile import SendingProfile
 from src.models.realm import Realm
 from src.models.user import User
+from src.models.user_group import UserGroup
 from src.services.platform_admin import get_platform_admin_service
 
 
-class campaign_handler:
-
+class CampaignHandler:
     def create_campaign(
         self, campaign: CampaignCreate, current_realm: str, session: Session
     ) -> Campaign:
@@ -55,18 +54,14 @@ class campaign_handler:
 
         return new_campaign
 
-    def get_campaigns(
-        self, current_realm: str, session: Session
-    ) -> list:
+    def get_campaigns(self, current_realm: str, session: Session) -> list:
         """Fetch all campaigns for the current realm."""
         campaigns = session.exec(
             select(Campaign).where(Campaign.realm_name == current_realm)
         ).all()
         return [self._to_display_info(c) for c in campaigns]
 
-    def get_campaign_by_id(
-        self, id: int, current_realm: str, session: Session
-    ):
+    def get_campaign_by_id(self, id: int, current_realm: str, session: Session):
         """Fetch detailed campaign info by ID for the current realm."""
         campaign = session.exec(
             select(Campaign).where(
@@ -112,9 +107,53 @@ class campaign_handler:
 
         return campaign
 
-    def delete_campaign(
-        self, id: int, current_realm: str, session: Session
-    ) -> str:
+    def update_campaign(
+        self,
+        id: int,
+        campaign_update: CampaignCreate,
+        current_realm: str,
+        session: Session,
+    ) -> Campaign:
+        """Update a campaign. Only for SCHEDULED campaigns."""
+        campaign = session.exec(
+            select(Campaign).where(
+                Campaign.id == id, Campaign.realm_name == current_realm
+            )
+        ).first()
+
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        if campaign.status != CampaignStatus.SCHEDULED:
+            raise HTTPException(
+                status_code=400, detail="Cannot update a running or completed campaign"
+            )
+
+        for k, v in campaign_update.model_dump(
+            exclude={"user_group_ids", "phishing_kit_ids", "creator_id"}
+        ).items():
+            setattr(campaign, k, v)
+
+        if campaign_update.user_group_ids:
+            campaign.user_groups.clear()
+            for group_id in campaign_update.user_group_ids:
+                group = session.get(UserGroup, group_id)
+                if group:
+                    campaign.user_groups.append(group)
+
+        if campaign_update.phishing_kit_ids:
+            campaign.phishing_kits.clear()
+            for kit_id in campaign_update.phishing_kit_ids:
+                kit = session.get(PhishingKit, kit_id)
+                if kit:
+                    campaign.phishing_kits.append(kit)
+
+        session.commit()
+        session.refresh(campaign)
+
+        return campaign
+
+    def delete_campaign(self, id: int, current_realm: str, session: Session) -> str:
         """Delete a campaign and all its associated email sendings.
 
         Returns the campaign name for confirmation.
@@ -148,8 +187,10 @@ class campaign_handler:
         """Collect unique users from multiple groups."""
         users: dict[str, dict] = {}
         for group_id in group_ids:
-            for member in get_platform_admin_service().list_group_members_in_realm(realm, group_id).get(
-                "members", []
+            for member in (
+                get_platform_admin_service()
+                .list_group_members_in_realm(realm, group_id)
+                .get("members", [])
             ):
                 if (user_id := member.get("id")) and user_id not in users:
                     users[user_id] = member
@@ -160,10 +201,11 @@ class campaign_handler:
         total_seconds = (campaign.end_date - campaign.begin_date).total_seconds()
         return max(
             campaign.sending_interval_seconds,
-            math.ceil(total_seconds / user_count) if user_count else MIN_INTERVAL_SECONDS,
+            math.ceil(total_seconds / user_count)
+            if user_count
+            else MIN_INTERVAL_SECONDS,
             MIN_INTERVAL_SECONDS,
         )
-
 
     def _ensure_realm_exists(self, session: Session, realm_name: str) -> None:
         """Ensure a Realm row exists before assigning FK fields."""
@@ -186,7 +228,9 @@ class campaign_handler:
                     detail=f"Invalid phishing kit ID: {kit_id}",
                 )
 
-        if campaign.creator_id is not None and not session.get(User, campaign.creator_id):
+        if campaign.creator_id is not None and not session.get(
+            User, campaign.creator_id
+        ):
             raise HTTPException(status_code=400, detail="Invalid creator ID")
 
         if campaign.sending_interval_seconds <= 0:

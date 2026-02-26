@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "api"
 version = "0.1.0"
-description = "Add your description here"
+description = "Core API for PEI-SecureLearning"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -17,15 +21,11 @@ dependencies = [
     "cryptography>=46.0.3",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
 ]
-
-[build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -34,3 +34,18 @@ include = ["src*"]
 [tool.pytest.ini_options]
 testpaths = ["test"]
 pythonpath = [".", "src"]
+addopts = "--cov=src --cov-report=html"
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "**/__init__.py",    
+    "src/models/*",      
+    "src/core/*",        
+    "src/main.py",       
+    "src/api/egg-info/*",
+    "test/*",            
+]
+
+[tool.coverage.report]
+show_missing = true

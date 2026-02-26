@@ -21,13 +21,14 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
 from src.models.campaign import Campaign, CampaignCreate, CampaignStatus
-from src.models.email_sending import EmailSending
+from src.models.email_sending import EmailSending, EmailSendingStatus
 from src.models.email_template import EmailTemplate
 from src.models.landing_page import LandingPageTemplate
 from src.models.phishing_kit import PhishingKit
 from src.models.realm import Realm
 from src.models.sending_profile import SendingProfile
 from src.models.user import User
+from src.models.user_group import UserGroup
 from src.services.campaign import CampaignService
 
 
@@ -280,8 +281,6 @@ class TestGetCampaigns:
 
     def test_get_campaigns_returns_only_for_realm(self, service: CampaignService, session: Session):
         """Verify get_campaigns only returns campaigns belonging to the specified realm."""
-        user1 = _setup_realm_and_user(session, realm_name="realm-a")
-        user2 = _setup_realm_and_user(session, realm_name="realm-b")
         
         now = datetime.datetime.now()
         end = now + datetime.timedelta(days=1)
@@ -313,4 +312,218 @@ class TestGetCampaigns:
         assert len(results_empty) == 0
 
 
+# ============================================================================
+# Tests: cancel_campaign
+# ============================================================================
 
+
+class TestCancelCampaign:
+
+    def test_cancel_campaign_success(self, service: CampaignService, session: Session):
+        """Verify canceling a campaign changes its status and fails pending emails."""
+        _setup_realm_and_user(session, realm_name="test-realm")
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+        
+        c = Campaign(name="To Cancel", realm_name="test-realm", status=CampaignStatus.SCHEDULED, total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+        c.phishing_kits.append(kit)
+        session.add(c)
+        session.commit()
+        
+        es = EmailSending(campaign_id=c.id, user_id="u1", scheduled_date=now, email_to="test@test.com", status=EmailSendingStatus.SCHEDULED)
+        session.add(es)
+        session.commit()
+        
+        # Act
+        service.cancel_campaign(c.id, "test-realm", session)
+        
+        # Assert
+        session.refresh(c)
+        assert c.status == CampaignStatus.CANCELED
+        assert len(c.phishing_kits) == 1
+        assert c.phishing_kits[0].id == kit.id
+        
+        session.refresh(es)
+        assert es.status == EmailSendingStatus.FAILED
+
+    def test_cancel_campaign_running_success(self, service: CampaignService, session: Session):
+        """Verify canceling a running campaign changes its status and only fails scheduled emails."""
+        _setup_realm_and_user(session, realm_name="test-realm")
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+        
+        c = Campaign(name="Running to Cancel", realm_name="test-realm", status=CampaignStatus.RUNNING, total_recipients=2, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+        c.phishing_kits.append(kit)
+        session.add(c)
+        session.commit()
+        
+        es_sched = EmailSending(campaign_id=c.id, user_id="u1", scheduled_date=now, email_to="u1@test.com", status=EmailSendingStatus.SCHEDULED)
+        es_sent = EmailSending(campaign_id=c.id, user_id="u2", scheduled_date=now, email_to="u2@test.com", status=EmailSendingStatus.SENT)
+        session.add_all([es_sched, es_sent])
+        session.commit()
+        
+        # Act
+        service.cancel_campaign(c.id, "test-realm", session)
+        
+        # Assert
+        session.refresh(c)
+        assert c.status == CampaignStatus.CANCELED
+        assert len(c.phishing_kits) == 1
+        assert c.phishing_kits[0].id == kit.id
+        
+        session.refresh(es_sched)
+        assert es_sched.status == EmailSendingStatus.FAILED
+
+        session.refresh(es_sent)
+        assert es_sent.status == EmailSendingStatus.SENT
+
+    def test_cancel_campaign_already_canceled(self, service: CampaignService, session: Session):
+        """Verify canceling an already canceled campaign raises 400."""
+        _setup_realm_and_user(session, realm_name="test-realm")
+        now = datetime.datetime.now()
+        
+        c = Campaign(name="Canceled", realm_name="test-realm", status=CampaignStatus.CANCELED, total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+        session.add(c)
+        session.commit()
+        
+        with pytest.raises(HTTPException) as exc:
+            service.cancel_campaign(c.id, "test-realm", session)
+            
+        assert exc.value.status_code == 400
+        assert "already canceled" in exc.value.detail
+
+    def test_cancel_campaign_completed(self, service: CampaignService, session: Session):
+        """Verify canceling a completed campaign raises 400."""
+        _setup_realm_and_user(session, realm_name="test-realm")
+        now = datetime.datetime.now()
+        
+        c = Campaign(name="Completed", realm_name="test-realm", status=CampaignStatus.COMPLETED, total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+        session.add(c)
+        session.commit()
+        
+        with pytest.raises(HTTPException) as exc:
+            service.cancel_campaign(c.id, "test-realm", session)
+            
+        assert exc.value.status_code == 400
+        assert "completed campaign" in exc.value.detail
+
+
+# ============================================================================
+# Tests: update_campaign
+# ============================================================================
+
+
+class TestUpdateCampaign:
+
+    def test_update_campaign_success(self, service: CampaignService, session: Session):
+        """Verify update modifies basic fields and many-to-many relationships."""
+        user = _setup_realm_and_user(session, realm_name="test-realm")
+        kit1 = _create_kit(session, suffix="One")
+        kit2 = _create_kit(session, suffix="Two")
+        
+        g1 = UserGroup(keycloak_id="g1")
+        g2 = UserGroup(keycloak_id="g2")
+        session.add_all([g1, g2])
+        session.commit()
+        
+        now = datetime.datetime.now()
+        c = Campaign(
+            name="Old Name", realm_name="test-realm", status=CampaignStatus.SCHEDULED,
+            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+        )
+        c.phishing_kits.append(kit1)
+        c.user_groups.append(g1)
+        session.add(c)
+        session.commit()
+        
+        update_data = CampaignCreate(
+            name="New Name",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[kit2.id],
+            user_group_ids=["g2"],
+            creator_id=user.keycloak_id
+        )
+        
+        # Act
+        updated = service.update_campaign(c.id, update_data, "test-realm", session)
+        
+        # Assert
+        assert updated.name == "New Name"
+        assert updated.sending_interval_seconds == 120
+        
+        assert len(updated.phishing_kits) == 1
+        assert updated.phishing_kits[0].id == kit2.id
+        
+        assert len(updated.user_groups) == 1
+        assert updated.user_groups[0].keycloak_id == "g2"
+
+    def test_update_campaign_not_scheduled_fails(self, service: CampaignService, session: Session):
+        """Verify updating a non-SCHEDULED campaign raises 400."""
+        user = _setup_realm_and_user(session, realm_name="test-realm")
+        now = datetime.datetime.now()
+        
+        c = Campaign(
+            name="Running", realm_name="test-realm", status=CampaignStatus.RUNNING,
+            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+        )
+        session.add(c)
+        session.commit()
+        
+        update_data = CampaignCreate(
+            name="New Name", begin_date=now, end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120, phishing_kit_ids=[], user_group_ids=[], creator_id=user.keycloak_id
+        )
+        
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+            
+        assert exc.value.status_code == 400
+        assert "Cannot update" in exc.value.detail
+
+    def test_update_campaign_canceled_fails(self, service: CampaignService, session: Session):
+        """Verify updating a CANCELED campaign raises 400."""
+        user = _setup_realm_and_user(session, realm_name="test-realm")
+        now = datetime.datetime.now()
+        
+        c = Campaign(
+            name="Canceled", realm_name="test-realm", status=CampaignStatus.CANCELED,
+            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+        )
+        session.add(c)
+        session.commit()
+        
+        update_data = CampaignCreate(
+            name="New Name", begin_date=now, end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120, phishing_kit_ids=[], user_group_ids=[], creator_id=user.keycloak_id
+        )
+        
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+            
+        assert exc.value.status_code == 400
+        assert "Cannot update" in exc.value.detail
+
+    def test_update_campaign_completed_fails(self, service: CampaignService, session: Session):
+        """Verify updating a COMPLETED campaign raises 400."""
+        user = _setup_realm_and_user(session, realm_name="test-realm")
+        now = datetime.datetime.now()
+        
+        c = Campaign(
+            name="Completed", realm_name="test-realm", status=CampaignStatus.COMPLETED,
+            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+        )
+        session.add(c)
+        session.commit()
+        
+        update_data = CampaignCreate(
+            name="New Name", begin_date=now, end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120, phishing_kit_ids=[], user_group_ids=[], creator_id=user.keycloak_id
+        )
+        
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+            
+        assert exc.value.status_code == 400
+        assert "Cannot update" in exc.value.detail
