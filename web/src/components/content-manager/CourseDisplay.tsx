@@ -1,6 +1,5 @@
-import { motion } from 'framer-motion'
-import { BookOpen } from 'lucide-react'
-import { ContentGrid } from './ContentGrid'
+import { motion } from 'framer-motion';
+import { BookOpen } from 'lucide-react';
 
 const COURSES = [
     { id: 1, title: "Advanced React Patterns",   category: "Development", image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop&q=60", desc: "Master hooks, render props, and performance optimization." },
