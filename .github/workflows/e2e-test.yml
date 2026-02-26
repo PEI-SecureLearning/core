@@ -70,8 +70,8 @@ jobs:
       - name: Run createUserGroup test
         run: cd web && npx playwright test createUserGroup.spec.ts --project=chromium
 
-      - name: Run createSendingProfile test
-        run: cd web && npx playwright test createSendingProfile.spec.ts --project=chromium
+      - name: Run SendingProfile test
+        run: cd web && npx playwright test SendingProfile.spec.ts --project=chromium
 
       - name: Run AlterComplicance test
         run: cd web && npx playwright test AlterComplicance.spec.ts --project=chromium
