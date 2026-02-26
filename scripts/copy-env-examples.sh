@@ -11,7 +11,7 @@ while IFS= read -r -d '' example_file; do
   copied=$((copied + 1))
 done < <(find "${ROOT_DIR}" -type f -name ".env.example" -print0)
 
-if [ "${copied}" -eq 0 ]; then
+if [[ "${copied}" -eq 0 ]]; then
   echo "No .env.example files found."
   exit 1
 fi
