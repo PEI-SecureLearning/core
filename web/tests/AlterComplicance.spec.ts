@@ -24,8 +24,9 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Question 1 What should be' }).click();
   await page.getByText('5', { exact: true }).click();
   await page.getByRole('button', { name: 'Decrease passing score' }).dblclick();
+  await page.getByRole('button', { name: 'Decrease passing score' }).dblclick();
   await page.getByRole('button', { name: 'Save Quiz' }).click();
   await page.getByRole('link', { name: 'Templates' }).click();
   await page.getByRole('link', { name: 'Compliance' }).click();
-  await expect(page.getByText('20%')).toBeVisible();
+  await expect(page.getByText('0%')).toBeVisible();
 });
