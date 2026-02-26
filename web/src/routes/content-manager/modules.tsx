@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'motion/react'
-import { Blocks } from 'lucide-react'
 import { useState, useEffect } from 'react';
 import { Toolbar } from '@/components/content-manager/ToolBar';
 

@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Blocks } from 'lucide-react';
 
 const MODULES = [
@@ -49,12 +48,12 @@ const MODULES = [
 
 
 export function ModuleDisplay() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState("title");
+    const searchQuery = "";
+    const sortBy: keyof (typeof MODULES)[number] = "title";
 
     const filteredModules = MODULES
         .filter(module => module.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => (a[sortBy as keyof typeof a] > b[sortBy as keyof typeof b] ? 1 : -1));
+        .sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1));
 
     return (
         <motion.div
