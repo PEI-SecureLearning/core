@@ -5,7 +5,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { toast } from 'sonner'
-import { useNavigate } from '@tanstack/react-router'
 
 export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
