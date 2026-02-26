@@ -56,7 +56,35 @@ export function AddBlockMenu({ onAdd }: { readonly onAdd: (kind: BlockType) => v
     const handleOpen = useCallback(() => {
         if (btnRef.current) {
             const rect = btnRef.current.getBoundingClientRect()
-            setMenuPos({ top: rect.bottom + 6, left: rect.left })
+            const menuWidth = 220 // min-w-[220px]
+            const menuHeight = 180 // Approximate height for 3 options
+            const padding = 8 // Padding from viewport edges
+            
+            let top = rect.bottom + 6
+            let left = rect.left
+            
+            // Check if menu goes off right edge
+            if (left + menuWidth > window.innerWidth - padding) {
+                left = window.innerWidth - menuWidth - padding
+            }
+            
+            // Check if menu goes off left edge
+            if (left < padding) {
+                left = padding
+            }
+            
+            // Check if menu goes off bottom edge
+            if (top + menuHeight > window.innerHeight - padding) {
+                // Position above the button instead
+                top = rect.top - menuHeight - 6
+            }
+            
+            // Check if menu goes off top edge (in case button is very high)
+            if (top < padding) {
+                top = padding
+            }
+            
+            setMenuPos({ top, left })
         }
         setOpen(o => !o)
     }, [])

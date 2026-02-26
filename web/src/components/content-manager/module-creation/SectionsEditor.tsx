@@ -11,6 +11,7 @@ import {
     DragOverlay,
     type DragEndEvent,
     type DragStartEvent,
+    pointerWithin,
 } from '@dnd-kit/core'
 import {
     SortableContext,
@@ -116,31 +117,6 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
         }
         onUpdate({ blocks: [...section.blocks, newBlock] })
     }
-
-    const blockSensors = useSensors(
-        useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
-        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-    )
-
-    const [blocksOverflow, setBlocksOverflow] = useState<'hidden' | 'visible'>('hidden')
-    const [activeBlockId, setActiveBlockId] = useState<string | null>(null)
-
-    const handleBlockDragStart = (event: DragStartEvent) => {
-        setActiveBlockId(event.active.id as string)
-    }
-
-    const handleBlockDragEnd = (event: DragEndEvent) => {
-        const { active, over } = event
-        setActiveBlockId(null)
-        if (!over || active.id === over.id) return
-        const oldIndex = section.blocks.findIndex(b => b.id === active.id)
-        const newIndex = section.blocks.findIndex(b => b.id === over.id)
-        if (oldIndex !== -1 && newIndex !== -1) {
-            onUpdate({ blocks: arrayMove(section.blocks, oldIndex, newIndex) })
-        }
-    }
-
-    const activeBlock = activeBlockId ? section.blocks.find(b => b.id === activeBlockId) : null
 
     return (
         <div 
@@ -266,54 +242,36 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        style={{ overflow: blocksOverflow }}
-                        onAnimationStart={() => setBlocksOverflow('hidden')}
-                        onAnimationComplete={() => setBlocksOverflow('visible')}
                     >
                         <div className="flex flex-col gap-3 p-4">
-                            <DndContext
-                                sensors={blockSensors}
-                                collisionDetection={closestCenter}
-                                onDragStart={handleBlockDragStart}
-                                onDragEnd={handleBlockDragEnd}
+                            {/* Droppable area for blocks */}
+                            <SortableContext
+                                items={section.blocks.map(b => b.id)}
+                                strategy={verticalListSortingStrategy}
+                                id={section.id}
                             >
-                                <SortableContext
-                                    items={section.blocks.map(b => b.id)}
-                                    strategy={verticalListSortingStrategy}
-                                >
-                                    {section.blocks.length === 0 ? (
-                                        <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-                                            <p className="text-sm font-medium text-slate-400 mb-1">Nothing here yet</p>
-                                            <p className="text-xs text-slate-400">Start by adding a block below</p>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col gap-3">
-                                            {section.blocks.map(block => (
-                                                <SortableBlock key={block.id} id={block.id}>
-                                                    {renderBlock(block)}
-                                                </SortableBlock>
-                                            ))}
-                                        </div>
-                                    )}
-                                </SortableContext>
-                                <DragOverlay dropAnimation={null}>
-                                    {activeBlock && (
-                                        <div className="bg-purple-600 text-white px-3 py-2 rounded-lg shadow-2xl border-2 border-purple-400 flex items-center gap-2 w-fit max-w-[180px]">
-                                            <GripVertical className="w-4 h-4" />
-                                            <span className="font-semibold text-sm truncate">
-                                                {activeBlock.kind === 'text' && 'Text Block'}
-                                                {activeBlock.kind === 'rich_content' && 'Media Block'}
-                                                {activeBlock.kind === 'question' && 'Question Block'}
-                                            </span>
-                                        </div>
-                                    )}
-                                </DragOverlay>
-                            </DndContext>
+                                {section.blocks.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                                        <p className="text-sm font-medium text-slate-500 mb-4">This section is empty</p>
+                                        <AddBlockMenu onAdd={addBlock} />
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-3">
+                                        {section.blocks.map(block => (
+                                            <SortableBlock key={block.id} id={block.id}>
+                                                {renderBlock(block)}
+                                            </SortableBlock>
+                                        ))}
+                                    </div>
+                                )}
+                            </SortableContext>
 
-                            {/* Add block */}
-                            <div className="pt-1 pl-6">
-                                <AddBlockMenu onAdd={addBlock} />
-                            </div>
+                            {/* Add block - only show when there are existing blocks */}
+                            {section.blocks.length > 0 && (
+                                <div className="pt-1 pl-6">
+                                    <AddBlockMenu onAdd={addBlock} />
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
@@ -329,6 +287,7 @@ export function SectionsEditor({ data, onChange }: {
 }) {
     const [newestId, setNewestId] = useState<string | null>(null)
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null)
+    const [activeBlockId, setActiveBlockId] = useState<string | null>(null)
     const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
 
     const addSection = () => {
@@ -344,52 +303,192 @@ export function SectionsEditor({ data, onChange }: {
     const removeSection = (id: string) =>
         onChange({ sections: data.sections.filter(s => s.id !== id) })
 
+    // Sensors for both sections and blocks
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
     )
 
     const handleDragStart = (event: DragStartEvent) => {
-        setActiveSectionId(event.active.id as string)
+        const { active } = event
+        const activeId = active.id as string
+        
+        // Check if dragging a section or a block
+        const isSection = data.sections.some(s => s.id === activeId)
+        if (isSection) {
+            setActiveSectionId(activeId)
+        } else {
+            setActiveBlockId(activeId)
+        }
     }
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event
-        setActiveSectionId(null)
-        if (!over || active.id === over.id) return
-        const oldIndex = data.sections.findIndex(s => s.id === active.id)
-        const newIndex = data.sections.findIndex(s => s.id === over.id)
-        if (oldIndex !== -1 && newIndex !== -1) {
-            onChange({ sections: arrayMove(data.sections, oldIndex, newIndex) })
+        
+        const activeId = active.id as string
+        const overId = over?.id as string
+
+        // Handle section reordering
+        if (activeSectionId) {
+            setActiveSectionId(null)
+            
+            // If no valid drop target, do nothing
+            if (!over || activeId === overId) return
+            
+            const oldIndex = data.sections.findIndex(s => s.id === activeId)
+            const newIndex = data.sections.findIndex(s => s.id === overId)
+            if (oldIndex !== -1 && newIndex !== -1) {
+                onChange({ sections: arrayMove(data.sections, oldIndex, newIndex) })
+            }
+            return
+        }
+
+        // Handle block reordering/moving
+        if (activeBlockId) {
+            setActiveBlockId(null)
+            
+            // If no valid drop target, keep block in place (don't remove it)
+            if (!over) return
+            
+            // Find which section the block is being dragged from
+            let fromSectionId: string | null = null
+            let blockToMove: Block | null = null
+            
+            for (const section of data.sections) {
+                const block = section.blocks.find(b => b.id === activeId)
+                if (block) {
+                    fromSectionId = section.id
+                    blockToMove = block
+                    break
+                }
+            }
+            
+            if (!fromSectionId || !blockToMove) return
+
+            // Determine target section
+            // Check if overId is a block or a section
+            let toSectionId: string | null = null
+            let overBlockIndex = -1
+            
+            for (const section of data.sections) {
+                const blockIndex = section.blocks.findIndex(b => b.id === overId)
+                if (blockIndex !== -1) {
+                    toSectionId = section.id
+                    overBlockIndex = blockIndex
+                    break
+                }
+            }
+            
+            // If didn't find a block, check if overId is a section (for dropping into empty sections or section headers)
+            if (!toSectionId) {
+                const targetSection = data.sections.find(s => s.id === overId)
+                if (targetSection) {
+                    toSectionId = targetSection.id
+                    overBlockIndex = targetSection.blocks.length
+                }
+            }
+            
+            // If still no valid target, keep block in original position
+            if (!toSectionId) return
+
+            // If dropping in the same position, do nothing
+            if (fromSectionId === toSectionId) {
+                const oldIndex = data.sections.find(s => s.id === fromSectionId)?.blocks.findIndex(b => b.id === activeId)
+                if (oldIndex === overBlockIndex || oldIndex === overBlockIndex - 1) return
+            }
+
+            // Create updated sections
+            const updatedSections = data.sections.map(section => {
+                // If moving within same section, use arrayMove
+                if (fromSectionId === toSectionId && section.id === fromSectionId) {
+                    const oldIndex = section.blocks.findIndex(b => b.id === activeId)
+                    const newIndex = overBlockIndex
+                    return {
+                        ...section,
+                        blocks: arrayMove(section.blocks, oldIndex, newIndex)
+                    }
+                }
+                
+                // Remove block from source section
+                if (section.id === fromSectionId) {
+                    return {
+                        ...section,
+                        blocks: section.blocks.filter(b => b.id !== activeId)
+                    }
+                }
+                
+                // Add block to target section
+                if (section.id === toSectionId) {
+                    const newBlocks = [...section.blocks]
+                    newBlocks.splice(overBlockIndex, 0, blockToMove)
+                    return {
+                        ...section,
+                        blocks: newBlocks
+                    }
+                }
+                
+                return section
+            })
+            
+            onChange({ sections: updatedSections })
         }
     }
 
     const activeSection = activeSectionId ? data.sections.find(s => s.id === activeSectionId) : null
     const selectedSection = selectedSectionId ? data.sections.find(s => s.id === selectedSectionId) ?? null : null
+    
+    // Find active block for drag overlay
+    let activeBlock: Block | null = null
+    if (activeBlockId) {
+        for (const section of data.sections) {
+            const block = section.blocks.find(b => b.id === activeBlockId)
+            if (block) {
+                activeBlock = block
+                break
+            }
+        }
+    }
+    
+    // Custom collision detection to handle both sections and blocks properly
+    const customCollisionDetection = (args: any) => {
+        // If dragging a block, use closestCenter to find the nearest block or section
+        if (activeBlockId) {
+            // First try to find collisions with other blocks
+            const blockCollisions = closestCenter(args)
+            if (blockCollisions.length > 0) {
+                return blockCollisions
+            }
+            // If no block collisions, try sections (for empty sections)
+            return pointerWithin(args)
+        }
+        // If dragging a section, only collide with other sections
+        return closestCenter(args)
+    }
 
     return (
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-            {/* Main sections area */}
-            <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
-            {/* Toolbar */}
-            <div className="flex items-center justify-between px-5 py-2.5 border-b border-slate-200 bg-white">
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <span className="font-semibold uppercase tracking-wide">Sections</span>
+        <DndContext
+            sensors={sensors}
+            collisionDetection={customCollisionDetection}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+        >
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+                {/* Main sections area */}
+                <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
+                {/* Toolbar */}
+                <div className="flex items-center justify-between px-5 py-2.5 border-b border-slate-200 bg-white">
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span className="font-semibold uppercase tracking-wide">Sections</span>
+                    </div>
+                    <button type="button" onClick={addSection}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200">
+                        <Plus className="w-3.5 h-3.5" /> Add Section
+                    </button>
                 </div>
-                <button type="button" onClick={addSection}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200">
-                    <Plus className="w-3.5 h-3.5" /> Add Section
-                </button>
-            </div>
 
-            {/* Section list */}
-            <div className="flex-1 overflow-y-auto px-5 py-4">
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                >
+                {/* Section list */}
+                <div className="flex-1 overflow-y-auto px-5 py-4">
+                    {/* Only sections in the top-level sortable context */}
                     <SortableContext
                         items={data.sections.map(s => s.id)}
                         strategy={verticalListSortingStrategy}
@@ -425,28 +524,38 @@ export function SectionsEditor({ data, onChange }: {
                                 </div>
                             </div>
                         )}
+                        {activeBlock && (
+                            <div className="bg-purple-600 text-white px-3 py-2 rounded-lg shadow-2xl border-2 border-purple-400 flex items-center gap-2 w-fit max-w-[180px]">
+                                <GripVertical className="w-4 h-4" />
+                                <span className="font-semibold text-sm truncate">
+                                    {activeBlock.kind === 'text' && 'Text Block'}
+                                    {activeBlock.kind === 'rich_content' && 'Media Block'}
+                                    {activeBlock.kind === 'question' && 'Question Block'}
+                                </span>
+                            </div>
+                        )}
                     </DragOverlay>
-                </DndContext>
 
-                {data.sections.length === 0 && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
-                        <p className="text-sm font-medium">No sections yet</p>
-                        <p className="text-xs text-slate-300">Add a section to start building your module</p>
-                        <button type="button" onClick={addSection}
-                            className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200">
-                            <Plus className="w-4 h-4" /> Add First Section
-                        </button>
-                    </motion.div>
-                )}
-            </div>
-            </div>
+                    {data.sections.length === 0 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                            className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                            <p className="text-sm font-medium">No sections yet</p>
+                            <p className="text-xs text-slate-300">Add a section to start building your module</p>
+                            <button type="button" onClick={addSection}
+                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200">
+                                <Plus className="w-4 h-4" /> Add First Section
+                            </button>
+                        </motion.div>
+                    )}
+                </div>
+                </div>
 
-            {/* Section Settings Sidebar (Right) */}
-            <SectionSettingsSidebar
-                selectedSection={selectedSection}
-                onUpdate={updateSection}
-            />
-        </div>
+                {/* Section Settings Sidebar (Right) */}
+                <SectionSettingsSidebar
+                    selectedSection={selectedSection}
+                    onUpdate={updateSection}
+                />
+            </div>
+        </DndContext>
     )
 }

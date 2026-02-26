@@ -1,5 +1,4 @@
 import { Clock, FileText, Image as ImageIcon, X } from 'lucide-react'
-import { useState } from 'react'
 import type { RichContentBlock, RichMediaType } from './types'
 
 const RICH_MEDIA_OPTIONS: { type: RichMediaType; label: string; icon: React.ReactNode; placeholder: string }[] = [
@@ -15,13 +14,10 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
     readonly onRemove: () => void
 }) {
     const meta = RICH_MEDIA_OPTIONS.find(o => o.type === block.mediaType) ?? RICH_MEDIA_OPTIONS[0]
-    const [isHovered, setIsHovered] = useState(false)
 
     return (
         <div 
-            className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-white"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-white group"
         >
             {/* Header */}
             <div className="flex items-center gap-1 px-3 py-1.5 bg-violet-50 border-b border-violet-100">
@@ -29,7 +25,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
                     Media
                 </span>
                 {/* Media type tabs */}
-                <div className={`flex gap-1 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                     {RICH_MEDIA_OPTIONS.map(o => (
                         <button
                             key={o.type}

@@ -74,7 +74,6 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
     readonly onRemove: () => void
 }) {
     const [mode, setMode] = useState<'edit' | 'preview'>('edit')
-    const [isHovered, setIsHovered] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
     // Auto-resize textarea to fit content
@@ -87,11 +86,8 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
 
     return (
         <div 
-            role="group"
             aria-label="Text block"
-            className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white group"
         >
             {/* Block toolbar */}
             <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-50 border-b border-slate-100">
@@ -99,7 +95,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
                     Text
                 </span>
                 {mode === 'edit' && (
-                    <div className={`flex items-center gap-1 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         <MdDropdown label="Heading" options={MD_HEADING_OPTIONS} onInsert={s => onUpdate(block.content + s)} />
                         {MD_INLINE_ACTIONS.map(({ label, insert, title, labelClass }) => (
                             <button key={label} type="button" title={title}
@@ -113,12 +109,12 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
                     </div>
                 )}
                 <div className="ml-auto flex items-center gap-1">
-                    <div className={`transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         {mode === 'edit' && (
                             <span className="text-[10px] text-slate-400">{block.content.length} chars</span>
                         )}
                     </div>
-                    <div className={`flex rounded-md border border-slate-200 overflow-hidden transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className="flex rounded-md border border-slate-200 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         <button type="button" onClick={() => setMode('edit')}
                             className={`flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium transition-colors
                                 ${mode === 'edit' ? 'bg-purple-600 text-white' : 'bg-white text-slate-400 hover:text-purple-600'}`}>

@@ -1,5 +1,4 @@
 import { Check, ListChecks, Plus, Text, ToggleLeft, X } from 'lucide-react'
-import { useState } from 'react'
 import type { Choice, Question, QuestionBlock, QuestionType } from './types'
 import { TRUE_FALSE_CHOICES, uid } from './constants'
 
@@ -15,7 +14,6 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove }: {
     readonly onRemove: () => void
 }) {
     const q = block.question
-    const [isHovered, setIsHovered] = useState(false)
 
     const addChoice    = () => onUpdate({ ...q, choices: [...q.choices, { id: uid(), text: '', isCorrect: false }] })
     const removeChoice = (id: string) => onUpdate({ ...q, choices: q.choices.filter(c => c.id !== id) })
@@ -28,16 +26,14 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove }: {
 
     return (
         <div 
-            className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+            className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white group"
         >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-slate-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-600 mr-2">
                     Question
                 </span>
-                <div className={`flex gap-1 transition-opacity ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                     {(Object.entries(QUESTION_TYPE_META) as [QuestionType, typeof QUESTION_TYPE_META[QuestionType]][]).map(([type, meta]) => (
                         <button key={type} type="button"
                             onClick={() => onUpdate({ ...q, type, choices: type === 'multiple_choice' ? q.choices : [] })}
