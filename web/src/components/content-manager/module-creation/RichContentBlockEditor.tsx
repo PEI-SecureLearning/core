@@ -19,12 +19,10 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
         <div 
             className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-white group"
         >
-            {/* Header */}
             <div className="flex items-center gap-1 px-3 py-1.5 bg-violet-50 border-b border-violet-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-violet-100 text-violet-600">
                     Media
                 </span>
-                {/* Media type tabs */}
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                     {RICH_MEDIA_OPTIONS.map(o => (
                         <button
@@ -49,7 +47,6 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
             </div>
 
             <div className="flex flex-col gap-2.5 px-4 py-3">
-                {/* URL input */}
                 <div className="flex flex-col gap-1">
                     <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                         {meta.label} URL
@@ -72,7 +69,6 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
                     </div>
                 </div>
 
-                {/* Caption */}
                 <input
                     type="text"
                     value={block.caption}
@@ -81,7 +77,6 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
                     className="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300/50 text-slate-700 placeholder:text-slate-400"
                 />
 
-                {/* Inline preview */}
                 {block.url && (
                     <div className="rounded-lg overflow-hidden border border-slate-100 bg-slate-50">
                         {block.mediaType === 'image' && (

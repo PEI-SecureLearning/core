@@ -1,6 +1,3 @@
-/* ─────────────────────────────────────────────────────────
-   Module Creation — constants, factories, option arrays
-───────────────────────────────────────────────────────── */
 import type { Choice, Question, Section } from './types'
 
 export const uid = () => Math.random().toString(36).slice(2)
@@ -20,7 +17,7 @@ export function emptyQuestion(): Question {
         type: 'multiple_choice',
         text: '',
         choices: [
-            { id: uid(), text: '', isCorrect: false },
+            { id: uid(), text: '', isCorrect: true  },
             { id: uid(), text: '', isCorrect: false },
         ],
         answer: '',
@@ -31,16 +28,14 @@ export function emptySection(): Section {
     return { id: uid(), title: 'New Section', collapsed: false, blocks: [] }
 }
 
-export const DIFFICULTY_COLORS: Record<'Beginner' | 'Intermediate' | 'Advanced', string> = {
-    Beginner:     'bg-green-100 text-green-700 border-green-300',
-    Intermediate: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-    Advanced:     'bg-red-100 text-red-700 border-red-300',
+export const DIFFICULTY_COLORS: Record<'Easy' | 'Medium' | 'Hard', string> = {
+    Easy:   'bg-green-100 text-green-700 border-green-300',
+    Medium: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+    Hard:   'bg-red-100 text-red-700 border-red-300',
 }
 
-/** Shared input field class */
 export const inputCls = 'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-300/50'
 
-/* ── Markdown toolbar options ── */
 export const MD_HEADING_OPTIONS = [
     { label: 'H1 — Title',       insert: '\n# Heading\n'    },
     { label: 'H2 — Section',     insert: '\n## Heading\n'   },

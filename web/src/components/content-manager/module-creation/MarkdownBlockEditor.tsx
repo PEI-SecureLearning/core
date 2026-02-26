@@ -9,9 +9,9 @@ import {
     MD_LIST_OPTIONS,
 } from './constants'
 import { renderMarkdown } from './utils'
+import { BlockWarning } from './BlockComponents'
 
-/* ── Markdown toolbar dropdown ── */
-export function MdDropdown({ label, options, onInsert }: {
+function MdDropdown({ label, options, onInsert }: {
     readonly label: string
     readonly options: { label: string; insert: string }[]
     readonly onInsert: (insert: string) => void
@@ -67,14 +67,15 @@ export function MdDropdown({ label, options, onInsert }: {
     )
 }
 
-/* ── Markdown (text) block editor ── */
-export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
+export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempted }: {
     readonly block: TextBlock
     readonly onUpdate: (content: string) => void
     readonly onRemove: () => void
+    readonly publishAttempted?: boolean
 }) {
     const [mode, setMode] = useState<'edit' | 'preview'>('edit')
     const textareaRef = useRef<HTMLTextAreaElement>(null)
+    const showWarning = publishAttempted === true && !block.content.trim()
 
     // Auto-resize textarea to fit content
     useEffect(() => {
@@ -87,9 +88,10 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
     return (
         <div 
             aria-label="Text block"
-            className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white group"
+            className={`flex flex-col border rounded-xl overflow-hidden bg-white group transition-colors ${
+                showWarning ? 'border-amber-400' : 'border-slate-200'
+            }`}
         >
-            {/* Block toolbar */}
             <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-50 border-b border-slate-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-blue-50 text-blue-500">
                     Text
@@ -156,6 +158,8 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove }: {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {showWarning && <BlockWarning message="Text block cannot be empty." />}
         </div>
     )
 }

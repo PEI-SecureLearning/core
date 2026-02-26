@@ -1,6 +1,8 @@
 import { Check, ListChecks, Plus, Text, ToggleLeft, X } from 'lucide-react'
 import type { Choice, Question, QuestionBlock, QuestionType } from './types'
 import { TRUE_FALSE_CHOICES, uid } from './constants'
+import { isQuestionValid } from './utils'
+import { BlockWarning } from './BlockComponents'
 
 const QUESTION_TYPE_META: Record<QuestionType, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
     multiple_choice: { label: 'Multiple Choice', Icon: ListChecks },
@@ -8,10 +10,19 @@ const QUESTION_TYPE_META: Record<QuestionType, { label: string; Icon: React.Comp
     short_answer:    { label: 'Short Answer',    Icon: Text       },
 }
 
-export function QuestionBlockEditor({ block, onUpdate, onRemove }: {
+function questionWarning(needsText: boolean, needsMoreOpts: boolean, needsOptionText: boolean, needsCorrect: boolean): string {
+    if (needsText)       return 'Enter the question text.'
+    if (needsMoreOpts)   return 'Add at least 2 answer options.'
+    if (needsOptionText) return 'Fill in the text for all answer options.'
+    if (needsCorrect)    return 'Mark one option as the correct answer.'
+    return 'This question is incomplete.'
+}
+
+export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempted }: {
     readonly block: QuestionBlock
     readonly onUpdate: (q: Question) => void
     readonly onRemove: () => void
+    readonly publishAttempted?: boolean
 }) {
     const q = block.question
 
@@ -24,11 +35,18 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove }: {
 
     const choices = q.type === 'true_false' ? TRUE_FALSE_CHOICES : q.choices
 
+    const showWarning    = publishAttempted === true && !isQuestionValid(block)
+    const needsText      = !q.text.trim()
+    const needsMoreOpts  = q.type === 'multiple_choice' && q.choices.length < 2
+    const needsOptionText= q.type === 'multiple_choice' && q.choices.some(c => !c.text.trim())
+    const needsCorrect   = q.type === 'multiple_choice' && !q.choices.some(c => c.isCorrect)
+
     return (
         <div 
-            className="flex flex-col border border-slate-200 rounded-xl overflow-hidden bg-white group"
+            className={`flex flex-col border rounded-xl overflow-hidden bg-white group transition-colors ${
+                showWarning ? 'border-amber-400' : 'border-slate-200'
+            }`}
         >
-            {/* Header */}
             <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b border-slate-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-600 mr-2">
                     Question
@@ -95,6 +113,8 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove }: {
                     </>
                 )}
             </div>
+
+            {showWarning && <BlockWarning message={questionWarning(needsText, needsMoreOpts, needsOptionText, needsCorrect)} />}
         </div>
     )
 }

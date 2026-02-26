@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────
    Module Creation — pure utility functions
 ───────────────────────────────────────────────────────── */
-import type { ModuleFormData } from './types'
+import type { Block, ModuleFormData, QuestionBlock } from './types'
 
 export function totalBlocks(d: ModuleFormData): number {
     return d.sections.reduce((acc, s) => acc + s.blocks.length, 0)
@@ -10,6 +10,35 @@ export function totalBlocks(d: ModuleFormData): number {
 export function totalQuestions(d: ModuleFormData): number {
     return d.sections.reduce((acc, s) =>
         acc + s.blocks.filter(b => b.kind === 'question').length, 0)
+}
+
+/**
+ * A question block is valid when:
+ *  - question text is filled
+ *  - for multiple_choice: ≥ 2 choices, all choice texts filled, one marked correct
+ *  - for true_false:      always valid (choices are fixed)
+ *  - for short_answer:    always valid (free-text, no choices required)
+ */
+export function isQuestionValid(block: QuestionBlock): boolean {
+    const q = block.question
+    if (!q.text.trim()) return false
+    if (q.type === 'true_false' || q.type === 'short_answer') return true
+    return (
+        q.choices.length >= 2 &&
+        q.choices.every(c => c.text.trim() !== '') &&
+        q.choices.some(c => c.isCorrect)
+    )
+}
+
+function isBlockValid(b: Block): boolean {
+    if (b.kind === 'text')     return b.content.trim() !== ''
+    if (b.kind === 'question') return isQuestionValid(b)
+    return true   // rich_content: no text constraint
+}
+
+/** All question blocks across all sections must pass their constraints. */
+export function allQuestionsValid(d: ModuleFormData): boolean {
+    return d.sections.every(s => s.blocks.every(isBlockValid))
 }
 
 /** Compute a 0–100 completion score */
@@ -22,6 +51,7 @@ export function calcCompletion(d: ModuleFormData): number {
         d.sections.length > 0,
         totalBlocks(d) > 0,
         !!d.coverImage,
+        allQuestionsValid(d),
     ]
     return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 }

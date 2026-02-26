@@ -1,11 +1,19 @@
 import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, GripVertical, Image as ImageIcon, ListChecks, Plus } from 'lucide-react'
+import { AlertTriangle, FileText, GripVertical, Image as ImageIcon, ListChecks, Plus } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { BlockType } from './types'
 
-/* ── Sortable block wrapper ── */
+export function BlockWarning({ message }: { readonly message: string }) {
+    return (
+        <div className="flex items-start gap-2 mx-4 mb-3 px-3 py-2 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-700">
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>{message}</span>
+        </div>
+    )
+}
+
 export function SortableBlock({ id, children }: { readonly id: string; readonly children: React.ReactNode }) {
     const {
         attributes,
@@ -29,7 +37,6 @@ export function SortableBlock({ id, children }: { readonly id: string; readonly 
             }}
             className="flex gap-2"
         >
-            {/* Drag handle — activator node kept separate from sortable node */}
             <button
                 ref={setActivatorNodeRef}
                 type="button"
@@ -47,7 +54,6 @@ export function SortableBlock({ id, children }: { readonly id: string; readonly 
     )
 }
 
-/* ── Add-block menu ── */
 export function AddBlockMenu({ onAdd }: { readonly onAdd: (kind: BlockType) => void }) {
     const [open, setOpen] = useState(false)
     const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null)
@@ -56,34 +62,18 @@ export function AddBlockMenu({ onAdd }: { readonly onAdd: (kind: BlockType) => v
     const handleOpen = useCallback(() => {
         if (btnRef.current) {
             const rect = btnRef.current.getBoundingClientRect()
-            const menuWidth = 220 // min-w-[220px]
-            const menuHeight = 180 // Approximate height for 3 options
-            const padding = 8 // Padding from viewport edges
-            
+            const menuWidth = 220
+            const menuHeight = 180
+            const padding = 8
+
             let top = rect.bottom + 6
             let left = rect.left
-            
-            // Check if menu goes off right edge
-            if (left + menuWidth > window.innerWidth - padding) {
-                left = window.innerWidth - menuWidth - padding
-            }
-            
-            // Check if menu goes off left edge
-            if (left < padding) {
-                left = padding
-            }
-            
-            // Check if menu goes off bottom edge
-            if (top + menuHeight > window.innerHeight - padding) {
-                // Position above the button instead
-                top = rect.top - menuHeight - 6
-            }
-            
-            // Check if menu goes off top edge (in case button is very high)
-            if (top < padding) {
-                top = padding
-            }
-            
+
+            if (left + menuWidth > window.innerWidth - padding) left = window.innerWidth - menuWidth - padding
+            if (left < padding) left = padding
+            if (top + menuHeight > window.innerHeight - padding) top = rect.top - menuHeight - 6
+            if (top < padding) top = padding
+
             setMenuPos({ top, left })
         }
         setOpen(o => !o)
