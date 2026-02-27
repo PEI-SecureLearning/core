@@ -20,30 +20,20 @@ const GROUP_NAME = 'e2e_user_group';
 test('createUserGroup – org_manager can create a group with a member', async ({ page }) => {
 
     await page.goto('http://localhost:5173/');
-    await page.getByRole('textbox', { name: 'name@company.com' }).click();
-    await page.getByRole('textbox', { name: 'name@company.com' }).fill('user@ua.pt');
-    await page.getByRole('button').click();
     await page.locator('#username').waitFor({ state: 'visible' });
     await page.locator('#username').fill('org_manager');
     await page.locator('#password').fill('1234');
     await page.locator('#kc-login').click();
 
-    // ── 3. Navigate to User Groups via sidebar ────────────────────────────────
-    // The sidebar is rendered inside an <aside> (role="complementary").
     const sidebar = page.getByRole('complementary');
     await sidebar.getByRole('link', { name: 'User groups' }).click();
     await page.waitForURL('**/usergroups');
 
-    // ── 4. Click "Create New Group" ───────────────────────────────────────────
     await page.locator('#create-new-group-link').click();
     await page.waitForURL('**/usergroups/new-group');
 
-    // ── 5. Fill in the group name ─────────────────────────────────────────────
     await page.locator('#groupName').fill(GROUP_NAME);
 
-    // ── 6. Wait for the /users API fetch to complete before searching ─────────
-    // The component fires the fetch once the Keycloak token is parsed, which
-    // can take several seconds on slow CI runners.
     const memberSearchInput = page.locator('#member-search-input');
     await memberSearchInput.waitFor({ state: 'visible' });
 
@@ -52,19 +42,13 @@ test('createUserGroup – org_manager can create a group with a member', async (
         { timeout: 30_000 },
     );
 
-    // ── 7. Search for a member and select them ────────────────────────────────
     await memberSearchInput.fill('user');
 
-    // The search result button has data-testid="user-result-<email>"
     const userResult = page.locator('[data-testid="user-result-user@ua.pt"]');
     await userResult.waitFor({ state: 'visible' });
     await userResult.click();
 
-    // ── 8. Submit the form ────────────────────────────────────────────────────
     await page.locator('#create-group-btn').click();
-
-    // ── 9. Assert the new group appears in the list ───────────────────────────
-    // After creation, the app navigates back to /usergroups.
     await page.waitForURL('**/usergroups');
 
     const groupCard = page.locator(`[data-testid="group-card-${GROUP_NAME}"]`);
