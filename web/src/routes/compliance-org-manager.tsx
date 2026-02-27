@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import apiClient from "@/helper/header-injector";
 
 type CompliancePolicyResponse = {
   tenant: string;
