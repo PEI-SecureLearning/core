@@ -1,15 +1,12 @@
 name: "E2E Tests"
-
 on:
   pull_request:
     branches:
       - main
       - dev
-
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
-
     env:
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -36,7 +33,6 @@ jobs:
       KEYCLOAK_INTERNAL_URL: ${{ secrets.KEYCLOAK_INTERNAL_URL }}
       RATE_LIMITER_MAX_REQUESTS: ${{ secrets.RATE_LIMITER_MAX_REQUESTS }}
       RATE_LIMITER_TIME_WINDOW_SECONDS: ${{ secrets.RATE_LIMITER_TIME_WINDOW_SECONDS }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,27 +65,25 @@ jobs:
       - name: Start containers
         run: docker compose -f deployment/docker-compose.dev.yml up -d
 
-      - name: Run E2E Tests
+      - name: Run createTenant tests
         working-directory: web
-        run: |
-          npx playwright test \
-            createTenant.spec.ts \
-            createUser.spec.ts \
-            createUserGroup.spec.ts \
-            SendingProfile.spec.ts \
-            AlterComplicance.spec.ts \
-            --project=chromium \
-            --workers=1
+        run: npx playwright test tests/createTenant.spec.ts --project=chromium --workers=1
 
-      - name: Dump container logs on failure
-        if: failure()
-        run: |
-          echo "=== Keycloak logs ==="
-          docker logs keycloak --tail 100 || true
-          echo "=== API logs ==="
-          docker logs api --tail 100 || true
-          echo "=== DB logs ==="
-          docker logs $(docker compose -f deployment/docker-compose.dev.yml ps -q db) --tail 50 || true
+      - name: Run createUser tests
+        working-directory: web
+        run: npx playwright test tests/createUser.spec.ts --project=chromium --workers=1
+
+      - name: Run createUserGroup tests
+        working-directory: web
+        run: npx playwright test tests/createUserGroup.spec.ts --project=chromium --workers=1
+
+      - name: Run SendingProfile tests
+        working-directory: web
+        run: npx playwright test tests/SendingProfile.spec.ts --project=chromium --workers=1
+
+      - name: Run AlterComplicance tests
+        working-directory: web
+        run: npx playwright test tests/AlterComplicance.spec.ts --project=chromium --workers=1
 
       - name: Stop containers
         if: always()

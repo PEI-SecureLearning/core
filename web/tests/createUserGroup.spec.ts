@@ -5,48 +5,24 @@ const GROUP_NAME = 'e2e_user_group';
 
 test('createUserGroup – org_manager can create a group with a member', async ({ page }) => {
 
-    // ── Login ─────────────────────────────────────────────────────────────────
     await page.goto('http://localhost:5173/');
-
-    // Handle both: custom realm-discovery page (name@company.com input) OR
-    // direct Keycloak redirect (Username or email input).
-    const emailInputLocator = page.getByRole('textbox', { name: 'name@company.com' });
-    const usernameLocator = page.getByRole('textbox', { name: 'Username or email' });
-
-    await Promise.race([
-        emailInputLocator.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => null),
-        usernameLocator.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => null),
-    ]);
-
-    if (await emailInputLocator.isVisible()) {
-        await emailInputLocator.fill('user@ua.pt');
-        // Use a named regex to avoid picking up layout buttons in CI.
-        await page.getByRole('button', { name: /continue|submit|next|sign/i }).first().click();
-        // Wait for the Keycloak URL (proof of redirect) before scanning for the field.
-        await page.waitForURL('**/realms/**', { timeout: 30_000 });
-    }
-
-    await usernameLocator.waitFor({ state: 'visible', timeout: 15_000 });
-    await usernameLocator.fill('org_manager');
+    await page.getByRole('textbox', { name: 'name@company.com' }).click();
+    await page.getByRole('textbox', { name: 'name@company.com' }).fill('user@ua.pt');
+    await page.getByRole('button').click();
+    await page.getByRole('textbox', { name: 'Username or email' }).fill('org_manager');
+    await page.getByRole('textbox', { name: 'Password' }).click();
     await page.getByRole('textbox', { name: 'Password' }).fill('1234');
     await page.getByRole('button', { name: 'Sign In' }).click();
-    // Use URL change instead of networkidle – background polling prevents
-    // networkidle from ever settling in the CI environment.
-    await page.waitForURL('**/dashboard**', { timeout: 30_000 });
-    await page.waitForLoadState('domcontentloaded');
 
-    // ── Navigate to User Groups ───────────────────────────────────────────────
     const sidebar = page.getByRole('complementary');
     await sidebar.getByRole('link', { name: 'User groups' }).click();
     await page.waitForURL('**/usergroups');
 
-    // ── Create New Group ──────────────────────────────────────────────────────
     await page.locator('#create-new-group-link').click();
     await page.waitForURL('**/usergroups/new-group');
 
     await page.locator('#groupName').fill(GROUP_NAME);
 
-    // Wait for member search input to be ready, then wait for users API response.
     const memberSearchInput = page.locator('#member-search-input');
     await memberSearchInput.waitFor({ state: 'visible' });
 
@@ -55,13 +31,12 @@ test('createUserGroup – org_manager can create a group with a member', async (
         { timeout: 30_000 },
     );
 
-    // Search and select a user.
     await memberSearchInput.fill('user');
+
     const userResult = page.locator('[data-testid="user-result-user@ua.pt"]');
     await userResult.waitFor({ state: 'visible' });
     await userResult.click();
 
-    // Submit and verify.
     await page.locator('#create-group-btn').click();
     await page.waitForURL('**/usergroups');
 

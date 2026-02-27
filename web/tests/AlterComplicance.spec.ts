@@ -48,32 +48,14 @@ async function fillQuestionCard(page: Page, idx: number, q: typeof Q1) {
 test('createCompliance – builds quiz from zero and persists to server', async ({ page }) => {
 
   await page.goto('http://localhost:5173/');
-
-  const emailInputLocator = page.getByRole('textbox', { name: 'name@company.com' });
-  const usernameLocator = page.getByRole('textbox', { name: 'Username or email' });
-
-  await Promise.race([
-    emailInputLocator.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => null),
-    usernameLocator.waitFor({ state: 'visible', timeout: 15_000 }).catch(() => null),
-  ]);
-
-  if (await emailInputLocator.isVisible()) {
-    await emailInputLocator.fill('user@ua.pt');
-    // Click the realm-discovery submit button specifically (not 'first button' which
-    // can be ambiguous). Then wait for the browser to navigate to the Keycloak URL.
-    await page.getByRole('button', { name: /continue|submit|next|sign/i }).first().click();
-    // Wait for navigation to the Keycloak login page (URL contains /realms/).
-    await page.waitForURL('**/realms/**', { timeout: 30_000 });
-  }
-
-  // At this point we are guaranteed to be on the Keycloak login page.
-  await usernameLocator.waitFor({ state: 'visible', timeout: 15_000 });
-  await usernameLocator.fill('org_manager');
+  await page.getByRole('textbox', { name: 'name@company.com' }).click();
+  await page.getByRole('textbox', { name: 'name@company.com' }).fill('user@ua.pt');
+  await page.getByRole('button').click();
+  await page.getByRole('textbox', { name: 'Username or email' }).fill('org_manager');
+  await page.getByRole('textbox', { name: 'Password' }).click();
   await page.getByRole('textbox', { name: 'Password' }).fill('1234');
   await page.getByRole('button', { name: 'Sign In' }).click();
-  // After Keycloak login, org_manager lands on /dashboard.
-  // Use URL wait instead of networkidle – background polling prevents
-  // networkidle from ever settling in the CI environment.
+
   await page.waitForURL('**/dashboard**', { timeout: 30_000 });
   await page.waitForLoadState('domcontentloaded');
 
@@ -102,7 +84,6 @@ test('createCompliance – builds quiz from zero and persists to server', async 
 
   await page.locator('[data-testid="add-question-btn"]').click();
 
-  await page.locator('[data-testid="remove-question-0"]').waitFor({ state: 'visible', timeout: 5_000 });
 
   const newCardLocator = page
     .locator('[data-testid="remove-question-0"]')
