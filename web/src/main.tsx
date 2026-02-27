@@ -15,6 +15,7 @@ const isSecureContext = window.isSecureContext || window.location.hostname === '
 const initOptions: Keycloak.KeycloakInitOptions = {
   onLoad: "login-required",
   pkceMethod: isSecureContext ? "S256" : undefined,
+  responseMode: "query",
   checkLoginIframe: false,
 };
 
