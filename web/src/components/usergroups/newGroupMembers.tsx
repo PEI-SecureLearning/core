@@ -83,6 +83,7 @@ const SearchResultRow = memo(function SearchResultRow({
   return (
     <button
       type="button"
+      data-testid={`user-result-${user.email}`}
       onClick={onAdd}
       className="liquid-list-item w-full px-4 py-3 flex items-center justify-between border-b border-purple-100/30 last:border-0 rounded-none first:rounded-t-xl last:rounded-b-xl"
     >
@@ -203,6 +204,7 @@ function MembersSection({
       <div className="relative mb-5">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
         <input
+          id="member-search-input"
           type="text"
           value={searchQuery}
           placeholder="Search by name, email, or department..."

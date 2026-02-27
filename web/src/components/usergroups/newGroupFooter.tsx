@@ -45,6 +45,7 @@ function NewGroupFooter({
           Cancel
         </Link>
         <button
+          id="create-group-btn"
           onClick={onSubmit}
           disabled={isDisabled}
           className="liquid-glass-button flex items-center gap-2 px-6 py-2.5 text-sm"
