@@ -1,7 +1,8 @@
 """Realm CRUD, info, and platform log routes."""
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Header, status
 
+from src.core.security import Roles
 from src.core.dependencies import SafeRealm, SessionDep
 from src.models.realm import RealmCreate, RealmInfoResponse, RealmResponse
 from src.services.platform_admin import get_platform_admin_service
@@ -11,13 +12,13 @@ realm_service = get_platform_admin_service()
 router = APIRouter()
 
 
-@router.get("/realms/tenants")
+@router.get("/realms/tenants",dependencies=[Depends(Roles("admin", "view"))])
 def list_tenants():
     """List all tenant realms from Keycloak (excluding master and platform)."""
     return realm_service.list_realms()
 
 
-@router.get("/logs")
+@router.get("/logs", dependencies=[Depends(Roles("admin", "view"))])
 def get_platform_logs(max_results: int = 100):
     """Get platform logs/events from all tenant realms."""
     return realm_service.get_platform_logs(max_results)
@@ -35,12 +36,12 @@ def get_realms_by_domain(domain: str):
     return {"realm": realm}
 
 
-@router.post("/realms")
+@router.post("/realms", status_code=status.HTTP_201_CREATED, dependencies=[Depends(Roles("admin", "manage"))])
 def create_realm(realm: RealmCreate, session: SessionDep):
     return realm_service.create_realm_in_keycloak(realm, session)
 
 
-@router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/realms/{realm}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(Roles("admin", "manage"))])
 def delete_realm(realm: SafeRealm, session: SessionDep):
     """Delete a tenant realm from Keycloak."""
     return realm_service.delete_realm_from_keycloak(realm, session)
@@ -49,7 +50,8 @@ def delete_realm(realm: SafeRealm, session: SessionDep):
 @router.get(
     "/realms/{realm}/info",
     responses={404: {"description": "Realm not found"}},
-    response_model=RealmInfoResponse
+    response_model=RealmInfoResponse,
+    dependencies=[Depends(Roles("admin", "view"))]
 )
 def get_realm_info(realm: SafeRealm, session: SessionDep):
     """Return realm metadata including domain and feature flags."""
