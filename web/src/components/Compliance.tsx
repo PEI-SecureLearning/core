@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AlertTriangle, BookOpen, CheckCircle2, Loader2, ShieldCheck, Timer, RotateCcw, ArrowUpRight } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import ReactMarkdown from "react-markdown";
+import { apiClient } from "../lib/api-client";
 
 const LOCAL_STORAGE_KEY = "compliance-quiz-failure";
 
@@ -231,9 +232,9 @@ export default function ComplianceFlow() {
     setLoading(true);
     try {
       const [statusRes, docRes, quizRes] = await Promise.all([
-        apiClient.get<StatusResponse>("/compliance/status").then((r) => r.data),
-        apiClient.get<ComplianceDoc>("/compliance/latest").then((r) => r.data),
-        apiClient.get<QuizPayload>("/compliance/latest/quiz").then((r) => r.data),
+        apiClient.get<StatusResponse>("/compliance/status"),
+        apiClient.get<ComplianceDoc>("/compliance/latest"),
+        apiClient.get<QuizPayload>("/compliance/latest/quiz"),
       ]);
       setStatus(statusRes);
       setDoc(docRes);
@@ -334,8 +335,8 @@ export default function ComplianceFlow() {
         })),
       };
       const resp = await apiClient.post<SubmitResponse>("/compliance/submit", payload);
-      setResult(resp.data);
-      if (resp.data.passed) {
+      setResult(resp);
+      if (resp.passed) {
         setStep("confirm");
       }
     } catch (err: unknown) {
