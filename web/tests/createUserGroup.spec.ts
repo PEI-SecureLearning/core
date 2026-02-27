@@ -1,29 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-/**
- * E2E test: Create a User Group
- *
- * Flow:
- *  1. Navigate to the app root – Keycloak redirects to the `ua` realm login page.
- *  2. Log in as `org_manager`.
- *  3. Navigate to /usergroups via the sidebar.
- *  4. Click "Create New Group" (id="create-new-group-link").
- *  5. Fill in the group name (id="groupName").
- *  6. Wait for the users API response so the member list is populated.
- *  7. Search for a user (id="member-search-input") and pick the result.
- *  8. Submit the form (id="create-group-btn").
- *  9. Assert the new group card is visible (data-testid="group-card-<name>").
- */
 
 const GROUP_NAME = 'e2e_user_group';
 
 test('createUserGroup – org_manager can create a group with a member', async ({ page }) => {
 
     await page.goto('http://localhost:5173/');
-    await page.locator('#username').waitFor({ state: 'visible' });
-    await page.locator('#username').fill('org_manager');
-    await page.locator('#password').fill('1234');
-    await page.locator('#kc-login').click();
+    await page.getByRole('textbox', { name: 'Username or email' }).fill('org_manager');
+    await page.getByRole('textbox', { name: 'Password' }).click();
+    await page.getByRole('textbox', { name: 'Password' }).fill('1234');
+    await page.getByRole('button', { name: 'Sign In' }).click();
 
     const sidebar = page.getByRole('complementary');
     await sidebar.getByRole('link', { name: 'User groups' }).click();

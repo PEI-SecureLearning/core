@@ -54,27 +54,37 @@ jobs:
       - name: Install Playwright Browsers (Chromium only)
         run: cd web && npx playwright install --with-deps chromium
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Cache
+        uses: docker/bake-action@v6
+        with:
+          files: deployment/docker-compose.dev.yml
+          load: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+
       - name: Start containers
-        run: docker compose -f deployment/docker-compose.dev.yml up -d --build
+        run: docker compose -f deployment/docker-compose.dev.yml up -d
 
       - name: Show container status (debug)
         if: always()
         run: docker compose -f deployment/docker-compose.dev.yml ps -a
 
-      - name: Run createTenant test
-        run: cd web && npx playwright test createTenant.spec.ts --project=chromium
-
-      - name: Run createUser test
-        run: cd web && npx playwright test createUser.spec.ts --project=chromium
-
-      - name: Run createUserGroup test
-        run: cd web && npx playwright test createUserGroup.spec.ts --project=chromium
-
-      - name: Run SendingProfile test
-        run: cd web && npx playwright test SendingProfile.spec.ts --project=chromium
-
-      - name: Run AlterComplicance test
-        run: cd web && npx playwright test AlterComplicance.spec.ts --project=chromium
+      - name: Run E2E Tests
+        working-directory: web
+        run: |
+          npx playwright test \
+            createTenant.spec.ts \
+            createUser.spec.ts \
+            createUserGroup.spec.ts \
+            SendingProfile.spec.ts \
+            AlterComplicance.spec.ts \
+            --project=chromium \
+            --workers=1 \
+            --fully-parallel=false
 
       - name: Dump container logs on failure
         if: failure()
