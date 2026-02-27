@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SortAsc, BookOpen, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BookOpen } from 'lucide-react';
 
 const COURSES = [
     {
@@ -64,12 +63,11 @@ const COURSES = [
 
 
 export function CourseDisplay() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState("title");
+    const searchQuery = "";
 
     const filteredCourses = COURSES
         .filter(course => course.title.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => (a[sortBy] > b[sortBy] ? 1 : -1));
+        .sort((a, b) => a.title.localeCompare(b.title));
 
     return (
         <motion.div
