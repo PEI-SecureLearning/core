@@ -37,6 +37,7 @@ export function UserGroupCard({
     <Link
       to="/usergroups/$id"
       params={{ id: id || "group" }}
+      data-testid={`group-card-${name}`}
       className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200 block"
     >
       {/* Colorful top decoration */}

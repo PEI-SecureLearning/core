@@ -235,14 +235,14 @@ export interface FileRoutesByFullPath {
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/admin/': typeof AdminIndexRoute
-  '/campaigns': typeof CampaignsIndexRoute
-  '/content-manager': typeof ContentManagerIndexRoute
-  '/sending-profiles': typeof SendingProfilesIndexRoute
-  '/tenants': typeof TenantsIndexRoute
-  '/usergroups': typeof UsergroupsIndexRoute
+  '/campaigns/': typeof CampaignsIndexRoute
+  '/content-manager/': typeof ContentManagerIndexRoute
+  '/sending-profiles/': typeof SendingProfilesIndexRoute
+  '/tenants/': typeof TenantsIndexRoute
+  '/usergroups/': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
-  '/admin/tenants': typeof AdminTenantsIndexRoute
+  '/admin/tenants/': typeof AdminTenantsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -342,14 +342,14 @@ export interface FileRouteTypes {
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/admin/'
-    | '/campaigns'
-    | '/content-manager'
-    | '/sending-profiles'
-    | '/tenants'
-    | '/usergroups'
+    | '/campaigns/'
+    | '/content-manager/'
+    | '/sending-profiles/'
+    | '/tenants/'
+    | '/usergroups/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
+    | '/admin/tenants/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -526,35 +526,35 @@ declare module '@tanstack/react-router' {
     '/usergroups/': {
       id: '/usergroups/'
       path: '/usergroups'
-      fullPath: '/usergroups'
+      fullPath: '/usergroups/'
       preLoaderRoute: typeof UsergroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tenants/': {
       id: '/tenants/'
       path: '/tenants'
-      fullPath: '/tenants'
+      fullPath: '/tenants/'
       preLoaderRoute: typeof TenantsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sending-profiles/': {
       id: '/sending-profiles/'
       path: '/sending-profiles'
-      fullPath: '/sending-profiles'
+      fullPath: '/sending-profiles/'
       preLoaderRoute: typeof SendingProfilesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content-manager/': {
       id: '/content-manager/'
       path: '/content-manager'
-      fullPath: '/content-manager'
+      fullPath: '/content-manager/'
       preLoaderRoute: typeof ContentManagerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
-      fullPath: '/campaigns'
+      fullPath: '/campaigns/'
       preLoaderRoute: typeof CampaignsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -666,7 +666,7 @@ declare module '@tanstack/react-router' {
     '/admin/tenants/': {
       id: '/admin/tenants/'
       path: '/tenants'
-      fullPath: '/admin/tenants'
+      fullPath: '/admin/tenants/'
       preLoaderRoute: typeof AdminTenantsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
