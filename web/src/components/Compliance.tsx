@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { AlertTriangle, BookOpen, CheckCircle2, Loader2, ShieldCheck, Timer, RotateCcw, ArrowUpRight } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import ReactMarkdown from "react-markdown";
-import apiClient from "../helper/header-injector";
 
 const LOCAL_STORAGE_KEY = "compliance-quiz-failure";
 
