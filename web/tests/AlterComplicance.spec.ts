@@ -59,17 +59,27 @@ test('createCompliance – builds quiz from zero and persists to server', async 
 
   if (await emailInputLocator.isVisible()) {
     await emailInputLocator.fill('user@ua.pt');
-    await page.getByRole('button').first().click();
-    await usernameLocator.waitFor({ state: 'visible', timeout: 20_000 });
+    // Click the realm-discovery submit button specifically (not 'first button' which
+    // can be ambiguous). Then wait for the browser to navigate to the Keycloak URL.
+    await page.getByRole('button', { name: /continue|submit|next|sign/i }).first().click();
+    // Wait for navigation to the Keycloak login page (URL contains /realms/).
+    await page.waitForURL('**/realms/**', { timeout: 30_000 });
   }
 
+  // At this point we are guaranteed to be on the Keycloak login page.
+  await usernameLocator.waitFor({ state: 'visible', timeout: 15_000 });
   await usernameLocator.fill('org_manager');
   await page.getByRole('textbox', { name: 'Password' }).fill('1234');
   await page.getByRole('button', { name: 'Sign In' }).click();
-  await page.waitForLoadState('networkidle');
+  // After Keycloak login, org_manager lands on /dashboard.
+  // Use URL wait instead of networkidle – background polling prevents
+  // networkidle from ever settling in the CI environment.
+  await page.waitForURL('**/dashboard**', { timeout: 30_000 });
+  await page.waitForLoadState('domcontentloaded');
 
   await page.getByRole('link', { name: 'Compliance' }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
+  await page.waitForLoadState('domcontentloaded');
 
   const removeFirstBtn = page.locator('[data-testid="remove-question-0"]');
 
@@ -132,9 +142,10 @@ test('createCompliance – builds quiz from zero and persists to server', async 
   await expect(page.getByText('Quiz updated successfully.')).toBeVisible({ timeout: 10_000 });
 
   await page.getByRole('link', { name: 'Templates' }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('**/templates**', { timeout: 15_000 });
   await page.getByRole('link', { name: 'Compliance' }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
+  await page.waitForLoadState('domcontentloaded');
 
   await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(1);
   await expect(page.locator('#question-count')).toContainText('1');
@@ -171,9 +182,10 @@ test('createCompliance – builds quiz from zero and persists to server', async 
   await expect(page.getByText('Quiz updated successfully.')).toBeVisible({ timeout: 10_000 });
 
   await page.getByRole('link', { name: 'Templates' }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('**/templates**', { timeout: 15_000 });
   await page.getByRole('link', { name: 'Compliance' }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
+  await page.waitForLoadState('domcontentloaded');
 
   await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(2);
   await expect(page.locator('#question-count')).toContainText('2');

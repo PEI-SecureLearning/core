@@ -20,14 +20,20 @@ test('createUserGroup – org_manager can create a group with a member', async (
 
     if (await emailInputLocator.isVisible()) {
         await emailInputLocator.fill('user@ua.pt');
-        await page.getByRole('button').first().click();
-        await usernameLocator.waitFor({ state: 'visible', timeout: 20_000 });
+        // Use a named regex to avoid picking up layout buttons in CI.
+        await page.getByRole('button', { name: /continue|submit|next|sign/i }).first().click();
+        // Wait for the Keycloak URL (proof of redirect) before scanning for the field.
+        await page.waitForURL('**/realms/**', { timeout: 30_000 });
     }
 
+    await usernameLocator.waitFor({ state: 'visible', timeout: 15_000 });
     await usernameLocator.fill('org_manager');
     await page.getByRole('textbox', { name: 'Password' }).fill('1234');
     await page.getByRole('button', { name: 'Sign In' }).click();
-    await page.waitForLoadState('networkidle');
+    // Use URL change instead of networkidle – background polling prevents
+    // networkidle from ever settling in the CI environment.
+    await page.waitForURL('**/dashboard**', { timeout: 30_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // ── Navigate to User Groups ───────────────────────────────────────────────
     const sidebar = page.getByRole('complementary');
