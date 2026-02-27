@@ -79,8 +79,7 @@ jobs:
             SendingProfile.spec.ts \
             AlterComplicance.spec.ts \
             --project=chromium \
-            --workers=1 \
-            --no-fully-parallel
+            --workers=1
 
       - name: Dump container logs on failure
         if: failure()
