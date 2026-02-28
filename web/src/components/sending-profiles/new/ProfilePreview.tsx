@@ -36,7 +36,7 @@ function ProfilePreview({
   return (
     <div className="liquid-glass-card h-full p-6 flex flex-col relative z-10">
       <div className="flex items-center gap-3 mb-5">
-        <div className="h-10 w-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg animate-pulse-glow">
+        <div className="h-10 w-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg animate-pulse-glow">
           <Send className="h-5 w-5 text-white pl-0.5" />
         </div>
         <h3 className="font-semibold text-gray-800 text-lg tracking-tight">
@@ -46,14 +46,14 @@ function ProfilePreview({
 
       <div className="flex-1 space-y-5">
         {/* Visual Card */}
-        <div className="flex flex-col items-center p-6 bg-gradient-to-br from-white/60 to-blue-50/40 rounded-2xl border border-white/50 backdrop-blur-sm">
-          <div className="liquid-avatar h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-xl mb-4 text-white text-2xl font-bold">
+        <div className="flex flex-col items-center p-6 bg-gradient-to-br from-white/60 to-purple-50/40 rounded-2xl border border-white/50 backdrop-blur-sm">
+          <div className="liquid-avatar h-20 w-20 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center shadow-xl mb-4 text-white text-2xl font-bold">
             {name ? name.charAt(0).toUpperCase() : "?"}
           </div>
           <p className="font-semibold text-gray-800 text-center text-lg break-all">
             {name || "Profile Name"}
           </p>
-          <p className="text-sm text-blue-600 mt-1">
+          <p className="text-sm text-purple-600 mt-1">
             {fromEmail || "email@example.com"}
           </p>
         </div>

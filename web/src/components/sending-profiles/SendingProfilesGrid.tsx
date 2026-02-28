@@ -17,7 +17,7 @@ export default function SendingProfilesGrid({
     <div className="p-6 bg-gray-50 min-h-screen">
       {isLoading ? (
         <div className="flex items-center gap-2 text-sm text-gray-600">
-          <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+          <div className="animate-spin h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full"></div>
           Loading profiles...
         </div>
       ) : profiles.length === 0 ? (

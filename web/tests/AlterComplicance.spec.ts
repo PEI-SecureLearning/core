@@ -63,6 +63,10 @@ test('createCompliance – builds quiz from zero and persists to server', async 
   await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
   await page.waitForLoadState('domcontentloaded');
 
+  // Expand the Quiz section (starts collapsed)
+  await page.getByText('Quiz Question Bank').click();
+  await page.waitForTimeout(300);
+
   const removeFirstBtn = page.locator('[data-testid="remove-question-0"]');
 
   await page.waitForTimeout(500);
@@ -128,6 +132,10 @@ test('createCompliance – builds quiz from zero and persists to server', async 
   await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
   await page.waitForLoadState('domcontentloaded');
 
+  // Expand the Quiz section again (starts collapsed after navigation)
+  await page.getByText('Quiz Question Bank').click();
+  await page.waitForTimeout(300);
+
   await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(1);
   await expect(page.locator('#question-count')).toContainText('1');
   await expect(page.locator('[data-testid="passing-score-display"]')).toContainText('0%');
@@ -167,6 +175,10 @@ test('createCompliance – builds quiz from zero and persists to server', async 
   await page.getByRole('link', { name: 'Compliance' }).click();
   await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
   await page.waitForLoadState('domcontentloaded');
+
+  // Expand the Quiz section again
+  await page.getByText('Quiz Question Bank').click();
+  await page.waitForTimeout(300);
 
   await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(2);
   await expect(page.locator('#question-count')).toContainText('2');

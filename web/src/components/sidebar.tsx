@@ -214,7 +214,7 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${shouldShowContent ? "w-[15%] min-w-[120px] lg:min-w-[180px]" : "w-12"
+      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${shouldShowContent ? "w-[13%] min-w-[120px] lg:min-w-[180px]" : "w-12"
         }`}
       onMouseEnter={() => {
         if (isCollapsed) {

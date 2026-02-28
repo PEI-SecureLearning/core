@@ -25,7 +25,7 @@ export default function SendingProfilesHeader({
           <input
             type="text"
             placeholder="Search profiles..."
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
 
@@ -35,7 +35,7 @@ export default function SendingProfilesHeader({
             onClick={() => setView("grid")}
             className={`p-2 rounded-md transition-colors ${
               view === "grid"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-white text-purple-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
             }`}
             aria-label="Grid view"
@@ -46,7 +46,7 @@ export default function SendingProfilesHeader({
             onClick={() => setView("table")}
             className={`p-2 rounded-md transition-colors ${
               view === "table"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-white text-purple-600 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"
             }`}
             aria-label="Table view"
@@ -58,7 +58,7 @@ export default function SendingProfilesHeader({
         {/* Create Button */}
         <Link
           to="/sending-profiles/new"
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap"
         >
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">New Profile</span>

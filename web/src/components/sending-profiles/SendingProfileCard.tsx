@@ -18,13 +18,13 @@ export default function SendingProfileCard({
   const [showMenu, setShowMenu] = useState(false);
 
   // Como não temos cor na DB, usamos Azul por defeito para Profiles
-  const bgClass = "from-blue-400 to-blue-600";
-  const iconBg = "bg-blue-500";
+  const bgClass = "from-purple-400 to-purple-600";
+  const iconBg = "bg-purple-500";
 
   return (
     <Link
       to={`/sending-profiles/${id}` as any}
-      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200 block"
+      className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-purple-200 block"
     >
       {/* Decoration Line */}
       <div className={`h-2 bg-gradient-to-r ${bgClass}`}></div>

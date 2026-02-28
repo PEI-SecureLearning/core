@@ -43,7 +43,7 @@ function CardHorizontal({ course, progress }: { course: Course; progress: number
         <Link
             to="/courses/$courseId"
             params={{ courseId: course.id }}
-            className="group flex flex-row rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+            className="group flex flex-row rounded-r-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
         >
             {/* Left colour strip with icon */}
             <div className={`relative flex-shrink-0 w-40 bg-gradient-to-br ${course.color} flex flex-col items-center justify-center gap-2`}>

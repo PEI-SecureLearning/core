@@ -18,7 +18,7 @@ const HeaderRow = memo(function HeaderRow({
   return (
     <div className="liquid-list-item flex items-center justify-between p-3 mb-2">
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+        <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
           H
         </div>
         <div className="min-w-0 flex flex-col md:flex-row md:items-center md:gap-2">
@@ -56,7 +56,7 @@ function CustomHeadersSection({ headers, onAddHeader, onRemoveHeader }: Props) {
   return (
     <div className="liquid-glass-card p-6 relative z-10">
       <h4 className="text-gray-800 font-semibold mb-4 flex items-center gap-2">
-        <List className="h-5 w-5 text-blue-500" />
+        <List className="h-5 w-5 text-purple-500" />
         Custom Headers (Optional)
       </h4>
 

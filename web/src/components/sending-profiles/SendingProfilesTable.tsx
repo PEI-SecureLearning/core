@@ -26,18 +26,18 @@ function TableRow({
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <tr className="group hover:bg-blue-50/50 transition-colors border-b border-gray-100 last:border-0">
+    <tr className="group hover:bg-purple-50/50 transition-colors border-b border-gray-100 last:border-0">
       {/* Profile Name with Icon */}
       <td className="px-4 py-4">
         <Link
           to={`/sending-profiles/${profile.id}` as any}
-          className="flex items-center gap-3 hover:text-blue-600 transition-colors"
+          className="flex items-center gap-3 hover:text-purple-600 transition-colors"
         >
-          <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+          <div className="h-10 w-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
             <Send className="h-5 w-5 pl-0.5" />
           </div>
           <div>
-            <span className="font-medium text-gray-900 group-hover:text-blue-600 block">
+            <span className="font-medium text-gray-900 group-hover:text-purple-600 block">
               {profile.name}
             </span>
             <span className="text-xs text-gray-400 md:hidden">
@@ -71,7 +71,7 @@ function TableRow({
           {/* View Button */}
           <Link
             to={`/sending-profiles/${profile.id}` as any}
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
           >
             <ChevronRight className="h-4 w-4" />
           </Link>
