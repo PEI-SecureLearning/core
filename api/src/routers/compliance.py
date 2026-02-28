@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 
+from src.core.security import Roles
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.models.compliance_schemas import (
     AcceptRequest,
@@ -15,7 +16,7 @@ from src.services.compliance import quiz_handler
 router = APIRouter()
 
 
-@router.get("/compliance/latest", response_model=ComplianceDocumentResponse)
+@router.get("/compliance/latest", response_model=ComplianceDocumentResponse, dependencies=[Depends(Roles("org_manager", "view"))])
 def get_latest_compliance(
     session: SessionDep, token: OAuth2Scheme
 ):
@@ -23,13 +24,13 @@ def get_latest_compliance(
     return quiz_handler.get_latest_compliance(session, tenant)
 
 
-@router.get("/compliance/latest/quiz", response_model=QuizResponse)
+@router.get("/compliance/latest/quiz", response_model=QuizResponse, dependencies=[Depends(Roles("org_manager", "view"))])
 def get_latest_quiz(session: SessionDep, token: OAuth2Scheme):
     _, tenant = require_tenant_learner_context(token)
     return quiz_handler.get_latest_quiz(session, tenant)
 
 
-@router.post("/compliance/submit", response_model=SubmitResponse)
+@router.post("/compliance/submit", response_model=SubmitResponse, dependencies=[Depends(Roles("org_manager", "manage"))])
 def submit_quiz(
     payload: SubmitRequest, session: SessionDep, token: OAuth2Scheme
 ):
@@ -39,13 +40,13 @@ def submit_quiz(
     )
 
 
-@router.get("/compliance/status", response_model=ComplianceStatusResponse)
+@router.get("/compliance/status", response_model=ComplianceStatusResponse, dependencies=[Depends(Roles("org_manager", "view"))])
 def get_compliance_status(session: SessionDep, token: OAuth2Scheme):
     user_id, tenant = require_tenant_learner_context(token)
     return quiz_handler.get_compliance_status(session, tenant, user_id)
 
 
-@router.post("/compliance/accept", status_code=status.HTTP_201_CREATED)
+@router.post("/compliance/accept", status_code=status.HTTP_201_CREATED, dependencies=[Depends(Roles("org_manager", "manage"))])
 def accept_compliance(
     payload: AcceptRequest, session: SessionDep, token: OAuth2Scheme
 ):

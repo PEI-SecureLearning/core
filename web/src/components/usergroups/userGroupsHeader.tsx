@@ -34,22 +34,20 @@ export function UserGroupsHeader({
         <div className="hidden sm:flex items-center bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setView('grid')}
-            className={`p-2 rounded-md transition-colors ${
-              view === 'grid'
+            className={`p-2 rounded-md transition-colors ${view === 'grid'
                 ? 'bg-white text-purple-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
             aria-label="Grid view"
           >
             <Grid3x3 className="h-4 w-4" />
           </button>
           <button
             onClick={() => setView('table')}
-            className={`p-2 rounded-md transition-colors ${
-              view === 'table'
+            className={`p-2 rounded-md transition-colors ${view === 'table'
                 ? 'bg-white text-purple-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
             aria-label="Table view"
           >
             <TableProperties className="h-4 w-4" />
@@ -58,6 +56,7 @@ export function UserGroupsHeader({
 
         {/* Create Button */}
         <Link
+          id="create-new-group-link"
           to="/usergroups/new-group"
           className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap"
         >
