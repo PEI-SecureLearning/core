@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useKeycloak } from '@react-keycloak/web'
 import type { MouseEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink, Loader2, Trash2 } from 'lucide-react'
@@ -30,6 +31,7 @@ interface TenantsResponse {
 }
 
 export function TenantList() {
+    const { keycloak } = useKeycloak()
     const [tenants, setTenants] = useState<Tenant[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -86,8 +88,9 @@ export function TenantList() {
     }
 
     useEffect(() => {
+        if (!keycloak.authenticated) return
         fetchTenants()
-    }, [])
+    }, [keycloak.authenticated])
 
     const deleteTenant = async (tenant: Tenant) => {
         if (deleteInFlight.current.has(tenant.realm) || deleting === tenant.realm || confirmingRealm === tenant.realm) {
@@ -288,7 +291,7 @@ export function TenantList() {
                                         onClick={(event) => handleDeleteClick(event, tenant)}
                                         disabled={deleting === tenant.realm || confirmingRealm === tenant.realm}
                                         className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
+                                    >
                                         {deleting === tenant.realm ? (
                                             <Loader2 className="animate-spin" size={14} />
                                         ) : (

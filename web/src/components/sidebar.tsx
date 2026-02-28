@@ -23,12 +23,14 @@ import {
   User
 } from "lucide-react";
 
+
 interface SidebarLinkProps {
   href: string;
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   roles?: string[];
   exact?: boolean;
+  feature?: string;
 }
 
 const adminLinks: SidebarLinkProps[] = [
@@ -61,18 +63,21 @@ const userLinks: SidebarLinkProps[] = [
     label: "Campaigns",
     icon: Megaphone,
     roles: ["ORG_MANAGER"],
+    feature: "phishing",
   },
   {
     href: "/sending-profiles",
     label: "Sending Profiles",
     icon: Send,
     roles: ["ORG_MANAGER"],
+    feature: "phishing",
   },
   {
     href: "/templates",
     label: "Templates",
     icon: FileText,
     roles: ["ORG_MANAGER"],
+    feature: "phishing",
   },
   {
     href: "/compliance-org-manager",
@@ -85,12 +90,20 @@ const userLinks: SidebarLinkProps[] = [
     label: "User Management",
     icon: User,
     roles: ["ORG_MANAGER"],
+
   },
   {
     href: "/usergroups",
     label: "User groups",
     icon: Users,
     roles: ["ORG_MANAGER"],
+  },
+  {
+    href: "/courses",
+    label: "Courses",
+    icon: BookOpen,
+    roles: ["DEFAULT_USER"],
+    feature: "lms",
   },
   { href: "/statistics", label: "Statistics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -172,13 +185,27 @@ export function Sidebar() {
     return realmAccess ? realmAccess.roles : [];
   };
 
+  const getRealmFeatures = () => {
+    if (!keycloak.tokenParsed) return [];
+    const features = keycloak.tokenParsed.features;
+    if (!features) return [];
+    return features;
+  };
+
   const userRoles = getUserRoles();
+  const realmFeatures = getRealmFeatures();
 
   const getLinksToDisplay = () => {
     if (isAdminRoute) return adminLinks;
     if (isContentManagerRoute) return contentManagerLinks;
     return userLinks.filter((link) => {
       if (!link.roles) return true;
+      let hasAcess = false;
+
+      if (link.feature && !realmFeatures[link.feature]) {
+        return false;
+      }
+
       return link.roles.some((role) => userRoles.includes(role));
     });
   };

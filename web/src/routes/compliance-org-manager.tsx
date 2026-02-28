@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { apiClient } from "../lib/api-client";
 
 type CompliancePolicyResponse = {
   tenant: string;
@@ -183,16 +184,12 @@ function ComplianceOrgManager() {
     setMessage(null);
     try {
       const [policyRes, quizRes] = await Promise.all([
-        apiClient
-          .get<CompliancePolicyResponse>(
-            `/org-manager/${encodeURIComponent(realm)}/compliance/policy`
-          )
-          .then((r) => r.data),
-        apiClient
-          .get<ComplianceQuizResponse>(
-            `/org-manager/${encodeURIComponent(realm)}/compliance/quiz`
-          )
-          .then((r) => r.data),
+        apiClient.get<CompliancePolicyResponse>(
+          `/org-manager/${encodeURIComponent(realm)}/compliance/policy`
+        ),
+        apiClient.get<ComplianceQuizResponse>(
+          `/org-manager/${encodeURIComponent(realm)}/compliance/quiz`
+        ),
       ]);
       setPolicy(policyRes);
       setPolicyDraft(policyRes.content_md || "");
@@ -238,12 +235,10 @@ function ComplianceOrgManager() {
     setSavingPolicy(true);
     setMessage(null);
     try {
-      const resp = await apiClient
-        .put<CompliancePolicyResponse>(
-          `/org-manager/${encodeURIComponent(realm)}/compliance/policy`,
-          { content_md: policyDraft }
-        )
-        .then((r) => r.data);
+      const resp = await apiClient.put<CompliancePolicyResponse>(
+        `/org-manager/${encodeURIComponent(realm)}/compliance/policy`,
+        { content_md: policyDraft }
+      );
       setPolicy(resp);
       setPolicyDraft(resp.content_md);
       setMessage("Policy updated successfully.");
@@ -288,13 +283,10 @@ function ComplianceOrgManager() {
       if (filename.endsWith(".pdf") || file.type === "application/pdf") {
         const formData = new FormData();
         formData.append("file", file);
-        const resp = await apiClient
-          .post<ComplianceImportResponse>(
-            `/org-manager/${encodeURIComponent(realm)}/compliance/policy/import`,
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } }
-          )
-          .then((r) => r.data);
+        const resp = await apiClient.post<ComplianceImportResponse>(
+          `/org-manager/${encodeURIComponent(realm)}/compliance/policy/import`,
+          formData
+        );
         if (!resp.content_md?.trim()) {
           setMessage("Imported PDF has no usable text.");
           return;
@@ -329,16 +321,14 @@ function ComplianceOrgManager() {
         answer_index: question.answer_index,
         feedback: question.feedback,
       }));
-      const resp = await apiClient
-        .put<ComplianceQuizResponse>(
-          `/org-manager/${encodeURIComponent(realm)}/compliance/quiz`,
-          {
-            question_bank: payloadQuestions,
-            question_count: quizSettings.question_count,
-            passing_score: quizSettings.passing_score,
-          }
-        )
-        .then((r) => r.data);
+      const resp = await apiClient.put<ComplianceQuizResponse>(
+        `/org-manager/${encodeURIComponent(realm)}/compliance/quiz`,
+        {
+          question_bank: payloadQuestions,
+          question_count: quizSettings.question_count,
+          passing_score: quizSettings.passing_score,
+        }
+      );
       setQuiz(resp);
       setQuizDraft(
         (resp.question_bank || []).map((question) => ({
