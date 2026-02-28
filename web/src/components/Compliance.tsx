@@ -3,7 +3,9 @@ import { createPortal } from "react-dom";
 import { AlertTriangle, BookOpen, CheckCircle2, Loader2, ShieldCheck, Timer, RotateCcw, ArrowUpRight } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import ReactMarkdown from "react-markdown";
-import { apiClient } from "../lib/api-client";
+import apiClient from "../helper/header-injector";
+import { useLocation } from "@tanstack/react-router";
+import { isComplianceEligibleUser } from "@/lib/compliance-eligibility";
 
 const LOCAL_STORAGE_KEY = "compliance-quiz-failure";
 
@@ -54,6 +56,7 @@ function formatDate(iso?: string | null) {
 
 export default function ComplianceFlow() {
   const { keycloak, initialized } = useKeycloak();
+  const routerLocation = useLocation();
   const portalRef = useRef<HTMLElement | null>(null);
   const ownsPortalRef = useRef(false);
   const createdPortalRef = useRef(false);
@@ -141,18 +144,16 @@ export default function ComplianceFlow() {
     };
   }, []);
 
-  const realmRoles = useMemo(() => {
-    const roles = (keycloak.tokenParsed?.realm_access?.roles || []).map((r) =>
-      String(r).toLowerCase()
-    );
-    return new Set(roles);
-  }, [keycloak.tokenParsed]);
-  const isAdminContext =
-    typeof window !== "undefined" &&
-    (location.pathname.startsWith("/admin") ||
-      keycloak.tokenParsed?.iss?.includes("/realms/master") ||
-      realmRoles.has("admin"));
-  const isOrgManager = realmRoles.has("org_manager");
+  const isEligibleUser = useMemo(
+    () =>
+      isComplianceEligibleUser({
+        initialized,
+        authenticated: !!keycloak.authenticated,
+        tokenParsed: keycloak.tokenParsed,
+        pathname: routerLocation.pathname,
+      }),
+    [initialized, keycloak.authenticated, keycloak.tokenParsed, routerLocation.pathname]
+  );
 
   const slugify = (text: string) =>
     text
@@ -286,10 +287,10 @@ export default function ComplianceFlow() {
   useEffect(() => {
     if (!initialized) return;
     if (!keycloak.authenticated || !keycloak.token) return;
-    if (isAdminContext || isOrgManager) return; // skip compliance for admin/org manager
+    if (!isEligibleUser) return;
     void loadStatusAndData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialized, keycloak.authenticated, keycloak.token]);
+  }, [initialized, keycloak.authenticated, keycloak.token, isEligibleUser]);
 
   useEffect(() => {
     if (result?.cooldown_seconds_remaining && !result.passed) {
@@ -381,7 +382,7 @@ export default function ComplianceFlow() {
     }
   };
 
-  if (isAdminContext || isOrgManager) {
+  if (!isEligibleUser) {
     return null;
   }
 
