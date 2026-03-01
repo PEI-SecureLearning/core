@@ -199,6 +199,28 @@ class TestUpdateCampaignStatuses:
 
     # TODO: your tests here
 
+    def test_update_campaign_status_to_running(
+        self, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+    ):
+        """SCHEDULED campaign whose begin_date has passed should transition to RUNNING."""
+        from src.tasks.scheduler import update_campaign_statuses
+
+        campaign = make_campaign(
+            session,
+            realm_name=sample_realm.name,
+            sending_profile_id=sample_sending_profile.id,
+            status=CampaignStatus.SCHEDULED,
+            begin_date=past(hours=2),
+            end_date=future(days=1),
+        )
+
+        update_campaign_statuses()
+
+        session.expire_all()
+        updated = session.get(Campaign, campaign.id)
+        assert updated.status == CampaignStatus.RUNNING
+
+
 
 # ============================================================================
 # Tests – create_emails_for_ready_campaigns
