@@ -189,7 +189,7 @@ class user_handler:
 
     def is_valid_role(self, role: str) -> str:
 
-        allowed_roles = {"ORG_MANAGER", "CONTENT_MANAGER", "DEFAULT_USER"}
+        allowed_roles = {"ORG_MANAGER", "DEFAULT_USER"}
         role_clean = (role or "").strip().upper()
 
         if not role_clean:

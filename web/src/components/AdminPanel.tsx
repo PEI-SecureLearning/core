@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import axios, { AxiosError } from 'axios'
 import { useKeycloak } from '@react-keycloak/web'
 import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { toast } from 'sonner'
+import{apiClient} from '../lib/api-client'
 
 export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
@@ -60,21 +60,9 @@ export function CreateTenantPage() {
     }
 
     const getCreateTenantErrorMessage = (error: unknown): string => {
-        if (!axios.isAxiosError(error)) return 'Failed to create tenant. Please try again.'
-
-        const axiosError = error as AxiosError<{ detail?: unknown }>
-        const status = axiosError.response?.status
-        const detailText = extractDetailText(axiosError.response?.data?.detail)
-        const lowered = `${detailText} ${axiosError.message || ''}`.toLowerCase()
-
-        if (lowered.includes('already exists') || lowered.includes('duplicate') || lowered.includes('conflict') || status === 409) {
-            return `A tenant named "${realmName}" already exists. Please choose another name.`
-        }
-        if (lowered.includes('domain')) return `The domain "${domain}" is invalid or already in use.`
-        if (lowered.includes('email')) return `The admin email "${adminEmail}" is invalid for this tenant.`
-        if (!axiosError.response) return 'Could not reach the server. Check your connection and try again.'
-
-        return getStatusErrorMessage(status) || detailText || 'Failed to create tenant. Please try again.'
+        // The fetch-based client throws plain Error with message including statusText.
+        // We can't reliably parse JSON body here, so return generic message.
+        return 'Failed to create tenant. Please try again.'
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -88,52 +76,37 @@ export function CreateTenantPage() {
             }
 
             try {
-                await axios.get(
-                    `${import.meta.env.VITE_API_URL}/realms`,
-                    {
-                        params: { domain: normalizedDomain },
-                        headers: {
-                            Authorization: `Bearer ${keycloak.token}`,
-                        },
-                    }
+                await apiClient.get(
+                    `/realms?domain=${encodeURIComponent(normalizedDomain)}`
                 )
                 toast.error(`The domain "${normalizedDomain}" is already in use.`)
                 return
             } catch (lookupError) {
-                if (axios.isAxiosError(lookupError)) {
-                    const status = lookupError.response?.status
+                if (lookupError instanceof Error && 'status' in lookupError) {
+                    const status = (lookupError as any).status as number
                     if (status && status !== 404) {
                         throw lookupError
                     }
                 }
+                // any error means the domain was not found or another issue; continue
             }
 
-            await axios.post(
-                `${import.meta.env.VITE_API_URL}/realms`,
+            await apiClient.post(
+                `/realms`,
                 {
                     name: realmName,
                     domain: normalizedDomain,
                     adminEmail,
                     features
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${keycloak.token}`,
-                    },
                 }
             )
             if (logoFile) {
                 const formData = new FormData()
                 formData.append('file', logoFile)
                 try {
-                    await axios.post(
-                        `${import.meta.env.VITE_API_URL}/realms/${encodeURIComponent(realmName)}/logo`,
-                        formData,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${keycloak.token}`,
-                            },
-                        }
+                    await apiClient.post(
+                        `/realms/${encodeURIComponent(realmName)}/logo`,
+                        formData
                     )
                 } catch (logoError) {
                     console.error('Error uploading logo:', logoError)
@@ -155,10 +128,10 @@ export function CreateTenantPage() {
     }
 
     return (
-        <div className="h-full w-full bg-gradient-to-br from-gray-50 to-purple-50/30 flex">
-            <div className="h-full w-full max-w-6xl mx-auto p-6 flex gap-8">
+        <div className="h-full w-full bg-gradient-to-br from-gray-50 to-purple-50/30 overflow-y-auto">
+            <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 flex flex-col lg:flex-row gap-6 lg:gap-8">
                 {/* Scrollable form section */}
-                <div className="flex-1 h-full overflow-y-auto pr-2">
+                <div className="flex-1 min-w-0">
                     <TenantForm
                         realmName={realmName}
                         setRealmName={setRealmName}
@@ -174,8 +147,8 @@ export function CreateTenantPage() {
                     />
                 </div>
 
-                {/* Fixed preview panel - doesn't scroll */}
-                <div className="flex-shrink-0">
+                {/* Preview panel - stacks below form on small screens */}
+                <div className="w-full lg:w-80 lg:flex-shrink-0">
                     <PreviewPanel
                         realmName={realmName}
                         features={features}

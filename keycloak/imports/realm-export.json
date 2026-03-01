@@ -2628,6 +2628,10 @@
         {
           "name": "admin",
           "description": "Platform administrator role"
+        },
+        {
+          "name": "CONTENT_MANAGER",
+          "description": "Content manager role"
         }
       ]
     },
@@ -2644,6 +2648,19 @@
         "realmRoles": [
           "admin"
         ]
+      },
+      {
+        "username": "content_manager",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "admin"
+          }
+        ],
+        "realmRoles": [
+          "CONTENT_MANAGER"
+        ]
       }
     ],
     "clients": [
@@ -2653,7 +2670,9 @@
         "publicClient": true,
         "redirectUris": [
           "${WEB_URL}/admin/*",
-          "${WEB_URL}/admin/"
+          "${WEB_URL}/admin/",
+          "${WEB_URL}/content-manager/*",
+          "${WEB_URL}/content-manager/"
         ],
         "webOrigins": [
           "${WEB_URL}"
@@ -2661,7 +2680,7 @@
         "standardFlowEnabled": true,
         "directAccessGrantsEnabled": true,
         "attributes": {
-          "post.logout.redirect.uris": "${WEB_URL}/admin/*",
+          "post.logout.redirect.uris": "${WEB_URL}/admin/*##${WEB_URL}/content-manager/*",
           "content.-security-policy": "frame-src 'self'; frame-ancestors 'self' ${WEB_URL}; object-src 'none'"
         },
         "protocolMappers": [
@@ -2715,6 +2734,24 @@
                   "name": "manage"
                 }
               ]
+            },
+            {
+              "name": "content-manager",
+              "type": "urn:api:resources:content-manager",
+              "ownerManagedAccess": false,
+              "displayName": "Content Manager Resource",
+              "attributes": {},
+              "uris": [
+                "/api/content/*"
+              ],
+              "scopes": [
+                {
+                  "name": "view"
+                },
+                {
+                  "name": "manage"
+                }
+              ]
             }
           ],
           "policies": [
@@ -2737,6 +2774,27 @@
               "config": {
                 "resources": "[\"admin\"]",
                 "applyPolicies": "[\"admin Role Policy\"]"
+              }
+            },
+            {
+              "name": "content-manager Role Policy",
+              "description": "Policy that grants access to users with content manager role",
+              "type": "role",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "roles": "[{\"id\":\"CONTENT_MANAGER\",\"required\":false}]"
+              }
+            },
+            {
+              "name": "content-manager Permission",
+              "description": "Permission for content manager resource",
+              "type": "resource",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "resources": "[\"content-manager\"]",
+                "applyPolicies": "[\"content-manager Role Policy\"]"
               }
             }
           ],

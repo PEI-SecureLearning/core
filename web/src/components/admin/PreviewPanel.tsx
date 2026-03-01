@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { Rocket } from 'lucide-react'
 import { PreviewPanelHeader } from './PreviewPanelHeader'
 import { PreviewPanelLogo } from './PreviewPanelLogo'
 import { PreviewPanelDetails } from './PreviewPanelDetails'
@@ -20,7 +19,7 @@ export function PreviewPanel({
     handleSubmit
 }: PreviewPanelProps) {
     return (
-        <div className="w-80 flex flex-col gap-4">
+        <div className="w-full flex flex-col gap-4">
             <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border border-purple-100/50 overflow-hidden shadow-xl shadow-purple-100/30">
                 <PreviewPanelHeader />
                 <PreviewPanelLogo logoPreviewUrl={logoPreviewUrl} />
@@ -40,7 +39,7 @@ export function PreviewPanel({
             </div>
 
             <Button
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white h-14 text-lg font-semibold rounded-2xl shadow-xl shadow-purple-200/50 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-14 text-lg font-semibold rounded-2xl shadow-xl shadow-purple-200/50 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                 onClick={handleSubmit}
                 disabled={isLoading}
             >
@@ -51,7 +50,6 @@ export function PreviewPanel({
                     </span>
                 ) : (
                     <span className="flex items-center gap-2">
-                        <Rocket className="w-5 h-5" />
                         Create Tenant
                     </span>
                 )}

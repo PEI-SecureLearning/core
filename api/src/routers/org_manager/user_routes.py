@@ -2,6 +2,7 @@
 
 import csv
 import codecs
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
@@ -63,7 +64,7 @@ def delete_user(
 
 
 @router.post("/upload", dependencies=[Depends(Roles("org_manager", "manage"))])
-def upload_user_csv(file: UploadFile = File(...)):
+def upload_user_csv(file: Annotated[UploadFile, File(...)]):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
     reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
     data = list(reader)

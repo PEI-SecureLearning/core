@@ -7,16 +7,16 @@ import SendingProfilesHeader from "@/components/sending-profiles/SendingProfiles
 import SendingProfilesGrid from "@/components/sending-profiles/SendingProfilesGrid";
 import SendingProfilesTable from "@/components/sending-profiles/SendingProfilesTable";
 
-// A API que vamos criar a seguir
 import {
   fetchSendingProfiles,
   deleteSendingProfile,
 } from "@/services/sendingProfilesApi";
-import { type SendingProfile } from "@/types/sendingProfile";
+import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
+
 export default function SendingProfilesPage() {
   const { keycloak } = useKeycloak();
   const [view, setView] = useState<"grid" | "table">("grid");
-  const [profiles, setProfiles] = useState<SendingProfile[]>([]);
+  const [profiles, setProfiles] = useState<SendingProfileDisplayInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // --- 1. Sacar o Realm do Token (A tua lógica "marafada") ---

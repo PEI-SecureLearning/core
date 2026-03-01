@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import apiClient from "@/helper/header-injector";
 
 type CompliancePolicyResponse = {
   tenant: string;
@@ -516,12 +515,14 @@ function ComplianceOrgManager() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              data-testid="add-question-btn"
               className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 cursor-pointer"
               onClick={addQuestion}
             >
               Add question
             </button>
             <button
+              data-testid="save-quiz-btn"
               className="px-4 py-2 rounded-lg bg-purple-700 text-white text-sm hover:bg-purple-800 disabled:opacity-60 cursor-pointer"
               onClick={saveQuiz}
               disabled={savingQuiz}
@@ -622,6 +623,7 @@ function ComplianceOrgManager() {
             <div className="mt-3 flex items-center justify-center gap-4">
               <button
                 type="button"
+                data-testid="decrease-passing-score-btn"
                 className="h-12 w-12 rounded-full border border-gray-200 text-xl font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                 onClick={() =>
                   setQuizSettings((prev) => {
@@ -643,6 +645,7 @@ function ComplianceOrgManager() {
               </button>
               <div
                 id="passing-score"
+                data-testid="passing-score-display"
                 className="h-12 min-w-[80px] rounded-xl border border-gray-200 text-gray-900 flex items-center justify-center text-base font-semibold"
               >
                 {quizSettings.passing_score}%
@@ -727,6 +730,7 @@ function ComplianceOrgManager() {
                   </button>
                   <button
                     type="button"
+                    data-testid={`remove-question-${qIndex}`}
                     className="text-xs text-red-600 hover:text-red-700 cursor-pointer"
                     onClick={() => removeQuestion(qIndex)}
                   >
@@ -853,8 +857,8 @@ function ComplianceOrgManager() {
                   </div>
                 </div>
               )}
-          </div>
-        );
+            </div>
+          );
         })}
       </section>
       {showPreviewModal && (

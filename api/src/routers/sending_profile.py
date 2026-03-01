@@ -1,8 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import RedirectResponse, Response
 
+from src.core.security import Roles
 from src.core.dependencies import CurrentRealm, SessionDep
-from src.models.sending_profile import SendingProfileCreate
+from src.models.sending_profile import SendingProfileCreate, SendingProfile
 from src.services.sending_profile import SendingProfileService
 
 
@@ -11,8 +12,16 @@ router = APIRouter()
 service = SendingProfileService()
 
 
+@router.post("/sending-profiles/test", description="Test sending profile configuration",dependencies=[Depends(Roles("org_manager", "manage"))])
+def test_sending_profile_configuration(
+    profile_data: SendingProfileCreate
+):
+    is_valid, message = service._test_sending_profile_configuration(profile_data)
+    return Response(content=message, status_code=200 if is_valid else 400)
+
+
 @router.post(
-    "/sending-profiles", description="Create a new sending profile", status_code=201
+    "/sending-profiles", description="Create a new sending profile", status_code=201,dependencies=[Depends(Roles("org_manager", "manage"))]
 )
 def create_sending_profile(
     profile_data: SendingProfileCreate,
@@ -24,7 +33,7 @@ def create_sending_profile(
 
 
 @router.get(
-    "/sending-profiles", description="Fetch all sending profiles", status_code=200
+    "/sending-profiles", description="Fetch all sending profiles", status_code=200,dependencies=[Depends(Roles("org_manager", "view"))]
 )
 def get_sending_profiles(
     current_realm: CurrentRealm,
@@ -35,7 +44,7 @@ def get_sending_profiles(
 
 
 @router.delete(
-    "/sending-profiles/{id}", description="Delete a sending profile", status_code=200
+    "/sending-profiles/{id}", description="Delete a sending profile", status_code=200,dependencies=[Depends(Roles("org_manager", "manage"))]
 )
 def delete_sending_profile(
     id: int,
@@ -46,7 +55,7 @@ def delete_sending_profile(
 
 
 @router.put(
-    "/sending-profiles/{id}", description="Update a sending profile", status_code=200
+    "/sending-profiles/{id}", description="Update a sending profile", status_code=200,dependencies=[Depends(Roles("org_manager", "manage"))]
 )
 def update_sending_profile(
     id: int,
@@ -60,7 +69,7 @@ def update_sending_profile(
 
 
 @router.get(
-    "/sending-profiles/{id}", description="Fetch sending profile by ID", status_code=200
+    "/sending-profiles/{id}", description="Fetch sending profile by ID", status_code=200,dependencies=[Depends(Roles("org_manager", "view"))]
 )
 def get_sending_profile_by_id(
     id: int,

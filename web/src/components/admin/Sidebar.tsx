@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Users, Building2, FileText, Activity, Settings } from 'lucide-react'
+import { Users, Building2, Activity, Settings } from 'lucide-react'
 
 export function Sidebar() {
     return (
@@ -24,14 +24,7 @@ export function Sidebar() {
                     <Building2 size={20} />
                     <span className="font-medium">Tenants</span>
                 </Link>
-                <Link
-                    to="/admin/terms"
-                    className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors"
-                    activeProps={{ className: 'bg-blue-50 text-blue-600' }}
-                >
-                    <FileText size={20} />
-                    <span className="font-medium">Terms & Conditions</span>
-                </Link>
+
                 <Link
                     to="/admin/logs"
                     className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors"

@@ -11,6 +11,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+RUN npx @tanstack/router-cli generate --path src/routes
+
 # Expose Vite dev server port
 EXPOSE 5173
 

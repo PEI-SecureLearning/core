@@ -12,10 +12,14 @@ import {
   useCampaign,
 } from "@/components/campaigns/new-campaign/CampaignContext";
 import { toast } from "sonner";
+import { z } from "zod";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
 export const Route = createFileRoute("/campaigns/new")({
+  validateSearch: z.object({
+    groupId: z.string().optional(),
+  }),
   component: RouteComponent,
 });
 
@@ -151,9 +155,12 @@ function CampaignStepper() {
 }
 
 function RouteComponent() {
+  const { groupId } = Route.useSearch();
+  const initialGroupIds = groupId ? [groupId] : [];
+
   return (
     <div className="size-full p-6 bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
-      <CampaignProvider>
+      <CampaignProvider initialGroupIds={initialGroupIds}>
         <CampaignStepper />
       </CampaignProvider>
     </div>

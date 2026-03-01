@@ -88,20 +88,20 @@ class StatsHandler:
         user_campaigns: dict[str, dict[str, int]] = {}
 
         for campaign in campaigns:
-            users_in_campaign = set()
-            users_fell_in_campaign = set()
+            # Track which users were targeted and which fell for this campaign
+            targeted_users = {s.user_id for s in campaign.email_sendings}
+            fallen_users = {
+                s.user_id for s in campaign.email_sendings 
+                if s.clicked_at or s.phished_at
+            }
 
-            for sending in campaign.email_sendings:
-                users_in_campaign.add(sending.user_id)
-                if sending.clicked_at or sending.phished_at:
-                    users_fell_in_campaign.add(sending.user_id)
-
-            for user_id in users_in_campaign:
-                if user_id not in user_campaigns:
-                    user_campaigns[user_id] = {"targeted": 0, "fell": 0}
-                user_campaigns[user_id]["targeted"] += 1
-                if user_id in users_fell_in_campaign:
-                    user_campaigns[user_id]["fell"] += 1
+            # Update stats for each targeted user
+            for user_id in targeted_users:
+                if user_id not in user_stats:
+                    user_stats[user_id] = {"targeted": 0, "fell": 0}
+                user_stats[user_id]["targeted"] += 1
+                if user_id in fallen_users:
+                    user_stats[user_id]["fell"] += 1
 
         return user_campaigns
 
