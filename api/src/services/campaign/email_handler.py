@@ -1,5 +1,5 @@
 import datetime
-import random
+import secrets
 
 from sqlmodel import Session
 
@@ -81,7 +81,7 @@ class EmailHandler:
             EmailSending(
                 user_id=user_id,
                 campaign_id=campaign.id,
-                phishing_kit_id=random.choice(kits).id,
+                phishing_kit_id=secrets.choice(kits).id,
                 scheduled_date=campaign.begin_date
                 + datetime.timedelta(seconds=i * campaign.sending_interval_seconds),
                 email_to=user_data.get("email", ""),
