@@ -3,7 +3,7 @@ import { useKeycloak } from '@react-keycloak/web'
 import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
-import { toast } from 'sonner'	
+import { toast } from 'sonner'
 
 export function CreateTenantPage() {
     const { keycloak } = useKeycloak()
