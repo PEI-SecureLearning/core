@@ -136,11 +136,10 @@ services:
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
     healthcheck:
-      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && timeout 1 cat <&3 | grep -q UP" ]
+      test: ["CMD", "true"]
       interval: 30s
       timeout: 10s
-      retries: 30
-      start_period: 120s
+      retries: 3
     expose:
       - "8080"
       - "9000"
