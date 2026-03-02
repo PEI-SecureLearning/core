@@ -122,7 +122,7 @@ sync_subtree() {
   fi
 
   git -C "$DEST" commit -m "$COMMIT_MSG"
-  git -C "$DEST" push origin main
+  git -C "$DEST" push origin HEAD:main
   ok "$REPO — pushed to github.com/$ORG/$REPO"
 }
 
