@@ -112,7 +112,7 @@ def _create_kit(session: Session, realm_name: str = "test-realm", suffix: str = 
     landing_tpl = LandingPageTemplate(name=f"LP-{suffix}", content_link=f"/lp/{suffix}")
     profile = SendingProfile(
         name=f"SP-{suffix}", smtp_host="localhost", smtp_port=25,
-        username="u", password="p", from_fname="F", from_lname="L",
+        username="u", password="", from_fname="F", from_lname="L",
         from_email="f@l.com", realm_name=realm_name
     )
     

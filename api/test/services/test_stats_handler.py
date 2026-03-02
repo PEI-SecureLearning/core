@@ -80,7 +80,7 @@ def sample_sending_profile(session: Session, sample_realm: Realm) -> SendingProf
         smtp_host="smtp.example.com",
         smtp_port=587,
         username="user@example.com",
-        password="password",
+        password="",
         from_fname="John",
         from_lname="Doe",
         from_email="john@example.com",

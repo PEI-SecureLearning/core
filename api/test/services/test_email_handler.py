@@ -82,7 +82,7 @@ class TestEmailHandlerSendToRabbitMQ:
 
     def test_send_email_success_with_kit_profile(self, service: CampaignService, mock_rabbitmq):
         """Verify it uses the sending profile from the phishing kit if present."""
-        profile = SendingProfile(name="Profile", smtp_host="host", smtp_port=25, username="u", password="p", from_fname="f", from_lname="l", from_email="kit@test.com", realm_name="test")
+        profile = SendingProfile(name="Profile", smtp_host="host", smtp_port=25, username="u", password="", from_fname="f", from_lname="l", from_email="kit@test.com", realm_name="test")
         template = EmailTemplate(name="Temp", subject="Sub", content_link="/link")
         
         kit = PhishingKit(name="Kit", realm_name="test")
@@ -106,7 +106,7 @@ class TestEmailHandlerSendToRabbitMQ:
 
     def test_send_email_success_fallback_to_campaign_profile(self, service: CampaignService, mock_rabbitmq):
         """Verify it falls back to the campaign defaults if kit profile is missing."""
-        camp_profile = SendingProfile(name="Camp Profile", smtp_host="host", smtp_port=25, username="u", password="p", from_fname="f", from_lname="l", from_email="camp@test.com", realm_name="test")
+        camp_profile = SendingProfile(name="Camp Profile", smtp_host="host", smtp_port=25, username="u", password="", from_fname="f", from_lname="l", from_email="camp@test.com", realm_name="test")
         template = EmailTemplate(name="Temp", subject="Sub", content_link="/link")
         
         kit = PhishingKit(name="Kit", realm_name="test")
@@ -149,7 +149,7 @@ class TestEmailHandlerSendToRabbitMQ:
 
     def test_send_email_missing_template_fails(self, service: CampaignService):
         """Verify an error is raised if the kit has no email template."""
-        profile = SendingProfile(name="Profile", smtp_host="host", smtp_port=25, username="u", password="p", from_fname="f", from_lname="l", from_email="kit@test.com", realm_name="test")
+        profile = SendingProfile(name="Profile", smtp_host="host", smtp_port=25, username="u", password="", from_fname="f", from_lname="l", from_email="kit@test.com", realm_name="test")
         
         kit = PhishingKit(name="Kit", realm_name="test")
         kit.sending_profile = profile
