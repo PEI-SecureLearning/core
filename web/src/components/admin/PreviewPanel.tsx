@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { Rocket } from 'lucide-react'
 import { PreviewPanelHeader } from './PreviewPanelHeader'
 import { PreviewPanelLogo } from './PreviewPanelLogo'
 import { PreviewPanelDetails } from './PreviewPanelDetails'

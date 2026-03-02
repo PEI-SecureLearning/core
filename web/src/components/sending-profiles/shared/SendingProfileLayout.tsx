@@ -61,7 +61,7 @@ export default function SendingProfileLayout({
   return (
     <div className="liquid-glass-container h-full w-full animate-fade-in relative overflow-hidden">
       {/* Background blobs */}
-      <div className="liquid-blob liquid-blob-1 bg-blue-400" />
+      <div className="liquid-blob liquid-blob-1 bg-purple-400" />
       <div className="liquid-blob liquid-blob-2 bg-indigo-400" />
       <div className="liquid-blob liquid-blob-3 bg-cyan-400" />
 

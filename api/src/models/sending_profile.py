@@ -4,8 +4,9 @@ from sqlmodel import Relationship, SQLModel, Field
 from src.models.custom_header import CustomHeaderCreate
 
 if TYPE_CHECKING:
-    from models.campaign import Campaign
-    from models.custom_header import CustomHeader
+    from src.models.campaign import Campaign
+    from src.models.custom_header import CustomHeader
+    from src.models.phishing_kit import PhishingKit
 
 
 class SendingProfile(SQLModel, table=True):
@@ -32,6 +33,7 @@ class SendingProfile(SQLModel, table=True):
         back_populates="profile",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
+    phishing_kits: list["PhishingKit"] = Relationship(back_populates="sending_profile")
     realm: Optional["Realm"] = Relationship(back_populates="sending_profiles")
 
 

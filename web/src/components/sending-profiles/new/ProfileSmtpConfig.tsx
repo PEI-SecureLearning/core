@@ -95,7 +95,7 @@ function ProfileSmtpConfig({
     <div className="liquid-glass-card p-6 relative z-10">
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-gray-800 font-semibold flex items-center gap-2">
-          <Server className="h-5 w-5 text-blue-500" />
+          <Server className="h-5 w-5 text-purple-500" />
           SMTP Server Details
         </h4>
         
@@ -157,7 +157,7 @@ function ProfileSmtpConfig({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-400" />
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
             <input
               type="password"
               value={password}
