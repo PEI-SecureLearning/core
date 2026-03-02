@@ -1,46 +1,173 @@
-import { test} from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-test('test', async ({ page }) => {
+const Q1 = {
+  id: 'e2e-q1',
+  prompt: 'What is the primary purpose of the compliance policy?',
+  options: ['To protect company data', 'To slow down work', 'To increase costs'],
+  answerIndex: 0,
+  feedback: 'The policy exists to protect company data and assets.',
+};
+
+const Q2 = {
+  id: 'e2e-q2',
+  prompt: 'What should you do if you suspect a security breach?',
+  options: ['Ignore it', 'Report it immediately to the security team'],
+  answerIndex: 1,
+  feedback: 'Always report suspected breaches immediately.',
+};
+
+async function fillQuestionCard(page: Page, idx: number, q: typeof Q1) {
+  const baseId = `question-${idx}`;
+
+  const idInput = page.locator(`#${baseId}-id`);
+  await idInput.waitFor({ state: 'visible', timeout: 15_000 });
+  await idInput.scrollIntoViewIfNeeded();
+  await idInput.fill(q.id);
+
+  await page.locator(`#${baseId}-prompt`).fill(q.prompt);
+
+  const cardLocator = page
+    .locator(`[data-testid="remove-question-${idx}"]`)
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+
+  const optionInputs = cardLocator.locator('input.flex-1');
+  await optionInputs.nth(0).fill(q.options[0]);
+  await optionInputs.nth(1).fill(q.options[1]);
+
+  for (let i = 2; i < q.options.length; i++) {
+    await cardLocator.getByRole('button', { name: 'Add option' }).click();
+    await page.waitForTimeout(150);
+    await optionInputs.nth(i).fill(q.options[i]);
+  }
+
+  await page.locator(`#${baseId}-answer`).selectOption({ index: q.answerIndex });
+
+  await page.locator(`#${baseId}-feedback`).fill(q.feedback);
+}
+
+test('createCompliance – builds quiz from zero and persists to server', async ({ page }) => {
+
   await page.goto('http://localhost:5173/');
   await page.getByRole('textbox', { name: 'name@company.com' }).click();
   await page.getByRole('textbox', { name: 'name@company.com' }).fill('user@ua.pt');
   await page.getByRole('button').click();
-  await page.getByRole('textbox', { name: 'Username or email' }).click();
   await page.getByRole('textbox', { name: 'Username or email' }).fill('org_manager');
-  await page.getByRole('textbox', { name: 'Password' }).click();
-  await page.getByRole('textbox', { name: 'Password' }).fill('admin');
-  await page.getByRole('textbox', { name: 'Password' }).press('Enter');
-  await page.getByRole('button', { name: 'Sign In' }).click();
   await page.getByRole('textbox', { name: 'Password' }).click();
   await page.getByRole('textbox', { name: 'Password' }).fill('1234');
   await page.getByRole('button', { name: 'Sign In' }).click();
+
+  await page.waitForURL('**/dashboard**', { timeout: 30_000 });
+  await page.waitForLoadState('domcontentloaded');
+
   await page.getByRole('link', { name: 'Compliance' }).click();
-  await page.getByRole('button', { name: 'Import file' }).click();
-  await page.getByText('# Remote Work Policy **').click();
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowRight');
-  await page.getByText('# Remote Work Policy **').press('ArrowLeft');
-  await page.getByText('# Remote Work Policy **').press('ArrowLeft');
-  await page.getByText('# Remote Work Policy **').fill('# Remote Work Policy\n\n**Classification:** Internal  \n**Version:** 1.0  \n**Document Owner:** XX Information Security Team  \n**Last Reviewed:** 01/06/2025\n\n---\n\n## Revision History\n| Version | Revision Date | Reviewer |\n| :--- | :--- | :--- |\n| 1.0 | 2025/06/01 | init |\n\n---\n\n## Content\n1. Remote Work Policy\n2. Purpose\n3. Scope\n4. Mobile Working Guidelines\n   * Device Security\n   * Physical Protection of Devices\n   * Handling of Confidential Information\n   * Incident Reporting\n5. Remote Working Guidelines\n   * Secure Workspace Setup\n   * Network and Connectivity Security\n   * Device Provisioning and BYOD\n   * Data Access and Storage \n   * Use of Communication Tools\n   * Legal and Regulatory Compliance\n6. Security Awareness and Training\n7. Related Documents\n8. Policy Compliance\n   * Compliance Measurement\n   * Exceptions\n   * Non-Compliance\n9. Continual Improvement\n\n---\n\n## Purpose\nThe purpose of this policy is to establish clear requirements for employees and authorised third parties who perform mobile or remote work. The aim is to ensure the confidentiality, integrity, and availability of company information and systems when accessed or processed outside of secure corporate environments.\n\n## Scope\nThis policy applies to all employees and authorised third-party users who access, process, or store company information while working remotely or using mobile devices. It covers both company-owned and personally-owned devices (Bring Your Own Device - BYOD) used for company purposes.\n\n## Mobile Working Guidelines\n\n### Device Security\nAll devices used for company work must:\n* Be secured with strong authentication (passwords, PINs, biometrics)\n* Have full-disk encryption enabled\n* Include and regularly update anti-malware protection\n* Be set to auto-lock after a defined period of inactivity\n* Be registered with the company for inventory and remote management\n\n### Physical Protection of Devices\nWhen connecting through public or untrusted networks, users must:\n* Use a company-approved VPN at all times\n* Avoid accessing or transmitting sensitive data unless VPN encryption is active\n* Disable automatic Wi-Fi connection to known public hotspots\n\n### Handling of Confidential Information\nWhen working in mobile settings:\n* Apply Clear Desk and Clear Screen principles\n* Avoid exposing confidential data on screens or printed material in public spaces\n* Secure paper records in transit (e.g., locked bags)\n* Use shredders or confidential disposal bins as per the Information Destruction Policy.\n\n### Incident Reporting\nAny suspected or actual loss, theft, or compromise of a device or information must be reported immediately to the Information Security team, following the Incident Management Procedure.\n\n---\n\n## Remote Working Guidelines\n\n### Secure Workspace Setup\nRemote workers must maintain a secure, dedicated workspace that limits access to authorised personnel only. Screens should not be visible to family members, guests, or the public.\n\n### Network and Connectivity Security\nAll remote access must:\n* Use a company-approved VPN connection\n* Be performed over secured home networks protected by strong Wi-Fi passwords and up-to-date router firmware\n* Prohibit the use of open, unprotected Wi-Fi for company work unless VPN is active\n\n### Device Provisioning and BYOD\nWhenever possible, employees should use company-issued devices. If BYOD is authorised, the following conditions apply:\n* The device must meet the company\'s minimum security standards\n* Security configurations (e.g., VPN, encryption, antivirus) must be enforced\n* Ensure the licensing of software used in the work context\n* Ensure access to network shares through authentication and segregation of privileges\n\n### Data Access and Storage Practices\nUsers must:\n* Access data via authorised cloud platforms or company servers (e.g., through VPN or web portals)\n* Never store company data on unapproved personal devices or local folders\n* Not sync company information to personal cloud accounts (e.g., Dropbox, iCloud) without prior approval\n* A form is used to clearly indicate the required access and an authorisation email or signature is provided.\n\n### Use of Communication Tools\nOnly company-approved communication platforms may be used to discuss or share confidential information. This includes video conferencing, email, chat, and file sharing.\n\n### Legal and Regulatory Compliance\nRemote work must be compliant with local laws, particularly regarding data protection, employment, and cybersecurity. Users must inform the company of any jurisdictional constraints affecting their remote working arrangement.\n\n---\n\n## Security Awareness and Training\nAll mobile and remote workers must:\n* Complete mandatory training on remote working security prior to engaging in remote work\n* Undergo periodic refresher training covering:\n  * Phishing and social engineering risks\n  * Proper handling of personal and confidential data\n  * Incident reporting and physical security\n  * Secure use of communication tools\n\n## Related Documents\n* Acceptable Use of Assets Policy\n* Information Security Policy\n* Clear Desk and Clear Screen Policy\n* Information Classification & Handling Policy\n\n---\n\n## Policy Compliance\n\n### Compliance Measurement\nThe Security Team will verify compliance to this policy through various methods, including but not limited to, business tool reports, internal and external audits, and feedback to the policy owner.\n\n### Exceptions\nAny exception to the policy must be approved and recorded by the Information Security Manager.\n\n### Non-Compliance\nAny employee found to be in breach of this policy may be subject to disciplinary proceedings, in accordance with the applicable provisions of the Portuguese Labour Code. Where justified, this may include the formal initiation of a disciplinary process, with the issuance of a statement of offence ("nota de culpa"), and may lead to sanctions up to and including dismissal.\n\n## Continual Improvement\nThis policy is reviewed and updated whenever necessary and at least once per year.\n\n\n');
-  await page.getByRole('button', { name: 'Increase question count' }).click();
-  await page.getByRole('button', { name: 'Question 7 What is required' }).click();
-  await page.getByRole('textbox', { name: 'Prompt' }).click();
-  await page.getByRole('textbox', { name: 'Prompt' }).fill('Testss ');
-  await page.locator('div').filter({ hasText: 'Compliance ManagementUpdate' }).nth(3).click();
-  await page.getByRole('button', { name: 'Collapse', exact: true }).click();
-  await page.getByRole('button', { name: 'Decrease passing score' }).dblclick();
-  await page.getByRole('button', { name: 'Decrease passing score' }).click();
-  await page.getByRole('button', { name: 'Save Quiz' }).click();
-  await page.getByRole('button', { name: 'Question 7 Testss' }).click();
-  await page.goto('http://localhost:5173/compliance-org-manager');
-  await page.getByRole('button', { name: 'Question 7 Testss' }).click();
-  await page.getByRole('textbox', { name: 'Prompt' }).click();
+  await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
+  await page.waitForLoadState('domcontentloaded');
+
+  const removeFirstBtn = page.locator('[data-testid="remove-question-0"]');
+
+  await page.waitForTimeout(500);
+  await page.waitForTimeout(500);
+
+  let questionCount = await page.locator('[data-testid^="remove-question-"]').count();
+  while (questionCount > 0) {
+    await removeFirstBtn.waitFor({ state: 'visible', timeout: 5_000 });
+    await removeFirstBtn.click();
+    await page.waitForFunction(
+      (prevCount) => document.querySelectorAll('[data-testid^="remove-question-"]').length < prevCount,
+      questionCount,
+      { timeout: 5_000 },
+    );
+    questionCount = await page.locator('[data-testid^="remove-question-"]').count();
+  }
+
+  await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(0);
+
+  await page.locator('[data-testid="add-question-btn"]').click();
+
+
+  const newCardLocator = page
+    .locator('[data-testid="remove-question-0"]')
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+
+  const expandBtn = newCardLocator.getByRole('button', { name: 'Expand' });
+  if (await expandBtn.isVisible({ timeout: 500 }).catch(() => false)) {
+    await expandBtn.click();
+  }
+
+  await fillQuestionCard(page, 0, Q1);
+
+  const decreaseCountBtn = page.getByRole('button', { name: 'Decrease question count' });
+  while (!(await decreaseCountBtn.isDisabled())) {
+    await decreaseCountBtn.click();
+    await page.waitForTimeout(100);
+  }
+  await expect(page.locator('#question-count')).toContainText('1');
+
+  const decreaseScoreBtn = page.locator('[data-testid="decrease-passing-score-btn"]');
+  await decreaseScoreBtn.waitFor({ state: 'visible' });
+  while (!(await decreaseScoreBtn.isDisabled())) {
+    await decreaseScoreBtn.click();
+    await page.waitForTimeout(100);
+  }
+  await expect(page.locator('[data-testid="passing-score-display"]')).toContainText('0%');
+
+  const [saveResponse] = await Promise.all([
+    page.waitForResponse(
+      (resp) => resp.url().includes('/compliance/quiz') && resp.request().method() === 'PUT',
+      { timeout: 15_000 },
+    ),
+    page.locator('[data-testid="save-quiz-btn"]').click(),
+  ]);
+  expect(saveResponse.status()).toBe(200);
+
+  await expect(page.getByText('Quiz updated successfully.')).toBeVisible({ timeout: 10_000 });
+
+  await page.getByRole('link', { name: 'Templates' }).click();
+  await page.waitForURL('**/templates**', { timeout: 15_000 });
+  await page.getByRole('link', { name: 'Compliance' }).click();
+  await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
+  await page.waitForLoadState('domcontentloaded');
+
+  await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(1);
+  await expect(page.locator('#question-count')).toContainText('1');
+  await expect(page.locator('[data-testid="passing-score-display"]')).toContainText('0%');
+
+  await page.locator('[data-testid="add-question-btn"]').click();
+  await page.locator('[data-testid="remove-question-1"]').waitFor({ state: 'visible', timeout: 5_000 });
+
+  const card2Locator = page
+    .locator('[data-testid="remove-question-1"]')
+    .locator('xpath=ancestor::div[contains(@class,"rounded-lg")][1]');
+
+  const expandBtn2 = card2Locator.getByRole('button', { name: 'Expand' });
+  if (await expandBtn2.isVisible({ timeout: 500 }).catch(() => false)) {
+    await expandBtn2.click();
+  }
+
+  await fillQuestionCard(page, 1, Q2);
+
+  const increaseCountBtn = page.getByRole('button', { name: 'Increase question count' });
+  await increaseCountBtn.click();
+  await page.waitForTimeout(100);
+  await expect(page.locator('#question-count')).toContainText('2');
+
+  const [save2Response] = await Promise.all([
+    page.waitForResponse(
+      (resp) => resp.url().includes('/compliance/quiz') && resp.request().method() === 'PUT',
+      { timeout: 15_000 },
+    ),
+    page.locator('[data-testid="save-quiz-btn"]').click(),
+  ]);
+  expect(save2Response.status()).toBe(200);
+
+  await expect(page.getByText('Quiz updated successfully.')).toBeVisible({ timeout: 10_000 });
+
+  await page.getByRole('link', { name: 'Templates' }).click();
+  await page.waitForURL('**/templates**', { timeout: 15_000 });
+  await page.getByRole('link', { name: 'Compliance' }).click();
+  await page.waitForURL('**/compliance-org-manager**', { timeout: 15_000 });
+  await page.waitForLoadState('domcontentloaded');
+
+  await expect(page.locator('[data-testid^="remove-question-"]')).toHaveCount(2);
+  await expect(page.locator('#question-count')).toContainText('2');
 });

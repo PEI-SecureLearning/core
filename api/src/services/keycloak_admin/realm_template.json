@@ -513,10 +513,6 @@
             "description": "Custom administrator role for the organization"
         },
         {
-            "name": "CONTENT_MANAGER",
-            "description": "Custom role for read-only access"
-        },
-        {
             "name": "DEFAULT_USER",
             "description": "Custom role for read-only access"
         }
@@ -584,6 +580,24 @@
                                 "name": "manage"
                             }
                         ]
+                    },
+                    {
+                        "name": "default_user",
+                        "type": "urn:api:resources:default_user",
+                        "ownerManagedAccess": false,
+                        "displayName": "Default User Resource",
+                        "attributes": {},
+                        "uris": [
+                            "/api/default-user/*"
+                        ],
+                        "scopes": [
+                            {
+                                "name": "view"
+                            },
+                            {
+                                "name": "manage"
+                            }
+                        ]
                     }
                 ],
                 "policies": [
@@ -606,6 +620,27 @@
                         "config": {
                             "resources": "[\"org_manager\"]",
                             "applyPolicies": "[\"ORG_MANAGER Role Policy\"]"
+                        }
+                    },
+                    {
+                        "name": "default_user Permission",
+                        "description": "Permission for default_user resource",
+                        "type": "resource",
+                        "logic": "POSITIVE",
+                        "decisionStrategy": "UNANIMOUS",
+                        "config": {
+                            "resources": "[\"default_user\"]",
+                            "applyPolicies": "[\"DEFAULT_USER Role Policy\"]"
+                        }
+                    },
+                    {
+                        "name": "DEFAULT_USER Role Policy",
+                        "description": "Policy that grants access to users with DEFAULT_USER role",
+                        "type": "role",
+                        "logic": "POSITIVE",
+                        "decisionStrategy": "UNANIMOUS",
+                        "config": {
+                            "roles": "[{\"id\":\"DEFAULT_USER\",\"required\":false}]"
                         }
                     }
                 ],

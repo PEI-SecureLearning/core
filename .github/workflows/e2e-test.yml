@@ -1,0 +1,89 @@
+name: "E2E Tests"
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    env:
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      MONGO_ROOT_USER: ${{ secrets.MONGO_ROOT_USER }}
+      MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+      MONGO_USER: ${{ secrets.MONGO_USER }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      MONGO_DB: ${{ secrets.MONGO_DB }}
+      RABBITMQ_DEFAULT_USER: ${{ secrets.RABBITMQ_DEFAULT_USER }}
+      RABBITMQ_DEFAULT_PASS: ${{ secrets.RABBITMQ_DEFAULT_PASS }}
+      RABBITMQ_API_USER: ${{ secrets.RABBITMQ_API_USER }}
+      RABBITMQ_API_PASS: ${{ secrets.RABBITMQ_API_PASS }}
+      RABBITMQ_SMTP_USER: ${{ secrets.RABBITMQ_SMTP_USER }}
+      RABBITMQ_SMTP_PASS: ${{ secrets.RABBITMQ_SMTP_PASS }}
+      RABBITMQ_QUEUE: ${{ secrets.RABBITMQ_QUEUE }}
+      KEYCLOAK_ADMIN: ${{ secrets.KEYCLOAK_ADMIN }}
+      KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      WEB_URL: ${{ secrets.WEB_URL }}
+      API_URL: ${{ secrets.API_URL }}
+      API_INTERNAL_URL: ${{ secrets.API_INTERNAL_URL }}
+      KEYCLOAK_URL: ${{ secrets.KEYCLOAK_URL }}
+      KEYCLOAK_INTERNAL_URL: ${{ secrets.KEYCLOAK_INTERNAL_URL }}
+      RATE_LIMITER_MAX_REQUESTS: ${{ secrets.RATE_LIMITER_MAX_REQUESTS }}
+      RATE_LIMITER_TIME_WINDOW_SECONDS: ${{ secrets.RATE_LIMITER_TIME_WINDOW_SECONDS }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefix web
+
+      - name: Install Playwright Browsers (Chromium only)
+        run: cd web && npx playwright install --with-deps chromium
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4fd812986e6c8c2a69e18311145f9371337f27d4
+
+      - name: Build and Cache
+        uses: docker/bake-action@5be5f02ff8819ecd3092ea6b2e6261c31774f2b4
+        with:
+          files: deployment/docker-compose.dev.yml
+          load: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+
+      - name: Start containers
+        run: docker compose -f deployment/docker-compose.dev.yml up -d
+
+      - name: Run createTenant tests
+        working-directory: web
+        run: npx playwright test tests/createTenant.spec.ts --project=chromium --workers=1
+
+      - name: Run createUser tests
+        working-directory: web
+        run: npx playwright test tests/createUser.spec.ts --project=chromium --workers=1
+
+      - name: Run createUserGroup tests
+        working-directory: web
+        run: npx playwright test tests/createUserGroup.spec.ts --project=chromium --workers=1
+
+      - name: Run SendingProfile tests
+        working-directory: web
+        run: npx playwright test tests/SendingProfile.spec.ts --project=chromium --workers=1
+
+      - name: Run AlterComplicance tests
+        working-directory: web
+        run: npx playwright test tests/AlterComplicance.spec.ts --project=chromium --workers=1
+
+      - name: Stop containers
+        if: always()
+        run: docker compose -f deployment/docker-compose.dev.yml down

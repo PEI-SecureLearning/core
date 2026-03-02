@@ -9,7 +9,6 @@ import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
 
-// PKCE requires Web Crypto API which is only available in secure contexts (https or localhost)
 const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
 
 const initOptions: Keycloak.KeycloakInitOptions = {

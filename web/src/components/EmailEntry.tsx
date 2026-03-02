@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Sparkles, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import {apiClient} from '../lib/api-client'
 
 export const EmailEntry = () => {
     const [email, setEmail] = useState('');
@@ -19,8 +19,8 @@ export const EmailEntry = () => {
                 throw new Error("Invalid email address");
             }
 
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/realms?domain=${domain}`);
-            const realm = response.data.realm;
+            const resp = await apiClient.get(`/realms?domain=${encodeURIComponent(domain)}`);
+            const realm = resp.realm;
 
             if (realm) {
                 localStorage.setItem('user_realm', realm);
