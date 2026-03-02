@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import "../../css/dashcardmask.css";
 
 const hover_transition = {
@@ -32,14 +32,19 @@ interface DashCardProps {
 export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, addTo }: DashCardProps) {
     const [hovered, setHovered] = useState(false);
     const [plusHovered, setPlusHovered] = useState(false);
+    const navigate = useNavigate();
 
     return (
         <Link to={to} className="block h-full relative">
 
             {addTo && (
-                <Link
-                    to={addTo}
-                    onClick={(e) => e.stopPropagation()}
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void navigate({ to: addTo as never });
+                    }}
                     className="rounded-lg absolute bottom-1 right-1.5 w-[35%] h-[23.5%] z-20"
                 >
                     <motion.div
@@ -75,7 +80,7 @@ export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, add
                         </motion.div>
 
                     </motion.div>
-                </Link>
+                </button>
             )}
 
             <motion.div
