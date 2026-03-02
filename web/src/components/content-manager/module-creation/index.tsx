@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react'
+import { AlertCircle, ArrowLeft, CheckCircle2, Eye, Loader2 } from 'lucide-react'
 import { publishModule } from '@/services/modulesApi'
 import type { ModuleFormData } from './types'
 import { ProgressBar } from './ProgressBar'
@@ -22,8 +22,8 @@ const INITIAL_DATA: ModuleFormData = {
 
 const STATUS_CLASSES: Record<string, string> = {
     saving: 'text-slate-500 bg-slate-100',
-    saved:  'text-green-600 bg-green-50',
-    error:  'text-red-600 bg-red-50',
+    saved: 'text-green-600 bg-green-50',
+    error: 'text-red-600 bg-red-50',
 }
 
 function SaveStatusPill({ status }: { readonly status: SaveStatus }) {
@@ -31,12 +31,12 @@ function SaveStatusPill({ status }: { readonly status: SaveStatus }) {
     return (
         <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-all ${STATUS_CLASSES[status] ?? ''}`}>
             {status === 'saving' && <Loader2 className="w-3 h-3 animate-spin" />}
-            {status === 'saved'  && <CheckCircle2 className="w-3 h-3" />}
-            {status === 'error'  && <AlertCircle className="w-3 h-3" />}
+            {status === 'saved' && <CheckCircle2 className="w-3 h-3" />}
+            {status === 'error' && <AlertCircle className="w-3 h-3" />}
             <span>
                 {status === 'saving' && 'Saving…'}
-                {status === 'saved'  && 'Saved'}
-                {status === 'error'  && 'Auto-save failed'}
+                {status === 'saved' && 'Saved'}
+                {status === 'error' && 'Auto-save failed'}
             </span>
         </div>
     )
@@ -51,10 +51,10 @@ interface ModuleCreationFormProps {
 function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCreationFormProps>) {
     const confirm = useConfirm()
 
-    const [data, setData]             = useState<ModuleFormData>(INITIAL_DATA)
+    const [data, setData] = useState<ModuleFormData>(INITIAL_DATA)
     const [publishStatus, setPublishStatus] = useState<'idle' | 'loading' | 'error'>('idle')
-    const [previewOpen, setPreviewOpen]     = useState(false)
-    const [waveActive, setWaveActive]       = useState(0)
+    const [previewOpen, setPreviewOpen] = useState(false)
+    const [waveActive, setWaveActive] = useState(0)
     const [publishAttempted, setPublishAttempted] = useState(false)
 
     const patch = useCallback((p: Partial<ModuleFormData>) => {
@@ -69,11 +69,11 @@ function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCr
         const hasContent = data.title.trim() !== '' || data.sections.length > 0
         if (!hasContent) { onBack(); return }
         const ok = await confirm({
-            title:       'Leave module creator?',
-            message:     'Your draft has been auto-saved. You can return to continue editing at any time.',
+            title: 'Leave module creator?',
+            message: 'Your draft has been auto-saved. You can return to continue editing at any time.',
             confirmText: 'Leave',
-            cancelText:  'Keep editing',
-            variant:     'warning',
+            cancelText: 'Keep editing',
+            variant: 'warning',
         })
         if (ok) onBack()
     }, [confirm, onBack, data.title, data.sections.length])
@@ -121,6 +121,15 @@ function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCr
 
                     <button
                         type="button"
+                        onClick={togglePreview}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors"
+                    >
+                        <Eye className="w-3.5 h-3.5" />
+                        Preview
+                    </button>
+
+                    <button
+                        type="button"
                         disabled={publishStatus === 'loading'}
                         onClick={handlePublish}
                         className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -138,7 +147,6 @@ function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCr
                 <DetailsSidebar
                     data={data}
                     onChange={patch}
-                    onPreview={togglePreview}
                     publishAttempted={publishAttempted}
                 />
                 <div className="flex flex-col flex-1 min-h-0 overflow-hidden">

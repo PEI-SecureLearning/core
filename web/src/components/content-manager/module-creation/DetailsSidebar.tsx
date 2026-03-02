@@ -7,7 +7,6 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     Image as ImageIcon,
-    Eye,
     AlertTriangle,
 } from 'lucide-react'
 import type { ModuleFormData } from './types'
@@ -50,11 +49,10 @@ function SidebarFields({ data, onChange, fileRef, warnings }: {
             <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className={`relative w-full h-24 rounded-xl border-2 border-dashed transition-colors overflow-hidden group ${
-                    warnings.cover
+                className={`relative w-full h-24 rounded-xl border-2 border-dashed transition-colors overflow-hidden group ${warnings.cover
                         ? 'border-amber-300 hover:border-purple-400'
                         : 'border-slate-200 hover:border-purple-400'
-                }`}
+                    }`}
             >
                 {data.coverImage ? (
                     <>
@@ -81,11 +79,10 @@ function SidebarFields({ data, onChange, fileRef, warnings }: {
                     value={data.title}
                     onChange={e => onChange({ title: e.target.value })}
                     placeholder="Module title..."
-                    className={`w-full bg-transparent border-b-2 px-0 py-1.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none transition-colors ${
-                        warnings.title
+                    className={`w-full bg-transparent border-b-2 px-0 py-1.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none transition-colors ${warnings.title
                             ? 'border-amber-300 focus:border-purple-400'
                             : 'border-slate-200 focus:border-purple-400'
-                    }`}
+                        }`}
                 />
             </FormField>
 
@@ -137,10 +134,9 @@ function SidebarFields({ data, onChange, fileRef, warnings }: {
     )
 }
 
-export function DetailsSidebar({ data, onChange, onPreview, publishAttempted }: {
+export function DetailsSidebar({ data, onChange, publishAttempted }: {
     readonly data: ModuleFormData
     readonly onChange: (patch: Partial<ModuleFormData>) => void
-    readonly onPreview: () => void
     readonly publishAttempted?: boolean
 }) {
     const [open, setOpen] = useState(true)
@@ -148,11 +144,11 @@ export function DetailsSidebar({ data, onChange, onPreview, publishAttempted }: 
 
     const w = publishAttempted ?? false
     const warnings: Warnings = {
-        cover:    w && !data.coverImage,
-        title:    w && data.title.trim() === '',
+        cover: w && !data.coverImage,
+        title: w && data.title.trim() === '',
         category: w && data.category === '',
         duration: w && data.estimatedTime.trim() === '',
-        desc:     w && data.description.trim() === '',
+        desc: w && data.description.trim() === '',
     }
 
     const handleImageFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,7 +189,7 @@ export function DetailsSidebar({ data, onChange, onPreview, publishAttempted }: 
                 >
                     {open
                         ? <PanelLeftClose className="w-4 h-4" />
-                        : <PanelLeftOpen  className="w-4 h-4" />
+                        : <PanelLeftOpen className="w-4 h-4" />
                     }
                 </button>
             </div>
@@ -201,7 +197,7 @@ export function DetailsSidebar({ data, onChange, onPreview, publishAttempted }: 
             {!open && (
                 <div className="flex flex-col items-center gap-4 py-4 text-slate-300 flex-1">
                     <ImageIcon className="w-4 h-4" />
-                    <Clock     className="w-4 h-4" />
+                    <Clock className="w-4 h-4" />
                     <AlignLeft className="w-4 h-4" />
                 </div>
             )}
@@ -219,31 +215,6 @@ export function DetailsSidebar({ data, onChange, onPreview, publishAttempted }: 
 
             <input ref={fileRef} type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
 
-            <div className="border-t border-slate-200 bg-slate-50 flex-shrink-0">
-                {open ? (
-                    <div className="flex flex-col gap-2 p-3">
-                        <button
-                            type="button"
-                            onClick={onPreview}
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors"
-                        >
-                            <Eye className="w-4 h-4" />
-                            Preview
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center gap-3 py-3">
-                        <button
-                            type="button"
-                            onClick={onPreview}
-                            className="p-2 rounded-lg text-purple-600 hover:bg-purple-50 transition-colors"
-                            title="Preview"
-                        >
-                            <Eye className="w-5 h-5" />
-                        </button>
-                    </div>
-                )}
-            </div>
         </motion.div>
     )
 }

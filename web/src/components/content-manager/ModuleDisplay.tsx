@@ -16,7 +16,7 @@ export function ModuleDisplay() {
                     >
                         {/* Cover image */}
                         <div className="relative h-48 w-full overflow-hidden bg-white">
-                            <div className="absolute inset-0 bg-purple-900/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
+                            <div className="absolute inset-0 bg-purple-300/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
                             <img
                                 src={mod.image}
                                 alt={mod.title}
@@ -29,8 +29,8 @@ export function ModuleDisplay() {
                             </div>
                             <div className="absolute top-3 right-3 z-20">
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${mod.difficulty === 'Easy' ? 'bg-green-100/90  text-green-700  border-green-300' :
-                                        mod.difficulty === 'Medium' ? 'bg-yellow-100/90 text-yellow-700 border-yellow-300' :
-                                            'bg-red-100/90    text-red-700    border-red-300'
+                                    mod.difficulty === 'Medium' ? 'bg-yellow-100/90 text-yellow-700 border-yellow-300' :
+                                        'bg-red-100/90    text-red-700    border-red-300'
                                     }`}>
                                     {mod.difficulty}
                                 </span>

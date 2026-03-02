@@ -33,7 +33,7 @@ export function ContentPageLayout({ title, children }: ContentPageLayoutProps) {
                 </div>
             </div>
 
-            <div className={`w-full h-[92%] rounded-lg p-10 relative overflow-y-auto transition-colors duration-[500ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${isLoaded ? 'bg-gray-100' : 'bg-purple-500/50'} z-10 border-1 border-gray-200`}>
+            <div className={`w-full h-[92%] rounded-lg p-10 relative overflow-y-auto transition-colors duration-[500ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${isLoaded ? 'bg-gray-100' : 'bg-white'} z-10 border-1 border-gray-200`}>
                 {children}
             </div>
 
