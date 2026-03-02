@@ -4,7 +4,6 @@ import { arrayMove } from '@dnd-kit/sortable'
 import { AnimatePresence } from 'framer-motion'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import type { PlaceholderModule } from '../module-creation/placeholderModules'
-import { PLACEHOLDER_MODULES } from '../module-creation/placeholderModules'
 import { CourseCreatorTopBar } from './CourseCreatorTopBar'
 import { AvailableModuleList } from './AvailableModuleList'
 import { CourseModuleStack } from './CourseModuleStack'
@@ -51,8 +50,8 @@ export function CourseCreator({ onBack }: CourseCreatorProps) {
 
         // Reordering within the stack
         if (activeId.startsWith('stack-') && overId.startsWith('stack-')) {
-            const oldIndex = parseInt(activeId.replace('stack-', ''), 10)
-            const newIndex = parseInt(overId.replace('stack-', ''), 10)
+            const oldIndex = Number.parseInt(activeId.replaceAll('stack-', ''), 10)
+            const newIndex = Number.parseInt(overId.replaceAll('stack-', ''), 10)
             if (oldIndex !== newIndex) {
                 setSelectedModules((prev) => arrayMove(prev, oldIndex, newIndex))
             }

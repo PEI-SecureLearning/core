@@ -43,8 +43,9 @@ export default function QuizEditor({
     return (
         <section className={`flex flex-col overflow-hidden ${collapsed ? "shrink-0" : "flex-1 min-h-0"}`}>
             {/* Section header */}
-            <div
-                className="flex items-center justify-between cursor-pointer select-none shrink-0"
+            <button
+                type="button"
+                className="flex items-center justify-between cursor-pointer select-none shrink-0 w-full text-left"
                 onClick={onToggleCollapse}
             >
                 <div className="flex items-center gap-2">
@@ -76,7 +77,7 @@ export default function QuizEditor({
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </button>
 
             <AnimatePresence initial={false}>
                 {!collapsed && (

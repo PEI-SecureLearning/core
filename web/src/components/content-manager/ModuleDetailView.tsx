@@ -99,7 +99,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
                             {choices.map((c, idx) => (
                                 <li key={c.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700">
                                     <span className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-400 flex-shrink-0">
-                                        {String.fromCharCode(65 + idx)}
+                                        {String.fromCodePoint(65 + idx)}
                                     </span>
                                     <span>{c.text || <em className="text-slate-400">Empty choice</em>}</span>
                                 </li>
