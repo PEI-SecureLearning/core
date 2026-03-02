@@ -165,7 +165,22 @@ sync_infrastructure() {
   if [ -d "$DEPLOY" ]; then
     log "Syncing deployment/ files (docker-compose, nginx) ..."
     for f in docker-compose.yml docker-compose.dev.yml nginx.conf; do
-      [ -f "$DEPLOY/$f" ] && rsync -a "$DEPLOY/$f" "$DEST/$f" && log "  synced $f"
+      if [ -f "$DEPLOY/$f" ]; then
+        rsync -a "$DEPLOY/$f" "$DEST/$f" && log "  synced $f"
+      else
+        if [ -f "$DEST/$f" ]; then
+          rm -f "$DEST/$f"
+          log "  removed $f (no longer present in monorepo/deployment)"
+        fi
+      fi
+    done
+  else
+    # If deployment/ is absent in monorepo, ensure these files are not left stale.
+    for f in docker-compose.yml docker-compose.dev.yml nginx.conf; do
+      if [ -f "$DEST/$f" ]; then
+        rm -f "$DEST/$f"
+        log "  removed $f (deployment/ directory missing in monorepo)"
+      fi
     done
   fi
   # NOTE: scripts/, .env.example, README.md in platform-infrastructure
