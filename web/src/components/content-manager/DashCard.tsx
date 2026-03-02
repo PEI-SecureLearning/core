@@ -43,7 +43,7 @@ export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, add
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        void navigate({ to: addTo as never });
+                        navigate({ to: addTo as never }).catch(() => undefined);
                     }}
                     className="rounded-lg absolute bottom-1 right-1.5 w-[35%] h-[23.5%] z-20"
                 >

@@ -31,84 +31,97 @@ function RouteComponent() {
         return trimmed.startsWith('content/') ? trimmed : `content/${trimmed}`
     }
 
+    const parseTags = (input: string) =>
+        input
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0)
+
+    const getCreateValidationError = () => {
+        if (!path.trim()) return 'Path is required.'
+        if (!title.trim()) return 'Title is required.'
+
+        if (mode === 'file') {
+            if (!file) return 'Select a file to upload.'
+            return null
+        }
+
+        if (contentFormat === 'link' && !sourceUrl.trim()) {
+            return 'Source URL is required for link content.'
+        }
+
+        if (contentFormat !== 'link' && !body.trim()) {
+            return 'Body is required for text/markdown/html content.'
+        }
+
+        return null
+    }
+
+    const createFileContent = async (normalizedPath: string, parsedTags: string[], selectedFile: File) => {
+        const formData = new FormData()
+        formData.append('path', normalizedPath)
+        formData.append('title', title)
+        formData.append('description', description)
+        formData.append('tags', parsedTags.join(','))
+        formData.append('file', selectedFile)
+
+        const res = await fetch(`${API_BASE}/content/upload`, {
+            method: 'POST',
+            headers: {
+                Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+            },
+            body: formData,
+        })
+
+        if (!res.ok) throw new Error('Upload failed')
+    }
+
+    const createTextContent = async (normalizedPath: string, parsedTags: string[]) => {
+        const res = await fetch(`${API_BASE}/content`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+            },
+            body: JSON.stringify({
+                path: normalizedPath,
+                title,
+                description: description || null,
+                content_format: contentFormat,
+                body: contentFormat === 'link' ? null : body,
+                source_url: contentFormat === 'link' ? sourceUrl : null,
+                tags: parsedTags,
+            }),
+        })
+
+        if (!res.ok) throw new Error('Content creation failed')
+    }
+
+    const submitContent = async () => {
+        const parsedTags = parseTags(tagsInput)
+        const normalizedPath = normalizeContentPath(path)
+
+        if (mode === 'file' && file) {
+            await createFileContent(normalizedPath, parsedTags, file)
+            return
+        }
+
+        await createTextContent(normalizedPath, parsedTags)
+    }
+
     const handleCreateContent = async (event: React.FormEvent) => {
         event.preventDefault()
-
-        if (!path.trim()) {
-            toast.error('Path is required.')
+        const validationError = getCreateValidationError()
+        if (validationError) {
+            toast.error(validationError)
             return
-        }
-
-        if (!title.trim()) {
-            toast.error('Title is required.')
-            return
-        }
-
-        if (mode === 'file' && !file) {
-            toast.error('Select a file to upload.')
-            return
-        }
-
-        if (mode === 'text') {
-            if (contentFormat === 'link' && !sourceUrl.trim()) {
-                toast.error('Source URL is required for link content.')
-                return
-            }
-            if (contentFormat !== 'link' && !body.trim()) {
-                toast.error('Body is required for text/markdown/html content.')
-                return
-            }
         }
 
         setIsSubmitting(true)
         try {
-            const parsedTags = tagsInput
-                .split(',')
-                .map((tag) => tag.trim())
-                .filter((tag) => tag.length > 0)
-
-            const normalizedPath = normalizeContentPath(path)
-
-            if (mode === 'file' && file) {
-                const formData = new FormData()
-                formData.append('path', normalizedPath)
-                formData.append('title', title)
-                formData.append('description', description)
-                formData.append('tags', parsedTags.join(','))
-                formData.append('file', file)
-
-                const res = await fetch(`${API_BASE}/content/upload`, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                    },
-                    body: formData,
-                })
-
-                if (!res.ok) throw new Error('Upload failed')
-            } else {
-                const res = await fetch(`${API_BASE}/content`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                    },
-                    body: JSON.stringify({
-                        path: normalizedPath,
-                        title,
-                        description: description || null,
-                        content_format: contentFormat,
-                        body: contentFormat === 'link' ? null : body,
-                        source_url: contentFormat === 'link' ? sourceUrl : null,
-                        tags: parsedTags,
-                    }),
-                })
-
-                if (!res.ok) throw new Error('Content creation failed')
-            }
-
+            await submitContent()
             toast.success('Content created successfully.')
-            void navigate({ to: '/content-manager/content' })
+            navigate({ to: '/content-manager/content' }).catch(() => undefined)
         } catch {
             toast.error('Could not create content.')
         } finally {

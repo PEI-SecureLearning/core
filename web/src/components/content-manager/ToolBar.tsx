@@ -33,7 +33,7 @@ export function Toolbar({
 
         const basePath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
         const target = newTo ?? `${basePath}/new`;
-        void navigate({ to: target as never });
+        navigate({ to: target as never }).catch(() => undefined);
     };
 
     return (

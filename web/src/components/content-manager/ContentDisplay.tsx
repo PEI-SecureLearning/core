@@ -6,6 +6,12 @@ import { toast } from 'sonner';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
+const compareAlphabetically = (left: string, right: string) =>
+    left.localeCompare(right, undefined, {
+        sensitivity: "base",
+        numeric: true,
+    });
+
 type ContentItem = {
     id: string;
     content_piece_id: string;
@@ -60,7 +66,7 @@ export function ContentDisplay({
             }
         };
 
-        void fetchContent();
+        fetchContent().catch(() => undefined);
     }, [keycloak.token, refreshKey]);
 
     const filteredContent = useMemo(() => {
@@ -75,7 +81,7 @@ export function ContentDisplay({
             );
         }
 
-        return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+        return [...filtered].sort((a, b) => compareAlphabetically(a.title, b.title));
     }, [items, searchQuery, sortBy]);
 
     const directoryPaths = useMemo(() => {
@@ -88,7 +94,7 @@ export function ContentDisplay({
                 dirs.add(current);
             }
         }
-        return Array.from(dirs).sort();
+        return Array.from(dirs).sort(compareAlphabetically);
     }, [filteredContent]);
 
     const directoryChildren = useMemo(() => {
@@ -102,7 +108,7 @@ export function ContentDisplay({
             map.get(parent)!.push(dir);
         }
         for (const [key, value] of map) {
-            map.set(key, value.sort());
+            map.set(key, value.sort(compareAlphabetically));
         }
         return map;
     }, [directoryPaths]);
