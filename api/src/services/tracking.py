@@ -4,6 +4,7 @@ from sqlmodel import Session, select, text
 
 from src.models.campaign import Campaign
 from src.models.email_sending import EmailSending, EmailSendingStatus
+from src.services import templates as TemplateService
 
 
 class TrackingService:
@@ -74,6 +75,24 @@ class TrackingService:
             session.refresh(sending)
 
         return sending
+
+    async def get_click_response(self, sending: EmailSending, tracking_token: str) -> str:
+        """Retrieve and render the landing page template for a click tracking event."""
+        kit = sending.phishing_kit
+        if not kit or not kit.landing_page_template:
+            raise HTTPException(status_code=404, detail="Phishing kit not found")
+
+        template = await TemplateService.get_template(kit.landing_page_template.content_link)
+
+        if template is None:
+            raise HTTPException(status_code=404, detail="Page not found")
+
+        # Render template with phish endpoint as redirect
+        rendered_html = TemplateService.render_template(template.html, {
+            "redirect": f"/track/phish?si={tracking_token}"
+        })
+
+        return rendered_html
 
     def record_phish(self, tracking_token: str, session: Session) -> EmailSending:
         """Record a phishing event (user submitted credentials) and increment campaign counter."""

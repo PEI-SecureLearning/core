@@ -85,7 +85,7 @@ class StatsHandler:
 
     def _build_user_engagement_from_campaigns(self, campaigns: Iterable[Campaign]) -> dict[str, dict[str, int]]:
         """Build a per-user engagement summary from campaigns."""
-        user_campaigns: dict[str, dict[str, int]] = {}
+        user_stats: dict[str, dict[str, int]] = {}
 
         for campaign in campaigns:
             # Track which users were targeted and which fell for this campaign
@@ -95,6 +95,7 @@ class StatsHandler:
                 if s.clicked_at or s.phished_at
             }
 
+
             # Update stats for each targeted user
             for user_id in targeted_users:
                 if user_id not in user_stats:
@@ -103,7 +104,7 @@ class StatsHandler:
                 if user_id in fallen_users:
                     user_stats[user_id]["fell"] += 1
 
-        return user_campaigns
+        return user_stats
 
     def _compute_global_metrics(self, campaigns: list[Campaign]) -> dict:
         """Compute global statistics across all campaigns."""
