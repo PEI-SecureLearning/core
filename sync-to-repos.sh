@@ -28,7 +28,12 @@ for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --*)       echo "Unknown flag: $arg"; exit 1 ;;
-    *)         TARGET="$arg" ;;
+    *)
+      if [[ -n "$TARGET" ]]; then
+        error "Multiple targets specified: '$TARGET' and '$arg'. Please provide at most one non-flag positional argument."
+      fi
+      TARGET="$arg"
+      ;;
   esac
 done
 
