@@ -110,6 +110,7 @@ export default function ComplianceFlow() {
             keycloak.tokenParsed?.iss?.includes("/realms/master") ||
             realmRoles.has("admin"));
     const isOrgManager = realmRoles.has("org_manager");
+    const isContentManager = realmRoles.has("content_manager");
 
     // ── portal setup ─────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -214,7 +215,7 @@ export default function ComplianceFlow() {
     useEffect(() => {
         if (!initialized) return;
         if (!keycloak.authenticated || !keycloak.token) return;
-        if (isAdminContext || isOrgManager) return;
+        if (isAdminContext || isOrgManager || isContentManager) return;
         void loadStatusAndData();
     }, [initialized, keycloak.authenticated]);
 
@@ -285,7 +286,7 @@ export default function ComplianceFlow() {
     };
 
     // ── early exits ──────────────────────────────────────────────────────────────
-    if (isAdminContext || isOrgManager) return null;
+    if (isAdminContext || isOrgManager || isContentManager) return null;
 
     if (loading) {
         return (

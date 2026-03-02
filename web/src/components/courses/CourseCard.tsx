@@ -97,9 +97,6 @@ function CardVertical({ course, progress }: { course: Course; progress: number }
             {/* Banner */}
             <div className={`relative h-36 bg-gradient-to-br ${course.color} flex items-center justify-center`}>
                 <span className="text-5xl select-none">{course.icon}</span>
-                <span className={`absolute top-3 right-3 px-2 py-0.5 rounded-full text-xs font-semibold ${difficultyColor[course.difficulty]}`}>
-                    {course.difficulty}
-                </span>
                 <div className="absolute bottom-2 right-3">
                     <ProgressBadge progress={progress} />
                 </div>
