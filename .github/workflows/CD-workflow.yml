@@ -19,23 +19,6 @@ jobs:
         run: |
           bash scripts/copy-env-examples.sh
 
-      - name: Build images with local Buildx cache
-        env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          set -a
-          . deployment/.env
-          set +a
-          mkdir -p .buildx-cache .buildx-cache-new
-          docker buildx bake \
-            --allow=fs.read=.. \
-            --file deployment/docker-compose.yml \
-            --set '*.cache-from=type=local,src=.buildx-cache' \
-            --set '*.cache-to=type=local,dest=.buildx-cache-new,mode=max' \
-            --load
-          rm -rf .buildx-cache
-          mv .buildx-cache-new .buildx-cache
-
       - name: Rebuild and redeploy stack
         env:
           DOCKER_BUILDKIT: 1
