@@ -1,6 +1,6 @@
 import type { Choice, Question, Section } from './types'
 
-export const uid = () => Math.random().toString(36).slice(2)
+export const uid = () => crypto.randomUUID()
 
 export const CATEGORY_OPTIONS = [
     'Programming', 'Backend', 'Frontend', 'Security', 'DevOps', 'Data', 'Cloud', 'Other',
