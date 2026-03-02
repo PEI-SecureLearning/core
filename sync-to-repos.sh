@@ -69,8 +69,10 @@ sync_subtree() {
 
   # Warn if the split repo has commits that aren't in remote
   # (means someone committed directly there — they should have used the monorepo)
-  local UNPUSHED
-  UNPUSHED=$(git -C "$DEST" log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
+  local UNPUSHED=0
+  if git -C "$DEST" rev-parse --verify origin/main >/dev/null 2>&1; then
+    UNPUSHED=$(git -C "$DEST" log origin/main..HEAD --oneline | wc -l | tr -d ' ')
+  fi
   if [ "$UNPUSHED" -gt 0 ]; then
     warn "$REPO has $UNPUSHED commit(s) not on remote origin/main."
     warn "These came from direct commits to the split repo, NOT the monorepo."
