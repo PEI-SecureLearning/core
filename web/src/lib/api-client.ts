@@ -1,65 +1,88 @@
+import keycloak from '../keycloak';
+
+export class HttpError extends Error {
+  status: number;
+  data: any;
+  constructor(status: number, message: string, data?: any) {
+    super(message);
+    this.name = 'HttpError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
 class ApiClient {
   private baseUrl: string;
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`);
-    if (!response.ok) {
-      throw new Error(`Error fetching ${endpoint}: ${response.statusText}`);
+  private async request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
+    const headers: Record<string, string> = {
+      ...(init.headers as Record<string, string>),
+    };
+
+    if (keycloak.authenticated && keycloak.token) {
+      headers.Authorization = `Bearer ${keycloak.token}`;
     }
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      ...init,
+      headers,
+    });
+
+    if (!response.ok) {
+      let data: any;
+      try {
+        data = await response.json();
+      } catch {
+        data = undefined;
+      }
+      throw new HttpError(
+        response.status,
+        `${init.method || 'GET'} ${endpoint} failed: ${response.statusText}`,
+        data
+      );
+    }
+
+    if (response.status === 204) {
+      return undefined as any;
+    }
+
     return response.json();
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint);
   }
 
   async post<T>(endpoint: string, data: unknown): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: "POST",
+    return this.request<T>(endpoint, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      throw new Error(`Error posting to ${endpoint}: ${response.statusText}`);
-    }
-    return response.json();
   }
 
   async put<T>(endpoint: string, data: unknown): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: "PUT",
+    return this.request<T>(endpoint, {
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
-      throw new Error(`Error putting to ${endpoint}: ${response.statusText}`);
-    }
-    return response.json();
   }
 
   async delete<T>(endpoint: string): Promise<T | void> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: "DELETE",
+    return this.request<T>(endpoint, {
+      method: 'DELETE',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
-
-    if (!response.ok) {
-      throw new Error(`Error deleting ${endpoint}: ${response.statusText}`);
-    }
-
-    // Handle 204 No Content responses
-    if (response.status === 204) {
-      return;
-    }
-
-    return response.json();
   }
 }
 

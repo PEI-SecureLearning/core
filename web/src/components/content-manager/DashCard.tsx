@@ -1,7 +1,6 @@
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import "../../css/dashcardmask.css";
 
@@ -20,12 +19,12 @@ const transition = {
 };
 
 interface DashCardProps {
-    title: string;
-    subtitle: string;
-    gradient: string;
-    shadowColor: string;
-    Icon?: React.ElementType | null; // Allow it to be optional or null
-    to: string;
+    readonly title: string;
+    readonly subtitle: string;
+    readonly gradient: string;
+    readonly shadowColor: string;
+    readonly Icon?: React.ElementType | null;
+    readonly to: string;
 }
 
 

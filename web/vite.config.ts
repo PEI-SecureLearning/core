@@ -18,6 +18,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    exclude: ['@tanstack/react-query-devtools'],
+    include: ['@tanstack/react-query']
+  },
   server: {
     proxy: {
       '/api': {

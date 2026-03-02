@@ -1,10 +1,14 @@
 import logging
 import os
+import traceback
 import jwt
+from jwt import PyJWKClient
 import requests
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, Request
 from typing import Annotated
+import httpx
+
 
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -20,8 +24,31 @@ class Roles:
         self.resource = resource
         self.scope = scope
 
-    async def __call__(self, request: Request, access_token: Annotated[str, Depends(oauth_2_scheme)]):
+    def _get_jwks_client(self, realm_name: str) -> PyJWKClient:
+        url = f"{AUTH_SERVER_URL}/realms/{realm_name}/protocol/openid-connect/certs"
+        return PyJWKClient(url)
+    
 
+    def _verify_token(self, access_token: str, realm_name: str) -> dict:
+        jwks_client = self._get_jwks_client(realm_name)
+        signing_key = jwks_client.get_signing_key_from_jwt(access_token)
+        
+        try:
+            jwt.decode(
+                access_token,
+                signing_key.key,
+                algorithms=["RS256"],
+                options={"verify_aud": False}, 
+            )
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError as e:
+            logging.error(f"Token verification failed: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+
+    async def __call__(self, request: Request, access_token: Annotated[str, Depends(oauth_2_scheme)]):
+        print(f"DEBUG: Received token: {access_token}...")
         try:
             decoded = jwt.decode(
                 access_token,
@@ -33,9 +60,11 @@ class Roles:
 
         realm_name = self._extract_realm_name(decoded)
 
+        self._verify_token(access_token, realm_name)
+
         permission = f"{self.resource}#{self.scope}"
 
-        if not self.check_keycloak_permission(access_token, permission, realm_name):
+        if not await self.check_keycloak_permission(access_token, permission, realm_name):
             raise HTTPException(
                 status_code=403,
                 detail=f"Permission denied for '{permission}'",
@@ -44,7 +73,7 @@ class Roles:
         return {"authorized": True}
 
 
-    def check_keycloak_permission(self, access_token: str, permission: str, realm_name: str) -> bool:
+    async def check_keycloak_permission(self, access_token: str, permission: str, realm_name: str) -> bool:
         """Verify user permissions"""
 
         if not AUTH_SERVER_URL:
@@ -65,17 +94,18 @@ class Roles:
         }
 
         try:
-            response = requests.post(url, headers=headers, data=data, timeout=10)
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, headers=headers, data=data, timeout=10)
 
             if response.status_code == 200:
                 payload = response.json()
                 return "access_token" in payload
 
-            return False
+            raise HTTPException(status_code=response.status_code, detail="Authorization server error")
 
-        except requests.RequestException as e:
+        except httpx.RequestError as e:
             logging.error(f"Authorization request error: {e}")
-            return False
+            raise HTTPException(status_code=503, detail="Authorization server unavailable")
 
         
     def _extract_realm_name(self, token_data: dict) -> str:
@@ -87,11 +117,3 @@ class Roles:
         
         return iss.split("/realms/")[-1]
 
-
-    def _has_org_manager_role(self, token_data: dict) -> bool:
-        """Check realm-level roles for org-manager/realm-admin."""
-        
-        realm_roles = {r.upper() for r in token_data.get("realm_access", {}).get("roles", [])}
-        target = {"ORG_MANAGER", "REALM_ADMIN", "REALM-ADMIN"}
-        
-        return bool(realm_roles & target)
