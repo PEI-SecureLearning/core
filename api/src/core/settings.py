@@ -29,6 +29,11 @@ class Settings(BaseSettings):
   RABBITMQ_USER: str
   RABBITMQ_PASS: str
   RABBITMQ_QUEUE: str
+  
+  # Statistics
+  # Users who fell for phishing in more than this fraction of campaigns are
+  # considered repeat offenders. Default is 0.5 (50%).
+  REPEAT_OFFENDER_THRESHOLD: float = 0.5
 
   @computed_field
   @property

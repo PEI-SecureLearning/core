@@ -13,7 +13,9 @@ from src.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
 
-# Global scheduler instance
+# Global scheduler 
+
+
 _scheduler: BackgroundScheduler | None = None
 
 # Batch size for email processing
@@ -113,61 +115,48 @@ def create_emails_for_ready_campaigns() -> None:
 def process_pending_emails() -> None:
     """Process pending emails in batches and send to RabbitMQ.
     
-    - Queries EmailSending records with status SCHEDULED
-    - Sorts by campaign begin_date (oldest to newest)
+    - Queries EmailSending records with status SCHEDULED and scheduled_date <= now
+    - Sorts by scheduled_date (oldest to newest)
     - Processes EMAILS_PER_BATCH emails per run
     - Sends to RabbitMQ and marks as SENT
     """
     with Session(engine) as session:
         campaign_service = CampaignService()
+        now = datetime.now()
         
         try:
-            # Query pending emails, sorted by campaign begin_date (oldest first)
+            # Query pending emails that are scheduled to be sent by now, sorted by scheduled_date
             pending_emails = session.exec(
                 select(EmailSending)
                 .join(Campaign, EmailSending.campaign_id == Campaign.id)
                 .where(EmailSending.status == EmailSendingStatus.SCHEDULED)
-                .order_by(Campaign.begin_date.asc())
+                .where(EmailSending.scheduled_date <= now)
+                .order_by(EmailSending.scheduled_date.asc())
                 .limit(EMAILS_PER_BATCH)
             ).all()
 
             if not pending_emails:
                 return
 
-            # Group emails by campaign for efficient sending
-            emails_by_campaign: dict[int, list[EmailSending]] = {}
+            # Process each email
             for email in pending_emails:
-                if email.campaign_id not in emails_by_campaign:
-                    emails_by_campaign[email.campaign_id] = []
-                emails_by_campaign[email.campaign_id].append(email)
-
-            # Process each campaign's emails
-            for campaign_id, campaign_emails in emails_by_campaign.items():
-                campaign = session.get(Campaign, campaign_id)
+                campaign = session.get(Campaign, email.campaign_id)
                 if not campaign:
-                    logger.warning(f"Campaign {campaign_id} not found, skipping batch")
+                    logger.warning(f"Campaign {email.campaign_id} not found, skipping email {email.id}")
                     continue
 
                 try:
-                    # Send emails to RabbitMQ
-                    campaign_service._send_emails_to_rabbitmq(
-                        session, campaign, campaign_emails
-                    )
+                    # Send email to RabbitMQ
+                    campaign_service._send_email_to_rabbitmq(email, campaign)
                     
                     # Update status and timestamp for sent emails
-                    now = datetime.now()
-                    for email in campaign_emails:
-                        email.status = EmailSendingStatus.SENT
-                        email.sent_at = now
+                    email.status = EmailSendingStatus.SENT
+                    email.sent_at = datetime.now()
                     
                     session.commit()
-                    logger.info(
-                        f"Processed {len(campaign_emails)} email(s) from campaign "
-                        f"'{campaign.name}' (id={campaign.id})"
-                    )
                 except Exception as e:
                     logger.error(
-                        f"Failed to process emails for campaign {campaign_id}: {e}"
+                        f"Failed to process email {email.id} for campaign {email.campaign_id}: {e}"
                     )
                     session.rollback()
 
