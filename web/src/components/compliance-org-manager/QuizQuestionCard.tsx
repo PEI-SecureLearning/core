@@ -27,8 +27,9 @@ export default function QuizQuestionCard({
     return (
         <>
             {/* The clickable card */}
-            <div
-                className="rounded-lg border border-gray-200 bg-white p-4 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            <button
+                type="button"
+                className="w-full text-left rounded-lg border border-gray-200 bg-white p-4 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 onClick={onToggle}
             >
                 <div className="flex-1 text-left min-w-0">
@@ -48,14 +49,16 @@ export default function QuizQuestionCard({
                 >
                     Remove
                 </button>
-            </div>
+            </button>
 
             {/* Modal Editor */}
             <AnimatePresence>
                 {isExpanded && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-                        <motion.div
-                            className="absolute inset-0 bg-black/40"
+                        <motion.button
+                            type="button"
+                            aria-label="Close dialog"
+                            className="absolute inset-0 bg-black/40 cursor-default"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
