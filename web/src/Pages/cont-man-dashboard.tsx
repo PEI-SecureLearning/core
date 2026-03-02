@@ -30,6 +30,7 @@ function ContManDashboard() {
                     shadowColor="#7e22ce"
                     Icon={BookOpen}
                     to="/content-manager/courses"
+                    addTo="/content-manager/courses/new"
                 />
                 <DashCard
                     title="Modules"
@@ -38,6 +39,7 @@ function ContManDashboard() {
                     shadowColor="#9333ea"
                     Icon={Blocks}
                     to="/content-manager/modules"
+                    addTo="/content-manager/modules/new"
                 />
                 <DashCard
                     title="Content"
@@ -46,6 +48,7 @@ function ContManDashboard() {
                     shadowColor="#a855f7"
                     Icon={FileStack}
                     to="/content-manager/content"
+                    addTo="/content-manager/content/new"
                 />
             </div>
         </div >

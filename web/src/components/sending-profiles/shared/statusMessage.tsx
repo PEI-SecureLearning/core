@@ -17,8 +17,8 @@ export const MESSAGE_STYLES: Record<MessageType, MessageStyle> = {
     dotClass: "bg-green-500",
   },
   info: {
-    containerClass: "text-gray-600 border-blue-200/30",
-    dotClass: "bg-blue-400",
+    containerClass: "text-gray-600 border-purple-200/30",
+    dotClass: "bg-purple-400",
   },
 };
 

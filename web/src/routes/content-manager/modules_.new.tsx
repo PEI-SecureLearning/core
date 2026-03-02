@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useKeycloak } from '@react-keycloak/web'
 import { ModuleCreationForm } from '@/components/content-manager/ModuleCreationForm'
 
-export const Route = createFileRoute('/content-manager/modules/new')({
+export const Route = createFileRoute('/content-manager/modules_/new')({
     component: RouteComponent,
 })
 

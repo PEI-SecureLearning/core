@@ -48,7 +48,6 @@ class Roles:
 
 
     async def __call__(self, request: Request, access_token: Annotated[str, Depends(oauth_2_scheme)]):
-        print(f"DEBUG: Received token: {access_token}...")
         try:
             decoded = jwt.decode(
                 access_token,

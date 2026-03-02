@@ -25,7 +25,7 @@ function ProfileBasicInfo({
   return (
     <div className="liquid-glass-card p-6 relative z-10">
       <h4 className="text-gray-800 font-semibold mb-4 flex items-center gap-2">
-        <User className="h-5 w-5 text-blue-500" />
+        <User className="h-5 w-5 text-purple-500" />
         Identity Configuration
       </h4>
 
@@ -78,7 +78,7 @@ function ProfileBasicInfo({
             Sender Email Address *
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-400" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
             <input
               type="email"
               value={fromEmail}

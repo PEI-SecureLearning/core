@@ -25,49 +25,58 @@ interface DashCardProps {
     readonly shadowColor: string;
     readonly Icon?: React.ElementType | null;
     readonly to: string;
+    readonly addTo?: string;
 }
 
 
-export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to }: DashCardProps) {
+export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, addTo }: DashCardProps) {
     const [hovered, setHovered] = useState(false);
     const [plusHovered, setPlusHovered] = useState(false);
 
     return (
         <Link to={to} className="block h-full relative">
 
-            <motion.div
-                className="rounded-lg absolute bottom-1 right-1.5 w-[35%] h-[23.5%] z-20 p-4 flex items-center justify-center overflow-hidden"
-                style={{
-                    background: gradient,
-                    boxShadow: `0 12px 24px -6px ${shadowColor}b3, 0 4px 12px -4px ${shadowColor}80`,
-                }}
-                animate={{
-                    y: plusHovered ? -2 : -5,
-                    scale: plusHovered ? 1.1 : 1
-                }}
-                transition={hover_transition}
-                onHoverStart={() => setPlusHovered(true)}
-                onHoverEnd={() => setPlusHovered(false)}
-            >
-
-                <motion.div
-                    className="absolute inset-2 rounded-md border-solid pointer-events-none"
-                    animate={{
-                        borderWidth: plusHovered ? 4 : 2,
-                        borderColor: plusHovered ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)'
-                    }}
-                    transition={hover_transition}
-                />
-
-                <motion.div className="relative z-10 flex flex-col items-center justify-center text-white"
-                    animate={{ opacity: plusHovered ? 1 : 0.7 }}
-                    transition={hover_transition}
+            {addTo && (
+                <Link
+                    to={addTo}
+                    onClick={(e) => e.stopPropagation()}
+                    className="rounded-lg absolute bottom-1 right-1.5 w-[35%] h-[23.5%] z-20"
                 >
-                    <Plus className="w-14 h-14 mb-1" strokeWidth={2.5} />
+                    <motion.div
+                        className="w-full h-full rounded-lg p-4 flex items-center justify-center overflow-hidden"
+                        style={{
+                            background: gradient,
+                            boxShadow: `0 12px 24px -6px ${shadowColor}b3, 0 4px 12px -4px ${shadowColor}80`,
+                        }}
+                        animate={{
+                            y: plusHovered ? -2 : -5,
+                            scale: plusHovered ? 1.1 : 1
+                        }}
+                        transition={hover_transition}
+                        onHoverStart={() => setPlusHovered(true)}
+                        onHoverEnd={() => setPlusHovered(false)}
+                    >
 
-                </motion.div>
+                        <motion.div
+                            className="absolute inset-2 rounded-md border-solid pointer-events-none"
+                            animate={{
+                                borderWidth: plusHovered ? 4 : 2,
+                                borderColor: plusHovered ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)'
+                            }}
+                            transition={hover_transition}
+                        />
 
-            </motion.div>
+                        <motion.div className="relative z-10 flex flex-col items-center justify-center text-white"
+                            animate={{ opacity: plusHovered ? 1 : 0.7 }}
+                            transition={hover_transition}
+                        >
+                            <Plus className="w-14 h-14 mb-1" strokeWidth={2.5} />
+
+                        </motion.div>
+
+                    </motion.div>
+                </Link>
+            )}
 
             <motion.div
                 className="h-full"

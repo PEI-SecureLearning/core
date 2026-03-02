@@ -1,25 +1,9 @@
 import { Navbar } from "@/components/navbar";
-import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "@/components/sidebar";
-import ComplianceFlow from "@/components/Compliance";
-import { useKeycloak } from "@react-keycloak/web";
-import { useMemo } from "react";
-import { isComplianceEligibleUser } from "@/lib/compliance-eligibility";
-
+import ComplianceFlow from "@/components/compliance";
 
 const RootLayout = () => {
-  const { keycloak, initialized } = useKeycloak();
-  const routerState = useRouterState();
-
-  const shouldMountCompliance = useMemo(() => {
-    return isComplianceEligibleUser({
-      initialized,
-      authenticated: !!keycloak.authenticated,
-      tokenParsed: keycloak.tokenParsed,
-      pathname: routerState.location.pathname,
-    });
-  }, [initialized, keycloak.authenticated, keycloak.tokenParsed, routerState.location.pathname]);
-
   return (
     <div className="h-screen bg-white shadow-md rounded-xl">
       <Navbar />
@@ -28,7 +12,7 @@ const RootLayout = () => {
         <div className="flex-1 overflow-y-auto">
           <Outlet />
         </div>
-        {shouldMountCompliance ? <ComplianceFlow /> : null}
+        <ComplianceFlow />
       </div>
       {/* <TanStackRouterDevtools /> */}
     </div>
