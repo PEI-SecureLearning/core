@@ -44,7 +44,7 @@ function CourseDetail() {
             <CourseHeader course={course} overallProgress={overallProgress} />
 
             {/* Module list */}
-            <div className="h-[57%] space-y-4 pl-6 pr-1 overflow-y-auto flex flex-col z-0 translate-y-[-10%]">
+            <div className="h-[68%] space-y-4 pl-6 pr-1 overflow-y-auto flex flex-col z-0 translate-y-[-10%]">
                 <div style={{ visibility: 'hidden', width: '100px', height: '50px', backgroundColor: 'red' }}>
                     .
                 </div>

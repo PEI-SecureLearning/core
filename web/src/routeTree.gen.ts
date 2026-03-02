@@ -42,6 +42,7 @@ import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
+import { Route as ContentManagerModulesNewRouteImport } from './routes/content-manager/modules_.new'
 import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
 import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
 
@@ -210,6 +211,12 @@ const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
   path: '/tenants/',
   getParentRoute: () => AdminRoute,
 } as any)
+const ContentManagerModulesNewRoute =
+  ContentManagerModulesNewRouteImport.update({
+    id: '/content-manager/modules/new',
+    path: '/content-manager/modules/new',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminTenantsNewTenantRoute = AdminTenantsNewTenantRouteImport.update({
   id: '/tenants/new-tenant',
   path: '/tenants/new-tenant',
@@ -292,6 +299,7 @@ export interface FileRoutesByTo {
   '/usergroups': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
 }
 export interface FileRoutesById {
@@ -330,119 +338,122 @@ export interface FileRoutesById {
   '/usergroups/': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
   '/admin/tenants/': typeof AdminTenantsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/admin'
-    | '/compliance-org-manager'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new'
-    | '/campaigns/timeline'
-    | '/content-manager/content'
-    | '/content-manager/courses'
-    | '/content-manager/modules'
-    | '/courses/$courseId'
-    | '/sending-profiles/$id'
-    | '/sending-profiles/new'
-    | '/tenants/$id'
-    | '/tenants/new-tenant'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/admin/'
-    | '/campaigns'
-    | '/content-manager'
-    | '/courses'
-    | '/sending-profiles'
-    | '/tenants'
-    | '/usergroups'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
+  | '/'
+  | '/admin'
+  | '/compliance-org-manager'
+  | '/dashboard'
+  | '/help'
+  | '/report'
+  | '/settings'
+  | '/statistics'
+  | '/templates'
+  | '/tenants-org-manager'
+  | '/admin/logs'
+  | '/admin/users'
+  | '/campaigns/$id'
+  | '/campaigns/new'
+  | '/campaigns/timeline'
+  | '/content-manager/content'
+  | '/content-manager/courses'
+  | '/content-manager/modules'
+  | '/courses/$courseId'
+  | '/sending-profiles/$id'
+  | '/sending-profiles/new'
+  | '/tenants/$id'
+  | '/tenants/new-tenant'
+  | '/usergroups/$id'
+  | '/usergroups/new-group'
+  | '/admin/'
+  | '/campaigns'
+  | '/content-manager'
+  | '/courses'
+  | '/sending-profiles'
+  | '/tenants'
+  | '/usergroups'
+  | '/admin/tenants/$tenantId'
+  | '/admin/tenants/new-tenant'
+  | '/admin/tenants'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/compliance-org-manager'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new'
-    | '/campaigns/timeline'
-    | '/content-manager/content'
-    | '/content-manager/courses'
-    | '/content-manager/modules'
-    | '/courses/$courseId'
-    | '/sending-profiles/$id'
-    | '/sending-profiles/new'
-    | '/tenants/$id'
-    | '/tenants/new-tenant'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/admin'
-    | '/campaigns'
-    | '/content-manager'
-    | '/courses'
-    | '/sending-profiles'
-    | '/tenants'
-    | '/usergroups'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants'
+  | '/'
+  | '/compliance-org-manager'
+  | '/dashboard'
+  | '/help'
+  | '/report'
+  | '/settings'
+  | '/statistics'
+  | '/templates'
+  | '/tenants-org-manager'
+  | '/admin/logs'
+  | '/admin/users'
+  | '/campaigns/$id'
+  | '/campaigns/new'
+  | '/campaigns/timeline'
+  | '/content-manager/content'
+  | '/content-manager/courses'
+  | '/content-manager/modules'
+  | '/courses/$courseId'
+  | '/sending-profiles/$id'
+  | '/sending-profiles/new'
+  | '/tenants/$id'
+  | '/tenants/new-tenant'
+  | '/usergroups/$id'
+  | '/usergroups/new-group'
+  | '/admin'
+  | '/campaigns'
+  | '/content-manager'
+  | '/courses'
+  | '/sending-profiles'
+  | '/tenants'
+  | '/usergroups'
+  | '/admin/tenants/$tenantId'
+  | '/admin/tenants/new-tenant'
+  | '/content-manager/modules/new'
+  | '/admin/tenants'
   id:
-    | '__root__'
-    | '/'
-    | '/admin'
-    | '/compliance-org-manager'
-    | '/dashboard'
-    | '/help'
-    | '/report'
-    | '/settings'
-    | '/statistics'
-    | '/templates'
-    | '/tenants-org-manager'
-    | '/admin/logs'
-    | '/admin/users'
-    | '/campaigns/$id'
-    | '/campaigns/new'
-    | '/campaigns/timeline'
-    | '/content-manager/content'
-    | '/content-manager/courses'
-    | '/content-manager/modules'
-    | '/courses/$courseId'
-    | '/sending-profiles/$id'
-    | '/sending-profiles/new'
-    | '/tenants/$id'
-    | '/tenants/new-tenant'
-    | '/usergroups/$id'
-    | '/usergroups/new-group'
-    | '/admin/'
-    | '/campaigns/'
-    | '/content-manager/'
-    | '/courses/'
-    | '/sending-profiles/'
-    | '/tenants/'
-    | '/usergroups/'
-    | '/admin/tenants/$tenantId'
-    | '/admin/tenants/new-tenant'
-    | '/admin/tenants/'
+  | '__root__'
+  | '/'
+  | '/admin'
+  | '/compliance-org-manager'
+  | '/dashboard'
+  | '/help'
+  | '/report'
+  | '/settings'
+  | '/statistics'
+  | '/templates'
+  | '/tenants-org-manager'
+  | '/admin/logs'
+  | '/admin/users'
+  | '/campaigns/$id'
+  | '/campaigns/new'
+  | '/campaigns/timeline'
+  | '/content-manager/content'
+  | '/content-manager/courses'
+  | '/content-manager/modules'
+  | '/courses/$courseId'
+  | '/sending-profiles/$id'
+  | '/sending-profiles/new'
+  | '/tenants/$id'
+  | '/tenants/new-tenant'
+  | '/usergroups/$id'
+  | '/usergroups/new-group'
+  | '/admin/'
+  | '/campaigns/'
+  | '/content-manager/'
+  | '/courses/'
+  | '/sending-profiles/'
+  | '/tenants/'
+  | '/usergroups/'
+  | '/admin/tenants/$tenantId'
+  | '/admin/tenants/new-tenant'
+  | '/content-manager/modules/new'
+  | '/admin/tenants/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -710,6 +721,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTenantsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/content-manager/modules/new': {
+      id: '/content-manager/modules/new'
+      path: '/content-manager/modules/new'
+      fullPath: '/content-manager/modules/new'
+      preLoaderRoute: typeof ContentManagerModulesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/tenants/new-tenant': {
       id: '/admin/tenants/new-tenant'
       path: '/tenants/new-tenant'
@@ -746,6 +764,15 @@ const AdminRouteChildren: AdminRouteChildren = {
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface ContentManagerModulesRouteChildren { }
+
+const ContentManagerModulesRouteChildren: ContentManagerModulesRouteChildren = {}
+
+const ContentManagerModulesRouteWithChildren =
+  ContentManagerModulesRoute._addFileChildren(
+    ContentManagerModulesRouteChildren,
+  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,

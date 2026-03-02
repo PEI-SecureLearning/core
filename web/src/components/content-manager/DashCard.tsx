@@ -19,12 +19,12 @@ const transition = {
 };
 
 interface DashCardProps {
-    title: string;
-    subtitle: string;
-    gradient: string;
-    shadowColor: string;
-    Icon?: React.ElementType | null; // Allow it to be optional or null
-    to: string;
+    readonly title: string;
+    readonly subtitle: string;
+    readonly gradient: string;
+    readonly shadowColor: string;
+    readonly Icon?: React.ElementType | null;
+    readonly to: string;
 }
 
 

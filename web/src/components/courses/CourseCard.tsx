@@ -3,11 +3,6 @@ import { Clock, BarChart2, Users } from 'lucide-react'
 import type { Course } from './courseData'
 import type { GridCols } from './CourseFilters'
 
-const difficultyColor: Record<string, string> = {
-    Beginner: 'bg-emerald-100 text-emerald-800',
-    Intermediate: 'bg-amber-100 text-amber-800',
-    Advanced: 'bg-red-100 text-red-800',
-}
 
 type CourseCardProps = {
     course: Course
@@ -58,9 +53,6 @@ function CardHorizontal({ course, progress }: { course: Course; progress: number
                 <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">
                         {course.category}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${difficultyColor[course.difficulty]}`}>
-                        {course.difficulty}
                     </span>
                 </div>
 

@@ -49,15 +49,15 @@ const ExpandButton = ({
             disabled={isExternallyDisabled || isActive}
             title={isExternallyDisabled ? loadingLabel : undefined}
             className={`
-                group relative overflow-hidden outline-none bg-purple-700 rounded-[10px]
-                px-[25px] py-[6px] text-[1.1em] text-white font-['Inter'] cursor-pointer
+                group relative overflow-hidden outline-none bg-purple-700/80 rounded-[10px]
+                px-[20px] py-[6px] text-[1.1em] text-white font-['Inter'] cursor-pointer
                 transition-all duration-300 ease-in-out h-[38px] min-w-[140px]
                 ${isActive ? 'pr-[73px]' : 'hover:pr-[73px]'}
                 disabled:opacity-60 disabled:cursor-not-allowed
                 font-medium
             `}
         >
-            <span className="relative z-10">
+            <span className="relative z-10 font-['Inter'] font-medium font-size-[1.1em] flex justify-center items-center">
                 {isExternallyDisabled ? loadingLabel : label}
             </span>
 
