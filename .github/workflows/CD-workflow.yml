@@ -23,8 +23,12 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         run: |
+          set -a
+          . deployment/.env
+          set +a
           mkdir -p .buildx-cache .buildx-cache-new
           docker buildx bake \
+            --allow=fs.read=.. \
             --file deployment/docker-compose.yml \
             --set '*.cache-from=type=local,src=.buildx-cache' \
             --set '*.cache-to=type=local,dest=.buildx-cache-new,mode=max' \
