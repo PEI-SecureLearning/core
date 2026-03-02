@@ -31,7 +31,7 @@ class EmailHandler:
         if not profile:
             raise ValueError(f"No sending profile for email_sending {email_sending.id}")
 
-        template = kit and kit.email_template
+        template = kit.email_template
         
         if not template:
             raise ValueError(f"No email template for email_sending {email_sending.id}")
@@ -46,11 +46,11 @@ class EmailHandler:
                 ),
                 sender_email=profile.from_email,
                 receiver_email=email_sending.email_to,
-                subject=template.subject if template else "Campaign Email",
+                subject=template.subject,
                 template_id=template.content_link,
                 tracking_id=email_sending.tracking_token,
                 arguments={
-                    **(kit.args if kit and kit.args else {}),
+                    **(kit.args if kit.args else {}),
                     "name": email_sending.user_id,
                     "tracking_id": email_sending.tracking_token,
                 },
