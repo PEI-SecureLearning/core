@@ -1,4 +1,5 @@
 import { Search, SortAsc, Plus } from "lucide-react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 
 interface ToolbarProps {
     searchPlaceholder?: string;
@@ -7,6 +8,8 @@ interface ToolbarProps {
     sortValue?: string;
     onSortChange?: (value: string) => void;
     onAddClick?: () => void;
+    newTo?: string;
+    newType?: string;
 }
 
 export function Toolbar({
@@ -16,7 +19,23 @@ export function Toolbar({
     sortValue = "title",
     onSortChange,
     onAddClick,
+    newTo,
+    newType = "Item",
 }: ToolbarProps) {
+    const navigate = useNavigate();
+    const pathname = useLocation({ select: (state) => state.pathname });
+
+    const handleAddClick = () => {
+        if (onAddClick) {
+            onAddClick();
+            return;
+        }
+
+        const basePath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+        const target = newTo ?? `${basePath}/new`;
+        void navigate({ to: target as never });
+    };
+
     return (
         <div className="flex flex-col md:flex-row gap-4 mb-4 items-center justify-between" >
             <div className="relative w-full md:w-96">
@@ -42,13 +61,15 @@ export function Toolbar({
                 </select>
                 <button
                     type="button"
-                    onClick={onAddClick}
-                    className="bg-white border border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-purple-200/30 cursor-pointer"
+                    onClick={handleAddClick}
+                    className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white border border-purple-600 rounded-lg py-2 px-4 text-sm font-semibold transition-colors shadow-sm shadow-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-300"
                 >
-                    <Plus className="w-4 h-4" />
+                    <span className="inline-flex items-center gap-1.5">
+                        <Plus className="w-4 h-4" />
+                        <span>New {newType}</span>
+                    </span>
                 </button>
             </div>
         </div >
     )
 }
-

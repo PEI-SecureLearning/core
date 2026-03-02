@@ -17,6 +17,7 @@ interface ContentPageLayoutProps {
 
 export function ContentPageLayout({ title, children }: ContentPageLayoutProps) {
     const [isLoaded, setIsLoaded] = useState(false)
+    const newType = title.endsWith('s') ? title.slice(0, -1) : title
 
     useEffect(() => { setIsLoaded(true) }, [])
 
@@ -29,7 +30,7 @@ export function ContentPageLayout({ title, children }: ContentPageLayoutProps) {
             <div className="w-full h-[8%] flex flex-row relative z-10">
                 <PageTitle title={title} />
                 <div className="w-[70%] flex flex-row gap-4 justify-end">
-                    <Toolbar />
+                    <Toolbar newType={newType} />
                 </div>
             </div>
 
