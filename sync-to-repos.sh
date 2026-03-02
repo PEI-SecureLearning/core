@@ -149,7 +149,11 @@ sync_infrastructure() {
   fi
 
   local UNPUSHED
-  UNPUSHED=$(git -C "$DEST" log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
+  if git -C "$DEST" rev-parse --verify origin/main >/dev/null 2>&1; then
+    UNPUSHED=$(git -C "$DEST" log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
+  else
+    UNPUSHED=0
+  fi
   if [ "$UNPUSHED" -gt 0 ]; then
     warn "$REPO has $UNPUSHED commit(s) not on remote. Monorepo content will overwrite. Ctrl+C to abort."
     sleep 3
