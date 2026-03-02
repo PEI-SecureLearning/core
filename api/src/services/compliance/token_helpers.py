@@ -16,6 +16,8 @@ from fastapi import HTTPException, status
 
 REALM_PATH = "/realms/"
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_INTERNAL_URL") or os.getenv("KEYCLOAK_URL")
+SYSTEM_REALMS = {"platform", "master"}
+PRIVILEGED_COMPLIANCE_ROLES = {"admin", "org_manager", "content_manager"}
 
 
 def parse_unverified_claims(token: str) -> dict:
@@ -127,6 +129,49 @@ def get_user_and_tenant(token: str) -> Tuple[str, str | None]:
 
     tenant = get_realm_from_iss(claims.get("iss"))
     tenant = claims.get("tenant", tenant)
+    return user_identifier, tenant
+
+
+def _get_realm_roles(claims: dict) -> set[str]:
+    realm_access = claims.get("realm_access", {})
+    if not isinstance(realm_access, dict):
+        return set()
+    roles = realm_access.get("roles", [])
+    if not isinstance(roles, list):
+        return set()
+    return {str(role).strip().lower() for role in roles if role is not None}
+
+
+def require_tenant_learner_context(token: str) -> Tuple[str, str]:
+    """Allow compliance learner flow only for tenant learner users."""
+    claims = decode_token_verified(token)
+
+    user_identifier = (
+        claims.get("preferred_username") or claims.get("email") or claims.get("sub")
+    )
+    if not user_identifier:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to resolve user identifier from token",
+        )
+
+    tenant = get_realm_from_iss(claims.get("iss"))
+    tenant = claims.get("tenant", tenant)
+    tenant = require_tenant(tenant)
+
+    if tenant.lower() in SYSTEM_REALMS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Compliance is only available for tenant users.",
+        )
+
+    roles = _get_realm_roles(claims)
+    if roles & PRIVILEGED_COMPLIANCE_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Compliance is only available for tenant learner users.",
+        )
+
     return user_identifier, tenant
 
 

@@ -10,7 +10,7 @@ from src.models.compliance_schemas import (
     SubmitRequest,
     SubmitResponse,
 )
-from src.services.compliance.token_helpers import get_user_and_tenant, require_tenant
+from src.services.compliance.token_helpers import require_tenant_learner_context
 from src.services.compliance import quiz_handler
 
 router = APIRouter()
@@ -20,15 +20,13 @@ router = APIRouter()
 def get_latest_compliance(
     session: SessionDep, token: OAuth2Scheme
 ):
-    _, tenant = get_user_and_tenant(token)
-    tenant = require_tenant(tenant)
+    _, tenant = require_tenant_learner_context(token)
     return quiz_handler.get_latest_compliance(session, tenant)
 
 
 @router.get("/compliance/latest/quiz", response_model=QuizResponse, dependencies=[Depends(Roles("org_manager", "view"))])
 def get_latest_quiz(session: SessionDep, token: OAuth2Scheme):
-    _, tenant = get_user_and_tenant(token)
-    tenant = require_tenant(tenant)
+    _, tenant = require_tenant_learner_context(token)
     return quiz_handler.get_latest_quiz(session, tenant)
 
 
@@ -36,8 +34,7 @@ def get_latest_quiz(session: SessionDep, token: OAuth2Scheme):
 def submit_quiz(
     payload: SubmitRequest, session: SessionDep, token: OAuth2Scheme
 ):
-    user_id, tenant = get_user_and_tenant(token)
-    tenant = require_tenant(tenant)
+    user_id, tenant = require_tenant_learner_context(token)
     return quiz_handler.submit_quiz(
         session, tenant, user_id, payload.version, payload.answers
     )
@@ -45,8 +42,7 @@ def submit_quiz(
 
 @router.get("/compliance/status", response_model=ComplianceStatusResponse, dependencies=[Depends(Roles("org_manager", "view"))])
 def get_compliance_status(session: SessionDep, token: OAuth2Scheme):
-    user_id, tenant = get_user_and_tenant(token)
-    tenant = require_tenant(tenant)
+    user_id, tenant = require_tenant_learner_context(token)
     return quiz_handler.get_compliance_status(session, tenant, user_id)
 
 
@@ -54,8 +50,7 @@ def get_compliance_status(session: SessionDep, token: OAuth2Scheme):
 def accept_compliance(
     payload: AcceptRequest, session: SessionDep, token: OAuth2Scheme
 ):
-    user_id, tenant = get_user_and_tenant(token)
-    tenant = require_tenant(tenant)
+    user_id, tenant = require_tenant_learner_context(token)
     return quiz_handler.accept_compliance(
         session, tenant, user_id, payload.version, payload.score
     )
