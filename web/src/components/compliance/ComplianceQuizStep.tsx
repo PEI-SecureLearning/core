@@ -1,4 +1,4 @@
-import { ArrowUpRight, CheckCircle2, RotateCcw, ShieldCheck, Timer } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, RotateCcw, Timer } from "lucide-react";
 import type { QuizPayload, SubmitResponse } from "./types";
 import { apiClient } from "../../lib/api-client";
 

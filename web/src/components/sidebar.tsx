@@ -200,7 +200,6 @@ export function Sidebar() {
     if (isContentManagerRoute) return contentManagerLinks;
     return userLinks.filter((link) => {
       if (!link.roles) return true;
-      let hasAcess = false;
 
       if (link.feature && !realmFeatures[link.feature]) {
         return false;

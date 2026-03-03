@@ -3,6 +3,10 @@ import { motion } from 'motion/react';
 import { ArrowRight, Mail, Sparkles, Loader2 } from 'lucide-react';
 import {apiClient} from '../lib/api-client'
 
+type RealmLookupResponse = {
+    realm?: string;
+};
+
 export const EmailEntry = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
@@ -19,7 +23,7 @@ export const EmailEntry = () => {
                 throw new Error("Invalid email address");
             }
 
-            const resp = await apiClient.get(`/realms?domain=${encodeURIComponent(domain)}`);
+            const resp = await apiClient.get<RealmLookupResponse>(`/realms?domain=${encodeURIComponent(domain)}`);
             const realm = resp.realm;
 
             if (realm) {
