@@ -2734,6 +2734,24 @@
                   "name": "manage"
                 }
               ]
+            },
+            {
+              "name": "content-manager",
+              "type": "urn:api:resources:content-manager",
+              "ownerManagedAccess": false,
+              "displayName": "Content Manager Resource",
+              "attributes": {},
+              "uris": [
+                "/api/content/*"
+              ],
+              "scopes": [
+                {
+                  "name": "view"
+                },
+                {
+                  "name": "manage"
+                }
+              ]
             }
           ],
           "policies": [
@@ -2756,6 +2774,27 @@
               "config": {
                 "resources": "[\"admin\"]",
                 "applyPolicies": "[\"admin Role Policy\"]"
+              }
+            },
+            {
+              "name": "content-manager Role Policy",
+              "description": "Policy that grants access to users with content manager role",
+              "type": "role",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "roles": "[{\"id\":\"CONTENT_MANAGER\",\"required\":false}]"
+              }
+            },
+            {
+              "name": "content-manager Permission",
+              "description": "Permission for content manager resource",
+              "type": "resource",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "resources": "[\"content-manager\"]",
+                "applyPolicies": "[\"content-manager Role Policy\"]"
               }
             }
           ],

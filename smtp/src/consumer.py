@@ -40,7 +40,6 @@ class RabbitMQConsumer:
         body: bytes
     ) -> None:
         """Process a single message from the queue with rate limiting."""
-        print(f"Received message: {body.decode()}")
         
         try:
             # Wait for rate limit slot before processing

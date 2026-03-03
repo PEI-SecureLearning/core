@@ -2,22 +2,24 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from jwt import PyJWKClient
+import jwt
+from typing import Annotated
+
 from src.routers import (
     realm,
     compliance,
     org_manager,
     campaign,
     tracking,
+    content,
     templates,
     sending_profile
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.tasks import start_scheduler, shutdown_scheduler
-import os
-from jwt import PyJWKClient
-import jwt
-from typing import Annotated
 
 
 @asynccontextmanager
@@ -66,5 +68,6 @@ app.include_router(compliance.router, prefix="/api", tags=["compliance"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
 app.include_router(tracking.router, prefix="/api", tags=["tracking"])
+app.include_router(content.router, prefix="/api", tags=["content"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
 app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])

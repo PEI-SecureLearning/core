@@ -41,7 +41,7 @@ function ProfileFooter({ onSubmit, isValid, isLoading, status }: Props) {
         <button
           onClick={onSubmit}
           disabled={!isValid || isLoading}
-          className="liquid-glass-button bg-blue-600 hover:bg-blue-700 flex items-center gap-2 px-6 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="liquid-glass-button bg-purple-600 hover:bg-purple-700 flex items-center gap-2 px-6 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {buttonContent.icon}
           {buttonContent.text}

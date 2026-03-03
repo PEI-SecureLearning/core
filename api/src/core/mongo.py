@@ -3,7 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+from motor.motor_asyncio import (
+    AsyncIOMotorClient,
+    AsyncIOMotorCollection,
+    AsyncIOMotorGridFSBucket,
+)
 
 from src.core.settings import settings
 
@@ -27,6 +31,18 @@ def get_tenant_logos_collection() -> AsyncIOMotorCollection:
     client = _get_client()
     db = client[settings.MONGODB_DB]
     return db[settings.MONGODB_COLLECTION_TENANT_LOGOS]
+
+
+def get_content_collection() -> AsyncIOMotorCollection:
+    client = _get_client()
+    db = client[settings.MONGODB_DB]
+    return db[settings.MONGODB_COLLECTION_CONTENT]
+
+
+def get_content_gridfs_bucket() -> AsyncIOMotorGridFSBucket:
+    client = _get_client()
+    db = client[settings.MONGODB_DB]
+    return AsyncIOMotorGridFSBucket(db, bucket_name=settings.MONGODB_GRIDFS_BUCKET)
 
 
 async def close_mongo_client() -> None:
@@ -66,5 +82,23 @@ def serialize_logo_document(doc: dict[str, Any]) -> dict[str, Any]:
         "filename": doc.get("filename"),
         "content_type": doc.get("content_type"),
         "size": doc.get("size"),
+        "updated_at": doc.get("updated_at"),
+    }
+
+
+def serialize_content_document(doc: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": str(doc.get("_id", "")),
+        "kind": doc.get("kind"),
+        "content_piece_id": doc.get("content_piece_id"),
+        "path": doc.get("path"),
+        "title": doc.get("title"),
+        "description": doc.get("description"),
+        "content_format": doc.get("content_format"),
+        "body": doc.get("body"),
+        "source_url": doc.get("source_url"),
+        "tags": doc.get("tags", []),
+        "file": doc.get("file"),
+        "created_at": doc.get("created_at"),
         "updated_at": doc.get("updated_at"),
     }

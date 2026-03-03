@@ -23,12 +23,20 @@ class Settings(BaseSettings):
   MONGODB_DB: str = "securelearning"
   MONGODB_COLLECTION_TEMPLATES: str = "templates"
   MONGODB_COLLECTION_TENANT_LOGOS: str = "tenant_logos"
+  MONGODB_COLLECTION_CONTENT: str = "content_pieces"
+  MONGODB_GRIDFS_BUCKET: str = "content_files"
+  MONGODB_INLINE_FILE_MAX_BYTES: int = 8 * 1024 * 1024
 
   # RabbitMQ
   RABBITMQ_HOST: str
   RABBITMQ_USER: str
   RABBITMQ_PASS: str
   RABBITMQ_QUEUE: str
+  
+  # Statistics
+  # Users who fell for phishing in more than this fraction of campaigns are
+  # considered repeat offenders. Default is 0.5 (50%).
+  REPEAT_OFFENDER_THRESHOLD: float = 0.5
 
   @computed_field
   @property

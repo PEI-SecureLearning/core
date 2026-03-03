@@ -16,10 +16,11 @@ interface FeatureCardProps {
 
 function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: FeatureCardProps) {
     return (
-        <div
+        <button
+            type="button"
             onClick={onToggle}
             className={`
-                relative cursor-pointer group
+                w-full text-left relative cursor-pointer group
                 p-3 rounded-xl border-2 transition-all duration-300 ease-out
                 ${enabled
                     ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-white shadow-md shadow-purple-100/50'
@@ -64,7 +65,7 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
                 <span className={`w-1.5 h-1.5 rounded-full ${enabled ? 'bg-purple-500' : 'bg-gray-400'}`} />
                 {enabled ? 'Enabled' : 'Disabled'}
             </div>
-        </div>
+        </button>
     )
 }
 
