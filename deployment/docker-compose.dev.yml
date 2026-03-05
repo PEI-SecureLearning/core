@@ -188,7 +188,7 @@ services:
     container_name: frontend
     environment:
       VITE_API_URL: ${API_URL}/api
-      VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
+      VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
     ports:
       - "5173:5173"
     volumes:
