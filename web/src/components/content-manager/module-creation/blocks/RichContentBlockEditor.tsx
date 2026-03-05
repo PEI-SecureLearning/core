@@ -1,11 +1,12 @@
 import { Clock, FileText, Image as ImageIcon, X } from 'lucide-react'
-import type { RichContentBlock, RichMediaType } from './types'
+import type { RichContentBlock, RichMediaType } from '../types'
+import { AutoResizeTextarea } from './AutoResizeTextarea'
 
 const RICH_MEDIA_OPTIONS: { type: RichMediaType; label: string; icon: React.ReactNode; placeholder: string }[] = [
-    { type: 'image', label: 'Image', icon: <ImageIcon className="w-3.5 h-3.5" />, placeholder: 'https://…/image.png or backend asset URL'  },
-    { type: 'video', label: 'Video', icon: <Clock     className="w-3.5 h-3.5" />, placeholder: 'https://…/video.mp4 or YouTube embed URL'   },
-    { type: 'audio', label: 'Audio', icon: <Clock     className="w-3.5 h-3.5" />, placeholder: 'https://…/audio.mp3 or backend asset URL'   },
-    { type: 'file',  label: 'File',  icon: <FileText  className="w-3.5 h-3.5" />, placeholder: 'https://…/document.pdf or backend asset URL'},
+    { type: 'image', label: 'Image', icon: <ImageIcon className="w-3.5 h-3.5" />, placeholder: 'https://…/image.png or backend asset URL'   },
+    { type: 'video', label: 'Video', icon: <Clock     className="w-3.5 h-3.5" />, placeholder: 'https://…/video.mp4 or YouTube embed URL'    },
+    { type: 'audio', label: 'Audio', icon: <Clock     className="w-3.5 h-3.5" />, placeholder: 'https://…/audio.mp3 or backend asset URL'    },
+    { type: 'file',  label: 'File',  icon: <FileText  className="w-3.5 h-3.5" />, placeholder: 'https://…/document.pdf or backend asset URL' },
 ]
 
 export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
@@ -16,9 +17,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
     const meta = RICH_MEDIA_OPTIONS.find(o => o.type === block.mediaType) ?? RICH_MEDIA_OPTIONS[0]
 
     return (
-        <div 
-            className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-white group"
-        >
+        <div className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-white group">
             <div className="flex items-center gap-1 px-3 py-1.5 bg-violet-50 border-b border-violet-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-violet-100 text-violet-600">
                     Media
@@ -69,8 +68,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove }: {
                     </div>
                 </div>
 
-                <input
-                    type="text"
+                <AutoResizeTextarea
                     value={block.caption}
                     onChange={e => onUpdate({ caption: e.target.value })}
                     placeholder="Caption (optional)…"

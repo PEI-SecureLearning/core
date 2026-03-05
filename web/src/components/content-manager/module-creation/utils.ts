@@ -41,17 +41,36 @@ export function allQuestionsValid(d: ModuleFormData): boolean {
     return d.sections.every(s => s.blocks.every(isBlockValid))
 }
 
+/** All sections must have a non-empty title. */
+export function allSectionsTitled(d: ModuleFormData): boolean {
+    const allSections = [
+        ...d.sections,
+        ...(d.hasRefreshModule ? (d.refreshSections ?? []) : []),
+    ]
+    return allSections.every(s => s.title.trim() !== '')
+}
+
 /** Compute a 0–100 completion score */
 export function calcCompletion(d: ModuleFormData): number {
+    const refreshSections = d.hasRefreshModule ? (d.refreshSections ?? []) : []
+    const allSections = [...d.sections, ...refreshSections]
+    const allBlocks = allSections.reduce((acc, s) => acc + s.blocks.length, 0)
+    const allQsValid = allSections.every(s =>
+        s.blocks.every(b => b.kind !== 'question' || isQuestionValid(b))
+    )
+
     const checks = [
         !!d.title.trim(),
         !!d.category,
         !!d.description.trim(),
         !!d.estimatedTime.trim(),
         d.sections.length > 0,
-        totalBlocks(d) > 0,
+        allBlocks > 0,
         !!d.coverImage,
-        allQuestionsValid(d),
+        allQsValid,
+        allSectionsTitled(d),
+        // If refresh module is enabled it must have at least one section
+        !d.hasRefreshModule || refreshSections.length > 0,
     ]
     return Math.round((checks.filter(Boolean).length / checks.length) * 100)
 }

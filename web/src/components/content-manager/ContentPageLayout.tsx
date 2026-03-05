@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 import { PageTitle } from './PageTitle'
 import { Toolbar } from './ToolBar'
@@ -13,13 +12,11 @@ const transition = {
 interface ContentPageLayoutProps {
     readonly title: string
     readonly children: React.ReactNode
+    readonly onNew?: () => void
 }
 
-export function ContentPageLayout({ title, children }: ContentPageLayoutProps) {
-    const [isLoaded, setIsLoaded] = useState(false)
+export function ContentPageLayout({ title, children, onNew }: ContentPageLayoutProps) {
     const newType = title.endsWith('s') ? title.slice(0, -1) : title
-
-    useEffect(() => { setIsLoaded(true) }, [])
 
     return (
         <motion.div
@@ -30,11 +27,11 @@ export function ContentPageLayout({ title, children }: ContentPageLayoutProps) {
             <div className="w-full h-[8%] flex flex-row relative z-10">
                 <PageTitle title={title} />
                 <div className="w-[70%] flex flex-row gap-4 justify-end">
-                    <Toolbar newType={newType} />
+                    <Toolbar newType={newType} onAddClick={onNew} />
                 </div>
             </div>
 
-            <div className={`w-full h-[92%] rounded-lg p-10 relative overflow-y-auto transition-colors duration-[500ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${isLoaded ? 'bg-gray-100' : 'bg-white'} z-10 border-1 border-gray-200`}>
+            <div className="w-full h-[92%] rounded-lg p-10 relative overflow-y-auto bg-gray-100 z-10 border border-gray-200">
                 {children}
             </div>
 

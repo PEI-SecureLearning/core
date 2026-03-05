@@ -53,13 +53,15 @@ export interface Section {
 }
 
 export interface ModuleFormData {
-    title:         string
-    category:      string
-    description:   string
-    coverImage:    string
-    estimatedTime: string
-    difficulty:    Difficulty
-    sections:      Section[]
+    title:             string
+    category:          string
+    description:       string
+    coverImage:        string
+    estimatedTime:     string
+    difficulty:        Difficulty
+    sections:          Section[]
+    hasRefreshModule:   boolean
+    refreshSections:   Section[]
 }
 
 // ── What the backend returns after create/update ──────────

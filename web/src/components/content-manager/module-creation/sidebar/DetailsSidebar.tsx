@@ -9,8 +9,8 @@ import {
     Image as ImageIcon,
     AlertTriangle,
 } from 'lucide-react'
-import type { ModuleFormData } from './types'
-import { CATEGORY_OPTIONS, DIFFICULTY_COLORS, inputCls } from './constants'
+import type { ModuleFormData } from '../types'
+import { CATEGORY_OPTIONS, DIFFICULTY_COLORS, inputCls } from '../constants'
 
 function FormField({ label, icon, warning, children }: {
     readonly label: string

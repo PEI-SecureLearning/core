@@ -1,8 +1,9 @@
 import { Check, ListChecks, Plus, Text, ToggleLeft, X } from 'lucide-react'
-import type { Choice, Question, QuestionBlock, QuestionType } from './types'
-import { TRUE_FALSE_CHOICES, uid } from './constants'
-import { isQuestionValid } from './utils'
-import { BlockWarning } from './BlockComponents'
+import type { Choice, Question, QuestionBlock, QuestionType } from '../types'
+import { TRUE_FALSE_CHOICES, uid } from '../constants'
+import { isQuestionValid } from '../utils'
+import { BlockWarning } from './BlockWarning'
+import { AutoResizeTextarea } from './AutoResizeTextarea'
 
 const QUESTION_TYPE_META: Record<QuestionType, { label: string; Icon: React.ComponentType<{ className?: string }> }> = {
     multiple_choice: { label: 'Multiple Choice', Icon: ListChecks },
@@ -35,14 +36,14 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
 
     const choices = q.type === 'true_false' ? TRUE_FALSE_CHOICES : q.choices
 
-    const showWarning    = publishAttempted === true && !isQuestionValid(block)
-    const needsText      = !q.text.trim()
-    const needsMoreOpts  = q.type === 'multiple_choice' && q.choices.length < 2
-    const needsOptionText= q.type === 'multiple_choice' && q.choices.some(c => !c.text.trim())
-    const needsCorrect   = q.type === 'multiple_choice' && !q.choices.some(c => c.isCorrect)
+    const showWarning     = publishAttempted === true && !isQuestionValid(block)
+    const needsText       = !q.text.trim()
+    const needsMoreOpts   = q.type === 'multiple_choice' && q.choices.length < 2
+    const needsOptionText = q.type === 'multiple_choice' && q.choices.some(c => !c.text.trim())
+    const needsCorrect    = q.type === 'multiple_choice' && !q.choices.some(c => c.isCorrect)
 
     return (
-        <div 
+        <div
             className={`flex flex-col border rounded-xl overflow-hidden bg-white group transition-colors ${
                 showWarning ? 'border-amber-400' : 'border-slate-200'
             }`}
@@ -68,16 +69,22 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
             </div>
 
             <div className="px-4 pt-3 pb-2">
-                <input value={q.text} onChange={e => onUpdate({ ...q, text: e.target.value })}
+                <AutoResizeTextarea
+                    value={q.text}
+                    onChange={e => onUpdate({ ...q, text: e.target.value })}
                     placeholder="Type your question here..."
-                    className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300/50 text-slate-700 placeholder:text-slate-400" />
+                    className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300/50 text-slate-700 placeholder:text-slate-400"
+                />
             </div>
 
             <div className="px-4 pb-4 flex flex-col gap-2">
                 {q.type === 'short_answer' ? (
-                    <input value={q.answer} onChange={e => onUpdate({ ...q, answer: e.target.value })}
+                    <AutoResizeTextarea
+                        value={q.answer}
+                        onChange={e => onUpdate({ ...q, answer: e.target.value })}
                         placeholder="Expected answer (optional)..."
-                        className="w-full text-sm bg-slate-50 border border-dashed border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300/50 text-slate-700 placeholder:text-slate-400 italic" />
+                        className="w-full text-sm bg-slate-50 border border-dashed border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300/50 text-slate-700 placeholder:text-slate-400 italic"
+                    />
                 ) : (
                     <>
                         {choices.map((choice, ci) => (
@@ -92,9 +99,12 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
                                 {q.type === 'true_false' ? (
                                     <span className="flex-1 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">{choice.text}</span>
                                 ) : (
-                                    <input value={choice.text} onChange={e => patchChoice(choice.id, { text: e.target.value })}
+                                    <AutoResizeTextarea
+                                        value={choice.text}
+                                        onChange={e => patchChoice(choice.id, { text: e.target.value })}
                                         placeholder={`Option ${ci + 1}`}
-                                        className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300/50 text-slate-700 placeholder:text-slate-400" />
+                                        className="flex-1 text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-300/50 text-slate-700 placeholder:text-slate-400"
+                                    />
                                 )}
                                 {q.type === 'multiple_choice' && (
                                     <button type="button" onClick={() => removeChoice(choice.id)}

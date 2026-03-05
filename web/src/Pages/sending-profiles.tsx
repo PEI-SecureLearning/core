@@ -73,29 +73,14 @@ export default function SendingProfilesPage() {
   };
 
   return (
-    <div className="h-full w-full animate-[fadeIn_0.4s_ease-out]">
-      {/* Mantivemos os teus estilos de animação */}
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInDelay {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
-      {/* --- O Cabeçalho (Header) --- */}
-      <div className="h-1/12 w-full border-b flex items-center px-4 font-semibold text-lg">
+    <div className="h-full w-full bg-gray-50/50">
+      {/* Header */}
+      <div className="h-1/12 w-full border-b border-gray-200 flex items-center px-4 font-semibold text-lg bg-white">
         <SendingProfilesHeader view={view} setView={setView} />
       </div>
 
-      {/* --- O Conteúdo (Grid ou Tabela) --- */}
-      <div
-        className="h-11/12 w-full overflow-y-auto p-4 space-y-4"
-        style={{ animation: "fadeInDelay 0.5s ease-out 0.1s both" }}
-      >
+      {/* Content */}
+      <div className="h-11/12 w-full overflow-y-auto p-4 space-y-4">
         {view === "grid" ? (
           <SendingProfilesGrid
             profiles={profiles}

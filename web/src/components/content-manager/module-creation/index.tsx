@@ -2,10 +2,10 @@ import { useState, useCallback } from 'react'
 import { AlertCircle, ArrowLeft, CheckCircle2, Eye, Loader2 } from 'lucide-react'
 import { publishModule } from '@/services/modulesApi'
 import type { ModuleFormData } from './types'
-import { ProgressBar } from './ProgressBar'
-import { DetailsSidebar } from './DetailsSidebar'
+import { ProgressBar } from './preview/ProgressBar'
+import { DetailsSidebar } from './sidebar/DetailsSidebar'
 import { SectionsEditor } from './SectionsEditor'
-import { ModulePreview } from './ModulePreview'
+import { ModulePreview } from './preview/ModulePreview'
 import { useAutoSave, type SaveStatus } from './useAutoSave'
 import { calcCompletion } from './utils'
 import { ConfirmProvider, useConfirm } from '@/components/ui/confirm-modal'
@@ -18,6 +18,8 @@ const INITIAL_DATA: ModuleFormData = {
     estimatedTime: '',
     difficulty: 'Easy',
     sections: [],
+    hasRefreshModule: false,
+    refreshSections: [],
 }
 
 const STATUS_CLASSES: Record<string, string> = {
@@ -108,8 +110,8 @@ function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCr
                             className="flex items-center gap-2 text-sm text-slate-500 hover:text-purple-700 transition-colors"
                             aria-label="Back to Modules"
                         >
-                            <ArrowLeft className="w-4 h-4" />
                             Back to Modules
+                            <ArrowLeft className="w-4 h-4" />
                         </button>
                         <div className="h-5 w-px bg-slate-300" aria-hidden="true" />
                     </>
@@ -124,8 +126,8 @@ function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCr
                         onClick={togglePreview}
                         className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors"
                     >
-                        <Eye className="w-3.5 h-3.5" />
                         Preview
+                        <Eye className="w-3.5 h-3.5" />
                     </button>
 
                     <button
@@ -134,8 +136,8 @@ function ModuleCreationFormInner({ token, onSuccess, onBack }: Readonly<ModuleCr
                         onClick={handlePublish}
                         className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        {publishStatus === 'loading' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                         Publish
+                        {publishStatus === 'loading' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     </button>
                 </div>
             </div>
