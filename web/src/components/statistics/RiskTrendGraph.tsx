@@ -22,7 +22,7 @@ export default function RiskTrendChart() {
   const trend = latestValue - previousValue;
 
   return (
-    <div className="w-full bg-white/60 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg shadow-slate-200/50 p-6 hover:shadow-xl transition-all duration-300">
+    <div className="w-full bg-white/60 backdrop-blur-xl rounded-2xl border-2 border-gray-100 shadow-lg shadow-slate-300/50 p-6 hover:shadow-xl transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

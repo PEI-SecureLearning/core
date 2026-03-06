@@ -7,6 +7,7 @@ import type { GridCols } from './CourseFilters'
 type CourseCardProps = {
     course: Course
     cols: GridCols
+    basePath?: string
 }
 
 // ─── shared progress badge helpers ───────────────────────────────────────────
@@ -33,12 +34,12 @@ function ProgressBar({ progress, color = 'bg-purple-500' }: { progress: number; 
 
 // ─── 1-col: wide horizontal card ─────────────────────────────────────────────
 
-function CardHorizontal({ course, progress }: { course: Course; progress: number }) {
+function CardHorizontal({ course, progress, basePath = '/courses' }: { course: Course; progress: number; basePath?: string }) {
     return (
         <Link
-            to="/courses/$courseId"
-            params={{ courseId: course.id }}
-            className="group flex flex-row rounded-r-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+            to={`${basePath}/$courseId` as any}
+            params={{ courseId: course.id } as any}
+            className="group flex flex-row rounded-r-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
         >
             {/* Left colour strip with icon */}
             <div className={`relative flex-shrink-0 w-40 bg-gradient-to-br ${course.color} flex flex-col items-center justify-center gap-2`}>
@@ -87,12 +88,12 @@ function CardHorizontal({ course, progress }: { course: Course; progress: number
 
 // ─── 2-col: standard vertical card (original design) ─────────────────────────
 
-function CardVertical({ course, progress }: { course: Course; progress: number }) {
+function CardVertical({ course, progress, basePath = '/courses' }: { course: Course; progress: number; basePath?: string }) {
     return (
         <Link
-            to="/courses/$courseId"
-            params={{ courseId: course.id }}
-            className="group flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+            to={`${basePath}/$courseId` as any}
+            params={{ courseId: course.id } as any}
+            className="group flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
         >
             {/* Banner */}
             <div className={`relative h-36 bg-gradient-to-br ${course.color} flex items-center justify-center`}>
@@ -129,19 +130,16 @@ function CardVertical({ course, progress }: { course: Course; progress: number }
 
 // ─── 3-col: compact card ──────────────────────────────────────────────────────
 
-function CardCompact({ course, progress }: { course: Course; progress: number }) {
+function CardCompact({ course, progress, basePath = '/courses' }: { course: Course; progress: number; basePath?: string }) {
     return (
         <Link
-            to="/courses/$courseId"
-            params={{ courseId: course.id }}
-            className="group flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+            to={`${basePath}/$courseId` as any}
+            params={{ courseId: course.id } as any}
+            className="group flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
         >
             {/* Small banner */}
             <div className={`relative h-24 bg-gradient-to-br ${course.color} flex items-center justify-center`}>
                 <span className="text-4xl select-none">{course.icon}</span>
-                <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${difficultyColor[course.difficulty]}`}>
-                    {course.difficulty}
-                </span>
             </div>
 
             {/* Body */}
@@ -171,12 +169,12 @@ function CardCompact({ course, progress }: { course: Course; progress: number })
 
 // ─── main export ──────────────────────────────────────────────────────────────
 
-export default function CourseCard({ course, cols }: CourseCardProps) {
+export default function CourseCard({ course, cols, basePath }: CourseCardProps) {
     const progress = course.modules.length
         ? Math.round(course.modules.reduce((sum, m) => sum + m.completion, 0) / course.modules.length)
         : 0
 
-    if (cols === 1) return <CardHorizontal course={course} progress={progress} />
-    if (cols === 3) return <CardCompact course={course} progress={progress} />
-    return <CardVertical course={course} progress={progress} />
+    if (cols === 1) return <CardHorizontal course={course} progress={progress} basePath={basePath} />
+    if (cols === 3) return <CardCompact course={course} progress={progress} basePath={basePath} />
+    return <CardVertical course={course} progress={progress} basePath={basePath} />
 }

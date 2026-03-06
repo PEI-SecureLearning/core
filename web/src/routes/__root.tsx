@@ -5,7 +5,7 @@ import ComplianceFlow from "@/components/compliance";
 
 const RootLayout = () => {
   return (
-    <div className="h-screen bg-white shadow-md rounded-xl">
+    <div className="h-screen bg-white shadow-md">
       <Navbar />
       <div className="h-[92%] flex flex-row">
         <Sidebar />

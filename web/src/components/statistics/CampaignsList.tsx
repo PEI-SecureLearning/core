@@ -1,4 +1,4 @@
-import { Target, AlertTriangle, Eye, CheckCircle, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 function getResultConfig(result: string) {
   switch (result) {
@@ -6,29 +6,33 @@ function getResultConfig(result: string) {
       return {
         color: 'text-rose-600',
         bg: 'bg-rose-500/10',
-        Icon: AlertTriangle,
-        label: 'Phished'
+        hoverBg: 'hover:bg-rose-500/15',
+        label: 'Phished',
+        dot: 'bg-rose-500',
       };
     case 'Ignored':
       return {
         color: 'text-amber-600',
         bg: 'bg-amber-500/10',
-        Icon: Eye,
-        label: 'Ignored'
+        hoverBg: 'hover:bg-amber-500/15',
+        label: 'Ignored',
+        dot: 'bg-amber-400',
       };
     case 'Reported':
       return {
         color: 'text-emerald-600',
         bg: 'bg-emerald-500/10',
-        Icon: CheckCircle,
-        label: 'Reported'
+        hoverBg: 'hover:bg-emerald-500/15',
+        label: 'Reported',
+        dot: 'bg-emerald-500',
       };
     default:
       return {
         color: 'text-slate-600',
         bg: 'bg-slate-500/10',
-        Icon: Target,
-        label: result
+        hoverBg: 'hover:bg-slate-500/15',
+        label: result,
+        dot: 'bg-slate-400',
       };
   }
 }
@@ -47,13 +51,22 @@ export default function RecentCampaigns() {
   const reportedCount = campaigns.filter(c => c.result === 'Reported').length;
 
   return (
-    <div className="flex-1 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg shadow-slate-200/50 p-6 hover:shadow-xl transition-all duration-300">
+    <div className="flex-1 bg-white/60 backdrop-blur-xl rounded-b-xl border-t-3 border-purple-500
+      shadow-lg shadow-slate-300/50 p-6
+      hover:shadow-2xl hover:shadow-purple-200/60
+      transition-all duration-500 group">
+      <style>{`
+        .campaign-row {
+          transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .campaign-row:hover {
+          transform: translateX(4px);
+        }
+      `}</style>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
-            <Target size={20} className="text-white" />
-          </div>
           <div>
             <h3 className="text-lg font-semibold text-slate-800">Recent Campaigns</h3>
             <p className="text-[13px] text-slate-500">{campaigns.length} phishing simulations</p>
@@ -62,43 +75,45 @@ export default function RecentCampaigns() {
 
         {/* Quick Stats */}
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-medium text-rose-600 bg-rose-500/10 px-2.5 py-1 rounded-lg">
+          <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full">
             {phishedCount} phished
           </span>
-          <span className="text-[12px] font-medium text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+          <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
             {reportedCount} reported
           </span>
         </div>
       </div>
 
       {/* Campaigns List */}
-      <div className="space-y-3 max-h-56 overflow-y-auto purple-scrollbar">
+      <div className="space-y-2.5 max-h-56 overflow-y-auto purple-scrollbar overflow-x-hidden">
         {campaigns.map((campaign) => {
           const config = getResultConfig(campaign.result);
-          const Icon = config.Icon;
 
           return (
             <a
               key={campaign.id}
               href={campaign.detailsLink}
-              className="group flex items-center justify-between p-4 rounded-xl bg-slate-50/60 border border-slate-100/60 hover:border-purple-200/60 hover:bg-purple-50/30 transition-all duration-200"
+              className="campaign-row group/row flex items-center justify-between p-3.5 rounded-xl
+                bg-slate-50/60 border border-slate-100/60
+                hover:border-purple-200/70 hover:bg-purple-50/40
+                hover:shadow-md hover:shadow-purple-100/60"
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${config.bg}`}>
-                  <Icon size={16} className={config.color} />
-                </div>
                 <div>
-                  <span className="text-[14px] font-medium text-slate-700 group-hover:text-purple-700 transition-colors block">
+                  <span className="text-[14px] font-medium text-slate-700 group-hover/row:text-purple-700 transition-colors duration-200 block">
                     {campaign.name}
                   </span>
-                  <span className="text-[12px] text-slate-400">{campaign.date}</span>
+                  <span className="text-[11px] text-slate-400">{campaign.date}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className={`text-[12px] font-semibold px-2.5 py-1 rounded-lg ${config.bg} ${config.color}`}>
-                  {config.label}
-                </span>
-                <ChevronRight size={16} className="text-slate-400 group-hover:text-purple-600 transition-colors" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${config.dot} flex-shrink-0`} />
+                  <span className={`text-[12px] font-semibold ${config.color}`}>
+                    {config.label}
+                  </span>
+                </div>
+                <ChevronRight size={15} className="text-slate-300 group-hover/row:text-purple-500 group-hover/row:translate-x-0.5 transition-all duration-200" />
               </div>
             </a>
           );

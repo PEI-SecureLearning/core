@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, Plus } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { motion, LayoutGroup, AnimatePresence } from 'motion/react'
 import { COURSES } from './courseData'
 import type { Course } from './courseData'
 import CourseCard from './CourseCard'
@@ -16,7 +18,12 @@ const gridClass: Record<GridCols, string> = {
     3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
 }
 
-export default function CourseList() {
+type CourseListProps = {
+    showNewCourse?: boolean
+    basePath?: string
+}
+
+export default function CourseList({ showNewCourse = false, basePath = '/courses' }: CourseListProps = {}) {
     const [search, setSearch] = useState('')
     const [difficulty, setDifficulty] = useState('All')
     const [category, setCategory] = useState('All')
@@ -62,11 +69,22 @@ export default function CourseList() {
                     }`}
             >
                 {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Courses</h1>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Browse and complete security training courses assigned to your organization.
-                    </p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Courses</h1>
+                        <p className="text-sm text-gray-500 mt-1">
+                            Browse and complete security training courses assigned to your organization.
+                        </p>
+                    </div>
+                    {showNewCourse && (
+                        <Link
+                            to={"/content-manager/courses/new" as any}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
+                        >
+                            <Plus size={16} strokeWidth={2.5} />
+                            New Course
+                        </Link>
+                    )}
                 </div>
 
                 {/* Search & Filters */}
@@ -93,11 +111,36 @@ export default function CourseList() {
                         <p className="text-sm mt-1">Try adjusting your search or filters.</p>
                     </div>
                 ) : (
-                    <div className={`grid ${gridClass[cols]} gap-6`}>
-                        {filtered.map(course => (
-                            <CourseCard key={course.id} course={course} cols={cols} />
-                        ))}
-                    </div>
+                    <LayoutGroup>
+                        <motion.div layout className={`grid ${gridClass[cols]} gap-6`}>
+                            <AnimatePresence mode="popLayout">
+                                {filtered.map(course => (
+                                    <motion.div
+                                        key={course.id}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        whileHover={{
+                                            y: -4,
+                                            scale: 1.02,
+                                            boxShadow: '0 12px 28px -6px rgba(147, 51, 234, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.06)',
+                                        }}
+                                        transition={{
+                                            layout: { type: 'spring', stiffness: 300, damping: 30 },
+                                            opacity: { duration: 0.2 },
+                                            scale: { duration: 0.2 },
+                                            y: { type: 'spring', stiffness: 400, damping: 25 },
+                                            boxShadow: { duration: 0.25 },
+                                        }}
+                                        className="rounded-xl cursor-pointer"
+                                    >
+                                        <CourseCard course={course} cols={cols} basePath={basePath} />
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                        </motion.div>
+                    </LayoutGroup>
                 )}
             </div>
         </div>
