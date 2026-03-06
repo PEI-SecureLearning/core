@@ -63,8 +63,11 @@ async def list_modules(
 )
 async def get_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
     module = await module_service.get_module(module_id)
-    if module.realm and module.realm != realm:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if not module or (getattr(module, "realm", None) and module.realm != realm):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Module not found",
+        )
     return module
 
 
