@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { Clock, FileText, FolderOpen, Image as ImageIcon, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Clock, FileText, Image as ImageIcon, X } from 'lucide-react'
 import type { RichContentBlock, RichMediaType } from '../types'
 import { AutoResizeTextarea } from './AutoResizeTextarea'
 import { ContentFilePicker, type PickerMediaFilter } from '../ContentFilePicker'
+
+const API_BASE = import.meta.env.VITE_API_URL as string
 
 const RICH_MEDIA_OPTIONS: { type: RichMediaType; label: string; icon: React.ReactNode; placeholder: string }[] = [
     { type: 'image', label: 'Image', icon: <ImageIcon className="w-3.5 h-3.5" />, placeholder: 'https://…/image.png or backend asset URL'   },
@@ -19,6 +21,22 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
 }) {
     const [pickerOpen, setPickerOpen] = useState(false)
     const meta = RICH_MEDIA_OPTIONS.find(o => o.type === block.mediaType) ?? RICH_MEDIA_OPTIONS[0]
+
+    // When block is loaded from backend, contentId is set but url is empty.
+    // Fetch the file and populate url so the preview renders.
+    useEffect(() => {
+        if (!block.contentId || block.url) return
+        const token = getToken?.()
+        let revoked = false
+        fetch(`${API_BASE}/content/${encodeURIComponent(block.contentId)}/file`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+            .then(r => r.ok ? r.blob() : Promise.reject(new Error('not ok')))
+            .then(blob => { if (!revoked) onUpdate({ url: URL.createObjectURL(blob) }) })
+            .catch(() => { /* preview stays empty */ })
+        return () => { revoked = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [block.contentId])
 
     return (
         <>
@@ -53,33 +71,58 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
             <div className="flex flex-col gap-2.5 px-4 py-3">
                 <div className="flex flex-col gap-1">
                     <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        {meta.label} URL
+                        {meta.label} source
                     </label>
-                    <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 focus-within:ring-2 focus-within:ring-violet-300/50 focus-within:border-violet-300">
-                        <span className="text-slate-400 flex-shrink-0">{meta.icon}</span>
-                        <input
-                            type="url"
-                            value={block.url}
-                            onChange={e => onUpdate({ url: e.target.value })}
-                            placeholder={meta.placeholder}
-                            className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none min-w-0"
-                        />
-                        {block.url && (
-                            <button type="button" onClick={() => onUpdate({ url: '' })}
-                                className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0">
+
+                    {block.contentId ? (
+                        /* ── Platform file chosen — show media preview with overlay controls ── */
+                        <div className="relative rounded-lg overflow-hidden border border-violet-200 bg-slate-50 group/preview">
+                            {/* Media preview */}
+                            {block.mediaType === 'image' && block.url && (
+                                <img src={block.url} alt={block.caption || 'preview'}
+                                    className="max-h-48 w-full object-contain" />
+                            )}
+                            {block.mediaType === 'image' && !block.url && (
+                                <div className="flex items-center justify-center h-24 text-slate-300 gap-2 text-xs italic">
+                                    <ImageIcon className="w-4 h-4" /> Loading…
+                                </div>
+                            )}
+                            {block.mediaType === 'video' && block.url && (
+                                <video src={block.url} controls className="w-full max-h-48">
+                                    <track kind="captions" />
+                                </video>
+                            )}
+                            {block.mediaType === 'audio' && block.url && (
+                                <audio src={block.url} controls className="w-full px-3 py-2">
+                                    <track kind="captions" />
+                                </audio>
+                            )}
+                            {block.mediaType === 'file' && (
+                                <div className="flex items-center gap-2 px-4 py-3 text-sm text-violet-600 font-medium">
+                                    <FileText className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate font-mono text-xs">{block.contentId}</span>
+                                </div>
+                            )}
+                            {/* Remove button — top-right overlay */}
+                            <button
+                                type="button"
+                                onClick={() => onUpdate({ url: '', contentId: '' })}
+                                title="Remove file"
+                                className="absolute top-1.5 right-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full p-0.5 transition-colors"
+                            >
                                 <X className="w-3.5 h-3.5" />
                             </button>
-                        )}
+                        </div>
+                    ) : (
+                        /* ── No file yet — dashed button, no icon ── */
                         <button
                             type="button"
                             onClick={() => setPickerOpen(true)}
-                            title="Browse content library"
-                            className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border border-violet-200 bg-white text-violet-600 hover:bg-violet-50 hover:border-violet-400 transition-all flex-shrink-0"
+                            className="flex items-center justify-center w-full border-2 border-dashed border-violet-200 rounded-lg px-3 py-3 text-[12px] font-medium text-violet-500 hover:border-violet-400 hover:text-violet-700 hover:bg-violet-50/50 transition-all"
                         >
-                            <FolderOpen className="w-3 h-3" />
-                            Browse
+                            Choose from content library…
                         </button>
-                    </div>
+                    )}
                 </div>
 
                 <AutoResizeTextarea
@@ -88,44 +131,16 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
                     placeholder="Caption (optional)…"
                     className="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300/50 text-slate-700 placeholder:text-slate-400"
                 />
-
-                {block.url && (
-                    <div className="rounded-lg overflow-hidden border border-slate-100 bg-slate-50">
-                        {block.mediaType === 'image' && (
-                            <img src={block.url} alt={block.caption || 'preview'}
-                                className="max-h-48 w-full object-contain" />
-                        )}
-                        {block.mediaType === 'video' && (
-                            <video src={block.url} controls className="w-full max-h-48">
-                                <track kind="captions" />
-                            </video>
-                        )}
-                        {block.mediaType === 'audio' && (
-                            <audio src={block.url} controls className="w-full px-3 py-2">
-                                <track kind="captions" />
-                            </audio>
-                        )}
-                        {block.mediaType === 'file' && (
-                            <a href={block.url} target="_blank" rel="noreferrer"
-                                className="flex items-center gap-2 px-4 py-3 text-sm text-violet-600 hover:text-violet-800 font-medium transition-colors">
-                                <FileText className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate">{block.url}</span>
-                            </a>
-                        )}
-                        {block.caption && (
-                            <p className="text-[11px] text-slate-500 text-center px-3 py-1.5 border-t border-slate-100 italic">
-                                {block.caption}
-                            </p>
-                        )}
-                    </div>
-                )}
             </div>
         </div>
         {pickerOpen && (
             <ContentFilePicker
                 token={getToken?.()}
                 accept={block.mediaType as PickerMediaFilter}
-                onSelect={(url) => { onUpdate({ url }); setPickerOpen(false) }}
+                onSelect={(url, item) => {
+                    onUpdate({ url, contentId: item.content_piece_id })
+                    setPickerOpen(false)
+                }}
                 onClose={() => setPickerOpen(false)}
             />
         )}

@@ -2,7 +2,7 @@ import { Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import "../../css/dashcardmask.css";
+import "../../../css/dashcardmask.css";
 
 const hover_transition = {
     type: "spring" as const,

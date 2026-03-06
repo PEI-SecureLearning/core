@@ -1,9 +1,12 @@
 import type { ModuleFormData } from './types'
 
-export interface PlaceholderModule extends ModuleFormData {
+export interface PlaceholderModule extends Omit<ModuleFormData, 'coverImageId' | 'hasRefreshModule' | 'refreshSections'> {
     id: string
     image: string
     unitCount: number
+    coverImageId?: string
+    hasRefreshModule?: boolean
+    refreshSections?: ModuleFormData['refreshSections']
 }
 
 export const PLACEHOLDER_MODULES: PlaceholderModule[] = [
@@ -22,7 +25,7 @@ export const PLACEHOLDER_MODULES: PlaceholderModule[] = [
                 id: 's1-1', title: 'Setting Up Your Environment', collapsed: false,
                 blocks: [
                     { id: 'b1', kind: 'text', content: '## Why Python?\n\nPython is one of the most popular programming languages in the world. It is used in web development, data science, automation, and more.\n\n**Key advantages:**\n- Simple, readable syntax\n- Huge standard library\n- Great for beginners and experts alike' },
-                    { id: 'b2', kind: 'rich_content', mediaType: 'image', url: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60', caption: 'Python development environment' },
+                    { id: 'b2', kind: 'rich_content', mediaType: 'image', url: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60', contentId: '', caption: 'Python development environment' },
                     { id: 'b3', kind: 'question', question: { id: 'q1', type: 'multiple_choice', text: 'Which of the following best describes Python?', choices: [{ id: 'c1', text: 'A compiled, statically typed language', isCorrect: false }, { id: 'c2', text: 'An interpreted, dynamically typed language', isCorrect: true }, { id: 'c3', text: 'A markup language for the web', isCorrect: false }], answer: 'c2' } },
                 ],
             },

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { AlertCircle, AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Save, X } from 'lucide-react'
+import { AlertCircle, AlertTriangle, ArrowLeft, CheckCircle2, Loader2, X } from 'lucide-react'
 import { publishModule } from '@/services/modulesApi'
 import type { ModuleFormData } from './types'
 import { ProgressBar } from './preview/ProgressBar'
@@ -15,6 +15,7 @@ const INITIAL_DATA: ModuleFormData = {
     category: '',
     description: '',
     coverImage: '',
+    coverImageId: '',
     estimatedTime: '',
     difficulty: 'Easy',
     sections: [],
@@ -146,7 +147,7 @@ function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, ini
     }, [])
 
     // Auto-save: creates draft on first keystroke, patches on every subsequent change
-    const { saveStatus, moduleId, forceSave } = useAutoSave(data, getToken, 15_000, initialModuleId)
+    const { saveStatus, moduleId, forceSave, forceSaveIfDirty } = useAutoSave(data, getToken, 15_000, initialModuleId)
 
     /** Open the leave dialog and immediately flush any pending auto-save
      *  so the user doesn't have to wait for the 15 s debounce to expire. */
@@ -154,11 +155,11 @@ function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, ini
         if (!onBack) return
         const hasContent = data.title.trim() !== '' || data.sections.length > 0
         if (!hasContent) { onBack(); return }
-        // Kick off the save right now (cancels the debounce timer);
+        // Kick off a save only if data was actually changed by the user;
         // the dialog's Leave button stays disabled until it completes.
-        void forceSave()
+        void forceSaveIfDirty()
         setLeaveDialogOpen(true)
-    }, [onBack, data.title, data.sections.length, forceSave])
+    }, [onBack, data.title, data.sections.length, forceSaveIfDirty])
 
     /** Called by the Leave button inside the dialog — only reachable when not saving. */
     const handleLeaveConfirm = useCallback(() => {

@@ -28,7 +28,7 @@ export function ProgressBar({ data, waveActive }: { readonly data: ModuleFormDat
         !data.estimatedTime.trim()    && 'Duration',
         data.sections.length === 0    && 'Sections',
         totalBlocks(data) === 0       && 'Content',
-        !data.coverImage              && 'Cover image',
+        !data.coverImageId             && 'Cover image',
         !allSectionsTitled(data)      && 'Section titles',
     ].filter((x): x is string => Boolean(x))
 

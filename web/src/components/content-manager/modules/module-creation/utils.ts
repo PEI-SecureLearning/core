@@ -66,7 +66,7 @@ export function calcCompletion(d: ModuleFormData): number {
         !!d.estimatedTime.trim(),
         d.sections.length > 0,
         allBlocks > 0,
-        !!d.coverImage,
+        !!d.coverImageId,
         allQsValid,
         allSectionsTitled(d),
         // If refresh module is enabled it must have at least one section

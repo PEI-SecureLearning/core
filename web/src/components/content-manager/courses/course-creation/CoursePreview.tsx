@@ -4,10 +4,10 @@ import {
     BookOpen, Check, ChevronDown, Clock,
     FileText, Image as ImageIcon, Layers, ListChecks, X,
 } from 'lucide-react'
-import type { Block, Choice } from '../module-creation/types'
-import { DIFFICULTY_COLORS } from '../module-creation/constants'
-import { renderMarkdown } from '../module-creation/utils'
-import type { PlaceholderModule } from '../module-creation/placeholderModules'
+import type { Block, Choice } from '../../modules/module-creation/types'
+import { DIFFICULTY_COLORS } from '../../modules/module-creation/constants'
+import { renderMarkdown } from '../../modules/module-creation/utils'
+import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
 
 /* ── Preview block renderer (same as ModuleDetailView) ── */
 function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {

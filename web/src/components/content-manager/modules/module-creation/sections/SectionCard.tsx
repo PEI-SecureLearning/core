@@ -118,7 +118,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
         if (kind === 'question') {
             newBlock = { id: uid(), kind: 'question', question: emptyQuestion() } as QuestionBlock
         } else if (kind === 'rich_content') {
-            newBlock = { id: uid(), kind: 'rich_content', mediaType: 'image', url: '', caption: '' } as RichContentBlock
+            newBlock = { id: uid(), kind: 'rich_content', mediaType: 'image', url: '', contentId: '', caption: '' } as RichContentBlock
         } else {
             newBlock = { id: uid(), kind: 'text', content: '' }
         }

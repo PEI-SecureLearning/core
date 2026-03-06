@@ -32,7 +32,8 @@ export interface RichContentBlock {
     id:        string
     kind:      'rich_content'
     mediaType: RichMediaType
-    url:       string
+    url:       string   // preview URL — display only, never sent to backend
+    contentId: string   // content_piece_id — sent to backend
     caption:   string
 }
 export interface QuestionBlock {
@@ -56,7 +57,8 @@ export interface ModuleFormData {
     title:             string
     category:          string
     description:       string
-    coverImage:        string
+    coverImage:        string   // preview URL (object URL or data URL) — display only
+    coverImageId:      string   // content_piece_id of the chosen library file
     estimatedTime:     string
     difficulty:        Difficulty
     sections:          Section[]

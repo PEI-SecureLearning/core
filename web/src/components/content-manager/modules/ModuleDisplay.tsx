@@ -8,6 +8,46 @@ import type { ModuleSortValue } from './ToolBarModules'
 import { useDebounce } from '@/lib/useDebounce'
 import { DIFFICULTY_COLORS } from './module-creation/constants'
 
+const API_BASE = import.meta.env.VITE_API_URL as string
+
+// ── Auth-gated image: fetches via Bearer token → object URL ───────────────────
+
+function AuthImage({ contentId, token, alt, className }: {
+    readonly contentId: string
+    readonly token?:    string
+    readonly alt:       string
+    readonly className?: string
+}) {
+    const [src,     setSrc]     = useState<string | null>(null)
+    const [failed,  setFailed]  = useState(false)
+
+    useEffect(() => {
+        if (!contentId) return
+        let revoked = false
+        const url = `${API_BASE}/content/${encodeURIComponent(contentId)}/file`
+        fetch(url, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
+            .then(r => r.ok ? r.blob() : Promise.reject(new Error('not ok')))
+            .then(blob => {
+                if (!revoked) setSrc(URL.createObjectURL(blob))
+            })
+            .catch(() => { if (!revoked) setFailed(true) })
+        return () => {
+            revoked = true
+            setSrc(prev => {
+                if (prev) URL.revokeObjectURL(prev)
+                return null
+            })
+        }
+    }, [contentId, token])
+
+    if (failed) return null
+    if (!src) return (
+        // Skeleton shimmer while loading
+        <div className={`${className ?? ''} bg-slate-100 animate-pulse`} />
+    )
+    return <img src={src} alt={alt} className={className} />
+}
+
 // ── Skeleton card shown while loading ─────────────────────────────────────────
 
 function ModuleCardSkeleton() {
@@ -29,7 +69,7 @@ function ModuleCardSkeleton() {
 
 // ── Single module card ─────────────────────────────────────────────────────────
 
-function ModuleCard({ mod }: { readonly mod: Module }) {
+function ModuleCard({ mod, token }: { readonly mod: Module; readonly token?: string }) {
     const sectionCount = mod.sections?.length ?? 0
     const diffColor = DIFFICULTY_COLORS[mod.difficulty ?? 'Easy'] ?? DIFFICULTY_COLORS['Easy']
 
@@ -44,8 +84,9 @@ function ModuleCard({ mod }: { readonly mod: Module }) {
             <div className="relative h-48 w-full overflow-hidden bg-slate-50">
                 <div className="absolute inset-0 bg-purple-300/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
                 {mod.cover_image ? (
-                    <img
-                        src={mod.cover_image}
+                    <AuthImage
+                        contentId={mod.cover_image}
+                        token={token}
                         alt={mod.title}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
                     />
@@ -201,7 +242,7 @@ export function ModuleDisplay({ search = '', sort = 'newest' }: ModuleDisplayPro
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 overflow-y-auto">
-                {modules.map(mod => <ModuleCard key={mod.id} mod={mod} />)}
+                {modules.map(mod => <ModuleCard key={mod.id} mod={mod} token={keycloak.token} />)}
             </div>
         </motion.div>
     )

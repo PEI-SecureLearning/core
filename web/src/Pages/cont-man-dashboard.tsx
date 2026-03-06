@@ -1,6 +1,6 @@
 import { BookOpen, Blocks, FileStack } from "lucide-react";
 import { motion } from "motion/react";
-import { DashCard } from "@/components/content-manager/DashCard";
+import { DashCard } from "@/components/content-manager/shared/DashCard";
 
 
 function ContManDashboard() {

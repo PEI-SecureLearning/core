@@ -1,19 +1,19 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-    Upload,
     Clock,
     AlignLeft,
     PanelLeftClose,
     PanelLeftOpen,
     Image as ImageIcon,
     AlertTriangle,
-    FolderOpen,
     X,
 } from 'lucide-react'
 import type { ModuleFormData } from '../types'
 import { CATEGORY_OPTIONS, DIFFICULTY_COLORS, inputCls } from '../constants'
 import { ContentFilePicker } from '../ContentFilePicker'
+
+const API_BASE = import.meta.env.VITE_API_URL as string
 
 function FormField({ label, icon, warning, children }: {
     readonly label: string
@@ -35,10 +35,9 @@ function FormField({ label, icon, warning, children }: {
 
 type Warnings = { cover: boolean; title: boolean; category: boolean; duration: boolean; desc: boolean }
 
-function SidebarFields({ data, onChange, fileRef, warnings, onBrowseCover }: {
+function SidebarFields({ data, onChange, warnings, onBrowseCover }: {
     readonly data: ModuleFormData
     readonly onChange: (patch: Partial<ModuleFormData>) => void
-    readonly fileRef: React.RefObject<HTMLInputElement | null>
     readonly warnings: Warnings
     readonly onBrowseCover: () => void
 }) {
@@ -50,54 +49,48 @@ function SidebarFields({ data, onChange, fileRef, warnings, onBrowseCover }: {
             transition={{ duration: 0.2 }}
             className="flex flex-col gap-4 px-3 py-4 overflow-y-auto flex-1"
         >
-            {/* Cover image — preview + two action buttons */}
-            <div className={`relative w-full h-24 rounded-xl border-2 overflow-hidden ${
-                warnings.cover ? 'border-amber-300' : 'border-slate-200'
-            }`}>
-                {data.coverImage ? (
-                    <>
-                        <img src={data.coverImage} alt="cover" className="w-full h-full object-cover" />
-                        {/* Clear button */}
-                        <button
-                            type="button"
-                            onClick={() => onChange({ coverImage: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full p-0.5 transition-colors"
-                            aria-label="Remove cover image"
-                        >
-                            <X className="w-3 h-3" />
-                        </button>
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full gap-1 text-slate-400">
-                        <div className="relative">
-                            <ImageIcon className="w-5 h-5" />
-                            {warnings.cover && (
-                                <AlertTriangle className="w-3 h-3 text-amber-400 absolute -top-1 -right-2" />
-                            )}
-                        </div>
-                        <span className="text-[10px]">Cover image</span>
-                    </div>
-                )}
-            </div>
-
-            {/* Cover action buttons */}
-            <div className="flex gap-2 -mt-2">
-                <button
-                    type="button"
+            {/* Cover image — clickable area */}
+            <div className="relative group">
+                {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+                <div
                     onClick={onBrowseCover}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold border border-purple-200 text-purple-700 hover:bg-purple-50 transition-colors"
+                    className={`relative w-full h-24 rounded-xl border-2 overflow-hidden cursor-pointer transition-colors ${
+                        warnings.cover
+                            ? 'border-amber-300 hover:border-amber-400'
+                            : 'border-slate-200 hover:border-purple-400'
+                    }`}
                 >
-                    <FolderOpen className="w-3 h-3" />
-                    Browse
-                </button>
-                <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-                >
-                    <Upload className="w-3 h-3" />
-                    Upload
-                </button>
+                    {data.coverImage ? (
+                        <img src={data.coverImage} alt="cover" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full gap-1 text-slate-400 group-hover:text-purple-500 transition-colors">
+                            <div className="relative">
+                                <ImageIcon className="w-5 h-5" />
+                                {warnings.cover && (
+                                    <AlertTriangle className="w-3 h-3 text-amber-400 absolute -top-1 -right-2" />
+                                )}
+                            </div>
+                            <span className="text-[10px]">Click to choose cover</span>
+                        </div>
+                    )}
+                    {/* Hover overlay when image is set */}
+                    {data.coverImage && (
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <ImageIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                    )}
+                </div>
+                {/* Clear button — only when image is set */}
+                {data.coverImage && (
+                    <button
+                        type="button"
+                        onClick={() => onChange({ coverImage: '', coverImageId: '' })}
+                        className="absolute top-1.5 right-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full p-0.5 transition-colors z-10"
+                        aria-label="Remove cover image"
+                    >
+                        <X className="w-3 h-3" />
+                    </button>
+                )}
             </div>
 
             <FormField label="Title" warning={warnings.title}>
@@ -168,22 +161,31 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
 }) {
     const [open,       setOpen]       = useState(true)
     const [pickerOpen, setPickerOpen] = useState(false)
-    const fileRef = useRef<HTMLInputElement>(null)
+
+    // When loaded from backend, coverImageId is set but coverImage (preview URL) is empty.
+    // Fetch the file so the cover thumbnail renders.
+    useEffect(() => {
+        if (!data.coverImageId || data.coverImage) return
+        const token = getToken?.()
+        let revoked = false
+        fetch(`${API_BASE}/content/${encodeURIComponent(data.coverImageId)}/file`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+            .then(r => r.ok ? r.blob() : Promise.reject(new Error('not ok')))
+            .then(blob => { if (!revoked) onChange({ coverImage: URL.createObjectURL(blob) }) })
+            .catch(() => { /* thumbnail stays empty */ })
+        return () => { revoked = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data.coverImageId])
 
     const w = publishAttempted ?? false
     const warnings: Warnings = {
-        cover:    w && !data.coverImage,
+        cover:    w && !data.coverImageId,
         title:    w && data.title.trim() === '',
         category: w && data.category === '',
         duration: w && data.estimatedTime.trim() === '',
         desc:     w && data.description.trim() === '',
     }
-
-    const handleImageFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        onChange({ coverImage: URL.createObjectURL(file) })
-    }, [onChange])
 
     const toggleOpen = useCallback(() => setOpen(o => !o), [])
 
@@ -236,21 +238,22 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
                     <SidebarFields
                         data={data}
                         onChange={onChange}
-                        fileRef={fileRef}
                         warnings={warnings}
                         onBrowseCover={() => setPickerOpen(true)}
                     />
                 )}
             </AnimatePresence>
 
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleImageFile} className="hidden" />
         </motion.div>
 
         {pickerOpen && (
             <ContentFilePicker
                 token={getToken?.()}
                 accept="image"
-                onSelect={(url) => { onChange({ coverImage: url }); setPickerOpen(false) }}
+                onSelect={(url, item) => {
+                    onChange({ coverImage: url, coverImageId: item.content_piece_id })
+                    setPickerOpen(false)
+                }}
                 onClose={() => setPickerOpen(false)}
             />
         )}

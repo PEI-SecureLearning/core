@@ -29,7 +29,7 @@ function mapBlock(block: Block, order: number): ModuleBlock {
             kind:       'rich_content',
             order,
             media_type: block.mediaType,
-            url:        block.url,
+            url:        block.contentId,   // send the platform content_piece_id
             caption:    block.caption,
         } satisfies ModuleRichContentBlock
     }
@@ -70,9 +70,8 @@ export function buildPayload(data: ModuleFormData): CreateModulePayload {
         title:              data.title,
         category:           data.category,
         description:        data.description,
-        // Send null (not undefined) so clearing the cover image is persisted.
-        // undefined is omitted from JSON entirely; null reaches the backend as an explicit clear.
-        cover_image:        data.coverImage || null,
+        // Send null (not undefined) so clearing is persisted.
+        cover_image:        data.coverImageId || null,
         estimated_time:     data.estimatedTime,
         difficulty:         data.difficulty,
         has_refresh_module: data.hasRefreshModule,
@@ -104,6 +103,7 @@ export function useAutoSave(
     const isSavingRef     = useRef(false)
     const moduleIdRef     = useRef<string | null>(initialModuleId ?? null)
     const isFirstSaveRef  = useRef(initialModuleId == null)
+    const isDirtyRef      = useRef(false)   // stays false until the user actually changes data
     // Always holds the latest getter so doSave never closes over a stale token
     const getTokenRef     = useRef(getToken)
     useEffect(() => { getTokenRef.current = getToken }, [getToken])
@@ -165,6 +165,12 @@ export function useAutoSave(
 
     // Debounce: reset timer on every data change
     useEffect(() => {
+        // Skip the very first render — only save after the user has actually changed something
+        if (!isDirtyRef.current) {
+            isDirtyRef.current = true
+            return
+        }
+
         // Don't save if title is empty (not yet a meaningful draft)
         if (!data.title.trim()) return
 
@@ -188,7 +194,8 @@ export function useAutoSave(
             if (timerRef.current !== null) {
                 clearTimeout(timerRef.current)
                 timerRef.current = null
-                if (data.title.trim()) {
+                // Only flush if the user actually changed something
+                if (isDirtyRef.current && data.title.trim()) {
                     void doSave(buildPayload(data))
                 }
             }
@@ -221,5 +228,14 @@ export function useAutoSave(
         })
     }, [doSave])
 
-    return { saveStatus, moduleId, savedModule, forceSave }
+    /**
+     * forceSave that only actually saves if data has been changed by the user.
+     * Returns a resolved promise immediately if nothing is dirty.
+     */
+    const forceSaveIfDirty = useCallback((): Promise<void> => {
+        if (!isDirtyRef.current) return Promise.resolve()
+        return forceSave()
+    }, [forceSave])
+
+    return { saveStatus, moduleId, savedModule, forceSave, forceSaveIfDirty }
 }

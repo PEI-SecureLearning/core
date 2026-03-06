@@ -1,5 +1,5 @@
 import { Blocks, Clock, GripVertical, X } from 'lucide-react'
-import type { PlaceholderModule } from '../module-creation/placeholderModules'
+import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
 
 interface CourseModuleCardProps {
     readonly module: PlaceholderModule
