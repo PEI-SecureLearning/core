@@ -158,7 +158,7 @@ export function useAutoSave(
             if (pendingRef.current) {
                 const queued = pendingRef.current
                 pendingRef.current = null
-                void doSave(queued)
+                doSave(queued)
             }
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -184,7 +184,7 @@ export function useAutoSave(
 
         timerRef.current = setTimeout(() => {
             timerRef.current = null
-            void doSave(payload)
+            doSave(payload)
         }, delay)
     }, [data, delay, doSave])
 
@@ -196,7 +196,7 @@ export function useAutoSave(
                 timerRef.current = null
                 // Only flush if the user actually changed something
                 if (isDirtyRef.current && data.title.trim()) {
-                    void doSave(buildPayload(data))
+                    doSave(buildPayload(data))
                 }
             }
         }
@@ -223,7 +223,7 @@ export function useAutoSave(
             } else {
                 // No save in-flight — start one now and wait for it.
                 saveWaitersRef.current.push(resolve)
-                void doSave(buildPayload(dataRef.current))
+                doSave(buildPayload(dataRef.current))
             }
         })
     }, [doSave])

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, HTTPException, Query, status
 
 from src.core.dependencies import CurrentRealm, OAuth2Scheme
@@ -29,7 +31,6 @@ def _get_sub(token: str) -> str:
 
 @router.get(
     "/modules",
-    response_model=PaginatedModules,
     summary="List modules",
     description=(
         "Returns a paginated list of modules belonging to the caller's realm. "
@@ -38,12 +39,12 @@ def _get_sub(token: str) -> str:
     ),
 )
 async def list_modules(
-    realm: CurrentRealm,
-    status_filter: ModuleStatus | None = Query(None, alias="status"),
-    search: str | None = Query(None, description="Case-insensitive substring filter on title or category"),
-    sort:   str | None = Query(None, description="Sort order: title_asc | title_desc | newest | oldest"),
-    page:  int = Query(1,  ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    realm:         CurrentRealm,
+    status_filter: Annotated[ModuleStatus | None, Query(alias="status")] = None,
+    search:        Annotated[str | None, Query(description="Case-insensitive substring filter on title or category")] = None,
+    sort:          Annotated[str | None, Query(description="Sort order: title_asc | title_desc | newest | oldest")] = None,
+    page:          Annotated[int, Query(ge=1)] = 1,
+    limit:         Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> PaginatedModules:
     return await module_service.list_modules(
         realm=realm,
@@ -57,7 +58,6 @@ async def list_modules(
 
 @router.get(
     "/modules/{module_id}",
-    response_model=ModuleOut,
     summary="Get a module",
     description="Returns the full module document including all sections and blocks.",
 )
@@ -73,7 +73,6 @@ async def get_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
 
 @router.post(
     "/modules",
-    response_model=ModuleOut,
     status_code=status.HTTP_201_CREATED,
     summary="Create a module",
     description=(
@@ -96,7 +95,6 @@ async def create_module(
 
 @router.put(
     "/modules/{module_id}",
-    response_model=ModuleOut,
     summary="Full update",
     description=(
         "Replaces all editable fields in the module. "
@@ -117,7 +115,6 @@ async def update_module(
 
 @router.patch(
     "/modules/{module_id}",
-    response_model=ModuleOut,
     summary="Partial update (auto-save)",
     description=(
         "Updates only the fields supplied in the request body. "
@@ -139,7 +136,6 @@ async def patch_module(
 
 @router.post(
     "/modules/{module_id}/publish",
-    response_model=ModuleOut,
     summary="Publish a module",
     description="Transitions the module from `draft` to `published`.",
 )
@@ -149,7 +145,6 @@ async def publish_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
 
 @router.post(
     "/modules/{module_id}/archive",
-    response_model=ModuleOut,
     summary="Archive a module",
     description="Transitions the module to `archived` status.",
 )

@@ -29,11 +29,11 @@ type ContentItem = {
 };
 
 interface ContentDisplayProps {
-    searchQuery: string;
-    sortBy: string;
-    refreshKey: number;
-    onViewContent: (contentPieceId: string) => void;
-    onDeleteContent: (contentPieceId: string) => void;
+    readonly searchQuery: string;
+    readonly sortBy: string;
+    readonly refreshKey: number;
+    readonly onViewContent: (contentPieceId: string) => void;
+    readonly onDeleteContent: (contentPieceId: string) => void;
 }
 
 export function ContentDisplay({
@@ -108,7 +108,8 @@ export function ContentDisplay({
             map.get(parent)!.push(dir);
         }
         for (const [key, value] of map) {
-            map.set(key, value.sort(compareAlphabetically));
+            const sorted = [...value].sort(compareAlphabetically);
+            map.set(key, sorted);
         }
         return map;
     }, [directoryPaths]);

@@ -51,6 +51,11 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
 
     const sortableIds = modules.map((_, i) => `stack-${i}`)
 
+    const moduleSuffix = modules.length === 1 ? '' : 's'
+    const moduleCountLabel = modules.length === 0
+        ? 'Drag modules here to build your course'
+        : `${modules.length} module${moduleSuffix} added`
+
     return (
         <div className="flex flex-col h-full">
             <div className="px-4 pt-4 pb-3 flex-shrink-0">
@@ -58,9 +63,7 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
                     Course Modules
                 </h2>
                 <p className="text-[11px] text-slate-400">
-                    {modules.length === 0
-                        ? 'Drag modules here to build your course'
-                        : `${modules.length} module${modules.length !== 1 ? 's' : ''} added`}
+                    {moduleCountLabel}
                 </p>
             </div>
 
@@ -87,7 +90,7 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
                         <div className="flex flex-col gap-2">
                             {modules.map((mod, i) => (
                                 <SortableModuleCard
-                                    key={`stack-${i}`}
+                                    key={`stack-${mod.id}-${i}`}
                                     module={mod}
                                     index={i}
                                     onRemove={() => onRemove(i)}

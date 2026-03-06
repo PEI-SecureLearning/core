@@ -177,7 +177,10 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
             const bucket = map.get(parent)
             if (bucket) bucket.push(dir)
         }
-        for (const [k, v] of map) map.set(k, v.sort(compareAlpha))
+        for (const [k, v] of map) {
+            const sorted = [...v].sort(compareAlpha)
+            map.set(k, sorted)
+        }
         return map
     }, [dirPaths])
 

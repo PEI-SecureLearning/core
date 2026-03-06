@@ -9,6 +9,12 @@ interface CourseModuleCardProps {
     readonly dragHandleProps?: Record<string, unknown>
 }
 
+const DIFFICULTY_COLOR: Record<string, string> = {
+    Easy:   'bg-green-100 text-green-700 border-green-300',
+    Medium: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+    Hard:   'bg-red-100 text-red-700 border-red-300',
+}
+
 export function CourseModuleCard({
     module,
     variant,
@@ -16,12 +22,7 @@ export function CourseModuleCard({
     onRemove,
     dragHandleProps,
 }: CourseModuleCardProps) {
-    const difficultyColor =
-        module.difficulty === 'Easy'
-            ? 'bg-green-100 text-green-700 border-green-300'
-            : module.difficulty === 'Medium'
-                ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
-                : 'bg-red-100 text-red-700 border-red-300'
+    const difficultyColor = DIFFICULTY_COLOR[module.difficulty ?? ''] ?? 'bg-red-100 text-red-700 border-red-300'
 
     return (
         <div

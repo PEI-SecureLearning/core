@@ -9,7 +9,7 @@ import { DIFFICULTY_COLORS } from '../../modules/module-creation/constants'
 import { renderMarkdown } from '../../modules/module-creation/utils'
 import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
 
-/* ── Preview block renderer (same as ModuleDetailView) ── */
+/* ── Preview block renderer ── */
 function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
     readonly block: Block
     readonly qIndex: number
@@ -128,6 +128,179 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
     return null
 }
 
+/* ── Section row inside a module ── */
+function PreviewSection({ modIdx, sec, secIdx, baseQIndex, collapsedSections, onToggle, answeredChoices, onMark }: {
+    readonly modIdx: number
+    readonly sec: PlaceholderModule['sections'][number]
+    readonly secIdx: number
+    readonly baseQIndex: number
+    readonly collapsedSections: Record<string, boolean>
+    readonly onToggle: (key: string) => void
+    readonly answeredChoices: Record<string, string>
+    readonly onMark: (qid: string, cid: string) => void
+}) {
+    const sectionKey = `${modIdx}-${sec.id}`
+    const isCollapsed = !!collapsedSections[sectionKey]
+    const qCount = sec.blocks.filter(b => b.kind === 'question').length
+
+    return (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <button
+                type="button"
+                onClick={() => onToggle(sectionKey)}
+                className="w-full flex items-center gap-3 px-6 py-4 bg-white hover:bg-slate-50 transition-colors text-left group"
+            >
+                <span className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                    {secIdx + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                    <p className="text-base font-bold text-slate-800 group-hover:text-purple-700 transition-colors truncate">
+                        {sec.title || `Task ${secIdx + 1}`}
+                    </p>
+                    {qCount > 0 && (
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                            {qCount} {qCount === 1 ? 'question' : 'questions'}
+                        </p>
+                    )}
+                </div>
+                <motion.div
+                    animate={{ rotate: isCollapsed ? -90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-slate-400 group-hover:text-purple-500 flex-shrink-0"
+                >
+                    <ChevronDown className="w-5 h-5" />
+                </motion.div>
+            </button>
+
+            <AnimatePresence initial={false}>
+                {!isCollapsed && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-6 pb-6 pt-1 flex flex-col gap-5 border-t border-slate-100">
+                            {sec.blocks.length === 0 ? (
+                                <p className="text-sm text-slate-400 italic py-3">No content in this task yet.</p>
+                            ) : (() => {
+                                let localQ = baseQIndex
+                                return sec.blocks.map(block => {
+                                    if (block.kind === 'question') localQ++
+                                    return (
+                                        <PreviewBlock
+                                            key={block.id}
+                                            block={block}
+                                            qIndex={block.kind === 'question' ? localQ : 0}
+                                            answeredChoices={answeredChoices}
+                                            onMark={onMark}
+                                        />
+                                    )
+                                })
+                            })()}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
+}
+
+/* ── Module card (header + its sections) ── */
+function PreviewModule({ mod, modIdx, collapsedModules, collapsedSections, onToggleModule, onToggleSection, moduleRefs, answeredChoices, onMark }: {
+    readonly mod: PlaceholderModule
+    readonly modIdx: number
+    readonly collapsedModules: Record<string, boolean>
+    readonly collapsedSections: Record<string, boolean>
+    readonly onToggleModule: (key: string) => void
+    readonly onToggleSection: (key: string) => void
+    readonly moduleRefs: React.RefObject<Record<string, HTMLElement | null>>
+    readonly answeredChoices: Record<string, string>
+    readonly onMark: (qid: string, cid: string) => void
+}) {
+    const moduleKey = `mod-preview-${modIdx}`
+    const isCollapsed = !!collapsedModules[moduleKey]
+
+    // Track running question index across sections
+    let globalQ = 0
+
+    return (
+        <div
+            ref={el => { moduleRefs.current[moduleKey] = el }}
+            className="scroll-mt-4"
+        >
+            {/* Module header */}
+            <button
+                type="button"
+                onClick={() => onToggleModule(moduleKey)}
+                className="w-full flex items-center gap-4 px-6 py-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-left group mb-4"
+            >
+                <img src={mod.image} alt={mod.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                    <p className="text-lg font-bold text-slate-800 group-hover:text-purple-700 transition-colors">
+                        Module {modIdx + 1}: {mod.title}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                        {mod.difficulty && (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${DIFFICULTY_COLORS[mod.difficulty]}`}>
+                                {mod.difficulty}
+                            </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-medium">
+                            {mod.category}
+                        </span>
+                        <span className="flex items-center gap-1 text-slate-400 text-[11px]">
+                            <Clock className="w-3 h-3" />
+                            {mod.estimatedTime}
+                        </span>
+                    </div>
+                </div>
+                <motion.div
+                    animate={{ rotate: isCollapsed ? -90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-slate-400 group-hover:text-purple-500 flex-shrink-0"
+                >
+                    <ChevronDown className="w-5 h-5" />
+                </motion.div>
+            </button>
+
+            {/* Sections */}
+            <AnimatePresence initial={false}>
+                {!isCollapsed && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                        className="overflow-hidden"
+                    >
+                        <div className="flex flex-col gap-4 pl-4">
+                            {mod.sections.map((sec, secIdx) => {
+                                const baseQIndex = globalQ
+                                globalQ += sec.blocks.filter(b => b.kind === 'question').length
+                                return (
+                                    <PreviewSection
+                                        key={`${modIdx}-${sec.id}`}
+                                        modIdx={modIdx}
+                                        sec={sec}
+                                        secIdx={secIdx}
+                                        baseQIndex={baseQIndex}
+                                        collapsedSections={collapsedSections}
+                                        onToggle={onToggleSection}
+                                        answeredChoices={answeredChoices}
+                                        onMark={onMark}
+                                    />
+                                )
+                            })}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
+}
+
 /* ── Full-screen Course Preview ── */
 interface CoursePreviewProps {
     readonly title: string
@@ -136,27 +309,19 @@ interface CoursePreviewProps {
 }
 
 export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
-    const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({})
+    const [collapsedModules,  setCollapsedModules]  = useState<Record<string, boolean>>({})
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
-    const [answeredChoices, setAnsweredChoices] = useState<Record<string, string>>({})
+    const [answeredChoices,   setAnsweredChoices]   = useState<Record<string, string>>({})
     const moduleRefs = useRef<Record<string, HTMLElement | null>>({})
 
-    const toggleModule = (id: string) =>
-        setCollapsedModules(prev => ({ ...prev, [id]: !prev[id] }))
-
-    const toggleSection = (id: string) =>
-        setCollapsedSections(prev => ({ ...prev, [id]: !prev[id] }))
+    const toggleModule  = (id: string) => setCollapsedModules(prev => ({ ...prev, [id]: !prev[id] }))
+    const toggleSection = (id: string) => setCollapsedSections(prev => ({ ...prev, [id]: !prev[id] }))
+    const onMark        = (qid: string, cid: string) => setAnsweredChoices(prev => ({ ...prev, [qid]: cid }))
 
     const scrollToModule = (id: string) => {
-        const el = moduleRefs.current[id]
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        moduleRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
         setCollapsedModules(prev => ({ ...prev, [id]: false }))
     }
-
-    const onMark = (qid: string, cid: string) =>
-        setAnsweredChoices(prev => ({ ...prev, [qid]: cid }))
-
-    let globalQIndex = 0
 
     return (
         <motion.div
@@ -177,7 +342,7 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
                     </span>
                     <span className="flex items-center gap-1 text-slate-400 text-[11px]">
                         <Layers className="w-3 h-3" />
-                        {modules.length} module{modules.length !== 1 ? 's' : ''}
+                        {modules.length} module{modules.length === 1 ? '' : 's'}
                     </span>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -201,7 +366,7 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
                         </p>
                         {modules.map((mod, modIdx) => (
                             <button
-                                key={`toc-${modIdx}`}
+                                key={`toc-${mod.id}`}
                                 type="button"
                                 onClick={() => scrollToModule(`mod-preview-${modIdx}`)}
                                 className="w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-slate-50 transition-colors group border-l-2 border-transparent hover:border-purple-300"
@@ -215,7 +380,7 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
                                     </p>
                                     <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
                                         <Clock className="w-2.5 h-2.5" />
-                                        {mod.estimatedTime} · {mod.sections.length} task{mod.sections.length !== 1 ? 's' : ''}
+                                        {mod.estimatedTime} · {mod.sections.length} task{mod.sections.length === 1 ? '' : 's'}
                                     </p>
                                 </div>
                             </button>
@@ -225,151 +390,25 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
 
                 {/* Main scrollable content */}
                 <div className="flex-1 overflow-y-auto">
-                    <div className="w-fullmax-w-3xl mx-auto px-8 py-8 flex flex-col gap-8">
-                        {modules.map((mod, modIdx) => {
-                            const isModuleCollapsed = !!collapsedModules[`mod-preview-${modIdx}`]
-
-                            return (
-                                <div
-                                    key={`mod-preview-${modIdx}`}
-                                    ref={el => { moduleRefs.current[`mod-preview-${modIdx}`] = el }}
-                                    className="scroll-mt-4"
-                                >
-                                    {/* Module header */}
-                                    <button
-                                        type="button"
-                                        onClick={() => toggleModule(`mod-preview-${modIdx}`)}
-                                        className="w-full flex items-center gap-4 px-6 py-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-left group mb-4"
-                                    >
-                                        <img
-                                            src={mod.image}
-                                            alt={mod.title}
-                                            className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-lg font-bold text-slate-800 group-hover:text-purple-700 transition-colors">
-                                                Module {modIdx + 1}: {mod.title}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                {mod.difficulty && (
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${DIFFICULTY_COLORS[mod.difficulty]}`}>
-                                                        {mod.difficulty}
-                                                    </span>
-                                                )}
-                                                <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-500 text-[10px] font-medium">
-                                                    {mod.category}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-slate-400 text-[11px]">
-                                                    <Clock className="w-3 h-3" />
-                                                    {mod.estimatedTime}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <motion.div
-                                            animate={{ rotate: isModuleCollapsed ? -90 : 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="text-slate-400 group-hover:text-purple-500 flex-shrink-0"
-                                        >
-                                            <ChevronDown className="w-5 h-5" />
-                                        </motion.div>
-                                    </button>
-
-                                    {/* Module content — sections */}
-                                    <AnimatePresence initial={false}>
-                                        {!isModuleCollapsed && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                                                className="overflow-hidden"
-                                            >
-                                                <div className="flex flex-col gap-4 pl-4">
-                                                    {mod.sections.map((sec, secIdx) => {
-                                                        const sectionKey = `${modIdx}-${sec.id}`
-                                                        const isSectionCollapsed = !!collapsedSections[sectionKey]
-                                                        const qCount = sec.blocks.filter(b => b.kind === 'question').length
-                                                        const baseQIndex = globalQIndex
-                                                        globalQIndex += qCount
-
-                                                        return (
-                                                            <div
-                                                                key={sectionKey}
-                                                                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
-                                                            >
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => toggleSection(sectionKey)}
-                                                                    className="w-full flex items-center gap-3 px-6 py-4 bg-white hover:bg-slate-50 transition-colors text-left group"
-                                                                >
-                                                                    <span className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                                                                        {secIdx + 1}
-                                                                    </span>
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <p className="text-base font-bold text-slate-800 group-hover:text-purple-700 transition-colors truncate">
-                                                                            {sec.title || `Task ${secIdx + 1}`}
-                                                                        </p>
-                                                                        {qCount > 0 && (
-                                                                            <p className="text-[11px] text-slate-400 mt-0.5">
-                                                                                {qCount} {qCount === 1 ? 'question' : 'questions'}
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                    <motion.div
-                                                                        animate={{ rotate: isSectionCollapsed ? -90 : 0 }}
-                                                                        transition={{ duration: 0.2 }}
-                                                                        className="text-slate-400 group-hover:text-purple-500 flex-shrink-0"
-                                                                    >
-                                                                        <ChevronDown className="w-5 h-5" />
-                                                                    </motion.div>
-                                                                </button>
-
-                                                                <AnimatePresence initial={false}>
-                                                                    {!isSectionCollapsed && (
-                                                                        <motion.div
-                                                                            initial={{ height: 0, opacity: 0 }}
-                                                                            animate={{ height: 'auto', opacity: 1 }}
-                                                                            exit={{ height: 0, opacity: 0 }}
-                                                                            transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-                                                                            className="overflow-hidden"
-                                                                        >
-                                                                            <div className="px-6 pb-6 pt-1 flex flex-col gap-5 border-t border-slate-100">
-                                                                                {sec.blocks.length === 0 ? (
-                                                                                    <p className="text-sm text-slate-400 italic py-3">
-                                                                                        No content in this task yet.
-                                                                                    </p>
-                                                                                ) : (() => {
-                                                                                    let localQ = baseQIndex
-                                                                                    return sec.blocks.map(block => {
-                                                                                        if (block.kind === 'question') localQ++
-                                                                                        return (
-                                                                                            <PreviewBlock
-                                                                                                key={block.id}
-                                                                                                block={block}
-                                                                                                qIndex={block.kind === 'question' ? localQ : 0}
-                                                                                                answeredChoices={answeredChoices}
-                                                                                                onMark={onMark}
-                                                                                            />
-                                                                                        )
-                                                                                    })
-                                                                                })()}
-                                                                            </div>
-                                                                        </motion.div>
-                                                                    )}
-                                                                </AnimatePresence>
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            )
-                        })}
+                    <div className="w-full max-w-3xl mx-auto px-8 py-8 flex flex-col gap-8">
+                        {modules.map((mod, modIdx) => (
+                            <PreviewModule
+                                key={mod.id}
+                                mod={mod}
+                                modIdx={modIdx}
+                                collapsedModules={collapsedModules}
+                                collapsedSections={collapsedSections}
+                                onToggleModule={toggleModule}
+                                onToggleSection={toggleSection}
+                                moduleRefs={moduleRefs}
+                                answeredChoices={answeredChoices}
+                                onMark={onMark}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>
         </motion.div>
     )
 }
+

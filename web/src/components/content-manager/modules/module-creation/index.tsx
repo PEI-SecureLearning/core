@@ -157,7 +157,7 @@ function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, ini
         if (!hasContent) { onBack(); return }
         // Kick off a save only if data was actually changed by the user;
         // the dialog's Leave button stays disabled until it completes.
-        void forceSaveIfDirty()
+        forceSaveIfDirty()
         setLeaveDialogOpen(true)
     }, [onBack, data.title, data.sections.length, forceSaveIfDirty])
 

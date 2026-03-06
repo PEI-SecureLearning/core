@@ -4,9 +4,9 @@ import {
     ArrowLeft, BookOpen, Check, ChevronDown, Clock,
     FileText, Image as ImageIcon, Layers, ListChecks, X,
 } from 'lucide-react'
-import type { Block, Choice, ModuleFormData } from './module-creation/types'
-import { DIFFICULTY_COLORS } from './module-creation/constants'
-import { renderMarkdown } from './module-creation/utils'
+import type { Block, Choice, ModuleFormData } from '../modules/module-creation/types'
+import { DIFFICULTY_COLORS } from '../modules/module-creation/constants'
+import { renderMarkdown } from '../modules/module-creation/utils'
 
 /* ── reuse the same block renderer as ModulePreview ── */
 function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
@@ -82,6 +82,47 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
             return 'border-red-500 bg-red-100'
         }
 
+        const interactiveInput = q.type === 'short_answer' ? (
+            <div className="flex gap-2">
+                <input type="text" placeholder="Your answer…"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300" />
+                <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition-colors">
+                    Check
+                </button>
+            </div>
+        ) : (
+            <div className="flex flex-col gap-2">
+                {choices.map(c => {
+                    const isSelected = answered === c.id
+                    return (
+                        <button key={c.id} type="button"
+                            onClick={() => onMark(q.id, c.id)}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm text-left transition-all ${choiceBtnClass(c)}`}>
+                            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${choiceCircleClass(c)}`}>
+                                {isSelected && c.isCorrect && <Check className="w-2.5 h-2.5 text-green-600" />}
+                                {isSelected && !c.isCorrect && <X className="w-2.5 h-2.5 text-red-600" />}
+                            </span>
+                            <span className="flex-1">{c.text || <em className="text-slate-400">Empty choice</em>}</span>
+                        </button>
+                    )
+                })}
+            </div>
+        )
+
+        const readOnlyList = (
+            /* ── Read-only: plain lettered list of options ── */
+            <ul className="flex flex-col gap-1.5">
+                {choices.map((c, idx) => (
+                    <li key={c.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700">
+                        <span className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-400 flex-shrink-0">
+                            {String.fromCodePoint(65 + idx)}
+                        </span>
+                        <span>{c.text || <em className="text-slate-400">Empty choice</em>}</span>
+                    </li>
+                ))}
+            </ul>
+        )
+
         return (
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-100">
@@ -93,44 +134,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
                     <p className="text-sm font-semibold text-slate-800 leading-relaxed mb-4">
                         {q.text || <em className="text-slate-400 font-normal">No question text</em>}
                     </p>
-                    {!interactive ? (
-                        /* ── Read-only: plain lettered list of options ── */
-                        <ul className="flex flex-col gap-1.5">
-                            {choices.map((c, idx) => (
-                                <li key={c.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700">
-                                    <span className="w-5 h-5 rounded-full border border-slate-300 flex items-center justify-center text-[10px] font-bold text-slate-400 flex-shrink-0">
-                                        {String.fromCodePoint(65 + idx)}
-                                    </span>
-                                    <span>{c.text || <em className="text-slate-400">Empty choice</em>}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : q.type === 'short_answer' ? (
-                        <div className="flex gap-2">
-                            <input type="text" placeholder="Your answer…"
-                                className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300" />
-                            <button type="button" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition-colors">
-                                Check
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            {choices.map(c => {
-                                const isSelected = answered === c.id
-                                return (
-                                    <button key={c.id} type="button"
-                                        onClick={() => onMark(q.id, c.id)}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm text-left transition-all ${choiceBtnClass(c)}`}>
-                                        <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${choiceCircleClass(c)}`}>
-                                            {isSelected && c.isCorrect && <Check className="w-2.5 h-2.5 text-green-600" />}
-                                            {isSelected && !c.isCorrect && <X className="w-2.5 h-2.5 text-red-600" />}
-                                        </span>
-                                        <span className="flex-1">{c.text || <em className="text-slate-400">Empty choice</em>}</span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    )}
+                    {interactive ? interactiveInput : readOnlyList}
                 </div>
             </div>
         )
