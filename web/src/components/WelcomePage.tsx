@@ -41,7 +41,7 @@ export const WelcomePage = () => {
                     className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 >
                     <div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-blue-600 mb-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-purple-600 mb-2">
                             <Sparkles className="w-4 h-4" />
                             <span>Secure Learning Platform</span>
                         </div>
@@ -63,7 +63,7 @@ export const WelcomePage = () => {
                         {isAdmin && (
                             <Link
                                 to="/admin"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium shadow-lg shadow-gray-900/20"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-lg shadow-purple-500/20"
                             >
                                 <ShieldCheck className="w-4 h-4" />
                                 Admin Console
@@ -80,12 +80,12 @@ export const WelcomePage = () => {
                     className="grid grid-cols-1 md:grid-cols-3 gap-6"
                 >
                     <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-                            <FileText className="w-6 h-6 text-blue-600" />
+                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
+                            <FileText className="w-6 h-6 text-purple-600" />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Campaigns</h3>
                         <p className="text-gray-500 mb-4">View and manage your ongoing phishing simulation campaigns.</p>
-                        <Link to="/campaigns" className="text-blue-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+                        <Link to="/campaigns" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             View Campaigns <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
@@ -102,12 +102,12 @@ export const WelcomePage = () => {
                     </motion.div>
 
                     <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center mb-4">
-                            <ShieldCheck className="w-6 h-6 text-green-600" />
+                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
+                            <ShieldCheck className="w-6 h-6 text-purple-600" />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Security Status</h3>
                         <p className="text-gray-500 mb-4">Check your organization's overall security compliance score.</p>
-                        <Link to="/statistics" className="text-green-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+                        <Link to="/statistics" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             View Report <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
