@@ -1,6 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Toolbar } from '@/components/content-manager/shared/ToolBar';
+import { useKeycloak } from '@react-keycloak/web';
 import { toast } from 'sonner';
 import { useKeycloak } from '@react-keycloak/web';
 
@@ -15,8 +19,8 @@ const transition = {
     mass: 1
 }
 
-import { ContentDisplay } from '@/components/content-manager/ContentDisplay';
-import { ViewContentModal } from '@/components/content-manager/ViewContentModal';
+import { ContentDisplay } from '@/components/content-manager/content/ContentDisplay';
+import { ContentTitle } from '@/components/content-manager/content/ContentTitle';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 

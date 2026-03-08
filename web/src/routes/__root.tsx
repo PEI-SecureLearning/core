@@ -5,7 +5,7 @@ import ComplianceFlow from "@/components/compliance";
 
 const RootLayout = () => {
   return (
-    <div className="h-screen bg-white shadow-md">
+    <div className="h-screen bg-white">
       <Navbar />
       <div className="h-[92%] flex flex-row">
         <Sidebar />
@@ -14,7 +14,6 @@ const RootLayout = () => {
         </div>
         <ComplianceFlow />
       </div>
-      {/* <TanStackRouterDevtools /> */}
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useKeycloak } from '@react-keycloak/web'
 import CourseList from '@/components/courses/courseList'
+import { ContentPageLayout } from '@/components/content-manager/shared/ContentPageLayout'
+import { CourseDisplay } from '@/components/content-manager/courses/CourseDisplay'
 
 export const Route = createFileRoute('/content-manager/courses')({
     component: RouteComponent,

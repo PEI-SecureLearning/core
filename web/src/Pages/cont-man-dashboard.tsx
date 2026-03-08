@@ -1,6 +1,6 @@
 import { BookOpen, Blocks, FileStack } from "lucide-react";
 import { motion } from "motion/react";
-import { DashCard } from "@/components/content-manager/DashCard";
+import { DashCard } from "@/components/content-manager/shared/DashCard";
 
 
 function ContManDashboard() {
@@ -12,10 +12,10 @@ function ContManDashboard() {
                 className="h-[10%] px-8 py-4 flex flex-col md:flex-row justify-between items-start gap-4"
             >
                 <div className="flex flex-col mt-5">
-                    <h1 className="text-6xl font-bold text-slate-900 tracking-tight">
+                    <h1 className="text-6xl font-bold text-gray-900 tracking-tight">
                         Dashboard
                     </h1>
-                    <p className="text-slate-500 mt-2 text-lg -translate-y-3 translate-x-10">
+                    <p className="text-gray-500 mt-2 text-lg -translate-y-3 translate-x-10">
                         Manage courses, modules, and content.
                     </p>
                 </div >

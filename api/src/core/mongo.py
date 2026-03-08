@@ -39,6 +39,12 @@ def get_content_collection() -> AsyncIOMotorCollection:
     return db[settings.MONGODB_COLLECTION_CONTENT]
 
 
+def get_modules_collection() -> AsyncIOMotorCollection:
+    client = _get_client()
+    db = client[settings.MONGODB_DB]
+    return db[settings.MONGODB_COLLECTION_MODULES]
+
+
 def get_content_gridfs_bucket() -> AsyncIOMotorGridFSBucket:
     client = _get_client()
     db = client[settings.MONGODB_DB]
