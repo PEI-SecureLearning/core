@@ -9,7 +9,7 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     overflow: hidden;
-    border-radius: 24px;
+    border-radius: 5px;
     box-shadow:
         0 8px 32px rgba(147, 51, 234, 0.1),
         0 0 0 1px rgba(255, 255, 255, 0.5) inset;
@@ -75,7 +75,7 @@
 .liquid-glass-card {
     background: rgba(255, 255, 255, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
+    border-radius: 8px;
     box-shadow: 0 8px 32px rgba(147, 51, 234, 0.08);
     position: relative;
     overflow: hidden;
@@ -93,7 +93,7 @@
 .liquid-glass-input {
     background: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(168, 85, 247, 0.2);
-    border-radius: 12px;
+    border-radius: 6px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -114,7 +114,7 @@
 .liquid-glass-button {
     background: rgba(147, 51, 234, 0.9);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 14px;
+    border-radius: 8px;
     color: white;
     font-weight: 600;
     padding: 12px 24px;
@@ -145,7 +145,7 @@
 .liquid-glass-button-secondary {
     background: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(168, 85, 247, 0.3);
-    border-radius: 14px;
+    border-radius: 8px;
     color: #6b21a8;
     font-weight: 600;
     padding: 12px 24px;
@@ -261,7 +261,7 @@
 .liquid-list-item {
     background: rgba(255, 255, 255, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.4);
-    border-radius: 14px;
+    border-radius: 8px;
     transition: background-color 0.15s ease;
 }
 
