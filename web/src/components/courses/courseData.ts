@@ -1,3 +1,5 @@
+import type { Section } from '@/components/content-manager/modules/module-creation/types'
+
 export type ModuleStatus = 'completed' | 'in-progress' | 'not-started'
 
 export type CourseModule = {
@@ -10,6 +12,12 @@ export type CourseModule = {
     difficulty: 'Easy' | 'Medium' | 'Hard'
     completion: number       // 0–100
     status: ModuleStatus
+    // Fields for high-fidelity preview
+    image?: string
+    coverImage?: string
+    estimatedTime?: string
+    unitCount?: number
+    sections?: Section[]
 }
 
 export type Course = {
@@ -47,6 +55,19 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 5,
+                sections: [
+                    {
+                        id: 's1-1-1', title: 'Foundations of Cyber Defense', collapsed: false,
+                        blocks: [
+                            { id: 'b1-1-1', kind: 'text', content: '## What is Cybersecurity?\n\nCybersecurity is the practice of protecting systems, networks, and programs from digital attacks. These cyberattacks are usually aimed at accessing, changing, or destroying sensitive information; extorting money from users; or interrupting normal business processes.\n\n**Key pillars:**\n- Confidentiality\n- Integrity\n- Availability' },
+                            { id: 'b1-1-2', kind: 'question', question: { id: 'q1-1-1', type: 'multiple_choice', text: 'Which pillar of cybersecurity ensures that data is not altered by unauthorized users?', choices: [{ id: 'c1', text: 'Confidentiality', isCorrect: false }, { id: 'c2', text: 'Integrity', isCorrect: true }, { id: 'c3', text: 'Availability', isCorrect: false }], answer: 'c2' } },
+                        ]
+                    }
+                ]
             },
             {
                 id: '1-2',
@@ -58,6 +79,19 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 4,
+                sections: [
+                    {
+                        id: 's1-2-1', title: 'Know Your Enemy', collapsed: false,
+                        blocks: [
+                            { id: 'b1-2-1', kind: 'text', content: '## Common Threat Actors\n\n1. **Cybercriminals** — Motivated primarily by financial gain.\n2. **State-Sponsored Actors** — Motivated by espionage or strategic advantage.\n3. **Hacktivists** — Motivated by social or political causes.\n4. **Insider Threats** — Employees or partners with authorized access who cause harm.' },
+                            { id: 'b1-2-2', kind: 'question', question: { id: 'q1-2-1', type: 'true_false', text: 'Hacktivists are primarily motivated by financial gain.', choices: [{ id: 'tf-t', text: 'True', isCorrect: false }, { id: 'tf-f', text: 'False', isCorrect: true }], answer: 'tf-f' } },
+                        ]
+                    }
+                ]
             },
             {
                 id: '1-3',
@@ -69,6 +103,18 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 60,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1510511459019-5dee224ffb8b?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1510511459019-5dee224ffb8b?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 15m',
+                unitCount: 6,
+                sections: [
+                    {
+                        id: 's1-3-1', title: 'The CIA Triad', collapsed: false,
+                        blocks: [
+                            { id: 'b1-3-1', kind: 'text', content: '## Confidentiality, Integrity, Availability\n\nThese three principles form the bedrock of cybersecurity. Every security measure should be measured against how well it protects these values.' },
+                        ]
+                    }
+                ]
             },
             {
                 id: '1-4',
@@ -80,6 +126,18 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 5,
+                sections: [
+                    {
+                        id: 's1-4-1', title: 'Hardening Devices', collapsed: false,
+                        blocks: [
+                            { id: 'b1-4-1', kind: 'text', content: '## Encryption and MFA\n\nProtecting endpoints is the first line of defense. We will explore how to implement disk encryption and Multi-Factor Authentication.' },
+                        ]
+                    }
+                ]
             },
             {
                 id: '1-5',
@@ -91,6 +149,18 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1454165833744-80e92246f21d?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1454165833744-80e92246f21d?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '30m',
+                unitCount: 1,
+                sections: [
+                    {
+                        id: 's1-5-1', title: 'Final Quiz', collapsed: false,
+                        blocks: [
+                            { id: 'b1-5-1', kind: 'text', content: '## Prove Your Knowledge\n\nComplete this assessment to earn your "Introduction to Cybersecurity" completion badge.' },
+                        ]
+                    }
+                ]
             },
         ],
     },
@@ -115,6 +185,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '40m',
+                unitCount: 4,
+                sections: [{ id: 's2-1-1', title: 'Phishing Mechanics', collapsed: false, blocks: [{ id: 'b2-1-1', kind: 'text', content: '## How Phishing Works\n\nPhishing is a social engineering attack where an attacker sends a fraudulent message designed to trick a person into revealing sensitive information.' }] }]
             },
             {
                 id: '2-2',
@@ -126,6 +201,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 75,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '50m',
+                unitCount: 5,
+                sections: [{ id: 's2-2-1', title: 'Visual Inspection', collapsed: false, blocks: [{ id: 'b2-2-1', kind: 'text', content: '## Spotting the Fake\n\nLearn to look for spoofed sender addresses, urgent language, and suspicious links.' }] }]
             },
             {
                 id: '2-3',
@@ -137,6 +217,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 3,
+                sections: [{ id: 's2-3-1', title: 'Incident Response', collapsed: false, blocks: [{ id: 'b2-3-1', kind: 'text', content: '## Taking Action\n\nReporting phishing attempts helps protect the entire organization.' }] }]
             },
         ],
     },
@@ -161,6 +246,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 5,
+                sections: [{ id: 's3-1-1', title: 'Network Layers', collapsed: false, blocks: [{ id: 'b3-1-1', kind: 'text', content: '## OSI Model Review\n\nUnderstanding data flow through the 7 layers of the OSI model.' }] }]
             },
             {
                 id: '3-2',
@@ -172,6 +262,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1510511459019-5dee224ffb8b?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1510511459019-5dee224ffb8b?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 6,
+                sections: [{ id: 's3-2-1', title: 'Perimeter Defense', collapsed: false, blocks: [{ id: 'b3-2-1', kind: 'text', content: '## Firewall Rules\n\nDefining inbound and outbound traffic policies.' }] }]
             },
             {
                 id: '3-3',
@@ -183,6 +278,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 45,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 15m',
+                unitCount: 5,
+                sections: [{ id: 's3-3-1', title: 'Secure Tunnels', collapsed: false, blocks: [{ id: 'b3-3-1', kind: 'text', content: '## VPN Protocols\n\nComparing IPsec, OpenVPN, and WireGuard.' }] }]
             },
             {
                 id: '3-4',
@@ -194,6 +294,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 4,
+                sections: [{ id: 's3-4-1', title: 'Detection Logic', collapsed: false, blocks: [{ id: 'b3-4-1', kind: 'text', content: '## Signature vs Anomaly\n\nHow modern IDS systems identify threats.' }] }]
             },
             {
                 id: '3-5',
@@ -205,6 +310,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 4,
+                sections: [{ id: 's3-5-1', title: 'Hardening', collapsed: false, blocks: [{ id: 'b3-5-1', kind: 'text', content: '## Continuous Monitoring\n\nMaintaining a secure network posture.' }] }]
             },
         ],
     },
@@ -229,6 +339,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 5,
+                sections: [{ id: 's4-1-1', title: 'Web App Risks', collapsed: false, blocks: [{ id: 'b4-1-1', kind: 'text', content: '## OWASP Top 10\n\nThe standard awareness document for developers and web application security.' }] }]
             },
             {
                 id: '4-2',
@@ -240,6 +355,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 30,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 6,
+                sections: [{ id: 's4-2-1', title: 'SQL Injection', collapsed: false, blocks: [{ id: 'b4-2-1', kind: 'text', content: '## Breaking Databases\n\nHow improper input handling leads to data leaks.' }] }]
             },
             {
                 id: '4-3',
@@ -251,6 +371,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 15m',
+                unitCount: 5,
+                sections: [{ id: 's4-3-1', title: 'Cross-Site Attacks', collapsed: false, blocks: [{ id: 'b4-3-1', kind: 'text', content: '## Browser Exploits\n\nDefending the client-side environment.' }] }]
             },
             {
                 id: '4-4',
@@ -262,6 +387,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 4,
+                sections: [{ id: 's4-4-1', title: 'Secure Login', collapsed: false, blocks: [{ id: 'b4-4-1', kind: 'text', content: '## Session Security\n\nBest practices for tokens and MFA.' }] }]
             },
             {
                 id: '4-5',
@@ -273,6 +403,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 3,
+                sections: [{ id: 's4-5-1', title: 'Supply Chain', collapsed: false, blocks: [{ id: 'b4-5-1', kind: 'text', content: '## Third-Party Risks\n\nAuditing dependencies and using SBOMs.' }] }]
             },
         ],
     },
@@ -297,6 +432,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 4,
+                sections: [{ id: 's5-1-1', title: 'Privacy Foundations', collapsed: false, blocks: [{ id: 'b5-1-1', kind: 'text', content: '## Why Privacy Matters\n\nUnderstanding the legal and ethical landscapes of data protection.' }] }]
             },
             {
                 id: '5-2',
@@ -308,6 +448,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1589232390623-2e228ec535e6?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1589232390623-2e228ec535e6?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 5,
+                sections: [{ id: 's5-2-1', title: 'GDPR Rules', collapsed: false, blocks: [{ id: 'b5-2-1', kind: 'text', content: '## The Seven Principles\n\nLawfulness, fairness, transparency, and more.' }] }]
             },
             {
                 id: '5-3',
@@ -319,6 +464,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 20,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 15m',
+                unitCount: 4,
+                sections: [{ id: 's5-3-1', title: 'Compliance Ops', collapsed: false, blocks: [{ id: 'b5-3-1', kind: 'text', content: '## Handling Breaches\n\nThe 72-hour notification rule and subject access requests.' }] }]
             },
         ],
     },
@@ -343,6 +493,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 4,
+                sections: [{ id: 's6-1-1', title: 'IR Ready', collapsed: false, blocks: [{ id: 'b6-1-1', kind: 'text', content: '## Building the Team\n\nHow to structure a CSIRT.' }] }]
             },
             {
                 id: '6-2',
@@ -354,6 +509,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 80,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 5,
+                sections: [{ id: 's6-2-1', title: 'SIEM Ops', collapsed: false, blocks: [{ id: 'b6-2-1', kind: 'text', content: '## Filtering Noise\n\nFinding the needle in the haystack.' }] }]
             },
             {
                 id: '6-3',
@@ -365,6 +525,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '2h 00m',
+                unitCount: 5,
+                sections: [{ id: 's6-3-1', title: 'Containment', collapsed: false, blocks: [{ id: 'b6-3-1', kind: 'text', content: '## Stopping the Bleeding\n\nIsolation strategies for compromised hosts.' }] }]
             },
             {
                 id: '6-4',
@@ -376,6 +541,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '2h 30m',
+                unitCount: 6,
+                sections: [{ id: 's6-4-1', title: 'Evidence Collection', collapsed: false, blocks: [{ id: 'b6-4-1', kind: 'text', content: '## Forensic Artifacts\n\nMemory dumps and disk images.' }] }]
             },
             {
                 id: '6-5',
@@ -387,6 +557,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1454165833744-80e92246f21d?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1454165833744-80e92246f21d?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 3,
+                sections: [{ id: 's6-5-1', title: 'Lessons Learned', collapsed: false, blocks: [{ id: 'b6-5-1', kind: 'text', content: '## Closing the Loop\n\nImproving security through post-incident analysis.' }] }]
             },
         ],
     },
@@ -411,6 +586,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 3,
+                sections: [{ id: 's7-1-1', title: 'Cloud Boundaries', collapsed: false, blocks: [{ id: 'b7-1-1', kind: 'text', content: '## Who Protects What?\n\nIaaS, PaaS, and SaaS security roles.' }] }]
             },
             {
                 id: '7-2',
@@ -422,6 +602,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 50,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 15m',
+                unitCount: 5,
+                sections: [{ id: 's7-2-1', title: 'Cloud IAM', collapsed: false, blocks: [{ id: 'b7-2-1', kind: 'text', content: '## Least Privilege\n\nConfiguring secure cloud identities.' }] }]
             },
             {
                 id: '7-3',
@@ -433,6 +618,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 4,
+                sections: [{ id: 's7-3-1', title: 'Cloud Storage', collapsed: false, blocks: [{ id: 'b7-3-1', kind: 'text', content: '## Securing Buckets\n\nPreventing data leaks in cloud storage.' }] }]
             },
             {
                 id: '7-4',
@@ -444,6 +634,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 5,
+                sections: [{ id: 's7-4-1', title: 'K8s Security', collapsed: false, blocks: [{ id: 'b7-4-1', kind: 'text', content: '## Cluster Hardening\n\nBest practices for container orchestration.' }] }]
             },
             {
                 id: '7-5',
@@ -455,6 +650,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 3,
+                sections: [{ id: 's7-5-1', title: 'CSPM', collapsed: false, blocks: [{ id: 'b7-5-1', kind: 'text', content: '## Compliance Monitoring\n\nContinuously auditing your cloud environment.' }] }]
             },
         ],
     },
@@ -479,6 +679,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Easy',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '45m',
+                unitCount: 3,
+                sections: [{ id: 's8-1-1', title: 'Scope & Rules', collapsed: false, blocks: [{ id: 'b8-1-1', kind: 'text', content: '## Ethics of Hacking\n\nStaying within the legal boundaries of a penetration test.' }] }]
             },
             {
                 id: '8-2',
@@ -490,6 +695,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 100,
                 status: 'completed',
+                image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 30m',
+                unitCount: 5,
+                sections: [{ id: 's8-2-1', title: 'Intelligence Gathering', collapsed: false, blocks: [{ id: 'b8-2-1', kind: 'text', content: '## OSINT Methods\n\nFinding public data about your target.' }] }]
             },
             {
                 id: '8-3',
@@ -501,6 +711,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 40,
                 status: 'in-progress',
+                image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 15m',
+                unitCount: 4,
+                sections: [{ id: 's8-3-1', title: 'Automated Scanning', collapsed: false, blocks: [{ id: 'b8-3-1', kind: 'text', content: '## Finding Weak Spots\n\nUsing commercial and open-source scanners.' }] }]
             },
             {
                 id: '8-4',
@@ -512,6 +727,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '2h 30m',
+                unitCount: 6,
+                sections: [{ id: 's8-4-1', title: 'Metasploit Ops', collapsed: false, blocks: [{ id: 'b8-4-1', kind: 'text', content: '## Real Exploits\n\nExecuting payloads in a controlled lab environment.' }] }]
             },
             {
                 id: '8-5',
@@ -523,6 +743,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Medium',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1454165833744-80e92246f21d?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1454165833744-80e92246f21d?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '1h 00m',
+                unitCount: 3,
+                sections: [{ id: 's8-5-1', title: 'Reporting', collapsed: false, blocks: [{ id: 'b8-5-1', kind: 'text', content: '## Documenting Findings\n\nCommunicating risk to stakeholders.' }] }]
             },
             {
                 id: '8-6',
@@ -534,6 +759,11 @@ export const COURSES: Course[] = [
                 difficulty: 'Hard',
                 completion: 0,
                 status: 'not-started',
+                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                coverImage: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
+                estimatedTime: '3h 00m',
+                unitCount: 1,
+                sections: [{ id: 's8-6-1', title: 'Capstone', collapsed: false, blocks: [{ id: 'b8-6-1', kind: 'text', content: '## Final Challenge\n\nPut all your skills to the test in our virtual labs.' }] }]
             },
         ],
     },

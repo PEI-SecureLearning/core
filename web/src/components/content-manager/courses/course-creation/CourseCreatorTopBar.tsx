@@ -38,18 +38,27 @@ export function CourseCreatorTopBar({
                 />
             </div>
 
-            <button
-                type="button"
-                onClick={onPreview}
-                disabled={!canPreview}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${canPreview
+            <div className="flex flex-row items-center gap-2">
+                <button
+                    type="button"
+                    onClick={onPreview}
+                    disabled={!canPreview}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${canPreview
                         ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200'
                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                    }`}
-            >
-                <Eye className="w-4 h-4" />
-                Preview
-            </button>
+                        }`}
+                >
+                    <Eye className="w-4 h-4" />
+                    Preview
+                </button>
+                <button
+                    type="button"
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    Publish
+                </button>
+
+            </div>
         </div>
     )
 }

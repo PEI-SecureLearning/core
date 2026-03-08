@@ -7,6 +7,13 @@ import { fetchModules, type Module } from '@/services/modulesApi'
 import type { ModuleSortValue } from './ToolBarModules'
 import { useDebounce } from '@/lib/useDebounce'
 import { DIFFICULTY_COLORS } from './module-creation/constants'
+import type { GridCols } from '@/components/courses/UniversalFilters'
+
+const gridClass: Record<GridCols, string> = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+}
 
 const API_BASE = import.meta.env.VITE_API_URL as string
 
@@ -14,12 +21,12 @@ const API_BASE = import.meta.env.VITE_API_URL as string
 
 function AuthImage({ contentId, token, alt, className }: {
     readonly contentId: string
-    readonly token?:    string
-    readonly alt:       string
+    readonly token?: string
+    readonly alt: string
     readonly className?: string
 }) {
-    const [src,     setSrc]     = useState<string | null>(null)
-    const [failed,  setFailed]  = useState(false)
+    const [src, setSrc] = useState<string | null>(null)
+    const [failed, setFailed] = useState(false)
 
     useEffect(() => {
         if (!contentId) return
@@ -117,11 +124,10 @@ function ModuleCard({ mod, token }: { readonly mod: Module; readonly token?: str
                 {/* Status badge — show for non-published */}
                 {mod.status !== 'published' && (
                     <div className="absolute bottom-3 right-3 z-20">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${
-                            mod.status === 'draft'
-                                ? 'bg-slate-100/90 text-slate-600 border-slate-300'
-                                : 'bg-orange-100/90 text-orange-700 border-orange-300'
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${mod.status === 'draft'
+                            ? 'bg-slate-100/90 text-slate-600 border-slate-300'
+                            : 'bg-orange-100/90 text-orange-700 border-orange-300'
+                            }`}>
                             {mod.status}
                         </span>
                     </div>
@@ -157,14 +163,16 @@ function ModuleCard({ mod, token }: { readonly mod: Module; readonly token?: str
 
 interface ModuleDisplayProps {
     readonly search?: string
-    readonly sort?:   ModuleSortValue
+    readonly sort?: ModuleSortValue
+    readonly cols?: GridCols
+    readonly onResultCountChange?: (count: number) => void
 }
 
-export function ModuleDisplay({ search = '', sort = 'newest' }: ModuleDisplayProps) {
+export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResultCountChange }: ModuleDisplayProps) {
     const { keycloak } = useKeycloak()
-    const [modules,  setModules]  = useState<Module[]>([])
-    const [loading,  setLoading]  = useState(true)
-    const [error,    setError]    = useState<string | null>(null)
+    const [modules, setModules] = useState<Module[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
     // Only hit the API after the user pauses typing for 400 ms
     const debouncedSearch = useDebounce(search, 400)
@@ -177,11 +185,14 @@ export function ModuleDisplay({ search = '', sort = 'newest' }: ModuleDisplayPro
             setError(null)
             try {
                 const result = await fetchModules({
-                    token:  keycloak.token,
+                    token: keycloak.token,
                     search: debouncedSearch.trim() || undefined,
                     sort,
                 })
-                if (!cancelled) setModules(result.items)
+                if (!cancelled) {
+                    setModules(result.items)
+                    onResultCountChange?.(result.total)
+                }
             } catch (err) {
                 if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load modules')
             } finally {
@@ -196,7 +207,7 @@ export function ModuleDisplay({ search = '', sort = 'newest' }: ModuleDisplayPro
     if (loading) {
         return (
             <motion.div animate={{ opacity: 1 }} className="w-full h-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className={`grid ${gridClass[cols]} gap-8`}>
                     {Array.from({ length: 6 }, (_, i) => <ModuleCardSkeleton key={`sk-${i}`} />)}
                 </div>
             </motion.div>
@@ -241,7 +252,7 @@ export function ModuleDisplay({ search = '', sort = 'newest' }: ModuleDisplayPro
 
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full h-full">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 overflow-y-auto">
+            <div className={`grid ${gridClass[cols]} gap-8`}>
                 {modules.map(mod => <ModuleCard key={mod.id} mod={mod} token={keycloak.token} />)}
             </div>
         </motion.div>

@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Clock, BarChart2, Users } from 'lucide-react'
 import type { Course } from './courseData'
-import type { GridCols } from './CourseFilters'
+import type { GridCols } from './UniversalFilters'
 
 
 type CourseCardProps = {

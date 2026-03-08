@@ -5,8 +5,8 @@ import { motion, LayoutGroup, AnimatePresence } from 'motion/react'
 import { COURSES } from './courseData'
 import type { Course } from './courseData'
 import CourseCard from './CourseCard'
-import CourseFilters from './CourseFilters'
-import type { GridCols } from './CourseFilters'
+import CourseFilters from './UniversalFilters'
+import type { GridCols } from './UniversalFilters'
 
 export type { Course }
 
@@ -90,27 +90,44 @@ export default function CourseList({ showNewCourse = false, basePath = '/courses
                 {/* Search & Filters */}
                 <CourseFilters
                     search={search}
-                    difficulty={difficulty}
-                    category={category}
-                    categoryOptions={CATEGORY_OPTIONS}
-                    cols={cols}
                     onSearchChange={setSearch}
-                    onDifficultyChange={setDifficulty}
-                    onCategoryChange={setCategory}
+                    primaryFilterValue={difficulty}
+                    primaryFilterOptions={['All', 'Easy', 'Medium', 'Hard']}
+                    onPrimaryFilterChange={setDifficulty}
+                    primaryLabel="All Difficulties"
+                    secondaryFilterValue={category}
+                    secondaryFilterOptions={CATEGORY_OPTIONS}
+                    onSecondaryFilterChange={setCategory}
+                    secondaryLabel="All Categories"
+                    cols={cols}
                     onColsChange={setCols}
                     resultCount={filtered.length}
+                    entityName="course"
                 />
             </div>
 
-            {/* ── Course grid ───────────────────────────────────────────── */}
+            {/* ── Content Area ───────────────────────────────────────────── */}
             <div className="px-6 pt-4 pb-6">
                 {filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center text-gray-400">
-                        <BookOpen size={48} className="mb-4 text-gray-300" />
-                        <p className="text-lg font-medium">No courses found</p>
-                        <p className="text-sm mt-1">Try adjusting your search or filters.</p>
+                    /* Empty State */
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-slate-400">
+                        <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                            <BookOpen className="w-8 h-8 text-slate-200" />
+                        </div>
+                        {search.trim() !== '' ? (
+                            <>
+                                <p className="text-sm font-medium text-slate-600">No courses match "{search}"</p>
+                                <p className="text-xs text-slate-400 mt-1">Try a different search term or reset filters.</p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-sm font-medium text-slate-600">No courses yet</p>
+                                <p className="text-xs text-slate-400 mt-1">Create your first course to get started.</p>
+                            </>
+                        )}
                     </div>
                 ) : (
+                    /* Grid Display */
                     <LayoutGroup>
                         <motion.div layout className={`grid ${gridClass[cols]} gap-6`}>
                             <AnimatePresence mode="popLayout">
@@ -143,6 +160,8 @@ export default function CourseList({ showNewCourse = false, basePath = '/courses
                     </LayoutGroup>
                 )}
             </div>
+
+
         </div>
     )
 }

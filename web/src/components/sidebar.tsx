@@ -11,8 +11,8 @@ import {
   Settings,
   AlertCircle,
   CircleQuestionMark,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   Building2,
   ScrollText,
   ShieldCheck,
@@ -135,6 +135,12 @@ const contentManagerLinks: SidebarLinkProps[] = [
     icon: FileStack,
     roles: ["CONTENT_MANAGER"],
   },
+  {
+    href: "/content-manager/templates",
+    label: "Templates",
+    icon: FileText,
+    roles: ["CONTENT_MANAGER"],
+  },
 ];
 
 function SidebarLink({
@@ -200,7 +206,6 @@ export function Sidebar() {
     if (isContentManagerRoute) return contentManagerLinks;
     return userLinks.filter((link) => {
       if (!link.roles) return true;
-      let hasAcess = false;
 
       if (link.feature && !realmFeatures[link.feature]) {
         return false;
@@ -235,9 +240,9 @@ export function Sidebar() {
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 transition-transform duration-300" />
+            <PanelLeftOpen className="h-4 w-4 transition-transform duration-300" />
           ) : (
-            <ChevronLeft className="h-4 w-4 transition-transform duration-300" />
+            <PanelLeftClose className="h-4 w-4 transition-transform duration-300" />
           )}
         </button>
       </div>

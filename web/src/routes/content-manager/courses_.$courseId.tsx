@@ -1,8 +1,8 @@
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { BookOpen, ChevronRight } from 'lucide-react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { BookOpen } from 'lucide-react'
 import { COURSES } from '@/components/courses/courseData'
-import CourseHeader from '@/components/courses/CourseHeader'
-import ModuleCard from '@/components/courses/ModuleCard'
+import { CoursePreview } from '@/components/content-manager/courses/course-creation/CoursePreview'
+import type { PlaceholderModule } from '@/components/content-manager/modules/module-creation/placeholderModules'
 
 export const Route = createFileRoute('/content-manager/courses_/$courseId')({
     component: RouteComponent,
@@ -29,36 +29,17 @@ function RouteComponent() {
         )
     }
 
-    const overallProgress = course.modules.length
-        ? Math.round(course.modules.reduce((sum, m) => sum + m.completion, 0) / course.modules.length)
-        : 0
+    // Use the modules directly from the course data.
+    // We'll update the courseData.ts to ensure these are compatible with what CoursePreview expects.
+    const fullModules = course.modules as any as PlaceholderModule[]
 
     return (
-        <div className="p-6 space-y-6 h-full w-full overflow-y-auto">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-sm text-gray-500">
-                <Link
-                    to="/content-manager/courses"
-                    className="hover:text-purple-600 transition-colors"
-                >
-                    Courses
-                </Link>
-                <ChevronRight size={14} className="text-gray-400" />
-                <span className="text-gray-800 font-medium">{course.title}</span>
-            </nav>
-
-            {/* Hero header */}
-            <CourseHeader course={course} overallProgress={overallProgress} />
-
-            {/* Module list */}
-            <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-                    Modules ({course.modules.length})
-                </h2>
-                {course.modules.map(mod => (
-                    <ModuleCard key={mod.id} module={mod} />
-                ))}
-            </div>
+        <div className="h-full w-full bg-slate-50 relative overflow-hidden">
+            <CoursePreview
+                title={course.title}
+                modules={fullModules}
+                onClose={() => navigate({ to: '/content-manager/courses' })}
+            />
         </div>
     )
 }

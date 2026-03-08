@@ -33,6 +33,7 @@ import { Route as TenantsIdRouteImport } from './routes/tenants/$id'
 import { Route as SendingProfilesNewRouteImport } from './routes/sending-profiles/new'
 import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
+import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
 import { Route as ContentManagerModulesRouteImport } from './routes/content-manager/modules'
 import { Route as ContentManagerCoursesRouteImport } from './routes/content-manager/courses'
 import { Route as ContentManagerContentRouteImport } from './routes/content-manager/content'
@@ -171,6 +172,11 @@ const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
   path: '/courses/$courseId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentManagerTemplatesRoute = ContentManagerTemplatesRouteImport.update({
+  id: '/content-manager/templates',
+  path: '/content-manager/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContentManagerModulesRoute = ContentManagerModulesRouteImport.update({
   id: '/content-manager/modules',
   path: '/content-manager/modules',
@@ -282,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
@@ -324,6 +331,7 @@ export interface FileRoutesByTo {
   '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
@@ -368,6 +376,7 @@ export interface FileRoutesById {
   '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/content-manager/content'
     | '/content-manager/courses'
     | '/content-manager/modules'
+    | '/content-manager/templates'
     | '/courses/$courseId'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/content-manager/content'
     | '/content-manager/courses'
     | '/content-manager/modules'
+    | '/content-manager/templates'
     | '/courses/$courseId'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/content-manager/content'
     | '/content-manager/courses'
     | '/content-manager/modules'
+    | '/content-manager/templates'
     | '/courses/$courseId'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
@@ -540,6 +552,7 @@ export interface RootRouteChildren {
   ContentManagerContentRoute: typeof ContentManagerContentRouteWithChildren
   ContentManagerCoursesRoute: typeof ContentManagerCoursesRoute
   ContentManagerModulesRoute: typeof ContentManagerModulesRoute
+  ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRoute
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
   SendingProfilesNewRoute: typeof SendingProfilesNewRoute
@@ -730,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesCourseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content-manager/templates': {
+      id: '/content-manager/templates'
+      path: '/content-manager/templates'
+      fullPath: '/content-manager/templates'
+      preLoaderRoute: typeof ContentManagerTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/content-manager/modules': {
       id: '/content-manager/modules'
       path: '/content-manager/modules'
@@ -903,6 +923,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContentManagerContentRoute: ContentManagerContentRouteWithChildren,
   ContentManagerCoursesRoute: ContentManagerCoursesRoute,
   ContentManagerModulesRoute: ContentManagerModulesRoute,
+  ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
   CoursesCourseIdRoute: CoursesCourseIdRoute,
   SendingProfilesIdRoute: SendingProfilesIdRoute,
   SendingProfilesNewRoute: SendingProfilesNewRoute,

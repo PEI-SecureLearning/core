@@ -8,26 +8,26 @@ from src.services.templates import TemplateCreate, TemplateUpdate, TemplateOut
 
 router = APIRouter()
 
-@router.get("/templates",dependencies=[Depends(Roles("CONTENT_MANAGER", "view"))])
+@router.get("/templates",dependencies=[Depends(Roles(["content-manager", "org_manager"], "view"))])
 async def list_templates() -> List[TemplateOut]:
     return await template_service.list_templates()
 
 
-@router.get("/templates/{template_id}",dependencies=[Depends(Roles("CONTENT_MANAGER", "view"))])
+@router.get("/templates/{template_id}",dependencies=[Depends(Roles(["content-manager", "org_manager"], "view"))])
 async def get_template(template_id: str) -> TemplateOut:
     return await template_service.get_template(template_id)
 
 
-@router.post("/templates", status_code=status.HTTP_201_CREATED,dependencies=[Depends(Roles("CONTENT_MANAGER", "manage"))])
+@router.post("/templates", status_code=status.HTTP_201_CREATED,dependencies=[Depends(Roles("content-manager", "manage"))])
 async def create_template(template: TemplateCreate) -> TemplateOut:
     return await template_service.create_template(template)
 
 
-@router.put("/templates/{template_id}",dependencies=[Depends(Roles("CONTENT_MANAGER", "manage"))])
+@router.put("/templates/{template_id}",dependencies=[Depends(Roles("content-manager", "manage"))])
 async def update_template(template_id: str, template: TemplateUpdate) -> TemplateOut:
     return await template_service.update_template(template_id, template)
 
 
-@router.delete("/templates/{template_id}", status_code=status.HTTP_204_NO_CONTENT,dependencies=[Depends(Roles("CONTENT_MANAGER", "manage"))])
+@router.delete("/templates/{template_id}", status_code=status.HTTP_204_NO_CONTENT,dependencies=[Depends(Roles("content-manager", "manage"))])
 async def delete_template(template_id: str) -> None:
     await template_service.delete_template(template_id)

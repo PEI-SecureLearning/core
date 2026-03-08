@@ -3,7 +3,7 @@ import { useKeycloak } from '@react-keycloak/web';
 import { motion } from 'framer-motion';
 import { Check, ChevronRight, Eye, FileStack, Folder, FolderOpen, FolderPlus, Plus, Search, SortAsc, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { NewContentModal } from './NewContentModal';
+import { NewContentModal } from '../NewContentModal';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
