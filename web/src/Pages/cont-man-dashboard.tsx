@@ -48,7 +48,7 @@ function ContManDashboard() {
                     shadowColor="#a855f7"
                     Icon={FileStack}
                     to="/content-manager/content"
-                    addTo="/content-manager/content/new"
+                    addTo="/content-manager/content?addFile=true"
                 />
             </div>
         </div >

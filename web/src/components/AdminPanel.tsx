@@ -3,6 +3,7 @@ import { useKeycloak } from '@react-keycloak/web'
 import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
+import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
 
 export function CreateTenantPage() {
@@ -127,10 +128,10 @@ export function CreateTenantPage() {
     }
 
     return (
-        <div className="h-full w-full bg-gradient-to-br from-gray-50 to-purple-50/30 overflow-y-auto">
-            <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 flex flex-col lg:flex-row gap-6 lg:gap-8">
-                {/* Scrollable form section */}
-                <div className="flex-1 min-w-0">
+        <div className="w-full bg-gradient-to-br from-gray-50 to-purple-50/30 overflow-y-auto">
+            <div className="w-full max-w-8xl mx-auto p-2 sm:p-2 flex flex-col lg:flex-row items-start justify-center gap-8">
+                {/* Form section */}
+                <div className="flex-1 w-full">
                     <TenantForm
                         realmName={realmName}
                         setRealmName={setRealmName}

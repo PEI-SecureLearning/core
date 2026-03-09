@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.core.security import Roles
+from src.core.security import Roles, Resource, Scope
 from src.models import (
     CompliancePolicyPayload,
     CompliancePolicyResponse,
@@ -21,11 +21,9 @@ router = APIRouter()
 @router.get(
     "/{realm}/compliance/policy",
     response_model=CompliancePolicyResponse,
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
-def get_compliance_policy(
-    realm: str, session: SessionDep, token: OAuth2Scheme
-):
+def get_compliance_policy(realm: str, session: SessionDep, token: OAuth2Scheme):
     validate_realm_access(token, realm)
     return compliance_handler.get_compliance_policy(session, realm)
 
@@ -33,7 +31,7 @@ def get_compliance_policy(
 @router.put(
     "/{realm}/compliance/policy",
     response_model=CompliancePolicyResponse,
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 def update_compliance_policy(
     realm: str,
@@ -49,7 +47,7 @@ def update_compliance_policy(
 
 @router.post(
     "/{realm}/compliance/policy/import",
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 async def import_compliance_policy(
     realm: str,
@@ -63,11 +61,9 @@ async def import_compliance_policy(
 @router.get(
     "/{realm}/compliance/quiz",
     response_model=ComplianceQuizResponse,
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
-def get_compliance_quiz(
-    realm: str, session: SessionDep, token: OAuth2Scheme
-):
+def get_compliance_quiz(realm: str, session: SessionDep, token: OAuth2Scheme):
     validate_realm_access(token, realm)
     return compliance_handler.get_compliance_quiz(session, realm)
 
@@ -75,7 +71,7 @@ def get_compliance_quiz(
 @router.put(
     "/{realm}/compliance/quiz",
     response_model=ComplianceQuizResponse,
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 def update_compliance_quiz(
     realm: str,

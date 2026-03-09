@@ -7,7 +7,6 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// TEST SENDING PROFILE CONFIGURATION
 export async function testSendingProfileConfiguration(
   data: SendingProfileCreate,
   token?: string
@@ -24,11 +23,11 @@ export async function testSendingProfileConfiguration(
   });
 
   const message = await res.text();
-  
+
   if (!res.ok) {
     throw new Error(message || "Failed to test profile configuration");
   }
-  
+
   return { success: true, message };
 }
 

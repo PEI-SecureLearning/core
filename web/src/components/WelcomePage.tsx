@@ -41,10 +41,6 @@ export const WelcomePage = () => {
                     className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 >
                     <div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-purple-600 mb-2">
-                            <Sparkles className="w-4 h-4" />
-                            <span>Secure Learning Platform</span>
-                        </div>
                         <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
                             Welcome back, {username}
                         </h1>
@@ -53,13 +49,7 @@ export const WelcomePage = () => {
                         </p>
                     </div>
                     <div className="flex gap-3">
-                        <Link
-                            to="/dashboard"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium shadow-sm"
-                        >
-                            <LayoutDashboard className="w-4 h-4" />
-                            Dashboard
-                        </Link>
+
                         {isAdmin && (
                             <Link
                                 to="/admin"

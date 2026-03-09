@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useKeycloak } from '@react-keycloak/web'
 import type { MouseEvent } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink, Loader2, Trash2 } from 'lucide-react'
+import { Building2, Plus, ToggleLeft, ToggleRight, ExternalLink, Loader2, Trash2, Shield, BookOpen, Check } from 'lucide-react'
 import { apiClient } from '../../lib/api-client'
 import { useConfirm } from '../ui/confirm-modal'
 import { toast } from 'sonner'
@@ -156,6 +156,8 @@ export function TenantList() {
 
     // Helper function to format feature names for display
     const formatFeatureName = (feature: string): string => {
+        if (feature === 'phishing') return 'Phishing Engine'
+        if (feature === 'lms') return 'LMS Engine'
         return feature
             .replace(/_/g, ' ')
             .replace(/([A-Z])/g, ' $1')
@@ -163,19 +165,25 @@ export function TenantList() {
             .trim()
     }
 
+    const getFeatureIcon = (feature: string) => {
+        if (feature === 'phishing') return <Shield size={14} className="text-orange-500" />
+        if (feature === 'lms') return <BookOpen size={14} className="text-blue-500" />
+        return <Check size={14} className="text-purple-500" />
+    }
+
     return (
         <div className="space-y-6">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex justify-between items-center"
+                className="flex justify-between items-center border-b-2 border-gray-200 pb-3"
             >
                 <div>
                     <h2 className="text-2xl font-bold text-gray-900">Tenant Management</h2>
                     <p className="text-gray-500 mt-1">Manage organizations and their feature access</p>
                 </div>
                 <Link to="/admin/tenants/new-tenant">
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2">
                         <Plus size={18} />
                         New Tenant
                     </button>
@@ -188,8 +196,8 @@ export function TenantList() {
                     animate={{ opacity: 1 }}
                     className="flex justify-center items-center py-12"
                 >
-                    <Loader2 className="animate-spin text-blue-600" size={32} />
-                    <span className="ml-3 text-gray-600">Loading tenants...</span>
+                    <Loader2 className="animate-spin text-purple-600" size={32} />
+                    <span className="ml-3 text-gray-600 font-medium">Loading tenants...</span>
                 </motion.div>
             )}
 
@@ -227,7 +235,12 @@ export function TenantList() {
                         <motion.div
                             key={tenant.id}
                             variants={item}
-                            className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                            whileHover={{
+                                y: -5,
+                                boxShadow: "0 20px 25px -5px rgba(124, 58, 237, 0.08), 0 8px 10px -6px rgba(124, 58, 237, 0.08)"
+                            }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="bg-white rounded-md border border-slate-200/60 shadow-sm overflow-hidden group/card"
                         >
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
@@ -252,8 +265,11 @@ export function TenantList() {
                                             <div className="text-sm text-gray-500">{tenant.domain || tenant.realm}</div>
                                         </div>
                                     </div>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tenant.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${tenant.enabled
+                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                        : 'bg-red-50 text-red-700 border border-red-200'
                                         }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tenant.enabled ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
                                         {tenant.enabled ? 'Active' : 'Disabled'}
                                     </span>
                                 </div>
@@ -266,20 +282,38 @@ export function TenantList() {
 
                                     <div className="pt-4 border-t border-gray-100">
                                         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Feature Access</h4>
-                                        <div className="space-y-3">
+                                        <div className="grid grid-cols-1 gap-2">
                                             {Object.keys(tenant.features).length === 0 ? (
                                                 <p className="text-sm text-gray-400 italic">No features configured</p>
                                             ) : (
                                                 Object.entries(tenant.features).map(([featureName, isEnabled]) => (
-                                                    <div key={featureName} className="flex justify-between items-center">
-                                                        <span className="text-sm text-gray-700">{formatFeatureName(featureName)}</span>
+                                                    <motion.div
+                                                        key={featureName}
+                                                        whileHover={{
+                                                            scale: 1.02,
+                                                            backgroundColor: isEnabled ? '#f3e8ff' : '#f8fafc',
+                                                            transition: { duration: 0.15, ease: "easeOut" }
+                                                        }}
+                                                        className={`
+                                                            flex justify-between items-center p-2 rounded-xl border transition-all duration-200
+                                                            ${isEnabled ? 'bg-purple-50/50 border-purple-100' : 'bg-gray-50/50 border-gray-100 opacity-60'}
+                                                        `}
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`p-1.5 rounded-lg ${isEnabled ? 'bg-white shadow-sm' : 'bg-gray-100'}`}>
+                                                                {getFeatureIcon(featureName)}
+                                                            </div>
+                                                            <span className={`text-[11px] font-bold ${isEnabled ? 'text-slate-700' : 'text-slate-400'}`}>
+                                                                {formatFeatureName(featureName)}
+                                                            </span>
+                                                        </div>
                                                         <button
                                                             onClick={() => toggleFeature(tenant.id, featureName)}
-                                                            className={`text-2xl ${isEnabled ? 'text-blue-600' : 'text-gray-300'}`}
+                                                            className={`transition-all duration-200 ${isEnabled ? 'text-purple-600' : 'text-gray-300'} hover:scale-110 active:scale-95`}
                                                         >
-                                                            {isEnabled ? <ToggleRight /> : <ToggleLeft />}
+                                                            {isEnabled ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
                                                         </button>
-                                                    </div>
+                                                    </motion.div>
                                                 ))
                                             )}
                                         </div>
@@ -302,9 +336,10 @@ export function TenantList() {
                                     <Link
                                         to="/admin/tenants/$tenantId"
                                         params={{ tenantId: tenant.realm }}
-                                        className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                        className="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center gap-1.5 group/link"
                                     >
-                                        Manage Tenant <ExternalLink size={14} />
+                                        Manage Tenant
+                                        <ExternalLink size={14} className="transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
                                     </Link>
                                 </div>
                             </div>

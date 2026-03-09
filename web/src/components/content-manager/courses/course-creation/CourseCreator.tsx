@@ -63,7 +63,7 @@ export function CourseCreator({ onBack }: CourseCreatorProps) {
     }, [])
 
     return (
-        <div className="w-full h-full flex flex-col bg-slate-50">
+        <div className="fixed inset-0 w-full h-full flex flex-col bg-slate-50">
             <CourseCreatorTopBar
                 title={courseTitle}
                 onTitleChange={setCourseTitle}
