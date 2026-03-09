@@ -26,10 +26,13 @@ class EmailHandler:
         from the assigned kit.
         """
         kit = email_sending.phishing_kit
-        profile = (kit and kit.sending_profile) or campaign.sending_profile
+        kit_profiles = kit.sending_profiles if kit else []
+        campaign_profiles = campaign.sending_profiles
 
-        if not profile:
+        if not kit_profiles + campaign_profiles:
             raise ValueError(f"No sending profile for email_sending {email_sending.id}")
+
+        profile = secrets.choice(kit_profiles if kit_profiles else campaign_profiles)
 
         template = kit.email_template
         

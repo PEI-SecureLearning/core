@@ -4,10 +4,10 @@ from .user_group import CampaignUserGroupLink, UserGroup
 from .realm import Realm, RealmCreate
 from .user import User
 from .custom_header import CustomHeader
-from .sending_profile import SendingProfile
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
-from .phishing_kit import PhishingKit, PhishingKitCreate, PhishingKitDisplayInfo, CampaignPhishingKitLink
+from .phishing_kit import PhishingKit, PhishingKitCreate, PhishingKitDisplayInfo, CampaignPhishingKitLink, PhishingKitSendingProfileLink
+from .sending_profile import SendingProfile, CampaignSendingProfileLink
 from .campaign import Campaign, CampaignCreate, CampaignStatus
 from .email_sending import EmailSending, RabbitMQEmailMessage, SMTPConfig
 from .compliance import ComplianceAcceptance
@@ -26,6 +26,7 @@ __all__ = [
     "PhishingKitCreate",
     "PhishingKitDisplayInfo",
     "CampaignPhishingKitLink",
+    "PhishingKitSendingProfileLink",
     # Email Template
     "EmailTemplate",
     # Email Sending
@@ -41,6 +42,7 @@ __all__ = [
     "RealmCreate",
     # Sending Profile
     "SendingProfile",
+    "CampaignSendingProfileLink",
     # User Group
     "UserGroup",
     "CampaignUserGroupLink",

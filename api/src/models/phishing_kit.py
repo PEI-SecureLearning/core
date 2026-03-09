@@ -20,6 +20,16 @@ class CampaignPhishingKitLink(SQLModel, table=True):
     )
 
 
+class PhishingKitSendingProfileLink(SQLModel, table=True):
+    """Many-to-many link between PhishingKit and SendingProfile."""
+    phishing_kit_id: Optional[int] = Field(
+        default=None, foreign_key="phishingkit.id", primary_key=True
+    )
+    sending_profile_id: Optional[int] = Field(
+        default=None, foreign_key="sendingprofile.id", primary_key=True
+    )
+
+
 class PhishingKit(SQLModel, table=True):
     """Groups an email template + landing page template (+ optional sending profile)
     into a reusable phishing scenario."""
@@ -38,9 +48,6 @@ class PhishingKit(SQLModel, table=True):
     landing_page_template_id: Optional[int] = Field(
         default=None, foreign_key="landing_page_template.id"
     )
-    sending_profile_id: Optional[int] = Field(
-        default=None, foreign_key="sendingprofile.id"
-    )
     realm_name: Optional[str] = Field(
         default=None, foreign_key="realm.name", index=True
     )
@@ -52,8 +59,8 @@ class PhishingKit(SQLModel, table=True):
     landing_page_template: Optional["LandingPageTemplate"] = Relationship(
         back_populates="phishing_kits"
     )
-    sending_profile: Optional["SendingProfile"] = Relationship(
-        back_populates="phishing_kits"
+    sending_profiles: list["SendingProfile"] = Relationship(
+        back_populates="phishing_kits", link_model=PhishingKitSendingProfileLink
     )
     campaigns: list["Campaign"] = Relationship(
         back_populates="phishing_kits", link_model=CampaignPhishingKitLink
@@ -70,7 +77,7 @@ class PhishingKitCreate(SQLModel):
     args: dict[str, str] = {}
     email_template_id: int
     landing_page_template_id: int
-    sending_profile_id: Optional[int] = None
+    sending_profile_ids: list[int] = []
 
 
 class PhishingKitDisplayInfo(SQLModel):
@@ -82,4 +89,4 @@ class PhishingKitDisplayInfo(SQLModel):
     args: dict[str, str] = {}
     email_template_name: Optional[str] = None
     landing_page_template_name: Optional[str] = None
-    sending_profile_name: Optional[str] = None
+    sending_profile_names: list[str] = []

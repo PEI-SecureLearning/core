@@ -86,7 +86,7 @@ class TestEmailHandlerSendToRabbitMQ:
         template = EmailTemplate(name="Temp", subject="Sub", content_link="/link")
         
         kit = PhishingKit(name="Kit", realm_name="test")
-        kit.sending_profile = profile
+        kit.sending_profiles = [profile]
         kit.email_template = template
         
         email = EmailSending(
@@ -120,7 +120,7 @@ class TestEmailHandlerSendToRabbitMQ:
         email.phishing_kit = kit
         
         campaign = Campaign(name="Camp", status=CampaignStatus.RUNNING, begin_date=datetime.datetime.now(), end_date=datetime.datetime.now())
-        campaign.sending_profile = camp_profile
+        campaign.sending_profiles = [camp_profile]   
         
         service._send_email_to_rabbitmq(email, campaign)
         
@@ -152,7 +152,7 @@ class TestEmailHandlerSendToRabbitMQ:
         profile = SendingProfile(name="Profile", smtp_host="host", smtp_port=25, username="u", password="", from_fname="f", from_lname="l", from_email="kit@test.com", realm_name="test")
         
         kit = PhishingKit(name="Kit", realm_name="test")
-        kit.sending_profile = profile
+        kit.sending_profiles = [profile]
         # No email template!
         
         email = EmailSending(

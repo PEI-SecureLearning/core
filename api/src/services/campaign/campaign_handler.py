@@ -35,6 +35,7 @@ class CampaignHandler:
                     "user_group_ids",
                     "sending_interval_seconds",
                     "phishing_kit_ids",
+                    "sending_profile_ids",
                 }
             ),
             sending_interval_seconds=interval,
@@ -49,6 +50,13 @@ class CampaignHandler:
             kit = session.get(PhishingKit, kit_id)
             if kit:
                 new_campaign.phishing_kits.append(kit)
+
+        # Link sending profiles (M2M)
+        for profile_id in campaign.sending_profile_ids:
+            profile = session.get(SendingProfile, profile_id)
+            if profile:
+                new_campaign.sending_profiles.append(profile)
+
         session.flush()
         session.commit()
 
@@ -130,7 +138,7 @@ class CampaignHandler:
             )
 
         for k, v in campaign_update.model_dump(
-            exclude={"user_group_ids", "phishing_kit_ids", "creator_id"}
+            exclude={"user_group_ids", "phishing_kit_ids", "sending_profile_ids", "creator_id"}
         ).items():
             setattr(campaign, k, v)
 
@@ -147,6 +155,13 @@ class CampaignHandler:
                 kit = session.get(PhishingKit, kit_id)
                 if kit:
                     campaign.phishing_kits.append(kit)
+
+        if campaign_update.sending_profile_ids:
+            campaign.sending_profiles.clear()
+            for profile_id in campaign_update.sending_profile_ids:
+                profile = session.get(SendingProfile, profile_id)
+                if profile:
+                    campaign.sending_profiles.append(profile)
 
         session.commit()
         session.refresh(campaign)
@@ -216,10 +231,11 @@ class CampaignHandler:
 
     def _validate_campaign(self, campaign: CampaignCreate, session: Session) -> None:
         """Validate campaign data."""
-        if campaign.sending_profile_id is not None and not session.get(
-            SendingProfile, campaign.sending_profile_id
-        ):
-            raise HTTPException(status_code=400, detail="Invalid sending profile ID")
+        for profile_id in campaign.sending_profile_ids:
+            if not session.get(SendingProfile, profile_id):
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid sending profile ID: {profile_id}"
+                )
 
         for kit_id in campaign.phishing_kit_ids:
             if not session.get(PhishingKit, kit_id):

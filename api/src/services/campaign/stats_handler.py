@@ -256,9 +256,7 @@ class StatsHandler:
             sending_interval_seconds=campaign.sending_interval_seconds,
             status=campaign.status,
             realm_name=campaign.realm_name,
-            sending_profile_name=(
-                campaign.sending_profile.name if campaign.sending_profile else None
-            ),
+            sending_profile_names=[p.name for p in campaign.sending_profiles],
             phishing_kit_names=[
                 kit.name for kit in campaign.phishing_kits
             ],

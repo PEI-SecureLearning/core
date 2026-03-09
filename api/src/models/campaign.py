@@ -6,6 +6,7 @@ from sqlmodel import Relationship, SQLModel, Field
 from src.models.user_group import CampaignUserGroupLink
 from src.models.email_sending import UserSendingInfo
 from src.models.phishing_kit import CampaignPhishingKitLink
+from src.models.sending_profile import CampaignSendingProfileLink
 
 if TYPE_CHECKING:
     from src.models.email_sending import EmailSending
@@ -41,10 +42,6 @@ class Campaign(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
     # FKs
-    sending_profile_id: Optional[int] = Field(
-        default=None, foreign_key="sendingprofile.id"
-    )
-
     realm_name: Optional[str] = Field(
         default=None, foreign_key="realm.name", index=True
     )
@@ -55,8 +52,8 @@ class Campaign(SQLModel, table=True):
         back_populates="campaigns", link_model=CampaignUserGroupLink
     )
 
-    sending_profile: Optional["SendingProfile"] = Relationship(
-        back_populates="campaigns"
+    sending_profiles: list["SendingProfile"] = Relationship(
+        back_populates="campaigns", link_model=CampaignSendingProfileLink
     )
 
     phishing_kits: list["PhishingKit"] = Relationship(
@@ -74,7 +71,7 @@ class CampaignCreate(SQLModel):
     begin_date: datetime
     end_date: datetime
     sending_interval_seconds: int = MIN_INTERVAL_SECONDS
-    sending_profile_id: Optional[int] = None
+    sending_profile_ids: list[int] = []
     creator_id: Optional[str] = None
     phishing_kit_ids: list[int] = []
     user_group_ids: list[str]
@@ -108,7 +105,7 @@ class CampaignDetailInfo(SQLModel):
     phishing_kit_names: list[str] = []
     creator_id: Optional[str] = None
     creator_email: Optional[str] = None
-    sending_profile_name: Optional[str] = None
+    sending_profile_names: list[str] = []
 
     # Statistics
     total_recipients: int = 0
