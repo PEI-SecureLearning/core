@@ -59,7 +59,7 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
     return (
         <div className="flex flex-col h-full">
             <div className="px-4 pt-4 pb-3 flex-shrink-0">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-700 mb-1">
                     Course Modules
                 </h2>
                 <p className="text-[11px] text-slate-400">
@@ -74,8 +74,8 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
             >
                 {modules.length === 0 ? (
                     <div className={`flex flex-col items-center justify-center h-full gap-3 border-2 border-dashed rounded-xl transition-colors duration-200 ${isOver
-                            ? 'border-purple-400 bg-purple-50/50'
-                            : 'border-slate-200'
+                        ? 'border-purple-400 bg-purple-50/50'
+                        : 'border-slate-200'
                         }`}>
                         <Layers className="w-10 h-10 text-slate-200" />
                         <p className="text-sm text-slate-400 font-medium">

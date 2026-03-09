@@ -21,22 +21,22 @@ function RouteComponent() {
 
       {/* Main Content */}
       <div className="p-6 flex flex-col w-full space-y-6">
-        {/* Top Row - Stats Cards */}
+        {/* Top Row - Lists */}
+        <div className="flex flex-row gap-6 w-full">
+          <CertificatesList />
+          <RecentCampaigns />
+        </div>
+
+        {/* Middle Row - Stats Cards */}
         <div className="flex flex-row gap-6 w-full">
           <RiskLevel />
           <AssignedTraining />
           <ThisWeek hours={5} modules={3} />
         </div>
 
-        {/* Middle Row - Chart */}
+        {/* Bottom Row - Chart */}
         <div className="flex flex-row w-full">
           <RiskTrendChart />
-        </div>
-
-        {/* Bottom Row - Lists */}
-        <div className="flex flex-row gap-6 w-full">
-          <CertificatesList />
-          <RecentCampaigns />
         </div>
       </div>
     </div>

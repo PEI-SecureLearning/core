@@ -93,13 +93,9 @@ export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, add
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
             >
-                <motion.div
-                    layoutId={`card-${title}`}
+                <div
                     className="h-full rounded-lg p-4 flex flex-col overflow-hidden cursor-pointer dash-card-mask"
-
-                    style={{
-                        background: gradient,
-                    }}
+                    style={{ background: gradient }}
                 >
 
                     <motion.div
@@ -107,14 +103,13 @@ export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, add
                         animate={{ opacity: hovered ? 1 : 0.78 }}
                         transition={hover_transition}
                     >
-                        <motion.h1 layoutId={`title-${title}`} className="text-6xl font-bold text-white">{title}</motion.h1>
-                        <motion.h1 layoutId={`subtitle-${title}`} className="text-2xl font-bold text-white">{subtitle}</motion.h1>
+                        <h1 className="text-6xl font-bold text-white">{title}</h1>
+                        <h1 className="text-2xl font-bold text-white">{subtitle}</h1>
                     </motion.div>
 
                     {/* 2. Conditional Rendering for the Icon container */}
                     {Icon && (
                         <motion.div
-                            layoutId={`icon-${title}`}
                             className="h-[50%] flex items-end justify-end rotate-12 translate-x-15 translate-y-10"
                             animate={{ opacity: hovered ? 1 : 0.72 }}
                             transition={hover_transition}
@@ -122,7 +117,7 @@ export function DashCard({ title, subtitle, gradient, shadowColor, Icon, to, add
                             <Icon className="w-96 h-96 text-white scale-[1.2]" />
                         </motion.div>
                     )}
-                </motion.div>
+                </div>
             </motion.div>
         </Link>
     );

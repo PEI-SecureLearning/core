@@ -1,4 +1,5 @@
 import { Plug, Shield, BookOpen, Check } from 'lucide-react'
+import { motion } from 'motion/react'
 
 interface TenantFormFeaturesProps {
     features: { phishing: boolean; lms: boolean }
@@ -16,56 +17,64 @@ interface FeatureCardProps {
 
 function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: FeatureCardProps) {
     return (
-        <button
+        <motion.button
+            whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.1)" }}
+            whileTap={{ scale: 0.98 }}
             type="button"
             onClick={onToggle}
             className={`
-                w-full text-left relative cursor-pointer group
-                p-3 rounded-xl border-2 transition-all duration-300 ease-out
+                flex flex-row items-center w-full text-left relative cursor-pointer group
+                p-4 rounded-2xl border-2 transition-all duration-300 ease-out
                 ${enabled
-                    ? 'border-purple-400 bg-gradient-to-br from-purple-50 to-white shadow-md shadow-purple-100/50'
-                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+                    ? 'border-purple-500 bg-white shadow-xl shadow-purple-500/10'
+                    : 'border-slate-100 bg-slate-50/50 hover:border-slate-200 hover:bg-white'
                 }
             `}
         >
             {/* Selection indicator */}
-            <div className={`
-                absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center
-                transition-all duration-300
-                ${enabled
-                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 scale-100'
-                    : 'bg-gray-200 scale-90 group-hover:scale-100'
-                }
-            `}>
-                <Check className={`w-3 h-3 ${enabled ? 'text-white' : 'text-gray-400'}`} />
+
+            <div className='flex-1 pr-4'>
+                <div className={`
+                        absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center
+                        transition-all duration-500 z-10
+                        ${enabled
+                        ? 'bg-purple-600 scale-100 rotate-0'
+                        : 'bg-slate-200 scale-90 -rotate-12 group-hover:scale-100 group-hover:rotate-0'
+                    }
+                    `}>
+                    <Check className={`w-3.5 h-3.5 transition-opacity ${enabled ? 'opacity-100 text-white' : 'opacity-0'}`} />
+                </div>
+
+                {/* Icon */}
+                <div className={`
+                        w-12 h-12 rounded-2xl flex items-center justify-center mb-4
+                        transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 shadow-sm
+                        ${iconBg}
+                    `}>
+                    {icon}
+                </div>
+
+                {/* Content */}
+                <h4 className={`text-[13px] font-bold mb-1 transition-colors duration-300 ${enabled ? 'text-purple-700' : 'text-slate-900'}`}>
+                    {title}
+                </h4>
+                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                    {description}
+                </p>
             </div>
-
-            {/* Icon */}
-            <div className={`
-                w-8 h-8 rounded-lg flex items-center justify-center mb-2
-                transition-transform duration-300 group-hover:scale-110
-                ${iconBg}
-            `}>
-                {icon}
-            </div>
-
-            {/* Content */}
-            <h4 className="text-xs font-semibold text-gray-900 mb-0.5 pr-5">{title}</h4>
-            <p className="text-[11px] text-gray-400 leading-relaxed">{description}</p>
-
             {/* Status badge */}
             <div className={`
-                mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium
-                transition-all duration-300
-                ${enabled
-                    ? 'bg-purple-100 text-purple-700'
-                    : 'bg-gray-100 text-gray-500'
+                    shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider
+                    transition-all duration-300 border
+                    ${enabled
+                    ? 'bg-purple-600 text-white border-transparent'
+                    : 'bg-white text-slate-400 border-slate-200'
                 }
-            `}>
-                <span className={`w-1.5 h-1.5 rounded-full ${enabled ? 'bg-purple-500' : 'bg-gray-400'}`} />
-                {enabled ? 'Enabled' : 'Disabled'}
+                `}>
+                <span className={`w-1.5 h-1.5 rounded-full ${enabled ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
+                {enabled ? 'Active feature' : 'Deployment Disabled'}
             </div>
-        </button>
+        </motion.button>
     )
 }
 
@@ -73,49 +82,38 @@ export function TenantFormFeatures({
     features, setFeatures
 }: TenantFormFeaturesProps) {
     return (
-        <div className="bg-gradient-to-br from-slate-50 to-purple-50/30 p-5 rounded-2xl border border-purple-100/50 h-full">
-            <div className="flex items-center gap-2.5 mb-5">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg shadow-purple-200/50">
+        <div className="w-full bg-white p-2 rounded-2xl h-full flex flex-col">
+            <div className="flex items-center gap-2  px-1">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow shadow-purple-200/50">
                     <Plug className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                    <h3 className="text-sm font-semibold text-gray-900">Feature Modules</h3>
-                    <p className="text-xs text-gray-500">Select the modules to enable for this tenant</p>
+                    <h3 className="text-md font-bold text-slate-700">Feature Modules</h3>
+                    <p className="text-xs text-slate-500">Select features for this tenant</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex-1 flex flex-col gap-3 overflow-y-auto max-h-[337px] pt-2 pr-2 custom-scrollbar mt-3">
                 <FeatureCard
-                    title="Phishing Campaign"
-                    description="Simulate phishing attacks to test and train your users' security awareness"
-                    icon={<Shield className="w-4 h-4 text-orange-600" />}
-                    iconBg="bg-gradient-to-br from-orange-100 to-orange-50"
+                    title="Phishing & Simulation"
+                    description="Simulation engine with dynamic email & landing page templates."
+                    icon={<Shield className="w-6 h-6 text-orange-600" />}
+                    iconBg="bg-orange-50 border border-orange-100/50"
                     enabled={features.phishing}
                     onToggle={() => setFeatures(f => ({ ...f, phishing: !f.phishing }))}
                 />
 
                 <FeatureCard
-                    title="Learning Management"
-                    description="Deliver security training courses with progress tracking and certifications"
-                    icon={<BookOpen className="w-4 h-4 text-blue-600" />}
-                    iconBg="bg-gradient-to-br from-blue-100 to-blue-50"
+                    title="LMS & Compliance"
+                    description="Management system for training courses and progress tracking."
+                    icon={<BookOpen className="w-6 h-6 text-blue-600" />}
+                    iconBg="bg-blue-50 border border-blue-100/50"
                     enabled={features.lms}
                     onToggle={() => setFeatures(f => ({ ...f, lms: !f.lms }))}
                 />
-            </div>
 
-            {/* Summary footer */}
-            <div className="mt-4 pt-4 border-t border-purple-100/50">
-                <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">
-                        {[features.phishing, features.lms].filter(Boolean).length} of 2 modules selected
-                    </span>
-                    <span className="text-purple-600 font-medium">
-                        {features.phishing && features.lms ? 'Full Access' :
-                            features.phishing || features.lms ? 'Partial Access' : 'No Modules'}
-                    </span>
-                </div>
             </div>
         </div>
     )
 }
+

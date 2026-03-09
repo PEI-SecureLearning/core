@@ -228,15 +228,18 @@ function PreviewModule({ mod, modIdx, collapsedModules, collapsedSections, onTog
     return (
         <div
             ref={el => { moduleRefs.current[moduleKey] = el }}
-            className="scroll-mt-4"
+            className="scroll-mt-2"
         >
             {/* Module header */}
             <button
                 type="button"
                 onClick={() => onToggleModule(moduleKey)}
-                className="w-full flex items-center gap-4 px-6 py-4 bg-white rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors text-left group mb-4"
+                className="w-full flex items-center gap-4 px-6 py-4 bg-white border-b-3 border-purple-700 ring ring-slate-200 shadow-lg hover:bg-slate-50 transition-colors text-left group mb-3"
             >
-                <img src={mod.image} alt={mod.title} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                <img
+                    src={mod.image || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60'}
+                    className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
                     <p className="text-lg font-bold text-slate-800 group-hover:text-purple-700 transition-colors">
                         Module {modIdx + 1}: {mod.title}
@@ -309,14 +312,14 @@ interface CoursePreviewProps {
 }
 
 export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
-    const [collapsedModules,  setCollapsedModules]  = useState<Record<string, boolean>>({})
+    const [collapsedModules, setCollapsedModules] = useState<Record<string, boolean>>({})
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
-    const [answeredChoices,   setAnsweredChoices]   = useState<Record<string, string>>({})
+    const [answeredChoices, setAnsweredChoices] = useState<Record<string, string>>({})
     const moduleRefs = useRef<Record<string, HTMLElement | null>>({})
 
-    const toggleModule  = (id: string) => setCollapsedModules(prev => ({ ...prev, [id]: !prev[id] }))
+    const toggleModule = (id: string) => setCollapsedModules(prev => ({ ...prev, [id]: !prev[id] }))
     const toggleSection = (id: string) => setCollapsedSections(prev => ({ ...prev, [id]: !prev[id] }))
-    const onMark        = (qid: string, cid: string) => setAnsweredChoices(prev => ({ ...prev, [qid]: cid }))
+    const onMark = (qid: string, cid: string) => setAnsweredChoices(prev => ({ ...prev, [qid]: cid }))
 
     const scrollToModule = (id: string) => {
         moduleRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -390,7 +393,7 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
 
                 {/* Main scrollable content */}
                 <div className="flex-1 overflow-y-auto">
-                    <div className="w-full max-w-3xl mx-auto px-8 py-8 flex flex-col gap-8">
+                    <div className="w-full mx-auto px-8 py-8 flex flex-col gap-3">
                         {modules.map((mod, modIdx) => (
                             <PreviewModule
                                 key={mod.id}

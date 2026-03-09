@@ -1,6 +1,8 @@
 import logging
 import os
 import traceback
+from enum import StrEnum
+
 import jwt
 from jwt import PyJWKClient
 import requests
@@ -15,13 +17,29 @@ oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
 RESOURCE_SERVER_ID = "api"
 
+
+
+class Resource(StrEnum):
+    """Keycloak UMA resource names used in permission checks."""
+    ADMIN           = "admin"
+    ORG_MANAGER     = "org_manager"
+    CONTENT_MANAGER = "content-manager"
+
+
+class Scope(StrEnum):
+    """Keycloak UMA scope names used in permission checks."""
+    VIEW   = "view"
+    MANAGE = "manage"
+
+
 class Roles:
+
     """
     Uses UMA (uma-ticket) to validate permissions in Keycloak.
     """
 
-    def __init__(self, resource: str, scope: str):
-        self.resource = resource
+    def __init__(self, resource: str | list[str], scope: str):
+        self.resources = [resource] if isinstance(resource, str) else resource
         self.scope = scope
 
     def _get_jwks_client(self, realm_name: str) -> PyJWKClient:
@@ -61,12 +79,19 @@ class Roles:
 
         self._verify_token(access_token, realm_name)
 
-        permission = f"{self.resource}#{self.scope}"
+        authorized = False
+        last_permission = ""
+        for resource in self.resources:
+            permission = f"{resource}#{self.scope}"
+            last_permission = permission
+            if await self.check_keycloak_permission(access_token, permission, realm_name):
+                authorized = True
+                break
 
-        if not await self.check_keycloak_permission(access_token, permission, realm_name):
+        if not authorized:
             raise HTTPException(
                 status_code=403,
-                detail=f"Permission denied for '{permission}'",
+                detail=f"Permission denied for '{' or '.join(self.resources)}#{self.scope}'" if len(self.resources) > 1 else f"Permission denied for '{last_permission}'",
             )
 
         return {"authorized": True}
@@ -100,6 +125,10 @@ class Roles:
                 payload = response.json()
                 return "access_token" in payload
 
+            if response.status_code in [400, 403]:
+                return False
+
+            logging.error(f"Keycloak error {response.status_code}: {response.text}")
             raise HTTPException(status_code=response.status_code, detail="Authorization server error")
 
         except httpx.RequestError as e:

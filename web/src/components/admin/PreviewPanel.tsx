@@ -19,8 +19,8 @@ export function PreviewPanel({
     handleSubmit
 }: PreviewPanelProps) {
     return (
-        <div className="w-full flex flex-col gap-4">
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border border-purple-100/50 overflow-hidden shadow-xl shadow-purple-100/30">
+        <div className="w-full flex flex-col gap-2">
+            <div className="bg-white/80 backdrop-blur-md rounded-md border border-slate-200/60 overflow-hidden shadow-2xl shadow-purple-500/5">
                 <PreviewPanelHeader />
                 <PreviewPanelLogo logoPreviewUrl={logoPreviewUrl} />
                 <PreviewPanelDetails
@@ -28,18 +28,10 @@ export function PreviewPanel({
                     features={features}
                 />
 
-                <div className="px-6 pb-6">
-                    <div className="flex items-center gap-2 text-purple-600 text-xs bg-purple-50/50 p-3 rounded-xl">
-                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold">
-                            !
-                        </div>
-                        <span>Fill the form to see live preview</span>
-                    </div>
-                </div>
             </div>
 
             <Button
-                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-14 text-lg font-semibold rounded-2xl shadow-xl shadow-purple-200/50 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-10 text-lg font-semibold rounded-xl shadow-xl shadow-purple-200/50 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                 onClick={handleSubmit}
                 disabled={isLoading}
             >
