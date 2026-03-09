@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from sqlmodel import Relationship, SQLModel, Field
 
+if TYPE_CHECKING:
+    from ..campaign import Campaign
 
 class CampaignUserGroupLink(SQLModel, table=True):
     campaign_id: Optional[int] = Field(

@@ -1,69 +1,9 @@
 from datetime import datetime
-from enum import StrEnum
-from typing import TYPE_CHECKING, Optional
-from sqlmodel import Relationship, SQLModel, Field
+from typing import Optional
+from sqlmodel import SQLModel
 
-from src.models.user_group import CampaignUserGroupLink
-from src.models.email_sending import UserSendingInfo
-from src.models.phishing_kit import CampaignPhishingKitLink
-from src.models.sending_profile import CampaignSendingProfileLink
-
-if TYPE_CHECKING:
-    from src.models.email_sending import EmailSending
-    from src.models.phishing_kit import PhishingKit
-    from src.models.sending_profile import SendingProfile
-    from src.models.user import User
-    from src.models.user_group import UserGroup
-
-
-MIN_INTERVAL_SECONDS = 6
-
-
-class CampaignStatus(StrEnum):
-    SCHEDULED = "scheduled"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    CANCELED = "canceled"
-
-
-class Campaign(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    description: Optional[str] = Field(default=None)
-    begin_date: datetime
-    end_date: datetime
-    sending_interval_seconds: int = Field(default=MIN_INTERVAL_SECONDS)
-    status: CampaignStatus = Field(default=CampaignStatus.SCHEDULED)
-    total_recipients: int = Field(default=0)
-    total_sent: int = Field(default=0)
-    total_opened: int = Field(default=0)
-    total_clicked: int = Field(default=0)
-    total_phished: int = Field(default=0)
-    created_at: datetime = Field(default_factory=datetime.now)
-
-    # FKs
-    realm_name: Optional[str] = Field(
-        default=None, foreign_key="realm.name", index=True
-    )
-
-    # Relationships
-
-    user_groups: list["UserGroup"] = Relationship(
-        back_populates="campaigns", link_model=CampaignUserGroupLink
-    )
-
-    sending_profiles: list["SendingProfile"] = Relationship(
-        back_populates="campaigns", link_model=CampaignSendingProfileLink
-    )
-
-    phishing_kits: list["PhishingKit"] = Relationship(
-        back_populates="campaigns", link_model=CampaignPhishingKitLink
-    )
-
-    email_sendings: list["EmailSending"] = Relationship(back_populates="campaign")
-
-    realm: Optional["Realm"] = Relationship(back_populates="campaigns")
-
+from .table import CampaignStatus, MIN_INTERVAL_SECONDS
+from ..email_sending import UserSendingInfo
 
 class CampaignCreate(SQLModel):
     name: str
@@ -76,7 +16,6 @@ class CampaignCreate(SQLModel):
     phishing_kit_ids: list[int] = []
     user_group_ids: list[str]
 
-
 class CampaignDisplayInfo(SQLModel):
     id: int
     name: str
@@ -86,7 +25,6 @@ class CampaignDisplayInfo(SQLModel):
     total_sent: int = 0
     total_opened: int = 0
     total_clicked: int = 0
-
 
 class CampaignDetailInfo(SQLModel):
     """Detailed campaign information for single campaign view."""
@@ -136,7 +74,6 @@ class CampaignDetailInfo(SQLModel):
     # User breakdown
     user_sendings: list[UserSendingInfo] = []
 
-
 class CampaignGlobalStats(SQLModel):
     """Global statistics across all campaigns for a realm."""
 
@@ -166,9 +103,7 @@ class CampaignGlobalStats(SQLModel):
     users_who_opened: int = 0
     users_who_clicked: int = 0
     users_who_phished: int = 0
-    repeat_offenders: list[str] = (
-        []
-    )  # Users who fell for > 50% of campaigns they were in
+    repeat_offenders: list[str] = []  # Users who fell for > 50% of campaigns they were in
 
     # Time-based
     avg_time_to_open_seconds: Optional[float] = None

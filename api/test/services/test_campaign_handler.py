@@ -20,15 +20,29 @@ from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
-from src.models.campaign import Campaign, CampaignCreate, CampaignStatus
-from src.models.email_sending import EmailSending, EmailSendingStatus
-from src.models.email_template import EmailTemplate
-from src.models.landing_page import LandingPageTemplate
-from src.models.phishing_kit import PhishingKit
-from src.models.realm import Realm
-from src.models.sending_profile import SendingProfile
-from src.models.user import User
-from src.models.user_group import UserGroup
+from src.models import (
+    Campaign,
+    CampaignCreate,
+    CampaignStatus,
+    EmailSending,
+    EmailSendingStatus,
+    EmailTemplate,
+    LandingPageTemplate,
+    MIN_INTERVAL_SECONDS,
+    PhishingKit,
+    Realm,
+    SendingProfile,
+    User,
+    UserGroup,
+)
+
+
+
+
+
+
+
+
 from src.services.campaign import CampaignService
 
 
@@ -156,7 +170,7 @@ class TestCampaignHelpers:
 
     def test_calculate_interval_respects_minimum(self, service: CampaignService):
         """Ensure the MIN_INTERVAL_SECONDS is respected even on very short campaigns."""
-        from src.models.campaign import MIN_INTERVAL_SECONDS    
+        
         
         now = datetime.datetime.now(datetime.timezone.utc)
         # Campaign lasts 10 seconds, but min interval is usually 60s

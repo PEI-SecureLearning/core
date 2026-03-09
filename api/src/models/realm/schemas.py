@@ -1,16 +1,4 @@
-from typing import Optional
-from sqlmodel import Relationship, Field, SQLModel
-
-
-class Realm(SQLModel, table=True):
-    name: Optional[str] = Field(default=None, primary_key=True, unique=True)
-    domain: str = Field(index=True)
-
-    # Relationships
-
-    campaigns: list["Campaign"] = Relationship(back_populates="realm")
-    sending_profiles: list["SendingProfile"] = Relationship(back_populates="realm")
-    phishing_kits: list["PhishingKit"] = Relationship(back_populates="realm")
+from sqlmodel import SQLModel, Field
 
 
 class RealmCreate(SQLModel):
@@ -39,7 +27,7 @@ class RealmInfoResponse(SQLModel):
     realm: RealmInfo
 
 
-class UserCreateRequest(SQLModel):
+class RealmUserCreate(SQLModel):
     realm: str
     username: str
     name: str
@@ -49,5 +37,5 @@ class UserCreateRequest(SQLModel):
     group_id: str | None = None
 
 
-class GroupCreateRequest(SQLModel):
+class RealmGroupCreate(SQLModel):
     name: str

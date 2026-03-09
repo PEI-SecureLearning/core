@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, UploadFile
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles
-from src.models.org_manager_schemas import (
+from src.models import (
     CompliancePolicyPayload,
     CompliancePolicyResponse,
     ComplianceQuizPayload,

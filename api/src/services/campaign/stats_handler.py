@@ -6,14 +6,17 @@ from dataclasses import dataclass
 
 from sqlmodel import Session, select
 
-from src.models.campaign import (
+from src.models import (
     Campaign,
     CampaignDetailInfo,
     CampaignDisplayInfo,
     CampaignGlobalStats,
     CampaignStatus,
+    EmailSending,
+    EmailSendingStatus,
+    UserSendingInfo,
 )
-from src.models.email_sending import EmailSending, EmailSendingStatus, UserSendingInfo
+
 from src.services.campaign.stats_calculator import CampaignStatCalculator
 
 @dataclass

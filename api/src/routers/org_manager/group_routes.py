@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, Depends, status
 
-from src.core.dependencies import SessionDep, OAuth2Scheme, OAuth2Scheme
+from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles
-from src.models.org_manager_schemas import GroupCreateRequest
+from src.models import OrgGroupCreate
 from src.services.org_manager import get_org_manager_service
 from src.services.org_manager.validation_handler import validate_realm_access
 
@@ -29,7 +29,7 @@ def list_groups(realm: str, token: OAuth2Scheme):
 )
 def create_group(
     realm: str,
-    group: GroupCreateRequest,
+    group: OrgGroupCreate,
     session: SessionDep,
     token: OAuth2Scheme,
 ):
@@ -60,7 +60,7 @@ def delete_group(
 def update_group(
     realm: str,
     group_id: str,
-    group: GroupCreateRequest,
+    group: OrgGroupCreate,
     token: OAuth2Scheme,
 ):
     """Update a group in the realm using the user's token."""

@@ -2,8 +2,8 @@ import secrets
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from src.models.user import User
-from src.models.realm import Realm
+from src.models import Realm, User
+
 from src.core.db import engine
 
 

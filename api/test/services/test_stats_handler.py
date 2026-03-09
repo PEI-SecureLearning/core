@@ -26,12 +26,21 @@ import pytest
 from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
-from src.models.campaign import Campaign, CampaignStatus
-from src.models.email_sending import EmailSending, EmailSendingStatus
-from src.models.realm import Realm
-from src.models.sending_profile import SendingProfile
-from src.models.phishing_kit import PhishingKit
-from src.models.user import User
+from src.models import (
+    Campaign,
+    CampaignStatus,
+    EmailSending,
+    EmailSendingStatus,
+    PhishingKit,
+    Realm,
+    SendingProfile,
+    User,
+)
+
+
+
+
+
 from src.services.campaign.stats_handler import stats_handler
 
 

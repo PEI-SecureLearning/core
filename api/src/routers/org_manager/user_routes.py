@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models.org_manager_schemas import UserCreateRequest
+from src.models import OrgUserCreate
 from src.core.security import Roles
 from src.services.org_manager import get_org_manager_service
 from src.services.org_manager.validation_handler import validate_realm_access
@@ -31,7 +31,7 @@ def list_users(realm: str, token: OAuth2Scheme):
 )
 def create_user(
     realm: str,
-    user: UserCreateRequest,
+    user: OrgUserCreate,
     session: SessionDep,
     token: OAuth2Scheme,
 ):

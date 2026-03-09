@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 
 from src.core.security import Roles
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models.realm import UserCreateRequest
+from src.models import RealmUserCreate
 from src.services.platform_admin import get_platform_admin_service
 
 realm_service = get_platform_admin_service()
@@ -14,7 +14,7 @@ router = APIRouter()
 
 @router.post("/realms/users", status_code=status.HTTP_201_CREATED, dependencies=[Depends(Roles("admin", "manage"))])
 def create_user_in_realm(
-    session: SessionDep, user: UserCreateRequest, token: OAuth2Scheme
+    session: SessionDep, user: RealmUserCreate, token: OAuth2Scheme
 ):
     """Create a new user inside the specified Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, user.realm)

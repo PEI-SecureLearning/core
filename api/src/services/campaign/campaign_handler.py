@@ -2,18 +2,24 @@ import math
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from src.models.campaign import (
-    MIN_INTERVAL_SECONDS,
+from src.models import (
     Campaign,
     CampaignCreate,
     CampaignStatus,
+    EmailSendingStatus,
+    MIN_INTERVAL_SECONDS,
+    PhishingKit,
+    Realm,
+    SendingProfile,
+    User,
+    UserGroup,
 )
-from src.models.email_sending import EmailSendingStatus
-from src.models.phishing_kit import PhishingKit
-from src.models.sending_profile import SendingProfile
-from src.models.realm import Realm
-from src.models.user import User
-from src.models.user_group import UserGroup
+
+
+
+
+
+
 from src.services.platform_admin import get_platform_admin_service
 
 

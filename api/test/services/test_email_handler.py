@@ -7,11 +7,18 @@ import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from src.models.campaign import Campaign, CampaignStatus
-from src.models.email_sending import EmailSending
-from src.models.email_template import EmailTemplate
-from src.models.phishing_kit import PhishingKit
-from src.models.sending_profile import SendingProfile
+from src.models import (
+    Campaign,
+    CampaignStatus,
+    EmailSending,
+    EmailTemplate,
+    PhishingKit,
+    SendingProfile,
+)
+
+
+
+
 from src.services.campaign import CampaignService
 
 @pytest.fixture(name="engine")

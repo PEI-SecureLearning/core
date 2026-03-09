@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
-    from src.models.email_sending import EmailSending
+    from .email_sending import EmailSending
 
 
 class User(SQLModel, table=True):

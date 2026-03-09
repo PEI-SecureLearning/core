@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class UserCreateRequest(BaseModel):
+class OrgUserCreate(BaseModel):
     username: str
     name: str
     email: str
@@ -11,7 +11,7 @@ class UserCreateRequest(BaseModel):
     group_id: str | None = None
 
 
-class GroupCreateRequest(BaseModel):
+class OrgGroupCreate(BaseModel):
     name: str
 
 

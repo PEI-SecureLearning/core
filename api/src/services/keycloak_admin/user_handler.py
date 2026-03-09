@@ -1,8 +1,8 @@
 import requests
 from sqlmodel import Session, select
 
-from src.models.realm import Realm
-from src.models.user import User
+from src.models import Realm, User
+
 
 
 class user_handler:

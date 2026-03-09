@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlmodel import Session
 
-from src.models.user_group import UserGroup
+from src.models import UserGroup
 from src.core.db import engine
 
 

@@ -1,9 +1,15 @@
 from enum import StrEnum
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 
 from src.utils import token
+
+
+if TYPE_CHECKING:
+    from ..campaign import Campaign
+    from ..phishing_kit import PhishingKit
+    from ..user import User
 
 
 class EmailSendingStatus(StrEnum):
@@ -35,34 +41,3 @@ class EmailSending(SQLModel, table=True):
     campaign: Optional["Campaign"] = Relationship(back_populates="email_sendings")
     phishing_kit: Optional["PhishingKit"] = Relationship(back_populates="email_sendings")
     user: Optional["User"] = Relationship(back_populates="email_sendings")
-
-
-class UserSendingInfo(SQLModel):
-    """Summary of a user's interaction with a campaign email."""
-
-    user_id: str
-    email: str
-    status: str
-    sent_at: Optional[datetime] = None
-    opened_at: Optional[datetime] = None
-    clicked_at: Optional[datetime] = None
-    phished_at: Optional[datetime] = None
-
-
-class SMTPConfig(SQLModel):
-    """SMTP server configuration."""
-    host: str
-    port: int
-    user: str
-    password: str
-
-
-class RabbitMQEmailMessage(SQLModel):
-    """Email message payload from RabbitMQ."""
-    smtp_config: SMTPConfig
-    sender_email: str
-    receiver_email: str
-    subject: str
-    template_id: str
-    tracking_id: str
-    arguments: dict[str, str] = {}

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles
-from src.models.phishing_kit import PhishingKitDisplayInfo
+from src.models import PhishingKitDisplayInfo
 from src.services import templates as template_service
 from src.services.campaign import CampaignService
 from src.services.org_manager.validation_handler import validate_realm_access
