@@ -62,11 +62,36 @@ export const COURSES: Course[] = [
                 sections: [
                     {
                         id: 's1-1-1', title: 'Foundations of Cyber Defense', collapsed: false,
+                        requireCorrectAnswers: true,
                         blocks: [
-                            { id: 'b1-1-1', kind: 'text', content: '## What is Cybersecurity?\n\nCybersecurity is the practice of protecting systems, networks, and programs from digital attacks. These cyberattacks are usually aimed at accessing, changing, or destroying sensitive information; extorting money from users; or interrupting normal business processes.\n\n**Key pillars:**\n- Confidentiality\n- Integrity\n- Availability' },
+                            { id: 'b1-1-1', kind: 'text', content: '## What is Cybersecurity?\n\nCybersecurity is the practice of protecting systems, networks, and programs from digital attacks. These cyberattacks are usually aimed at accessing, changing, or destroying sensitive information; extorting money from users; or interrupting normal business processes.\n\n**Key pillars:**\n- **Confidentiality** — Ensuring information is accessible only to those authorized to have access\n- **Integrity** — Safeguarding the accuracy and completeness of information\n- **Availability** — Ensuring that authorized users have access to information when needed\n\n> The CIA triad is the most fundamental model in information security. Every security control should be evaluated against these three principles.' },
                             { id: 'b1-1-2', kind: 'question', question: { id: 'q1-1-1', type: 'multiple_choice', text: 'Which pillar of cybersecurity ensures that data is not altered by unauthorized users?', choices: [{ id: 'c1', text: 'Confidentiality', isCorrect: false }, { id: 'c2', text: 'Integrity', isCorrect: true }, { id: 'c3', text: 'Availability', isCorrect: false }], answer: 'c2' } },
                         ]
-                    }
+                    },
+                    {
+                        id: 's1-1-2', title: 'The Evolving Threat Landscape', collapsed: false,
+                        requireCorrectAnswers: true,
+                        blocks: [
+                            { id: 'b1-1-3', kind: 'text', content: '## Why Cybersecurity Matters Now\n\nThe digital landscape has evolved dramatically in recent years:\n\n1. **Remote Work Expansion** — The shift to remote work has expanded attack surfaces significantly\n2. **IoT Proliferation** — Billions of connected devices create new vulnerabilities\n3. **Sophisticated Attacks** — Attackers use AI, automation, and advanced tactics\n4. **Regulatory Pressure** — GDPR, HIPAA, PCI-DSS and other regulations mandate security controls\n\n### The Cost of a Breach\n\nAccording to IBM\'s Cost of a Data Breach Report, the average cost of a data breach in 2024 was **$4.88 million**. This includes:\n- Detection and escalation costs\n- Notification costs\n- Post-breach response\n- Lost business' },
+                            { id: 'b1-1-4', kind: 'question', question: { id: 'q1-1-2', type: 'multiple_choice', text: 'What is the primary reason cybersecurity has become more critical in recent years?', choices: [{ id: 'c4', text: 'Hardware has become cheaper', isCorrect: false }, { id: 'c5', text: 'The attack surface has expanded due to remote work, IoT, and cloud', isCorrect: true }, { id: 'c6', text: 'Fewer regulations exist', isCorrect: false }, { id: 'c7', text: 'Attacks are becoming simpler', isCorrect: false }], answer: 'c5' } },
+                        ]
+                    },
+                    {
+                        id: 's1-1-3', title: 'Career Paths in Cybersecurity (Optional)', collapsed: false,
+                        isOptional: true,
+                        blocks: [
+                            { id: 'b1-1-5', kind: 'text', content: '## Cybersecurity Career Paths\n\nCybersecurity offers diverse career opportunities:\n\n| Role | Focus Area | Avg Salary |\n|---|---|---|\n| Security Analyst | Monitoring & incident response | $75,000 |\n| Penetration Tester | Offensive security testing | $95,000 |\n| Security Architect | Designing secure systems | $130,000 |\n| CISO | Strategic security leadership | $180,000 |\n\n> **Tip:** Start with a Security+ certification to get your foot in the door!' },
+                        ]
+                    },
+                    {
+                        id: 's1-1-4', title: 'Section Assessment', collapsed: false,
+                        requireCorrectAnswers: true,
+                        blocks: [
+                            { id: 'b1-1-6', kind: 'text', content: '## Module Assessment\n\nTest your understanding of cybersecurity fundamentals with the following questions.' },
+                            { id: 'b1-1-7', kind: 'question', question: { id: 'q1-1-3', type: 'true_false', text: 'The CIA triad stands for Confidentiality, Integrity, and Availability.', choices: [{ id: 'tf-t1', text: 'True', isCorrect: true }, { id: 'tf-f1', text: 'False', isCorrect: false }], answer: 'tf-t1' } },
+                            { id: 'b1-1-8', kind: 'question', question: { id: 'q1-1-4', type: 'multiple_choice', text: 'Which of the following is NOT a common cybersecurity career path?', choices: [{ id: 'c8', text: 'Penetration Tester', isCorrect: false }, { id: 'c9', text: 'Security Architect', isCorrect: false }, { id: 'c10', text: 'Data Entry Clerk', isCorrect: true }, { id: 'c11', text: 'Security Analyst', isCorrect: false }], answer: 'c10' } },
+                        ]
+                    },
                 ]
             },
             {
@@ -86,11 +111,28 @@ export const COURSES: Course[] = [
                 sections: [
                     {
                         id: 's1-2-1', title: 'Know Your Enemy', collapsed: false,
+                        requireCorrectAnswers: true,
                         blocks: [
-                            { id: 'b1-2-1', kind: 'text', content: '## Common Threat Actors\n\n1. **Cybercriminals** — Motivated primarily by financial gain.\n2. **State-Sponsored Actors** — Motivated by espionage or strategic advantage.\n3. **Hacktivists** — Motivated by social or political causes.\n4. **Insider Threats** — Employees or partners with authorized access who cause harm.' },
+                            { id: 'b1-2-1', kind: 'text', content: '## Common Threat Actors\n\n1. **Cybercriminals** — Motivated primarily by financial gain. They use ransomware, phishing, and fraud.\n2. **State-Sponsored Actors** — Motivated by espionage or strategic advantage. They target critical infrastructure and intellectual property.\n3. **Hacktivists** — Motivated by social or political causes. They use DDoS attacks and website defacement.\n4. **Insider Threats** — Employees or partners with authorized access who cause harm, either maliciously or accidentally.' },
                             { id: 'b1-2-2', kind: 'question', question: { id: 'q1-2-1', type: 'true_false', text: 'Hacktivists are primarily motivated by financial gain.', choices: [{ id: 'tf-t', text: 'True', isCorrect: false }, { id: 'tf-f', text: 'False', isCorrect: true }], answer: 'tf-f' } },
                         ]
-                    }
+                    },
+                    {
+                        id: 's1-2-2', title: 'Attack Vectors & Techniques', collapsed: false,
+                        requireCorrectAnswers: true,
+                        blocks: [
+                            { id: 'b1-2-3', kind: 'text', content: '## Common Attack Vectors\n\nThreat actors use many techniques to compromise targets:\n\n### Social Engineering\nManipulating people into divulging confidential information or performing actions. **Phishing** is the most common form.\n\n### Malware\n- **Ransomware** — Encrypts files and demands payment\n- **Trojans** — Disguised as legitimate software\n- **Worms** — Self-replicating across networks\n\n### Exploitation\n- **Zero-day exploits** — Attacks on unknown vulnerabilities\n- **Supply chain attacks** — Compromising trusted vendors\n\n### Credential Attacks\n- **Brute force** — Guessing passwords systematically\n- **Credential stuffing** — Using leaked credentials' },
+                            { id: 'b1-2-4', kind: 'question', question: { id: 'q1-2-2', type: 'multiple_choice', text: 'What type of malware encrypts your files and demands payment for the decryption key?', choices: [{ id: 'av1', text: 'Trojan', isCorrect: false }, { id: 'av2', text: 'Worm', isCorrect: false }, { id: 'av3', text: 'Ransomware', isCorrect: true }, { id: 'av4', text: 'Adware', isCorrect: false }], answer: 'av3' } },
+                            { id: 'b1-2-5', kind: 'question', question: { id: 'q1-2-3', type: 'multiple_choice', text: 'Which attack technique involves compromising a trusted software vendor to distribute malicious updates?', choices: [{ id: 'av5', text: 'Phishing', isCorrect: false }, { id: 'av6', text: 'Supply chain attack', isCorrect: true }, { id: 'av7', text: 'Brute force', isCorrect: false }, { id: 'av8', text: 'DDoS', isCorrect: false }], answer: 'av6' } },
+                        ]
+                    },
+                    {
+                        id: 's1-2-3', title: 'Real-World Case Studies (Optional)', collapsed: false,
+                        isOptional: true,
+                        blocks: [
+                            { id: 'b1-2-6', kind: 'text', content: '## Notable Cyber Attacks\n\n### SolarWinds Supply Chain Attack (2020)\nState-sponsored attackers compromised SolarWinds\' Orion software build system, affecting ~18,000 organizations including US government agencies.\n\n### WannaCry Ransomware (2017)\nExploited EternalBlue (MS17-010) to spread across 150 countries in hours. Encrypted files on 230,000+ computers, demanding Bitcoin ransoms.\n\n### Colonial Pipeline (2021)\nA ransomware attack on the largest fuel pipeline in the US caused fuel shortages across the East Coast. The company paid $4.4M in Bitcoin ransom.' },
+                        ]
+                    },
                 ]
             },
             {
@@ -109,11 +151,28 @@ export const COURSES: Course[] = [
                 unitCount: 6,
                 sections: [
                     {
-                        id: 's1-3-1', title: 'The CIA Triad', collapsed: false,
+                        id: 's1-3-1', title: 'The CIA Triad in Depth', collapsed: false,
+                        requireCorrectAnswers: true,
                         blocks: [
-                            { id: 'b1-3-1', kind: 'text', content: '## Confidentiality, Integrity, Availability\n\nThese three principles form the bedrock of cybersecurity. Every security measure should be measured against how well it protects these values.' },
+                            { id: 'b1-3-1', kind: 'text', content: '## Confidentiality, Integrity, Availability\n\nThese three principles form the bedrock of cybersecurity. Every security measure should be measured against how well it protects these values.\n\n### Confidentiality\nEnsuring that information is accessible only to those authorized. Controls include:\n- Encryption (AES-256, RSA)\n- Access control lists (ACLs)\n- Data classification schemes\n\n### Integrity\nSafeguarding the accuracy and completeness of data. Controls include:\n- Hashing (SHA-256)\n- Digital signatures\n- Version control\n\n### Availability\nEnsuring systems are operational when needed. Controls include:\n- Redundancy and failover\n- Load balancing\n- DDoS mitigation' },
+                            { id: 'b1-3-2', kind: 'question', question: { id: 'q1-3-1', type: 'multiple_choice', text: 'Which CIA triad component is most directly addressed by implementing encryption?', choices: [{ id: 'cia1', text: 'Confidentiality', isCorrect: true }, { id: 'cia2', text: 'Integrity', isCorrect: false }, { id: 'cia3', text: 'Availability', isCorrect: false }], answer: 'cia1' } },
                         ]
-                    }
+                    },
+                    {
+                        id: 's1-3-2', title: 'Defence in Depth', collapsed: false,
+                        requireCorrectAnswers: true,
+                        blocks: [
+                            { id: 'b1-3-3', kind: 'text', content: '## Layered Security Model\n\nDefence in depth uses multiple layers of security controls:\n\n1. **Physical** — Locks, cameras, guards\n2. **Network** — Firewalls, IDS/IPS, segmentation\n3. **Host** — Antivirus, patching, hardening\n4. **Application** — Secure coding, WAF, input validation\n5. **Data** — Encryption, DLP, backups\n6. **User** — Training, MFA, least privilege\n\n> If one layer fails, the next layer still provides protection.' },
+                            { id: 'b1-3-4', kind: 'question', question: { id: 'q1-3-2', type: 'true_false', text: 'Defence in depth relies on a single, strong perimeter defence.', choices: [{ id: 'dd-t', text: 'True', isCorrect: false }, { id: 'dd-f', text: 'False', isCorrect: true }], answer: 'dd-f' } },
+                        ]
+                    },
+                    {
+                        id: 's1-3-3', title: 'NIST & ISO Frameworks', collapsed: false,
+                        blocks: [
+                            { id: 'b1-3-5', kind: 'text', content: '## Industry Frameworks\n\n### NIST Cybersecurity Framework\nFive core functions:\n- **Identify** — Understand your assets and risks\n- **Protect** — Implement safeguards\n- **Detect** — Monitor for threats\n- **Respond** — Act on detected incidents\n- **Recover** — Restore normal operations\n\n### ISO 27001\nInternational standard for Information Security Management Systems (ISMS). Provides a systematic approach to managing sensitive company information.' },
+                            { id: 'b1-3-6', kind: 'question', question: { id: 'q1-3-3', type: 'multiple_choice', text: 'Which NIST CSF function involves understanding your organization\'s assets and risks?', choices: [{ id: 'nist1', text: 'Protect', isCorrect: false }, { id: 'nist2', text: 'Identify', isCorrect: true }, { id: 'nist3', text: 'Detect', isCorrect: false }, { id: 'nist4', text: 'Respond', isCorrect: false }], answer: 'nist2' } },
+                        ]
+                    },
                 ]
             },
             {
@@ -132,11 +191,21 @@ export const COURSES: Course[] = [
                 unitCount: 5,
                 sections: [
                     {
-                        id: 's1-4-1', title: 'Hardening Devices', collapsed: false,
+                        id: 's1-4-1', title: 'Endpoint Security', collapsed: false,
+                        requireCorrectAnswers: true,
                         blocks: [
-                            { id: 'b1-4-1', kind: 'text', content: '## Encryption and MFA\n\nProtecting endpoints is the first line of defense. We will explore how to implement disk encryption and Multi-Factor Authentication.' },
+                            { id: 'b1-4-1', kind: 'text', content: '## Encryption and MFA\n\nProtecting endpoints is the first line of defense.\n\n### Full Disk Encryption\nEncrypt the entire hard drive so data cannot be read if the device is stolen. Tools:\n- **BitLocker** (Windows)\n- **FileVault** (macOS)\n- **LUKS** (Linux)\n\n### Multi-Factor Authentication (MFA)\nRequire two or more verification factors:\n- Something you **know** (password)\n- Something you **have** (phone, hardware key)\n- Something you **are** (fingerprint, face scan)' },
+                            { id: 'b1-4-2', kind: 'question', question: { id: 'q1-4-1', type: 'multiple_choice', text: 'Which of the following is an example of "something you have" in MFA?', choices: [{ id: 'mfa1', text: 'A password', isCorrect: false }, { id: 'mfa2', text: 'A hardware security key', isCorrect: true }, { id: 'mfa3', text: 'A fingerprint', isCorrect: false }], answer: 'mfa2' } },
                         ]
-                    }
+                    },
+                    {
+                        id: 's1-4-2', title: 'Password Management', collapsed: false,
+                        requireCorrectAnswers: true,
+                        blocks: [
+                            { id: 'b1-4-3', kind: 'text', content: '## Strong Password Practices\n\n- Use a **password manager** (Bitwarden, 1Password)\n- Generate passwords at least **16 characters** long\n- Never reuse passwords across sites\n- Enable **MFA** on every account that supports it\n\n### Passkeys\nThe industry is moving toward **passwordless authentication** using passkeys (FIDO2/WebAuthn). These use public-key cryptography and are phishing-resistant.' },
+                            { id: 'b1-4-4', kind: 'question', question: { id: 'q1-4-2', type: 'true_false', text: 'It is safe to reuse the same password across multiple accounts if the password is strong.', choices: [{ id: 'pw-t', text: 'True', isCorrect: false }, { id: 'pw-f', text: 'False', isCorrect: true }], answer: 'pw-f' } },
+                        ]
+                    },
                 ]
             },
             {
@@ -156,8 +225,11 @@ export const COURSES: Course[] = [
                 sections: [
                     {
                         id: 's1-5-1', title: 'Final Quiz', collapsed: false,
+                        requireCorrectAnswers: true,
                         blocks: [
                             { id: 'b1-5-1', kind: 'text', content: '## Prove Your Knowledge\n\nComplete this assessment to earn your "Introduction to Cybersecurity" completion badge.' },
+                            { id: 'b1-5-2', kind: 'question', question: { id: 'q1-5-1', type: 'multiple_choice', text: 'What does the "A" in the CIA triad stand for?', choices: [{ id: 'fin1', text: 'Authentication', isCorrect: false }, { id: 'fin2', text: 'Authorization', isCorrect: false }, { id: 'fin3', text: 'Availability', isCorrect: true }, { id: 'fin4', text: 'Accountability', isCorrect: false }], answer: 'fin3' } },
+                            { id: 'b1-5-3', kind: 'question', question: { id: 'q1-5-2', type: 'true_false', text: 'A zero-day exploit targets a vulnerability that is already known and patched.', choices: [{ id: 'fin-t', text: 'True', isCorrect: false }, { id: 'fin-f', text: 'False', isCorrect: true }], answer: 'fin-f' } },
                         ]
                     }
                 ]

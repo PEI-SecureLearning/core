@@ -1,30 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { motion } from 'motion/react'
-import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react'
-import { Toolbar } from '@/components/content-manager/shared/ToolBar';
+import { useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { toast } from 'sonner';
-
-export const Route = createFileRoute('/content-manager/content')({
-    component: RouteComponent,
-})
-
-const transition = {
-    type: "spring" as const,
-    stiffness: 300,
-    damping: 40,
-    mass: 1
-}
-
 import { ContentDisplay } from '@/components/content-manager/content/ContentDisplay';
-import { ContentTitle } from '@/components/content-manager/content/ContentTitle';
 import { ViewContentModal } from '@/components/content-manager/ViewContentModal';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
+export const Route = createFileRoute('/content-manager/content')({
+    component: RouteComponent,
+    validateSearch: (search: Record<string, unknown>) => ({
+        addFile: search.addFile === 'true' || search.addFile === true,
+    }),
+})
+
 function RouteComponent() {
     const { keycloak } = useKeycloak();
+    const { addFile } = Route.useSearch()
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("title");
     const [refreshKey, setRefreshKey] = useState(0);
@@ -55,15 +47,12 @@ function RouteComponent() {
     };
 
     return (
-        <motion.div
-            layoutId="card-Content"
-            transition={transition}
-            className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative"
-        >
+        <div className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative">
             <ContentDisplay
                 searchQuery={searchQuery}
                 sortBy={sortBy}
                 refreshKey={refreshKey}
+                openNewModal={addFile}
                 onViewContent={(id) => setViewingContentId(id)}
                 onDeleteContent={handleDeleteContent}
                 onSearchChange={setSearchQuery}
@@ -76,11 +65,6 @@ function RouteComponent() {
                 onClose={() => setViewingContentId(null)}
                 onDeleted={() => setRefreshKey((prev) => prev + 1)}
             />
-
-            <motion.div
-                layoutId="icon-Content"
-                transition={transition}
-            />
-        </motion.div>
+        </div>
     )
 }

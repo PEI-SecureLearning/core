@@ -167,7 +167,7 @@ function SidebarLink({
       <span
         className={`truncate transition-[opacity,width] duration-700 ease-in-out whitespace-nowrap ${isCollapsed
           ? "opacity-0 w-0 overflow-hidden"
-          : "opacity-100 delay-150"
+          : "opacity-100 delay-100"
           }`}
       >
         {label}

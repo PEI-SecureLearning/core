@@ -137,7 +137,7 @@ class realm_handler:
             admin_email=admin_email,
         )
 
-        client_scopes = list(template["client_scopes"]) 
+        client_scopes = list(template["client_scopes"])
         default_default_client_scopes = list(template["default_default_client_scopes"])
 
         if features:

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { motion } from 'motion/react'
+
 import { Plus } from 'lucide-react'
 import { PageTitle } from '@/components/content-manager/shared/PageTitle'
 import UniversalFilters, { type GridCols } from '@/components/courses/UniversalFilters'
@@ -11,7 +11,7 @@ export const Route = createFileRoute('/content-manager/modules')({
     component: RouteComponent,
 })
 
-const transition = { type: 'spring' as const, stiffness: 300, damping: 40, mass: 1 }
+
 
 function RouteComponent() {
     const navigate = useNavigate()
@@ -26,11 +26,7 @@ function RouteComponent() {
     }
 
     return (
-        <motion.div
-            layoutId="card-Modules"
-            transition={transition}
-            className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative"
-        >
+        <div className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative">
             <div className="w-full h-auto mb-6 flex flex-col gap-6 relative z-20">
                 <div className="flex flex-row items-center justify-between">
                     <PageTitle title="Modules" />
@@ -66,7 +62,6 @@ function RouteComponent() {
                 <ModuleDisplay search={search} sort={sort} cols={cols} onResultCountChange={setResultCount} />
             </div>
 
-            <motion.div layoutId="icon-Modules" transition={transition} />
-        </motion.div>
+        </div>
     )
 }

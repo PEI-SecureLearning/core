@@ -2,11 +2,34 @@ import { useState, useRef, useCallback } from 'react'
 import { BookOpen, Plus } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { motion, LayoutGroup, AnimatePresence } from 'motion/react'
+import { useKeycloak } from '@react-keycloak/web'
 import { COURSES } from './courseData'
 import type { Course } from './courseData'
-import CourseCard from './CourseCard'
+import CourseCard, { type CardItem } from './CourseCard'
 import CourseFilters from './UniversalFilters'
 import type { GridCols } from './UniversalFilters'
+
+const ELEVATED_ROLES = ['admin', 'org_manager', 'CUSTOM_ORG_ADMIN', 'CONTENT_MANAGER']
+
+function courseToCardItem(course: Course, showProgress: boolean): CardItem {
+    const progress = course.modules.length
+        ? Math.round(course.modules.reduce((sum, m) => sum + m.completion, 0) / course.modules.length)
+        : 0
+    return {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        icon: course.icon,
+        color: course.color,
+        category: course.category,
+        duration: course.duration,
+        unitCount: course.modules.length,
+        unitLabel: 'modules',
+        userCount: course.userCount,
+        progress,
+        showProgress,
+    }
+}
 
 export type { Course }
 
@@ -24,6 +47,10 @@ type CourseListProps = {
 }
 
 export default function CourseList({ showNewCourse = false, basePath = '/courses' }: CourseListProps = {}) {
+    const { keycloak } = useKeycloak()
+    const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? []
+    const isLearner = !ELEVATED_ROLES.some(r => userRoles.includes(r))
+
     const [search, setSearch] = useState('')
     const [difficulty, setDifficulty] = useState('All')
     const [category, setCategory] = useState('All')
@@ -152,7 +179,7 @@ export default function CourseList({ showNewCourse = false, basePath = '/courses
                                         }}
                                         className="rounded-xl cursor-pointer"
                                     >
-                                        <CourseCard course={course} cols={cols} basePath={basePath} />
+                                        <CourseCard item={courseToCardItem(course, isLearner)} cols={cols} basePath={basePath} />
                                     </motion.div>
                                 ))}
                             </AnimatePresence>

@@ -33,6 +33,7 @@ interface ContentDisplayProps {
     searchQuery: string;
     sortBy: string;
     refreshKey: number;
+    openNewModal?: boolean;
     onViewContent: (contentPieceId: string) => void;
     onDeleteContent: (contentPieceId: string) => void;
     onSearchChange: (value: string) => void;
@@ -44,6 +45,7 @@ export function ContentDisplay({
     searchQuery,
     sortBy,
     refreshKey,
+    openNewModal,
     onViewContent,
     onDeleteContent,
     onSearchChange,
@@ -58,6 +60,10 @@ export function ContentDisplay({
     const [creatingFolderIn, setCreatingFolderIn] = useState<string | null>(null);
     const [newFolderName, setNewFolderName] = useState("");
     const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(["content"]));
+
+    useEffect(() => {
+        if (openNewModal) setShowNewModal(true)
+    }, [openNewModal])
 
     useEffect(() => {
         const fetchContent = async () => {
