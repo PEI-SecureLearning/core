@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.models.org_manager_schemas import UserCreateRequest
-from src.core.security import Roles
+from src.core.security import Roles, Resource, Scope
 from src.services.org_manager import get_org_manager_service
 from src.services.org_manager.validation_handler import validate_realm_access
 
@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/{realm}/users", dependencies=[Depends(Roles("org_manager", "view"))]
+    "/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))]
 )
 def list_users(realm: str, token: OAuth2Scheme):
     """List users in the realm using the user's token."""
@@ -27,7 +27,7 @@ def list_users(realm: str, token: OAuth2Scheme):
 
 
 @router.post(
-    "/{realm}/users", dependencies=[Depends(Roles("org_manager", "manage"))]
+    "/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
 )
 def create_user(
     realm: str,
@@ -52,7 +52,7 @@ def create_user(
 @router.delete(
     "/{realm}/users/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 def delete_user(
     realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
@@ -63,7 +63,7 @@ def delete_user(
     return None
 
 
-@router.post("/upload", dependencies=[Depends(Roles("org_manager", "manage"))])
+@router.post("/upload", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
 def upload_user_csv(file: Annotated[UploadFile, File(...)]):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
     reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))

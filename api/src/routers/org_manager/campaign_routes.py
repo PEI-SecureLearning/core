@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.core.security import Roles
+from src.core.security import Roles, Resource, Scope
 from src.models.phishing_kit import PhishingKitDisplayInfo
 from src.services import templates as template_service
 from src.services.campaign import CampaignService
@@ -12,7 +12,7 @@ from src.services.org_manager.validation_handler import validate_realm_access
 router = APIRouter()
 
 
-@router.get("/{realm}/campaigns", dependencies=[Depends(Roles("org_manager", "view"))])
+@router.get("/{realm}/campaigns", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))])
 def list_realm_campaigns(realm: str, session: SessionDep, token: OAuth2Scheme):
     """List campaigns for the specified realm (org manager scope)."""
     validate_realm_access(token, realm)
@@ -23,7 +23,7 @@ def list_realm_campaigns(realm: str, session: SessionDep, token: OAuth2Scheme):
 
 @router.get(
     "/{realm}/campaigns/{campaign_id}",
-    dependencies=[Depends(Roles("org_manager", "view"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))],
     responses={404: {"description": "Campaign not found"}},
 )
 async def get_realm_campaign_detail(
@@ -44,7 +44,7 @@ async def get_realm_campaign_detail(
 @router.delete(
     "/{realm}/campaigns/{campaign_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(Roles("org_manager", "manage"))],
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 def delete_realm_campaign(
     realm: str, campaign_id: int, session: SessionDep, token: OAuth2Scheme

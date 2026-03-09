@@ -1,6 +1,8 @@
 import logging
 import os
 import traceback
+from enum import StrEnum
+
 import jwt
 from jwt import PyJWKClient
 import requests
@@ -15,7 +17,23 @@ oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
 RESOURCE_SERVER_ID = "api"
 
+
+
+class Resource(StrEnum):
+    """Keycloak UMA resource names used in permission checks."""
+    ADMIN           = "admin"
+    ORG_MANAGER     = "org_manager"
+    CONTENT_MANAGER = "content-manager"
+
+
+class Scope(StrEnum):
+    """Keycloak UMA scope names used in permission checks."""
+    VIEW   = "view"
+    MANAGE = "manage"
+
+
 class Roles:
+
     """
     Uses UMA (uma-ticket) to validate permissions in Keycloak.
     """
