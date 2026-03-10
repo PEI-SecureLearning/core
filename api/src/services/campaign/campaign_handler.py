@@ -48,16 +48,16 @@ class CampaignHandler:
         session.flush()
 
         # Link phishing kits (M2M)
-        for kit_id in campaign.phishing_kit_ids:
-            kit = session.get(PhishingKit, kit_id)
-            if kit:
-                new_campaign.phishing_kits.append(kit)
+        self._update_m2m_relationship(
+            session, PhishingKit, new_campaign.phishing_kits, campaign.phishing_kit_ids
+        )
 
-        # Link sending profiles (M2M)
-        for profile_id in campaign.sending_profile_ids:
-            profile = session.get(SendingProfile, profile_id)
-            if profile:
-                new_campaign.sending_profiles.append(profile)
+        self._update_m2m_relationship(
+            session,
+            SendingProfile,
+            new_campaign.sending_profiles,
+            campaign.sending_profile_ids,
+        )
 
         session.flush()
         session.commit()
@@ -133,10 +133,16 @@ class CampaignHandler:
             session, UserGroup, campaign.user_groups, campaign_update.user_group_ids
         )
         self._update_m2m_relationship(
-            session, PhishingKit, campaign.phishing_kits, campaign_update.phishing_kit_ids
+            session,
+            PhishingKit,
+            campaign.phishing_kits,
+            campaign_update.phishing_kit_ids,
         )
         self._update_m2m_relationship(
-            session, SendingProfile, campaign.sending_profiles, campaign_update.sending_profile_ids
+            session,
+            SendingProfile,
+            campaign.sending_profiles,
+            campaign_update.sending_profile_ids,
         )
 
         session.commit()
@@ -173,7 +179,9 @@ class CampaignHandler:
             raise HTTPException(status_code=404, detail="Campaign not found")
         return campaign
 
-    def _update_m2m_relationship(self, session: Session, model_class, collection, item_ids):
+    def _update_m2m_relationship(
+        self, session: Session, model_class, collection, item_ids
+    ):
         """Helper to update many-to-many relationships."""
         if item_ids:
             collection.clear()
