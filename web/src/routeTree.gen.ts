@@ -48,7 +48,6 @@ import { Route as ContentManagerModulesNewRouteImport } from './routes/content-m
 import { Route as ContentManagerModulesModuleIdRouteImport } from './routes/content-manager/modules_.$moduleId'
 import { Route as ContentManagerCoursesNewRouteImport } from './routes/content-manager/courses_.new'
 import { Route as ContentManagerCoursesCourseIdRouteImport } from './routes/content-manager/courses_.$courseId'
-import { Route as ContentManagerContentNewRouteImport } from './routes/content-manager/content_.new'
 import { Route as ContentManagerContentContentPieceIdRouteImport } from './routes/content-manager/content.$contentPieceId'
 import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
 import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
@@ -253,12 +252,6 @@ const ContentManagerCoursesCourseIdRoute =
     path: '/content-manager/courses/$courseId',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ContentManagerContentNewRoute =
-  ContentManagerContentNewRouteImport.update({
-    id: '/content-manager/content_/new',
-    path: '/content-manager/content/new',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ContentManagerContentContentPieceIdRoute =
   ContentManagerContentContentPieceIdRouteImport.update({
     id: '/$contentPieceId',
@@ -319,7 +312,6 @@ export interface FileRoutesByFullPath {
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
-  '/content-manager/content/new': typeof ContentManagerContentNewRoute
   '/content-manager/courses/$courseId': typeof ContentManagerCoursesCourseIdRoute
   '/content-manager/courses/new': typeof ContentManagerCoursesNewRoute
   '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
@@ -363,7 +355,6 @@ export interface FileRoutesByTo {
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
-  '/content-manager/content/new': typeof ContentManagerContentNewRoute
   '/content-manager/courses/$courseId': typeof ContentManagerCoursesCourseIdRoute
   '/content-manager/courses/new': typeof ContentManagerCoursesNewRoute
   '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
@@ -410,7 +401,6 @@ export interface FileRoutesById {
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
-  '/content-manager/content_/new': typeof ContentManagerContentNewRoute
   '/content-manager/courses_/$courseId': typeof ContentManagerCoursesCourseIdRoute
   '/content-manager/courses_/new': typeof ContentManagerCoursesNewRoute
   '/content-manager/modules_/$moduleId': typeof ContentManagerModulesModuleIdRoute
@@ -458,7 +448,6 @@ export interface FileRouteTypes {
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/content-manager/content/$contentPieceId'
-    | '/content-manager/content/new'
     | '/content-manager/courses/$courseId'
     | '/content-manager/courses/new'
     | '/content-manager/modules/$moduleId'
@@ -502,7 +491,6 @@ export interface FileRouteTypes {
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/content-manager/content/$contentPieceId'
-    | '/content-manager/content/new'
     | '/content-manager/courses/$courseId'
     | '/content-manager/courses/new'
     | '/content-manager/modules/$moduleId'
@@ -548,7 +536,6 @@ export interface FileRouteTypes {
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/content-manager/content/$contentPieceId'
-    | '/content-manager/content_/new'
     | '/content-manager/courses_/$courseId'
     | '/content-manager/courses_/new'
     | '/content-manager/modules_/$moduleId'
@@ -589,7 +576,6 @@ export interface RootRouteChildren {
   SendingProfilesIndexRoute: typeof SendingProfilesIndexRoute
   TenantsIndexRoute: typeof TenantsIndexRoute
   UsergroupsIndexRoute: typeof UsergroupsIndexRoute
-  ContentManagerContentNewRoute: typeof ContentManagerContentNewRoute
   ContentManagerCoursesCourseIdRoute: typeof ContentManagerCoursesCourseIdRoute
   ContentManagerCoursesNewRoute: typeof ContentManagerCoursesNewRoute
   ContentManagerModulesModuleIdRoute: typeof ContentManagerModulesModuleIdRoute
@@ -871,13 +857,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentManagerCoursesCourseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/content-manager/content_/new': {
-      id: '/content-manager/content_/new'
-      path: '/content-manager/content/new'
-      fullPath: '/content-manager/content/new'
-      preLoaderRoute: typeof ContentManagerContentNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/content-manager/content/$contentPieceId': {
       id: '/content-manager/content/$contentPieceId'
       path: '/$contentPieceId'
@@ -988,7 +967,6 @@ const rootRouteChildren: RootRouteChildren = {
   SendingProfilesIndexRoute: SendingProfilesIndexRoute,
   TenantsIndexRoute: TenantsIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,
-  ContentManagerContentNewRoute: ContentManagerContentNewRoute,
   ContentManagerCoursesCourseIdRoute: ContentManagerCoursesCourseIdRoute,
   ContentManagerCoursesNewRoute: ContentManagerCoursesNewRoute,
   ContentManagerModulesModuleIdRoute: ContentManagerModulesModuleIdRoute,
