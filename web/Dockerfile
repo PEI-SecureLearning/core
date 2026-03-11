@@ -34,5 +34,5 @@ COPY --from=builder /app/dist ./dist
 
 EXPOSE 80
 
-# Serve static files only. Nginx handles SPA route fallback.
-CMD ["serve", "dist", "-l", "80"]
+# Serve with SPA fallback.
+CMD ["serve", "-s", "dist", "-l", "80"]
