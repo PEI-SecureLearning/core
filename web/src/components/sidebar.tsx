@@ -261,13 +261,13 @@ export function Sidebar() {
       {/* Footer - Report Problem */}
       <div className="px-2 lg:px-1 py-1 border-t border-gray-200">
         <SidebarLink
-          href="/report"
+          href={isAdminRoute ? "/admin/report" : isContentManagerRoute ? "/content-manager/report" : "/report"}
           label="Report a problem"
           icon={AlertCircle}
           isCollapsed={!shouldShowContent}
         />
         <SidebarLink
-          href="/help"
+          href={isAdminRoute ? "/admin/help" : isContentManagerRoute ? "/content-manager/help" : "/help"}
           label="Help"
           icon={CircleQuestionMark}
           isCollapsed={!shouldShowContent}

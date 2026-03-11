@@ -2,6 +2,7 @@ import { Navbar } from "@/components/navbar";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "@/components/sidebar";
 import ComplianceFlow from "@/components/compliance";
+import { NotFound } from "@/components/NotFound";
 
 const RootLayout = () => {
   return (
@@ -18,4 +19,4 @@ const RootLayout = () => {
   );
 };
 
-export const Route = createRootRoute({ component: RootLayout });
+export const Route = createRootRoute({ component: RootLayout, notFoundComponent: NotFound });
