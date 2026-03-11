@@ -37,4 +37,4 @@ jobs:
           DOCKER_BUILDKIT: 1
         run: |
           docker compose --env-file deployment/.env -f deployment/docker-compose.yml down --remove-orphans
-          docker compose --env-file deployment/.env -f deployment/docker-compose.yml up -d --build
+          docker compose --env-file deployment/.env -f deployment/docker-compose.yml up -d
