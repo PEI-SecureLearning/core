@@ -5,10 +5,12 @@ WORKDIR /app
 # Accept build arguments for Vite environment variables
 ARG VITE_API_URL
 ARG VITE_KEYCLOAK_URL
+ARG VITE_BASE_PATH
 
 # Set them as environment variables for the build process
-ENV VITE_API_URL=$VITE_API_URL/api
+ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
 
 COPY package*.json ./
 RUN npm config set registry https://registry.npmjs.org/ \

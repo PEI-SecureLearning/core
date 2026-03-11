@@ -9,6 +9,9 @@ import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
 
+const stripBasePath = (pathname: string) =>
+  pathname.replace(/^\/app(?=\/|$)/, '') || '/'
+
 const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
 
 const initOptions: Keycloak.KeycloakInitOptions = {
@@ -19,7 +22,7 @@ const initOptions: Keycloak.KeycloakInitOptions = {
 };
 
 // Create a new router instance
-const router = createRouter({ routeTree })
+const router = createRouter({ routeTree, basepath: '/app' })
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -98,7 +101,8 @@ const App = () => {
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const isAdminRoute = window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/content-manager");
+  const appPath = stripBasePath(window.location.pathname)
+  const isAdminRoute = appPath.startsWith("/admin") || appPath.startsWith("/content-manager");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 

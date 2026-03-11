@@ -1,6 +1,7 @@
 import Keycloak from 'keycloak-js'
 
-const isAdminRoute = window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/content-manager");
+const appPath = window.location.pathname.replace(/^\/app(?=\/|$)/, '') || '/'
+const isAdminRoute = appPath.startsWith("/admin") || appPath.startsWith("/content-manager");
 
 const realm = isAdminRoute ? 'platform' : await resolveRealm();
 const clientId = isAdminRoute ? 'react-admin' : 'react-app';
