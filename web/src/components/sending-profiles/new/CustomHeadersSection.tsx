@@ -69,7 +69,7 @@ function CustomHeadersSection({ headers, onAddHeader, onRemoveHeader }: Props) {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="X-Priority"
-            className="liquid-glass-input w-full px-3 py-2 text-sm"
+            className="liquid-glass-input text-gray-800 w-full px-3 py-2 text-sm"
           />
         </div>
         <div className="flex-1 w-full">
@@ -79,7 +79,7 @@ function CustomHeadersSection({ headers, onAddHeader, onRemoveHeader }: Props) {
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
             placeholder="1"
-            className="liquid-glass-input w-full px-3 py-2 text-sm"
+            className="liquid-glass-input text-gray-800 w-full px-3 py-2 text-sm"
           />
         </div>
         <button

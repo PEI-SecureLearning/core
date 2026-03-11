@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type ComponentType } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
-import EmailTemplatePicker from "@/components/campaigns/new-campaign/EmailTemplatePicker";
+import SendingProfilePicker from "@/components/campaigns/new-campaign/SendingProfilePicker";
 import LandingPageTemplatePicker from "@/components/campaigns/new-campaign/LandingPageTemplatePicker";
 import TargetGroupSelector from "@/components/campaigns/new-campaign/TargetGroupSelector";
 import CampaignScheduler from "@/components/campaigns/new-campaign/CampaignScheduler";
@@ -34,16 +34,19 @@ function CampaignStepper() {
   const { keycloak } = useKeycloak();
   const navigate = useNavigate();
 
+  // Step 2 shows a warning when no sending profiles are selected
+  const stepWarnings = data.sending_profile_ids.length === 0 ? [2] : [];
+
   const steps: StepConfig[] = [
     { name: "forms", label: "Basic Info", component: CampaignForms },
     {
-      name: "email-template",
-      label: "Email Template",
-      component: EmailTemplatePicker,
+      name: "sending-profiles",
+      label: "Sending Profiles",
+      component: SendingProfilePicker,
     },
     {
-      name: "page-template",
-      label: "Landing Page",
+      name: "phishing-kits",
+      label: "Phishing Kits",
       component: LandingPageTemplatePicker,
     },
     {
@@ -67,11 +70,7 @@ function CampaignStepper() {
           return false;
         }
         return true;
-      case 2: // Email Template
-        if (!data.email_template_id && !data.email_template) {
-          toast.error("Please select an email template.");
-          return false;
-        }
+      case 2: // Sending Profiles (not mandatory)
         return true;
       case 3: // Landing Page
         if (!data.landing_page_template_id && !data.landing_page_template) {
@@ -97,7 +96,7 @@ function CampaignStepper() {
       toast.error(
         errors.length
           ? errors.join(" ")
-          : "Campaign data is incomplete. Please fill in all required fields."
+          : "Campaign data is incomplete. Please fill in all required fields.",
       );
       return false;
     }
@@ -129,7 +128,7 @@ function CampaignStepper() {
     } catch (error) {
       console.error("Failed to create campaign:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create campaign"
+        error instanceof Error ? error.message : "Failed to create campaign",
       );
       return false;
     }
@@ -144,6 +143,7 @@ function CampaignStepper() {
       backButtonText="Previous"
       nextButtonText="Next"
       stepLabels={steps.map((s) => s.label)}
+      stepWarnings={stepWarnings}
     >
       {steps.map((s, i) => (
         <Step key={i}>

@@ -7,7 +7,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Minus } from "lucide-react";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -25,6 +25,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   nextButtonText?: string;
   disableStepIndicators?: boolean;
   stepLabels?: string[];
+  stepWarnings?: number[];
   renderStepIndicator?: (props: {
     step: number;
     currentStep: number;
@@ -48,6 +49,7 @@ export default function Stepper({
   nextButtonText = "Continue",
   disableStepIndicators = false,
   stepLabels = [],
+  stepWarnings = [],
   renderStepIndicator,
 }: StepperProps) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
@@ -159,10 +161,14 @@ export default function Stepper({
                     disableStepIndicators={disableStepIndicators}
                     currentStep={currentStep}
                     onClickStep={handleStepClick}
+                    isWarning={stepWarnings.includes(stepNumber)}
                   />
                 )}
                 {isNotLastStep && (
-                  <StepConnector isComplete={currentStep > stepNumber} />
+                  <StepConnector
+                    isComplete={currentStep > stepNumber}
+                    isWarning={currentStep > stepNumber && stepWarnings.includes(stepNumber)}
+                  />
                 )}
               </React.Fragment>
             );
@@ -328,6 +334,7 @@ interface StepIndicatorProps {
   label: string;
   onClickStep: (clicked: number) => void;
   disableStepIndicators?: boolean;
+  isWarning?: boolean;
 }
 
 function StepIndicator({
@@ -336,13 +343,17 @@ function StepIndicator({
   label,
   onClickStep,
   disableStepIndicators = false,
+  isWarning = false,
 }: StepIndicatorProps) {
-  const status =
+  const baseStatus =
     currentStep === step
       ? "active"
       : currentStep < step
         ? "inactive"
         : "complete";
+
+  // Override complete → warning when the step has no required data
+  const status = baseStatus === "complete" && isWarning ? "warning" : baseStatus;
 
   const handleClick = () => {
     if (step !== currentStep && !disableStepIndicators) {
@@ -374,12 +385,19 @@ function StepIndicator({
             backgroundColor: "rgba(34, 197, 94, 1)",
             borderColor: "rgba(34, 197, 94, 0.3)"
           },
+          warning: {
+            scale: 1,
+            backgroundColor: "rgba(234, 179, 8, 1)",
+            borderColor: "rgba(234, 179, 8, 0.3)"
+          },
         }}
         transition={{ duration: 0.2 }}
         className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2"
         style={{ boxShadow: status === 'active' ? '0 4px 14px rgba(147, 51, 234, 0.3)' : 'none' }}
       >
-        {status === "complete" ? (
+        {status === "warning" ? (
+          <Minus className="h-5 w-5 text-white" strokeWidth={3} />
+        ) : status === "complete" ? (
           <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
         ) : status === "active" ? (
           <span className="text-white">{step}</span>
@@ -393,6 +411,7 @@ function StepIndicator({
           inactive: { color: "rgb(148, 163, 184)" },
           active: { color: "rgb(147, 51, 234)" },
           complete: { color: "rgb(34, 197, 94)" },
+          warning: { color: "rgb(161, 98, 7)" },
         }}
       >
         {label}
@@ -403,9 +422,14 @@ function StepIndicator({
 
 interface StepConnectorProps {
   isComplete: boolean;
+  isWarning?: boolean;
 }
 
-function StepConnector({ isComplete }: StepConnectorProps) {
+function StepConnector({ isComplete, isWarning = false }: StepConnectorProps) {
+  const color = isWarning
+    ? "rgb(234, 179, 8)"
+    : "rgb(34, 197, 94)";
+
   return (
     <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200/60">
       <motion.div
@@ -413,7 +437,7 @@ function StepConnector({ isComplete }: StepConnectorProps) {
         initial={false}
         animate={{
           width: isComplete ? "100%" : "0%",
-          backgroundColor: isComplete ? "rgb(34, 197, 94)" : "transparent"
+          backgroundColor: isComplete ? color : "transparent"
         }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       />
