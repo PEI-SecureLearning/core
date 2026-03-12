@@ -15,7 +15,8 @@ from src.routers import (
     tracking,
     content,
     templates,
-    sending_profile
+    sending_profile,
+    modules,
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
@@ -71,3 +72,4 @@ app.include_router(tracking.router, prefix="/api", tags=["tracking"])
 app.include_router(content.router, prefix="/api", tags=["content"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
 app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])
+app.include_router(modules.router, prefix="/api", tags=["modules"])

@@ -34,7 +34,7 @@ include = ["src*"]
 [tool.pytest.ini_options]
 testpaths = ["test"]
 pythonpath = [".", "src"]
-addopts = "--cov=src --cov-report=html"
+addopts = "--cov=src --cov-report=html --cov-report=xml"
 
 [tool.coverage.run]
 source = ["src"]

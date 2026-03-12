@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useKeycloak } from '@react-keycloak/web'
-import { ModuleCreationForm } from '@/components/content-manager/ModuleCreationForm'
+import { ModuleCreationForm } from '@/components/content-manager/modules/ModuleCreationForm'
 
 export const Route = createFileRoute('/content-manager/modules_/new')({
     component: RouteComponent,
@@ -12,9 +12,9 @@ function RouteComponent() {
 
     return (
         <ModuleCreationForm
-            token={keycloak.token}
-            onSuccess={() => navigate({ to: '/content-manager/modules' })}
-            onBack={() => navigate({ to: '/content-manager/modules' })}
+            getToken={() => keycloak.token}
+            onSuccess={() => navigate({ to: '/content-manager/modules' as never })}
+            onBack={() => navigate({ to: '/content-manager/modules' as never })}
         />
     )
 }

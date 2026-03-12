@@ -1,19 +1,39 @@
-const API_URL = import.meta.env.VITE_API_URL;
+/**
+ * modulesApi.ts
+ *
+ * Typed client for the Learning-Module REST API.
+ *
+ * All snake_case field names mirror the Python/MongoDB document shape
+ * exactly so that the JSON can be sent and received without any
+ * key-mapping on the frontend side.
+ *
+ * Endpoint map
+ * ─────────────────────────────────────────────────────────────────────
+ *  GET    /api/modules                    → PaginatedModules
+ *  GET    /api/modules/:id                → Module
+ *  POST   /api/modules                    → Module          (201)
+ *  PUT    /api/modules/:id                → Module
+ *  PATCH  /api/modules/:id                → Module
+ *  POST   /api/modules/:id/publish        → Module
+ *  POST   /api/modules/:id/archive        → Module
+ *  DELETE /api/modules/:id                → void            (204)
+ */
 
-/* ─────────────────────────────────────────────────────────
-   Primitive types (mirror the backend enums / literals)
-───────────────────────────────────────────────────────── */
+const API_URL = import.meta.env.VITE_API_URL as string;
+
+// ── Primitive enums ────────────────────────────────────────────────────────────
+
+export type ModuleStatus  = 'draft' | 'published' | 'archived';
 export type Difficulty    = 'Easy' | 'Medium' | 'Hard';
 export type QuestionType  = 'multiple_choice' | 'true_false' | 'short_answer';
 export type RichMediaType = 'image' | 'video' | 'audio' | 'file';
-export type ModuleStatus  = 'draft' | 'published' | 'archived';
 
-/* ─────────────────────────────────────────────────────────
-   Block types (stored as structured BSON — no JSON strings)
-───────────────────────────────────────────────────────── */
+// ── Choice + Question ──────────────────────────────────────────────────────────
+
 export interface ModuleChoice {
   id:         string;
   text:       string;
+  /** Renamed from camelCase `isCorrect` — matches the DB/API field name. */
   is_correct: boolean;
 }
 
@@ -22,8 +42,11 @@ export interface ModuleQuestion {
   type:    QuestionType;
   text:    string;
   choices: ModuleChoice[];
+  /** Free-text expected answer for `short_answer` questions. */
   answer:  string;
 }
+
+// ── Block types (discriminated on `kind`) ──────────────────────────────────────
 
 export interface ModuleTextBlock {
   id:      string;
@@ -48,122 +71,213 @@ export interface ModuleQuestionBlock {
   question: ModuleQuestion;
 }
 
-export type ModuleBlock = ModuleTextBlock | ModuleRichContentBlock | ModuleQuestionBlock;
+export type ModuleBlock =
+  | ModuleTextBlock
+  | ModuleRichContentBlock
+  | ModuleQuestionBlock;
 
-/* ─────────────────────────────────────────────────────────
-   Section
-───────────────────────────────────────────────────────── */
+// ── Section ────────────────────────────────────────────────────────────────────
+
 export interface ModuleSection {
   id:                      string;
   title:                   string;
+  /** Position in the sections array; set from array index before every save. */
   order:                   number;
-  collapsed:               boolean;   // always false when sent — UI-only flag is stripped
+  /** UI-only hint; always sent as `false` to the API. */
+  collapsed:               boolean;
   require_correct_answers: boolean;
   is_optional:             boolean;
+  /** Minimum number of seconds the learner must spend on this section. */
   min_time_spent:          number;
   blocks:                  ModuleBlock[];
 }
 
-/* ─────────────────────────────────────────────────────────
-   Module payloads
-───────────────────────────────────────────────────────── */
+// ── Module payloads ────────────────────────────────────────────────────────────
 
-/** Sent on POST /modules (create) */
+/**
+ * Body sent on POST /modules.
+ * Every writable field is required (no id / status / timestamps).
+ */
 export interface CreateModulePayload {
-  title:          string;
-  category:       string;
-  description:    string;
-  cover_image?:   string;
-  estimated_time: string;
-  difficulty:     Difficulty;
-  sections:       ModuleSection[];
+  title:              string;
+  category:           string;
+  description:        string;
+  cover_image?:       string | null;   // null = explicitly clear; undefined = omit from PATCH
+  estimated_time:     string;
+  difficulty:         Difficulty;
+  has_refresh_module: boolean;
+  sections:           ModuleSection[];
+  refresh_sections:   ModuleSection[];
 }
 
-/** Sent on PATCH /modules/{id} — every field is optional */
+/**
+ * Body sent on PUT /modules/:id — same shape as create.
+ * Use this for an explicit "Save" action.
+ */
+export type UpdateModulePayload = CreateModulePayload;
+
+/**
+ * Body sent on PATCH /modules/:id — every field is optional.
+ * Use this for the debounced auto-save; only send what changed.
+ */
 export type PatchModulePayload = Partial<CreateModulePayload> & {
   status?: ModuleStatus;
 };
 
-/** What the backend returns */
+/**
+ * Full module document returned by the API.
+ */
 export interface Module extends CreateModulePayload {
-  id:          string;          // MongoDB ObjectId as string
+  id:          string;          // MongoDB ObjectId as hex string
   status:      ModuleStatus;
-  version:     number;
+  version:     number;          // incremented on every write (optimistic concurrency)
   realm?:      string;
   created_by?: string;
-  created_at:  string;
-  updated_at:  string;
+  created_at:  string;          // ISO-8601 UTC
+  updated_at:  string;          // ISO-8601 UTC
 }
 
-/* ─────────────────────────────────────────────────────────
-   Helpers
-───────────────────────────────────────────────────────── */
+// ── Paginated list response ────────────────────────────────────────────────────
+
+export interface PaginatedModules {
+  items: Module[];
+  total: number;
+  page:  number;
+  limit: number;
+  pages: number;
+}
+
+// ── Internal helpers ───────────────────────────────────────────────────────────
+
 function authHeaders(token?: string): HeadersInit {
-  const headers: HeadersInit = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  return headers;
+  const h: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) h['Authorization'] = `Bearer ${token}`;
+  return h;
 }
 
 async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    throw new Error(detail || `HTTP ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+  if (res.status === 204) return undefined as unknown as T;
+  if (res.ok) return res.json() as Promise<T>;
+  const detail = await res.text().catch(() => '');
+  throw new Error(detail || `HTTP ${res.status}`);
 }
 
-/* ─────────────────────────────────────────────────────────
-   API functions
-───────────────────────────────────────────────────────── */
+// ── API functions ──────────────────────────────────────────────────────────────
 
-export async function fetchModules(token?: string): Promise<Module[]> {
-  const res = await fetch(`${API_URL}/modules`, { headers: authHeaders(token) });
-  return handleResponse<Module[]>(res);
+/**
+ * Fetch a paginated list of modules.
+ * Sections / blocks are NOT included in list results — fetch by id for full data.
+ */
+export async function fetchModules(options?: {
+  status?:  ModuleStatus;
+  search?:  string;
+  sort?:    'title_asc' | 'title_desc' | 'newest' | 'oldest';
+  page?:    number;
+  limit?:   number;
+  token?:   string;
+}): Promise<PaginatedModules> {
+  const { status, search, sort, page = 1, limit = 20, token } = options ?? {};
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (status) params.set('status', status);
+  if (search)  params.set('search', search);
+  if (sort)    params.set('sort', sort);
+
+  const res = await fetch(`${API_URL}/modules?${params}`, {
+    headers: authHeaders(token),
+  });
+  return handleResponse<PaginatedModules>(res);
 }
 
+/**
+ * Fetch the full module document (sections + blocks included).
+ */
 export async function fetchModule(id: string, token?: string): Promise<Module> {
-  const res = await fetch(`${API_URL}/modules/${id}`, { headers: authHeaders(token) });
+  const res = await fetch(`${API_URL}/modules/${id}`, {
+    headers: authHeaders(token),
+  });
   return handleResponse<Module>(res);
 }
 
+/**
+ * Create a new draft module.
+ * Returns the persisted document with its generated `id`.
+ */
 export async function createModule(
   payload: CreateModulePayload,
-  token?: string,
+  token?:  string,
 ): Promise<Module> {
   const res = await fetch(`${API_URL}/modules`, {
-    method: 'POST',
+    method:  'POST',
     headers: authHeaders(token),
-    body: JSON.stringify(payload),
+    body:    JSON.stringify(payload),
   });
   return handleResponse<Module>(res);
 }
 
-/** Incremental save — used by the auto-save debounce hook */
-export async function patchModule(
-  id: string,
-  payload: PatchModulePayload,
-  token?: string,
+/**
+ * Full replacement save (PUT).
+ * Replaces all editable fields and bumps the version counter.
+ */
+export async function updateModule(
+  id:      string,
+  payload: UpdateModulePayload,
+  token?:  string,
 ): Promise<Module> {
   const res = await fetch(`${API_URL}/modules/${id}`, {
-    method: 'PATCH',
+    method:  'PUT',
     headers: authHeaders(token),
-    body: JSON.stringify(payload),
+    body:    JSON.stringify(payload),
   });
   return handleResponse<Module>(res);
 }
 
+/**
+ * Partial update (PATCH) — used by the auto-save debounce.
+ * Only the fields present in `payload` are written; everything else stays.
+ */
+export async function patchModule(
+  id:      string,
+  payload: PatchModulePayload,
+  token?:  string,
+): Promise<Module> {
+  const res = await fetch(`${API_URL}/modules/${id}`, {
+    method:  'PATCH',
+    headers: authHeaders(token),
+    body:    JSON.stringify(payload),
+  });
+  return handleResponse<Module>(res);
+}
+
+/**
+ * Transition a module from draft → published.
+ */
 export async function publishModule(id: string, token?: string): Promise<Module> {
   const res = await fetch(`${API_URL}/modules/${id}/publish`, {
-    method: 'POST',
+    method:  'POST',
     headers: authHeaders(token),
   });
   return handleResponse<Module>(res);
 }
 
-export async function deleteModule(id: string, token?: string): Promise<void> {
-  const res = await fetch(`${API_URL}/modules/${id}`, {
-    method: 'DELETE',
+/**
+ * Transition a module to archived status.
+ */
+export async function archiveModule(id: string, token?: string): Promise<Module> {
+  const res = await fetch(`${API_URL}/modules/${id}/archive`, {
+    method:  'POST',
     headers: authHeaders(token),
   });
-  if (!res.ok) throw new Error(`Failed to delete module ${id}`);
+  return handleResponse<Module>(res);
+}
+
+/**
+ * Hard-delete a draft or archived module.
+ * The API rejects attempts to delete published modules (returns 409).
+ */
+export async function deleteModule(id: string, token?: string): Promise<void> {
+  const res = await fetch(`${API_URL}/modules/${id}`, {
+    method:  'DELETE',
+    headers: authHeaders(token),
+  });
+  return handleResponse<void>(res);
 }

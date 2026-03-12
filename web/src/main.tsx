@@ -36,6 +36,7 @@ declare module '@tanstack/react-router' {
 import { useState, useEffect } from 'react'
 import { ServiceUnavailable } from './components/ServiceUnavailable'
 import ErrorBoundary from './components/ErrorBoundary'
+import { AppLoader } from './components/AppLoader'
 
 const App = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -83,20 +84,21 @@ const App = () => {
     return <ServiceUnavailable error={errorMessage} />
   }
 
-  if (isLoading) {
-    return null // Or a minimal loading spinner
-  }
-
   return (
-    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
-      <ErrorBoundary>
-        <StrictMode>
-          <Providers>
-            <RouterProvider router={router} />
-          </Providers>
-        </StrictMode>
-      </ErrorBoundary>
-    </ReactKeycloakProvider>
+    <>
+      <AppLoader visible={isLoading} label="Connecting to SecureLearning…" />
+      {!isLoading && (
+        <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
+          <ErrorBoundary>
+            <StrictMode>
+              <Providers>
+                <RouterProvider router={router} />
+              </Providers>
+            </StrictMode>
+          </ErrorBoundary>
+        </ReactKeycloakProvider>
+      )}
+    </>
   )
 }
 

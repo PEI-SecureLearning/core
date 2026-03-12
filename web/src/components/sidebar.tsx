@@ -12,8 +12,8 @@ import {
   Settings,
   AlertCircle,
   CircleQuestionMark,
-  ChevronLeft,
-  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   Building2,
   ScrollText,
   ShieldCheck,
@@ -136,6 +136,12 @@ const contentManagerLinks: SidebarLinkProps[] = [
     icon: FileStack,
     roles: ["CONTENT_MANAGER"],
   },
+  {
+    href: "/content-manager/templates",
+    label: "Templates",
+    icon: FileText,
+    roles: ["CONTENT_MANAGER"],
+  },
 ];
 
 function SidebarLink({
@@ -162,7 +168,7 @@ function SidebarLink({
       <span
         className={`truncate transition-[opacity,width] duration-700 ease-in-out whitespace-nowrap ${isCollapsed
           ? "opacity-0 w-0 overflow-hidden"
-          : "opacity-100 delay-150"
+          : "opacity-100 delay-100"
           }`}
       >
         {label}
@@ -235,9 +241,9 @@ export function Sidebar() {
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 transition-transform duration-300" />
+            <PanelLeftOpen className="h-4 w-4 transition-transform duration-300" />
           ) : (
-            <ChevronLeft className="h-4 w-4 transition-transform duration-300" />
+            <PanelLeftClose className="h-4 w-4 transition-transform duration-300" />
           )}
         </button>
       </div>

@@ -10,6 +10,7 @@ import { TemplatePreviewModal } from "@/components/templates/TemplatePreviewModa
 import { LoadingGrid } from "@/components/templates/LoadingGrid";
 import { EmptyState } from "@/components/templates/EmptyState";
 import { initialTemplateForm } from "@/components/templates/types";
+import { useKeycloak } from "@react-keycloak/web";
 import type { Template } from "@/components/templates/types";
 
 const stripHtml = (html: string) =>
@@ -34,7 +35,9 @@ export default function TemplatesPage() {
   const [form, setForm] = useState(initialTemplateForm);
 
   const templates = data ?? [];
-
+  const { keycloak } = useKeycloak();
+  const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? [];
+  const isContentManager = userRoles.includes('CONTENT_MANAGER');
   const grouped = useMemo(() => {
     return templates.reduce<Record<string, Template[]>>((acc, t) => {
       if (!acc[t.path]) acc[t.path] = [];
@@ -124,10 +127,14 @@ export default function TemplatesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="inline-flex items-center gap-2" onClick={openCreateModal}>
-            <Plus size={16} />
-            Add template
-          </Button>
+          {/* 2. Conditionally show "Add template" button */}
+          {isContentManager && (
+            <Button className="inline-flex items-center gap-2 bg-purple-700 hover:bg-purple-600 transition-colors" onClick={openCreateModal}>
+              <Plus size={16} />
+              Add template
+            </Button>
+          )}
+
           <Button
             variant="outline"
             onClick={() => refetch()}
@@ -142,7 +149,8 @@ export default function TemplatesPage() {
 
       {isLoading && <LoadingGrid />}
 
-      {showForm && (
+      {/* 3. Protect the Form Modal (prevent manual state triggering) */}
+      {showForm && isContentManager && (
         <TemplateFormModal
           showForm={showForm}
           editingTemplate={editingTemplate}
@@ -175,8 +183,11 @@ export default function TemplatesPage() {
                           key={template.id}
                           template={template}
                           onPreview={() => setPreviewId(template.id)}
-                          onEdit={() => openEditModal(template)}
-                          onDelete={() => deleteTemplate.mutate(template.id)}
+
+                          /* 4. Pass null or hide actions if not a manager */
+                          onEdit={isContentManager ? () => openEditModal(template) : undefined}
+                          onDelete={isContentManager ? () => deleteTemplate.mutate(template.id) : undefined}
+
                           deleting={deleteTemplate.isPending}
                           excerpt={stripHtml(template.html).slice(0, 140)}
                         />

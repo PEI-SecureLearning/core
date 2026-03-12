@@ -16,40 +16,40 @@ export function TenantFormOrganization({
     adminEmail, setAdminEmail
 }: TenantFormOrganizationProps) {
     return (
-        <div className="space-y-6">
-            <div className="min-h-[5rem]">
-                <Label htmlFor="org-name" className="text-gray-700 block mb-2">Organization name<span className="text-red-500">*</span></Label>
+        <div className="flex-1 space-y-4">
+            <div>
+                <Label htmlFor="org-name" className="text-gray-700 block mb-1.5 text-xs font-semibold">Organization name<span className="text-red-500">*</span></Label>
                 <Input
                     id="org-name"
-                    placeholder="Enter organization name"
+                    placeholder="Enter name"
                     value={realmName}
                     onChange={(e) => setRealmName(e.target.value)}
-                    className="h-12 bg-gray-50 border-gray-200"
+                    className="h-10 bg-gray-50 border-gray-200"
                     required
                 />
             </div>
 
-            <div className="min-h-[5rem]">
-                <Label htmlFor="domain" className="text-gray-700 block mb-2">Tenant domain/email pattern<span className="text-red-500">*</span></Label>
+            <div>
+                <Label htmlFor="domain" className="text-gray-700 block mb-1.5 text-xs font-semibold">Domain pattern<span className="text-red-500">*</span></Label>
                 <Input
                     id="domain"
                     placeholder="company.com"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
-                    className="h-12 bg-gray-50 border-gray-200"
+                    className="h-10 bg-gray-50 border-gray-200"
                     required
                 />
             </div>
 
-            <div className="min-h-[5rem]">
-                <Label htmlFor="admin-email" className="text-gray-700 block mb-2">Admin email<span className="text-red-500">*</span></Label>
+            <div>
+                <Label htmlFor="admin-email" className="text-gray-700 block mb-1.5 text-xs font-semibold">Admin email<span className="text-red-500">*</span></Label>
                 <Input
                     id="admin-email"
                     placeholder="admin@company.com"
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="h-12 bg-gray-50 border-gray-200"
+                    className="h-10 bg-gray-50 border-gray-200"
                     required
                 />
             </div>

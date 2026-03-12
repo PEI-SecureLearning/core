@@ -1,4 +1,5 @@
-import { BookOpen, Clock, CheckCircle2, Clock3, Circle } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { BookOpen, Clock, CheckCircle2, Clock3, Circle, ArrowRight } from 'lucide-react'
 import type { CourseModule } from './courseData'
 
 // ─── status helpers ──────────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ type StatusMeta = {
     iconBg: string
     icon: React.ReactNode
     barColor: string
+    cta: string
 }
 
 function statusMeta(mod: CourseModule): StatusMeta {
@@ -25,6 +27,7 @@ function statusMeta(mod: CourseModule): StatusMeta {
             iconBg: 'bg-emerald-500',
             icon: <CheckCircle2 size={22} className="text-white" />,
             barColor: 'bg-emerald-500',
+            cta: 'Review',
         }
     }
     if (mod.status === 'in-progress') {
@@ -34,6 +37,7 @@ function statusMeta(mod: CourseModule): StatusMeta {
             iconBg: 'bg-amber-400',
             icon: <Clock3 size={22} className="text-white" />,
             barColor: 'bg-purple-500',
+            cta: 'Continue',
         }
     }
     return {
@@ -42,6 +46,7 @@ function statusMeta(mod: CourseModule): StatusMeta {
         iconBg: 'bg-gray-200',
         icon: <Circle size={22} className="text-gray-400" />,
         barColor: 'bg-gray-200',
+        cta: 'Start',
     }
 }
 
@@ -49,13 +54,14 @@ function statusMeta(mod: CourseModule): StatusMeta {
 
 type ModuleCardProps = {
     module: CourseModule
+    courseId?: string
 }
 
-export default function ModuleCard({ module: mod }: ModuleCardProps) {
+export default function ModuleCard({ module: mod, courseId }: ModuleCardProps) {
     const meta = statusMeta(mod)
 
-    return (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200">
+    const content = (
+        <>
             {/* Status icon */}
             <div className={`flex-shrink-0 w-10 h-10 rounded-full ${meta.iconBg} flex items-center justify-center mt-0.5`}>
                 {meta.icon}
@@ -63,10 +69,13 @@ export default function ModuleCard({ module: mod }: ModuleCardProps) {
 
             {/* Module content */}
             <div className="flex-1 min-w-0 space-y-2">
-                {/* Status + difficulty */}
+                {/* Title + Status + difficulty */}
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className={`text-sm font-semibold ${meta.labelColor}`}>
-                        {meta.label}
+                    <h3 className="text-sm font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+                        {mod.title}
+                    </h3>
+                    <span className={`text-xs font-semibold ${meta.labelColor}`}>
+                        · {meta.label}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${moduleDifficultyBadge[mod.difficulty]}`}>
                         {mod.difficulty}
@@ -91,6 +100,13 @@ export default function ModuleCard({ module: mod }: ModuleCardProps) {
                         <Clock size={12} />
                         {mod.hours}
                     </span>
+
+                    {/* CTA */}
+                    {courseId && (
+                        <span className="ml-auto flex items-center gap-1 text-purple-600 font-semibold group-hover:text-purple-800 transition-colors">
+                            {meta.cta} <ArrowRight size={12} />
+                        </span>
+                    )}
                 </div>
 
                 {/* Progress bar */}
@@ -101,6 +117,24 @@ export default function ModuleCard({ module: mod }: ModuleCardProps) {
                     />
                 </div>
             </div>
+        </>
+    )
+
+    if (courseId) {
+        return (
+            <Link
+                to={'/courses/$courseId/modules/$moduleId' as any}
+                params={{ courseId, moduleId: mod.id } as any}
+                className="group rounded-xl border border-gray-200 bg-white shadow-sm p-5 flex items-start gap-4 hover:shadow-lg hover:border-purple-300 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer no-underline"
+            >
+                {content}
+            </Link>
+        )
+    }
+
+    return (
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200">
+            {content}
         </div>
     )
 }

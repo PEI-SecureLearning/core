@@ -148,15 +148,6 @@ export function AdminDashboard() {
                             Manage tenants, users, and platform settings.
                         </p>
                     </div>
-                    <div className="flex gap-3">
-                        <Link
-                            to="/admin/tenants"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-lg shadow-indigo-600/20"
-                        >
-                            <Building2 className="w-4 h-4" />
-                            Manage Tenants
-                        </Link>
-                    </div>
                 </motion.div>
 
                 {/* Action Cards Grid */}
@@ -201,15 +192,13 @@ export function AdminDashboard() {
                         </span>
                     </motion.div>
 
-                    <motion.div variants={item} className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-white">
+                    <motion.div variants={item} className=" bg-white-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-white">
                         <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
                             <Building2 className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">Create New Tenant</h3>
-                        <p className="text-white/80 mb-4">Set up a new organization with custom configuration and features.</p>
-                        <Link to="/admin/tenants/new-tenant" className="text-white font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
-                            Get Started <ArrowRight className="w-4 h-4" />
-                        </Link>
+                        <h3 className="text-lg text-slate-700 font-semibold mb-2">Create New Tenant</h3>
+                        <p className="text-slate-500/80 mb-4">Set up a new organization with custom configuration and features.</p>
+
                     </motion.div>
                 </motion.div>
             </div>

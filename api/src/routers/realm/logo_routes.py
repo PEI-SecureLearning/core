@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from fastapi.responses import StreamingResponse
 
-from src.core.security import Roles
+from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import SafeRealm, OAuth2Scheme
 from src.services.platform_admin import get_platform_admin_service
 
@@ -20,7 +20,7 @@ MAX_LOGO_BYTES = 2 * 1024 * 1024
     "/realms/{realm}/logo", 
     status_code=status.HTTP_201_CREATED,
     responses={400: {"description": "Invalid logo file"}},
-    dependencies=[Depends(Roles("admin", "manage"))]
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))]
 )
 async def upload_realm_logo(
     realm: SafeRealm,
@@ -51,7 +51,7 @@ async def upload_realm_logo(
 @router.get(
     "/realms/{realm}/logo",
     responses={404: {"description": "Tenant logo not found"}},
-    dependencies=[Depends(Roles("admin", "view"))]
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.VIEW))]
 )
 async def get_realm_logo(realm: SafeRealm):
     doc = await realm_service.get_tenant_logo(realm)
