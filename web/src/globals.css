@@ -164,10 +164,6 @@ body,
   /* Stops the main window from scrolling */
 }
 
-/* ─── Theme transition (View Transition API) ───────────────────────────────
-   Suppress the default cross-fade so only the clip-path wipe animation runs.
-   The actual animation is kicked off in JS (useThemeTransition hook).
-   ─────────────────────────────────────────────────────────────────────────── */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -209,4 +205,18 @@ body,
 
 *::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+.sidebar-label {
+  opacity: 1;
+  transition: opacity 150ms ease-in-out 120ms;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+aside[data-collapsed="true"] .sidebar-label {
+  opacity: 0;
+  transition: opacity 100ms ease-in-out 0ms;
+  pointer-events: none;
+  user-select: none;
 }

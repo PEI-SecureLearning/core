@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import {
   LayoutDashboard,
@@ -43,26 +43,10 @@ interface SidebarGroupProps {
 }
 
 const adminLinks: SidebarLinkProps[] = [
-  {
-    href: "/admin",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    roles: ["ADMIN"],
-    exact: true,
-  },
-  {
-    href: "/admin/tenants",
-    label: "Tenants",
-    icon: Building2,
-    roles: ["ADMIN"],
-  },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN"], exact: true },
+  { href: "/admin/tenants", label: "Tenants", icon: Building2, roles: ["ADMIN"] },
   { href: "/admin/logs", label: "Logs", icon: ScrollText, roles: ["ADMIN"] },
-  {
-    href: "/admin/settings",
-    label: "Settings",
-    icon: Settings,
-    roles: ["ADMIN"],
-  },
+  { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["ADMIN"] },
 ];
 
 const userDashboard: SidebarLinkProps = {
@@ -80,7 +64,6 @@ const userStandaloneLinks: SidebarLinkProps[] = [
 const userGroups = (realmFeatures: Record<string, boolean>, userRoles: string[]) => {
   const hasRole = (role: string) => userRoles.includes(role);
   const hasFeature = (f: string) => !!realmFeatures[f];
-
   const groups: Omit<SidebarGroupProps, "isCollapsed">[] = [];
 
   const phishingLinks: SidebarLinkProps[] = [];
@@ -144,6 +127,8 @@ const contentManagerStandaloneLinks: SidebarLinkProps[] = [
   { href: "/content-manager/settings", label: "Settings", icon: Settings },
 ];
 
+// ─── SidebarLink ────────────────────────────────────────────────────────────
+
 function SidebarLink({
   href,
   label,
@@ -156,65 +141,66 @@ function SidebarLink({
     <Link
       to={href}
       activeOptions={{ exact: !!exact }}
-      activeProps={{
-        className: "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium px-2",
-      }}
-      inactiveProps={{
-        className: "text-foreground hover:bg-muted",
-      }}
-      className={`flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md group ${indent ? "pl-4 lg:pl-5" : ""}`}
+      activeProps={{ className: "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium" }}
+      inactiveProps={{ className: "text-muted-foreground hover:bg-muted" }}
+      className={`flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md ${indent ? "pl-4 lg:pl-5" : ""}`}
       title={isCollapsed ? label : undefined}
     >
-      <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-300" />
-      <span
-        className={`truncate transition-[opacity,width] duration-300 ease-in-out whitespace-nowrap ${
-          isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 delay-100"
-        }`}
-      >
-        {label}
-      </span>
+      <Icon className="h-4 w-4 flex-shrink-0" />
+      <span className="sidebar-label whitespace-nowrap">{label}</span>
     </Link>
   );
 }
 
-function SidebarGroup({ label, icon: Icon, links, isCollapsed }: SidebarGroupProps & { isCollapsed: boolean }) {
+// ─── SidebarGroup ───────────────────────────────────────────────────────────
+
+function SidebarGroup({
+  label,
+  icon: Icon,
+  links,
+  sidebarCollapsed,
+  sidebarExpanded,
+}: Omit<SidebarGroupProps, "isCollapsed"> & { sidebarCollapsed: boolean; sidebarExpanded: boolean}) {
   const location = useLocation();
   const isAnyActive = links.some((l) => location.pathname.startsWith(l.href));
-  const [open, setOpen] = useState(isAnyActive);
+  const [open, setOpen] = useState(true);
+  const userChoice = useRef<boolean | null>(null); // null = no explicit choice yet
+  const prevCollapsed = useRef(sidebarCollapsed);
+
+  // When the permanent collapsed state changes, sync open accordingly.
+  useEffect(() => {
+    if (prevCollapsed.current === sidebarCollapsed) return;
+    prevCollapsed.current = sidebarCollapsed;
+  }, [sidebarCollapsed]);
+
+  // Children visible whenever the sidebar is visually expanded (permanent or hover).
+  const showChildren = open && sidebarExpanded;
+
+  const handleToggle = () => {
+    const next = !open;
+    setOpen(next);
+    userChoice.current = next;
+  };
 
   return (
     <li>
-      {/* Group header — acts as a toggle when expanded */}
       <button
-        onClick={() => !isCollapsed && setOpen((o) => !o)}
-        title={isCollapsed ? label : undefined}
+        onClick={handleToggle}
+        title={sidebarExpanded ? undefined : label}
         className={`w-full flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md transition-colors
-          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-foreground hover:bg-muted"}`}
+          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
       >
         <Icon className="h-4 w-4 flex-shrink-0" />
-        <span
-          className={`flex-1 text-left truncate transition-[opacity,width] duration-300 ease-in-out whitespace-nowrap ${
-            isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 delay-100"
-          }`}
-        >
-          {label}
-        </span>
-        {!isCollapsed && (
-          <ChevronDown
-            className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          />
-        )}
+        <span className="sidebar-label flex-1 text-left whitespace-nowrap">{label}</span>
+        <ChevronDown
+          className={`sidebar-label h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showChildren ? "rotate-180" : ""}`}
+        />
       </button>
 
-      {/* Group children */}
-      <ul
-        className={`overflow-hidden transition-all duration-200 ease-in-out ${
-          open && !isCollapsed ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
+      <ul className={`overflow-hidden transition-all duration-200 ease-in-out ${showChildren ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
         {links.map((link) => (
           <li key={link.href}>
-            <SidebarLink {...link} isCollapsed={isCollapsed} indent />
+            <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
           </li>
         ))}
       </ul>
@@ -222,21 +208,27 @@ function SidebarGroup({ label, icon: Icon, links, isCollapsed }: SidebarGroupPro
   );
 }
 
+// ─── Sidebar ────────────────────────────────────────────────────────────────
+
 export function Sidebar() {
+  // `isCollapsed` = the permanent/default state toggled by the button.
+  // `isHovered`   = transient hover-expand while permanently collapsed.
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { keycloak } = useKeycloak();
   const location = useLocation();
 
-  const shouldShowContent = !isCollapsed || isHovered;
+  // The sidebar shows its full content when permanently open OR when hovered.
+  const expanded = !isCollapsed || isHovered;
+
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isContentManagerRoute = location.pathname.startsWith("/content-manager");
   const isUserRoute = !isAdminRoute && !isContentManagerRoute;
 
   const handleMouseEnter = () => {
     if (!isCollapsed) return;
-    hoverTimeout.current = setTimeout(() => setIsHovered(true), 400);
+    hoverTimeout.current = setTimeout(() => setIsHovered(true), 300);
   };
 
   const handleMouseLeave = () => {
@@ -244,7 +236,16 @@ export function Sidebar() {
       clearTimeout(hoverTimeout.current);
       hoverTimeout.current = null;
     }
-    if (isCollapsed) setIsHovered(false);
+    setIsHovered(false);
+  };
+
+  const handleToggle = () => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+      hoverTimeout.current = null;
+    }
+    setIsHovered(false);
+    setIsCollapsed((c) => !c);
   };
 
   const getUserRoles = (): string[] => {
@@ -262,57 +263,35 @@ export function Sidebar() {
   const realmFeatures = getRealmFeatures();
   const computedUserGroups = userGroups(realmFeatures, userRoles);
 
-  const reportHref = isAdminRoute
-    ? "/admin/report"
-    : isContentManagerRoute
-      ? "/content-manager/report"
-      : "/report";
-
-  const helpHref = isAdminRoute
-    ? "/admin/help"
-    : isContentManagerRoute
-      ? "/content-manager/help"
-      : "/help";
+  const reportHref = isAdminRoute ? "/admin/report" : isContentManagerRoute ? "/content-manager/report" : "/report";
+  const helpHref = isAdminRoute ? "/admin/help" : isContentManagerRoute ? "/content-manager/help" : "/help";
 
   return (
     <aside
-      className={`h-full bg-sidebar border-r border-sidebar-border flex flex-col rounded-bl-xl transition-all duration-300 ease-in-out ${
-        shouldShowContent ? "w-[13%] min-w-[120px] lg:min-w-[180px]" : "w-12"
-      }`}
+      data-collapsed={expanded ? "false" : "true"}
+      style={{ width: expanded ? "clamp(120px, 13%, 260px)" : "3rem" }}
+      className="h-full bg-sidebar border-r border-sidebar-border flex flex-col rounded-bl-xl overflow-hidden transition-[width] duration-300 ease-in-out"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Toggle Button */}
-      <div className="relative py-1 h-10 border-b border-sidebar-border">
+      {/* Toggle button — right-aligned, toggles the permanent state */}
+      <div className="h-10 border-b border-sidebar-border flex-shrink-0 flex items-center justify-end px-2">
         <button
-          onClick={() => {
-            if (hoverTimeout.current) {
-              clearTimeout(hoverTimeout.current);
-              hoverTimeout.current = null;
-            }
-            setIsHovered(false);
-            setIsCollapsed((c) => !c);
-          }}
-          className={`absolute top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-lg transition-all duration-300 text-muted-foreground ${
-            shouldShowContent ? "right-2" : "left-1/2 -translate-x-1/2"
-          }`}
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          onClick={handleToggle}
+          className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+          title="Toggle sidebar"
         >
-          {shouldShowContent ? (
-            <PanelLeftClose className="h-4 w-4" />
-          ) : (
-            <PanelLeftOpen className="h-4 w-4" />
-          )}
+          {isCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Navigation Menu */}
+      {/* Navigation */}
       <nav className="flex-1 px-2 lg:px-1 py-4 overflow-hidden">
         {isAdminRoute && (
           <ul className="space-y-1">
             {adminLinks.map((link) => (
               <li key={link.href}>
-                <SidebarLink {...link} isCollapsed={!shouldShowContent} />
+                <SidebarLink {...link} isCollapsed={!expanded} />
               </li>
             ))}
           </ul>
@@ -321,14 +300,14 @@ export function Sidebar() {
         {isContentManagerRoute && (
           <ul className="space-y-1">
             <li>
-              <SidebarLink {...contentManagerDashboard} isCollapsed={!shouldShowContent} />
+              <SidebarLink {...contentManagerDashboard} isCollapsed={!expanded} />
             </li>
             {contentManagerGroups.map((group) => (
-              <SidebarGroup key={group.label} {...group} isCollapsed={!shouldShowContent} />
+              <SidebarGroup key={group.label} {...group} sidebarCollapsed={isCollapsed} sidebarExpanded={expanded} />
             ))}
             {contentManagerStandaloneLinks.map((link) => (
               <li key={link.href}>
-                <SidebarLink {...link} isCollapsed={!shouldShowContent} />
+                <SidebarLink {...link} isCollapsed={!expanded} />
               </li>
             ))}
           </ul>
@@ -337,24 +316,24 @@ export function Sidebar() {
         {isUserRoute && (
           <ul className="space-y-1">
             <li>
-              <SidebarLink {...userDashboard} isCollapsed={!shouldShowContent} />
+              <SidebarLink {...userDashboard} isCollapsed={!expanded} />
             </li>
             {computedUserGroups.map((group) => (
-              <SidebarGroup key={group.label} {...group} isCollapsed={!shouldShowContent} />
+              <SidebarGroup key={group.label} {...group} sidebarCollapsed={isCollapsed} sidebarExpanded={expanded} />
             ))}
             {userStandaloneLinks.map((link) => (
               <li key={link.href}>
-                <SidebarLink {...link} isCollapsed={!shouldShowContent} />
+                <SidebarLink {...link} isCollapsed={!expanded} />
               </li>
             ))}
           </ul>
         )}
       </nav>
 
-      {/* Footer - Report / Help */}
+      {/* Footer */}
       <div className="px-2 lg:px-1 py-1 border-t border-sidebar-border">
-        <SidebarLink href={reportHref} label="Report a problem" icon={AlertCircle} isCollapsed={!shouldShowContent} />
-        <SidebarLink href={helpHref} label="Help" icon={CircleQuestionMark} isCollapsed={!shouldShowContent} />
+        <SidebarLink href={reportHref} label="Report a problem" icon={AlertCircle} isCollapsed={!expanded} />
+        <SidebarLink href={helpHref} label="Help" icon={CircleQuestionMark} isCollapsed={!expanded} />
       </div>
     </aside>
   );

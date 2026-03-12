@@ -1,14 +1,10 @@
-import { motion, AnimatePresence } from "motion/react";
 import type { QuizQuestionDraft, QuizQuestion, QuizSettings as QuizSettingsType } from "./types";
-import QuizSettings from "./QuizSettings";
 import QuizQuestionCard from "./QuizQuestionCard";
 
 type QuizEditorProps = {
     quizDraft: QuizQuestionDraft[];
     quizSettings: QuizSettingsType;
     quizUpdated: string;
-    collapsed: boolean;
-    onToggleCollapse: () => void;
     maxQuestionCount: number;
     possiblePassingScores: number[];
     expandedQuestions: Set<string>;
@@ -22,12 +18,61 @@ type QuizEditorProps = {
     onAddQuestion: () => void;
 };
 
+function StepperRow({
+    label,
+    tooltip,
+    displayValue,
+    onDecrease,
+    onIncrease,
+    decreaseDisabled,
+    increaseDisabled,
+}: {
+    label: string;
+    tooltip: string;
+    displayValue: string;
+    onDecrease: () => void;
+    onIncrease: () => void;
+    decreaseDisabled: boolean;
+    increaseDisabled: boolean;
+}) {
+    return (
+        <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-sm font-medium text-foreground truncate">{label}</span>
+                <div className="relative group shrink-0">
+                    <span className="h-4 w-4 rounded-full border border-muted-foreground text-[10px] text-muted-foreground flex items-center justify-center cursor-default">?</span>
+                    <div className="pointer-events-none absolute left-1/2 bottom-full z-10 mb-2 w-52 -translate-x-1/2 rounded-md bg-surface-subtle border border-border px-3 py-2 text-xs text-foreground/90 opacity-0 transition-opacity group-hover:opacity-100">
+                        {tooltip}
+                    </div>
+                </div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                    type="button"
+                    onClick={onDecrease}
+                    disabled={decreaseDisabled}
+                    className="h-7 w-7 rounded-md border border-border text-foreground/90 hover:bg-surface-subtle disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-base font-semibold flex items-center justify-center"
+                >
+                    −
+                </button>
+                <span className="w-12 text-center text-sm font-semibold text-foreground tabular-nums">{displayValue}</span>
+                <button
+                    type="button"
+                    onClick={onIncrease}
+                    disabled={increaseDisabled}
+                    className="h-7 w-7 rounded-md bg-primary text-white hover:bg-primary/80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-base font-semibold flex items-center justify-center"
+                >
+                    +
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function QuizEditor({
     quizDraft,
     quizSettings,
     quizUpdated,
-    collapsed,
-    onToggleCollapse,
     maxQuestionCount,
     possiblePassingScores,
     expandedQuestions,
@@ -41,95 +86,65 @@ export default function QuizEditor({
     onAddQuestion,
 }: QuizEditorProps) {
     return (
-        <section className={`flex flex-col overflow-hidden ${collapsed ? "shrink-0" : "flex-1 min-h-0"}`}>
-            {/* Section header */}
-            <button
-                type="button"
-                className="flex items-center justify-between cursor-pointer select-none shrink-0 w-full text-left"
-                onClick={onToggleCollapse}
-            >
-                <div className="flex items-center gap-2">
-                    <motion.svg
-                        className="w-4 h-4 text-muted-foreground"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        animate={{ rotate: collapsed ? 0 : 90 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </motion.svg>
+        <section className="flex flex-col w-96 shrink-0 min-h-0 overflow-hidden border border-border rounded-xl">
+            {/* Header */}
+            <div className="px-4 py-3 border-b border-border shrink-0 space-y-3">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-lg font-semibold text-foreground">Quiz Question Bank</h2>
+                        <h2 className="text-base font-semibold text-foreground">Quiz</h2>
                         <p className="text-xs text-muted-foreground">Last updated: {quizUpdated}</p>
                     </div>
-                </div>
-                <AnimatePresence>
-                    {!collapsed && (
-                        <motion.div
-                            className="flex items-center gap-2"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </button>
-
-            <AnimatePresence initial={false}>
-                {!collapsed && (
-                    <motion.div
-                        key="quiz-content"
-                        className="flex-1 min-h-0 flex flex-col mt-4"
-                        initial={{ height: 0, opacity: 0, y: -20 }}
-                        animate={{ height: "auto", opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeInOut" } }}
-                        exit={{ height: 0, opacity: 0, y: -20, transition: { duration: 0.25, ease: "easeOut" } }}
-                        transition={{ duration: 0.25, ease: "easeInOut" }}
-                        style={{ overflow: "hidden" }}
+                    <button
+                        data-testid="add-question-btn"
+                        className="px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-subtle cursor-pointer"
+                        onClick={onAddQuestion}
                     >
-                        <div className="pt-4 space-y-4 flex-1 min-h-0 overflow-y-auto bg-surface-subtle/10 rounded-lg border border-border/30 p-6">
-                            {/* Settings steppers */}
-                            <div className="flex flex-row justify-end items-center space-x-8 pr-2">
-                                <QuizSettings
-                                    questionCount={quizSettings.question_count}
-                                    passingScore={quizSettings.passing_score}
-                                    maxQuestionCount={maxQuestionCount}
-                                    possiblePassingScores={possiblePassingScores}
-                                    onQuestionCountChange={onQuestionCountChange}
-                                    onPassingScoreChange={onPassingScoreChange}
-                                />
+                        + Add question
+                    </button>
+                </div>
 
-                                <button
-                                    data-testid="add-question-btn"
-                                    className="h-fit translate-y-6 py-2 px-4 rounded-lg border border-border text-sm hover:bg-surface-subtle cursor-pointer"
-                                    onClick={onAddQuestion}
-                                >
-                                    Add question
-                                </button>
+                {/* Compact settings */}
+                <div className="space-y-2 pt-1">
+                    <StepperRow
+                        label="Questions per quiz"
+                        tooltip="Number of questions randomly selected from the bank per quiz."
+                        displayValue={String(quizSettings.question_count)}
+                        onDecrease={() => onQuestionCountChange(-1)}
+                        onIncrease={() => onQuestionCountChange(1)}
+                        decreaseDisabled={quizSettings.question_count <= 1}
+                        increaseDisabled={quizSettings.question_count >= maxQuestionCount}
+                    />
+                    <StepperRow
+                        label="Passing score"
+                        tooltip="Minimum percentage required to pass the quiz."
+                        displayValue={`${quizSettings.passing_score}%`}
+                        onDecrease={() => onPassingScoreChange(-1)}
+                        onIncrease={() => onPassingScoreChange(1)}
+                        decreaseDisabled={possiblePassingScores.indexOf(quizSettings.passing_score) <= 0}
+                        increaseDisabled={possiblePassingScores.indexOf(quizSettings.passing_score) >= possiblePassingScores.length - 1}
+                    />
+                </div>
+            </div>
 
-                            </div>
-
-                            {/* Question cards */}
-                            {quizDraft.map((question, qIndex) => (
-                                <QuizQuestionCard
-                                    key={question.local_id}
-                                    question={question}
-                                    index={qIndex}
-                                    isExpanded={expandedQuestions.has(question.local_id)}
-                                    onToggle={() => onToggleQuestion(question.local_id)}
-                                    onUpdate={(patch) => onUpdateQuestion(qIndex, patch)}
-                                    onRemove={() => onRemoveQuestion(qIndex)}
-                                    onAddOption={() => onAddOption(qIndex)}
-                                    onRemoveOption={(optIndex) => onRemoveOption(qIndex, optIndex)}
-                                />
-                            ))}
-                        </div>
-                    </motion.div>
+            {/* Question cards */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2">
+                {quizDraft.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-6">No questions yet. Add one above.</p>
                 )}
-            </AnimatePresence>
+                {quizDraft.map((question, qIndex) => (
+                    <QuizQuestionCard
+                        key={question.local_id}
+                        question={question}
+                        index={qIndex}
+                        isExpanded={expandedQuestions.has(question.local_id)}
+                        onToggle={() => onToggleQuestion(question.local_id)}
+                        onUpdate={(patch) => onUpdateQuestion(qIndex, patch)}
+                        onRemove={() => onRemoveQuestion(qIndex)}
+                        onAddOption={() => onAddOption(qIndex)}
+                        onRemoveOption={(optIndex) => onRemoveOption(qIndex, optIndex)}
+                    />
+                ))}
+            </div>
         </section>
     );
 }
