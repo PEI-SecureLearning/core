@@ -2,6 +2,7 @@ import { ChevronRight, User, LogOut } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import { useRouterState, Link } from "@tanstack/react-router";
 import "../css/navbar.css";
+import { appBasePath } from "@/lib/app-path";
 
 
 export function Logo() {
@@ -27,14 +28,14 @@ export function Navbar() {
   const routerState = useRouterState();
   const { keycloak } = useKeycloak();
   const currentPath = routerState.location.pathname;
-  const BASE_URL = import.meta.env.VITE_WEB_URL;
+  const baseUrl = import.meta.env.VITE_WEB_URL || window.location.origin + appBasePath;
 
   const parts = currentPath.split("/").filter(Boolean);
 
   const handleLogout = async () => {
     try {
       await keycloak.logout({
-        redirectUri: BASE_URL,
+        redirectUri: baseUrl,
       });
 
       console.log('User has been successfully logged out and redirected.');

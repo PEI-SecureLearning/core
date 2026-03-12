@@ -1,7 +1,9 @@
 import Keycloak from 'keycloak-js'
+import { isAppRoute } from './lib/app-path'
 
 const path = window.location.pathname || '/'
-const isAdminRoute = path.startsWith("/admin") || path.startsWith("/content-manager");
+const isAdminRoute =
+  isAppRoute(path, "/admin") || isAppRoute(path, "/content-manager");
 
 const realm = isAdminRoute ? 'platform' : await resolveRealm();
 const clientId = isAdminRoute ? 'react-admin' : 'react-app';

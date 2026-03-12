@@ -197,6 +197,7 @@ services:
         VITE_API_URL: ${API_URL}
         VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
         VITE_BASE_PATH: ${VITE_BASE_PATH}
+        VITE_WEB_URL: ${WEB_URL}
     container_name: frontend
     expose:
       - "80"

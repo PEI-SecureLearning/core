@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { useLocation } from "@tanstack/react-router";
+import { isAppRoute } from "@/lib/app-path";
 import {
   LayoutDashboard,
   Megaphone,
@@ -176,8 +177,8 @@ export function Sidebar() {
   const { keycloak } = useKeycloak();
   const location = useLocation();
   const shouldShowContent = !isCollapsed || isHovered;
-  const isAdminRoute = location.pathname.startsWith("/admin");
-  const isContentManagerRoute = location.pathname.startsWith("/content-manager");
+  const isAdminRoute = isAppRoute(location.pathname, "/admin");
+  const isContentManagerRoute = isAppRoute(location.pathname, "/content-manager");
 
   const getUserRoles = () => {
     if (!keycloak.tokenParsed) return [];

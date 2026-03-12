@@ -6,11 +6,13 @@ WORKDIR /app
 ARG VITE_API_URL
 ARG VITE_KEYCLOAK_URL
 ARG VITE_BASE_PATH
+ARG VITE_WEB_URL
 
 # Set them as environment variables for the build process
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
+ENV VITE_WEB_URL=$VITE_WEB_URL
 
 COPY package*.json ./
 RUN npm config set registry https://registry.npmjs.org/ \
