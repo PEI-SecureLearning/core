@@ -1,10 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type ComponentType } from "react";
 import { useKeycloak } from "@react-keycloak/web";
+import {
+  BookOpen,
+  BookOpenCheck,
+  Calendar,
+  CalendarCheck2,
+  MailCheck,
+  Mail,
+  PackageCheck,
+  Package,
+  UserRoundCheck,
+  UserRound,
+} from "lucide-react";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
 import SendingProfilePicker from "@/components/campaigns/new-campaign/SendingProfilePicker";
-import PhishingKitPicker from "@/components/campaigns/new-campaign/PhishingKitPicker";
-import TargetGroupSelector from "@/components/campaigns/new-campaign/TargetGroupSelector";
+import PhishingKitPicker from "../../components/campaigns/new-campaign/PhishingKitPicker";
+import TargetGroupSelector from "../../components/campaigns/new-campaign/TargetGroupSelector";
 import CampaignScheduler from "@/components/campaigns/new-campaign/CampaignScheduler";
 import Stepper, { Step } from "@/components/ui/Stepper";
 import {
@@ -34,15 +46,12 @@ function CampaignStepper() {
   const { keycloak } = useKeycloak();
   const navigate = useNavigate();
 
-  // Step 2 shows a warning when no sending profiles are selected
-  const stepWarnings = data.sending_profile_ids.length === 0 ? [2] : [];
-
   const steps: StepConfig[] = [
     { name: "forms", label: "Basic Info", component: CampaignForms },
     {
-      name: "sending-profiles",
-      label: "Sending Profiles",
-      component: SendingProfilePicker,
+      name: "target-groups",
+      label: "Target Groups",
+      component: TargetGroupSelector,
     },
     {
       name: "phishing-kits",
@@ -50,9 +59,9 @@ function CampaignStepper() {
       component: PhishingKitPicker,
     },
     {
-      name: "target-groups",
-      label: "Target Groups",
-      component: TargetGroupSelector,
+      name: "sending-profiles",
+      label: "Sending Profiles",
+      component: SendingProfilePicker,
     },
     {
       name: "schedule",
@@ -60,6 +69,21 @@ function CampaignStepper() {
       component: CampaignScheduler,
     },
   ];
+
+  const stepIcons = [BookOpen, UserRound, Package, Mail, Calendar] as const;
+  const stepCompletedIcons = [
+    BookOpenCheck,
+    UserRoundCheck,
+    PackageCheck,
+    MailCheck,
+    CalendarCheck2,
+  ] as const;
+  const sendingProfilesStepIndex =
+    steps.findIndex((step) => step.name === "sending-profiles") + 1;
+  const stepWarnings =
+    data.sending_profile_ids.length === 0 && sendingProfilesStepIndex > 0
+      ? [sendingProfilesStepIndex]
+      : [];
 
   // Validate each step before allowing to proceed
   const validateStep = (step: number): boolean => {
@@ -70,7 +94,11 @@ function CampaignStepper() {
           return false;
         }
         return true;
-      case 2: // Sending Profiles (not mandatory)
+      case 2: // Target Groups
+        if (data.user_group_ids.length === 0) {
+          toast.error("Please select at least one target group.");
+          return false;
+        }
         return true;
       case 3: // Phishing Kits
         if (data.phishing_kit_ids.length === 0) {
@@ -78,11 +106,7 @@ function CampaignStepper() {
           return false;
         }
         return true;
-      case 4: // Target Groups
-        if (data.user_group_ids.length === 0) {
-          toast.error("Please select at least one target group.");
-          return false;
-        }
+      case 4: // Sending Profiles (not mandatory)
         return true;
       default:
         return true;
@@ -143,6 +167,8 @@ function CampaignStepper() {
       backButtonText="Previous"
       nextButtonText="Next"
       stepLabels={steps.map((s) => s.label)}
+      stepIcons={stepIcons}
+      stepCompletedIcons={stepCompletedIcons}
       stepWarnings={stepWarnings}
     >
       {steps.map((s) => (
@@ -159,7 +185,7 @@ function RouteComponent() {
   const initialGroupIds = groupId ? [groupId] : [];
 
   return (
-    <div className="size-full p-6 bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+    <div className="size-full p-6 bg-linear-to-br from-slate-50 via-white to-purple-50/30">
       <CampaignProvider initialGroupIds={initialGroupIds}>
         <CampaignStepper />
       </CampaignProvider>

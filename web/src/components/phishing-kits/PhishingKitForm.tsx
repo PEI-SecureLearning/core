@@ -66,15 +66,6 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
     }
   };
 
-  const stepWarnings = (() => {
-    const warnings: number[] = [];
-    if (!data.name.trim()) warnings.push(1);
-    if (!data.email_template_id) warnings.push(2);
-    if (!data.landing_page_template_id) warnings.push(3);
-    if (data.sending_profile_ids.length === 0) warnings.push(4);
-    return warnings;
-  })();
-
   const handleComplete = async (): Promise<boolean> => {
     if (!isValid()) {
       setSubmitError(getValidationErrors().join(" "));
@@ -145,7 +136,6 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
       <div className="flex-1 min-h-0">
         <Stepper
           stepLabels={stepLabels}
-          stepWarnings={stepWarnings}
           validateStep={validateStep}
           onBeforeComplete={handleComplete}
           onFinalStepCompleted={() => {}}

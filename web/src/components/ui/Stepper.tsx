@@ -7,7 +7,12 @@ import React, {
   type ReactNode,
 } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
-import { Check, ChevronLeft, ChevronRight, Minus } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  type LucideIcon,
+} from "lucide-react";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -25,7 +30,9 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   nextButtonText?: string;
   disableStepIndicators?: boolean;
   stepLabels?: string[];
-  stepWarnings?: number[];
+  stepIcons?: readonly LucideIcon[];
+  stepCompletedIcons?: readonly LucideIcon[];
+  stepWarnings?: readonly number[];
   renderStepIndicator?: (props: {
     step: number;
     currentStep: number;
@@ -49,9 +56,11 @@ export default function Stepper({
   nextButtonText = "Continue",
   disableStepIndicators = false,
   stepLabels = [],
+  stepIcons = [],
+  stepCompletedIcons = [],
   stepWarnings = [],
   renderStepIndicator,
-}: StepperProps) {
+}: Readonly<StepperProps>) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [direction, setDirection] = useState<number>(0);
   const stepsArray = Children.toArray(children);
@@ -158,6 +167,8 @@ export default function Stepper({
                   <StepIndicator
                     step={stepNumber}
                     label={label}
+                    stepIcon={stepIcons[index]}
+                    completedStepIcon={stepCompletedIcons[index]}
                     disableStepIndicators={disableStepIndicators}
                     currentStep={currentStep}
                     onClickStep={handleStepClick}
@@ -167,7 +178,6 @@ export default function Stepper({
                 {isNotLastStep && (
                   <StepConnector
                     isComplete={currentStep > stepNumber}
-                    isWarning={currentStep > stepNumber && stepWarnings.includes(stepNumber)}
                   />
                 )}
               </React.Fragment>
@@ -194,7 +204,7 @@ export default function Stepper({
             style={{ background: 'rgba(255, 255, 255, 0.4)' }}
           >
             <div
-              className={`flex ${currentStep !== 1 ? "justify-between" : "justify-end"} items-center`}
+              className={`flex ${currentStep > 1 ? "justify-between" : "justify-end"} items-center`}
             >
               {currentStep !== 1 && (
                 <button
@@ -231,11 +241,11 @@ export default function Stepper({
 }
 
 interface StepContentWrapperProps {
-  isCompleted: boolean;
-  currentStep: number;
-  direction: number;
-  children: ReactNode;
-  className?: string;
+  readonly isCompleted: boolean;
+  readonly currentStep: number;
+  readonly direction: number;
+  readonly children: ReactNode;
+  readonly className?: string;
 }
 
 function StepContentWrapper({
@@ -245,8 +255,6 @@ function StepContentWrapper({
   children,
   className = "",
 }: StepContentWrapperProps) {
-  const setParentHeight = (_h: number) => { }; // Unused but required by SlideTransition
-
   return (
     <motion.div style={{ position: "relative" }} className={className}>
       <AnimatePresence initial={false} mode="sync" custom={direction}>
@@ -254,7 +262,7 @@ function StepContentWrapper({
           <SlideTransition
             key={currentStep}
             direction={direction}
-            onHeightReady={(h) => setParentHeight(h)}
+            onHeightReady={() => {}}
           >
             {children}
           </SlideTransition>
@@ -265,9 +273,9 @@ function StepContentWrapper({
 }
 
 interface SlideTransitionProps {
-  children: ReactNode;
-  direction: number;
-  onHeightReady: (height: number) => void;
+  readonly children: ReactNode;
+  readonly direction: number;
+  readonly onHeightReady: (height: number) => void;
 }
 
 function SlideTransition({
@@ -315,7 +323,7 @@ const stepVariants: Variants = {
 };
 
 interface StepProps {
-  children: ReactNode;
+  readonly children: ReactNode;
 }
 
 export function Step({ children }: StepProps) {
@@ -329,30 +337,32 @@ export function Step({ children }: StepProps) {
 }
 
 interface StepIndicatorProps {
-  step: number;
-  currentStep: number;
-  label: string;
-  onClickStep: (clicked: number) => void;
-  disableStepIndicators?: boolean;
-  isWarning?: boolean;
+  readonly step: number;
+  readonly currentStep: number;
+  readonly label: string;
+  readonly stepIcon?: LucideIcon;
+  readonly completedStepIcon?: LucideIcon;
+  readonly onClickStep: (clicked: number) => void;
+  readonly disableStepIndicators?: boolean;
+  readonly isWarning?: boolean;
 }
 
 function StepIndicator({
   step,
   currentStep,
   label,
+  stepIcon,
+  completedStepIcon,
   onClickStep,
   disableStepIndicators = false,
   isWarning = false,
 }: StepIndicatorProps) {
-  const baseStatus =
-    currentStep === step
-      ? "active"
-      : currentStep < step
-        ? "inactive"
-        : "complete";
-
-  // Override complete → warning when the step has no required data
+  let baseStatus: "active" | "inactive" | "complete" = "complete";
+  if (currentStep === step) {
+    baseStatus = "active";
+  } else if (currentStep < step) {
+    baseStatus = "inactive";
+  }
   const status = baseStatus === "complete" && isWarning ? "warning" : baseStatus;
 
   const handleClick = () => {
@@ -360,6 +370,29 @@ function StepIndicator({
       onClickStep(step);
     }
   };
+
+  const StepIcon = stepIcon;
+  const CompletedStepIcon = completedStepIcon;
+
+  let indicatorContent: ReactNode;
+  if (status === "complete") {
+    indicatorContent = CompletedStepIcon ? (
+      <CompletedStepIcon className="h-5 w-5 text-white" strokeWidth={2.3} />
+    ) : (
+      <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
+    );
+  } else if (StepIcon) {
+    indicatorContent = (
+      <StepIcon
+        className={status === "active" ? "h-5 w-5 text-white" : "h-5 w-5 text-slate-400"}
+        strokeWidth={2.2}
+      />
+    );
+  } else {
+    indicatorContent = (
+      <span className={status === "active" ? "text-white" : "text-slate-400"}>{step}</span>
+    );
+  }
 
   return (
     <motion.div
@@ -375,43 +408,35 @@ function StepIndicator({
             backgroundColor: "rgba(241, 245, 249, 0.8)",
             borderColor: "rgba(203, 213, 225, 0.6)"
           },
+          warning: {
+            scale: 1,
+            backgroundColor: "rgba(241, 245, 249, 0.8)",
+            borderColor: "rgba(203, 213, 225, 0.6)"
+          },
           active: {
-            scale: 1.05,
-            backgroundColor: "rgba(147, 51, 234, 1)",
-            borderColor: "rgba(147, 51, 234, 0.3)"
+            scale: 1,
+            backgroundColor: "#a855f7",
+            borderColor: "#a855f7"
           },
           complete: {
             scale: 1,
-            backgroundColor: "rgba(34, 197, 94, 1)",
-            borderColor: "rgba(34, 197, 94, 0.3)"
-          },
-          warning: {
-            scale: 1,
-            backgroundColor: "rgba(234, 179, 8, 1)",
-            borderColor: "rgba(234, 179, 8, 0.3)"
+            backgroundColor: "#9333ea",
+            borderColor: "#9333ea"
           },
         }}
         transition={{ duration: 0.2 }}
         className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2"
-        style={{ boxShadow: status === 'active' ? '0 4px 14px rgba(147, 51, 234, 0.3)' : 'none' }}
+        // style={{ boxShadow: status === 'active' ? '0 4px 14px #623493' : 'none' }}
       >
-        {status === "warning" ? (
-          <Minus className="h-5 w-5 text-white" strokeWidth={3} />
-        ) : status === "complete" ? (
-          <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
-        ) : status === "active" ? (
-          <span className="text-white">{step}</span>
-        ) : (
-          <span className="text-slate-400">{step}</span>
-        )}
+        {indicatorContent}
       </motion.div>
       <motion.span
         className="text-[11px] font-normal whitespace-nowrap tracking-wide"
         variants={{
           inactive: { color: "rgb(148, 163, 184)" },
-          active: { color: "rgb(147, 51, 234)" },
-          complete: { color: "rgb(34, 197, 94)" },
-          warning: { color: "rgb(161, 98, 7)" },
+          warning: { color: "rgb(148, 163, 184)" },
+          active: { color: "#a855f7" },
+          complete: { color: "#9333ea" },
         }}
       >
         {label}
@@ -421,14 +446,11 @@ function StepIndicator({
 }
 
 interface StepConnectorProps {
-  isComplete: boolean;
-  isWarning?: boolean;
+  readonly isComplete: boolean;
 }
 
-function StepConnector({ isComplete, isWarning = false }: StepConnectorProps) {
-  const color = isWarning
-    ? "rgb(234, 179, 8)"
-    : "rgb(34, 197, 94)";
+function StepConnector({ isComplete }: Readonly<StepConnectorProps>) {
+  const color = "#9333ea";
 
   return (
     <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200/60">
