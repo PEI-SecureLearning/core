@@ -2,13 +2,13 @@ import { ChevronRight, User, LogOut } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import { useRouterState, Link } from "@tanstack/react-router";
 import "../css/navbar.css";
-import { appBasePath } from "@/lib/app-path";
+import { appAssetUrl, appBasePath } from "@/lib/app-path";
 
 
 export function Logo() {
   return (
     <div className="flex items-center space-x-1 sm:space-x-2 -translate-x-4 -translate-y-1">
-      <img src="/Hatlogo.png" alt="Logo" className="h-17 w-17" />
+      <img src={appAssetUrl("Hatlogo.png")} alt="Logo" className="h-17 w-17" />
 
       <div className="flex flex-col">
         <span className="text-outline font-bold text-white text-sm sm:text-base lg:text-2xl z-10 translate-y-3 -translate-x-2">

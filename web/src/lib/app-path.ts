@@ -24,3 +24,8 @@ export function isAppRoute(pathname: string, routePrefix: string) {
     normalizedPath.startsWith(`${routePrefix}/`)
   );
 }
+
+export function appAssetUrl(path: string) {
+  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
+  return `${appBasePath}/${normalizedPath}`.replace(/\/{2,}/g, "/");
+}
