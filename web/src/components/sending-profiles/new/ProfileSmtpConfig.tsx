@@ -145,7 +145,7 @@ function ProfileSmtpConfig({
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-foreground/90 mb-1">Username *</label>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">Email *</label>
           <input
             type="text"
             value={username}

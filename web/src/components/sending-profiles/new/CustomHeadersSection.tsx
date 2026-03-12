@@ -1,6 +1,7 @@
 import { memo, useState } from "react";
 import { Plus, X, List } from "lucide-react";
 import { type CustomHeader } from "@/types/sendingProfile";
+import { toast } from "sonner";
 
 interface Props {
   headers: CustomHeader[];
@@ -46,6 +47,16 @@ function CustomHeadersSection({ headers, onAddHeader, onRemoveHeader }: Props) {
   const [newValue, setNewValue] = useState("");
 
   const handleAdd = () => {
+    
+    const alreadyExists = headers.some(
+      h => h.name === newName
+    );
+
+    if (alreadyExists) {
+      toast.error("Header already exists.")
+      return
+    }
+
     if (newName && newValue) {
       onAddHeader({ name: newName, value: newValue });
       setNewName("");
@@ -93,7 +104,7 @@ function CustomHeadersSection({ headers, onAddHeader, onRemoveHeader }: Props) {
       </div>
 
       {/* List */}
-      <div className="max-h-60 overflow-y-auto pr-1">
+      <div className="h-44 overflow-y-auto pr-1">
         {headers.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground/70 text-sm border border-dashed border-border rounded-lg">
             No custom headers added

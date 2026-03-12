@@ -69,6 +69,7 @@ export default function SendingProfileLayout({
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0 overflow-hidden">
         {/* Left column: forms */}
+
         <div className="h-full w-full lg:w-[65%] overflow-y-auto pr-2 space-y-5">
           <div>
             <ProfileBasicInfo
@@ -83,8 +84,9 @@ export default function SendingProfileLayout({
             />
           </div>
 
-          <div>
-            <ProfileSmtpConfig
+          <div className="flex gap-5">
+            <div className="w-1/2">
+              <ProfileSmtpConfig
               host={smtpHost}
               setHost={setSmtpHost}
               port={smtpPort}
@@ -97,14 +99,14 @@ export default function SendingProfileLayout({
               isTesting={isTesting}
               testStatus={testStatus}
             />
-          </div>
-
-          <div>
-            <CustomHeadersSection
+            </div>
+            <div className="w-1/2">
+             <CustomHeadersSection
               headers={customHeaders}
               onAddHeader={onAddHeader}
               onRemoveHeader={onRemoveHeader}
             />
+            </div>
           </div>
         </div>
 
