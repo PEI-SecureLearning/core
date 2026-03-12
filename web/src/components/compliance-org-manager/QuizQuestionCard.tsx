@@ -21,7 +21,7 @@ export default function QuizQuestionCard({
     onRemove,
     onAddOption,
     onRemoveOption,
-}: QuizQuestionCardProps) {
+}: Readonly<QuizQuestionCardProps>) {
     const baseId = `question-${index}`;
 
     return (
