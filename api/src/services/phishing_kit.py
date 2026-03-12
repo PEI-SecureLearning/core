@@ -36,8 +36,12 @@ class PhishingKitService:
     def create_phishing_kit(
         self, data: PhishingKitCreate, realm: str, session: Session
     ) -> PhishingKit:
-        email_tmpl = self._get_or_create_email_template(session, data.email_template_id)
-        landing_tmpl = self._get_or_create_landing_page_template(session, data.landing_page_template_id)
+        email_tmpl = self._get_or_create_email_template(
+            session, data.email_template_id, data.email_template_name
+        )
+        landing_tmpl = self._get_or_create_landing_page_template(
+            session, data.landing_page_template_id, data.landing_page_template_name
+        )
 
         kit = PhishingKit(
             name=data.name,
@@ -113,8 +117,12 @@ class PhishingKitService:
         if not kit:
             return None
 
-        email_tmpl = self._get_or_create_email_template(session, data.email_template_id)
-        landing_tmpl = self._get_or_create_landing_page_template(session, data.landing_page_template_id)
+        email_tmpl = self._get_or_create_email_template(
+            session, data.email_template_id, data.email_template_name
+        )
+        landing_tmpl = self._get_or_create_landing_page_template(
+            session, data.landing_page_template_id, data.landing_page_template_name
+        )
 
         kit.name = data.name
         kit.description = data.description

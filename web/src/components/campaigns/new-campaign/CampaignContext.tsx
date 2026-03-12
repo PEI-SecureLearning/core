@@ -56,7 +56,9 @@ function getDefaultDates() {
   };
 }
 
-const getInitialCampaignData = (initialGroupIds: string[] = []): CampaignData => {
+const getInitialCampaignData = (
+  initialGroupIds: string[] = [],
+): CampaignData => {
   const { begin_date, end_date } = getDefaultDates();
   return {
     name: "",
@@ -71,18 +73,18 @@ const getInitialCampaignData = (initialGroupIds: string[] = []): CampaignData =>
 };
 
 const CampaignContext = createContext<CampaignContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function CampaignProvider({
   children,
   initialGroupIds,
 }: {
-  children: ReactNode;
-  initialGroupIds?: string[];
+  readonly children: ReactNode;
+  readonly initialGroupIds?: string[];
 }) {
   const [data, setData] = useState<CampaignData>(
-    getInitialCampaignData(initialGroupIds)
+    getInitialCampaignData(initialGroupIds),
   );
 
   const updateData = (updates: Partial<CampaignData>) => {
@@ -97,7 +99,8 @@ export function CampaignProvider({
     const errors: string[] = [];
 
     if (!data.name.trim()) errors.push("Campaign name is required.");
-    if (data.phishing_kit_ids.length === 0) errors.push("Select at least one phishing kit.");
+    if (data.phishing_kit_ids.length === 0)
+      errors.push("Select at least one phishing kit.");
     // sending_profile_ids is optional; the user is warned in the UI if empty.
     if (data.user_group_ids.length === 0)
       errors.push("Select at least one target group.");

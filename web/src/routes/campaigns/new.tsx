@@ -145,8 +145,8 @@ function CampaignStepper() {
       stepLabels={steps.map((s) => s.label)}
       stepWarnings={stepWarnings}
     >
-      {steps.map((s, i) => (
-        <Step key={i}>
+      {steps.map((s) => (
+        <Step key={s.name}>
           <s.component />
         </Step>
       ))}

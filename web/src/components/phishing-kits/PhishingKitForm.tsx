@@ -6,20 +6,23 @@ import PhishingKitBasicInfoStep from "./PhishingKitBasicInfoStep";
 import PhishingKitEmailTemplatePicker from "./PhishingKitEmailTemplatePicker";
 import PhishingKitLandingPagePicker from "./PhishingKitLandingPagePicker";
 import PhishingKitSendingProfilePicker from "./PhishingKitSendingProfilePicker";
-import { createPhishingKit, updatePhishingKit } from "@/services/phishingKitsApi";
+import {
+  createPhishingKit,
+  updatePhishingKit,
+} from "@/services/phishingKitsApi";
 import type { PhishingKitCreate } from "@/types/phishingKit";
 import { CheckCircle2 } from "lucide-react";
 
 interface PhishingKitFormProps {
-  editId?: number;
-  initialData?: {
-    name: string;
-    description: string;
-    args: Record<string, string>;
-    email_template_id: string | null;
-    email_template_name: string | null;
-    landing_page_template_id: string | null;
-    landing_page_template_name: string | null;
+  readonly editId?: number;
+  readonly initialData?: {
+    readonly name: string;
+    readonly description: string;
+    readonly args: Record<string, string>;
+    readonly email_template_id: string | null;
+    readonly email_template_name: string | null;
+    readonly landing_page_template_id: string | null;
+    readonly landing_page_template_name: string | null;
     sending_profile_ids: number[];
   };
 }
@@ -35,7 +38,7 @@ export default function PhishingKitForm({
   );
 }
 
-function PhishingKitFormInner({ editId }: { editId?: number }) {
+function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
   const navigate = useNavigate();
   const { data, getValidationErrors, isValid } = usePhishingKit();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -83,7 +86,9 @@ function PhishingKitFormInner({ editId }: { editId?: number }) {
       description: data.description || undefined,
       args: data.args,
       email_template_id: data.email_template_id!,
+      email_template_name: data.email_template_name!,
       landing_page_template_id: data.landing_page_template_id!,
+      landing_page_template_name: data.landing_page_template_name!,
       sending_profile_ids: data.sending_profile_ids,
     };
 

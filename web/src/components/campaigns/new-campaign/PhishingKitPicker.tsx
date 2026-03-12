@@ -68,9 +68,7 @@ export default function PhishingKitPicker() {
         setKits(json);
       } catch (err) {
         const message =
-          err instanceof Error
-            ? err.message
-            : "Unable to load phishing kits";
+          err instanceof Error ? err.message : "Unable to load phishing kits";
         setError(message);
       } finally {
         setLoading(false);
@@ -80,8 +78,7 @@ export default function PhishingKitPicker() {
   }, [API_BASE, keycloak.token]);
 
   const unselectedKits = useMemo(
-    () =>
-      kits.filter((p) => !data.phishing_kit_ids.includes(p.id)),
+    () => kits.filter((p) => !data.phishing_kit_ids.includes(p.id)),
     [kits, data.phishing_kit_ids],
   );
 
@@ -91,7 +88,7 @@ export default function PhishingKitPicker() {
     return unselectedKits.filter(
       (p) =>
         p.name.toLowerCase().includes(search) ||
-        (p.description || "").toLowerCase().includes(search)
+        (p.description || "").toLowerCase().includes(search),
     );
   }, [unselectedKits, inputValue]);
 
@@ -251,7 +248,7 @@ export default function PhishingKitPicker() {
         <div className="flex flex-col gap-3 mt-4 h-full">
           <div className="flex items-center justify-between max-w-2xl">
             <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-              Selected Kits
+              <span>Selected Kits</span>
               <span className="flex items-center justify-center bg-slate-100 text-slate-500 rounded-full px-2 py-0.5 text-[10px]">
                 {data.phishing_kit_ids.length}
               </span>
@@ -298,14 +295,15 @@ export default function PhishingKitPicker() {
                               </span>
                             </div>
                           )}
-                          {kit.sending_profile_names && kit.sending_profile_names.length > 0 && (
-                            <div className="flex items-center gap-1.5 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200">
-                              <Send size={12} className="text-slate-500" />
-                              <span className="text-[12px] font-medium text-slate-700 truncate max-w-[150px]">
-                                {kit.sending_profile_names.length} Profile(s)
-                              </span>
-                            </div>
-                          )}
+                          {kit.sending_profile_names &&
+                            kit.sending_profile_names.length > 0 && (
+                              <div className="flex items-center gap-1.5 bg-slate-100/80 px-2.5 py-1 rounded-md border border-slate-200">
+                                <Send size={12} className="text-slate-500" />
+                                <span className="text-[12px] font-medium text-slate-700 truncate max-w-[150px]">
+                                  {kit.sending_profile_names.length} Profile(s)
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </div>
                     </div>
@@ -355,7 +353,9 @@ export default function PhishingKitPicker() {
                 className="bg-purple-50 border-purple-200 text-purple-800"
               >
                 <div className="text-[12px] font-medium space-y-1 max-w-[300px]">
-                  <p>Select one or more phishing kits to use in this campaign.</p>
+                  <p>
+                    Select one or more phishing kits to use in this campaign.
+                  </p>
                   <p>A random kit will be chosen for each target user.</p>
                 </div>
               </TooltipContent>
