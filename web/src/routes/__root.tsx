@@ -6,7 +6,7 @@ import { NotFound } from "@/components/NotFound";
 
 const RootLayout = () => {
   return (
-    <div className="h-screen bg-white">
+    <div className="h-screen bg-background text-foreground">
       <Navbar />
       <div className="h-[92%] flex flex-row">
         <Sidebar />

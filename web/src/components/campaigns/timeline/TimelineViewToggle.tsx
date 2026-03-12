@@ -33,8 +33,8 @@ export const TimelineViewToggle = memo(function TimelineViewToggle({
           onClick={() => onViewChange(view.value)}
           className={`px-5 py-2 rounded-lg text-[14px] font-medium transition-all duration-200 cursor-pointer ${
             activeView === view.value
-              ? "bg-white shadow-md text-purple-600"
-              : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+              ? "bg-background shadow-md text-primary"
+              : "text-muted-foreground hover:text-foreground/90 hover:bg-background/50"
           }`}
         >
           {view.label}

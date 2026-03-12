@@ -94,10 +94,10 @@ export default function EditSendingProfile() {
 
   if (isFetching) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-gray-50">
+      <div className="h-full w-full flex items-center justify-center bg-surface-subtle">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-500 mx-auto mb-2" />
-          <p className="text-gray-500">Loading profile data...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary/90 mx-auto mb-2" />
+          <p className="text-muted-foreground">Loading profile data...</p>
         </div>
       </div>
     );

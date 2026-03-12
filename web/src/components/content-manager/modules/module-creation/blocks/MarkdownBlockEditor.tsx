@@ -31,7 +31,7 @@ function MdDropdown({ label, options, onInsert }: {
     return (
         <div>
             <button ref={btnRef} type="button" onClick={handleOpen}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium rounded bg-white hover:bg-blue-50 hover:text-blue-700 border border-slate-200 transition-colors text-slate-900">
+                className="flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium rounded bg-surface hover:bg-blue-50 hover:text-blue-700 border border-border transition-colors text-foreground">
                 {label}
                 <ChevronDown className="w-2.5 h-2.5 opacity-60" />
             </button>
@@ -50,12 +50,12 @@ function MdDropdown({ label, options, onInsert }: {
                             exit={{ opacity: 0, y: -4, scale: 0.97 }}
                             transition={{ duration: 0.1 }}
                             style={{ top: pos.top, left: pos.left }}
-                            className="fixed z-50 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden min-w-[120px]"
+                            className="fixed z-50 bg-surface border border-border rounded-lg shadow-lg overflow-hidden min-w-[120px]"
                         >
                             {options.map(opt => (
                                 <button key={opt.label} type="button"
                                     onClick={() => { onInsert(opt.insert); setOpen(false) }}
-                                    className="w-full px-3 py-2 text-left text-[12px] font-medium text-slate-800 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                                    className="w-full px-3 py-2 text-left text-[12px] font-medium text-foreground hover:bg-blue-50 hover:text-blue-700 transition-colors">
                                     {opt.label}
                                 </button>
                             ))}
@@ -87,11 +87,11 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
     return (
         <div
             aria-label="Text block"
-            className={`flex flex-col border rounded-xl overflow-hidden bg-white group transition-colors ${
-                showWarning ? 'border-amber-400' : 'border-slate-200'
+            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${
+                showWarning ? 'border-amber-400' : 'border-border'
             }`}
         >
-            <div className="flex items-center gap-1 px-3 py-1.5 bg-slate-50 border-b border-slate-100">
+            <div className="flex items-center gap-1 px-3 py-1.5 bg-surface-subtle border-b border-border">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-blue-50 text-blue-500">
                     Text
                 </span>
@@ -101,7 +101,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                         {MD_INLINE_ACTIONS.map(({ label, insert, title, labelClass }) => (
                             <button key={label} type="button" title={title}
                                 onClick={() => onUpdate(block.content + insert)}
-                                className="px-2 py-0.5 text-[11px] font-medium rounded bg-white hover:bg-blue-50 hover:text-blue-700 border border-slate-200 transition-colors text-slate-900">
+                                className="px-2 py-0.5 text-[11px] font-medium rounded bg-surface hover:bg-blue-50 hover:text-blue-700 border border-border transition-colors text-foreground">
                                 <span className={labelClass}>{label}</span>
                             </button>
                         ))}
@@ -112,25 +112,25 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                 <div className="ml-auto flex items-center gap-1">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         {mode === 'edit' && (
-                            <span className="text-[10px] text-slate-400">{block.content.length} chars</span>
+                            <span className="text-[10px] text-muted-foreground">{block.content.length} chars</span>
                         )}
                     </div>
-                    <div className="flex rounded-md border border-slate-200 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                    <div className="flex rounded-md border border-border overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         <button type="button" onClick={() => setMode('edit')}
                             className={`flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                                mode === 'edit' ? 'bg-blue-500 text-white' : 'bg-white text-slate-400 hover:text-blue-600'
+                                mode === 'edit' ? 'bg-blue-500 text-white' : 'bg-surface text-muted-foreground hover:text-blue-600'
                             }`}>
                             <Edit3 className="w-2.5 h-2.5" /> Edit
                         </button>
                         <button type="button" onClick={() => setMode('preview')}
                             className={`flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                                mode === 'preview' ? 'bg-blue-500 text-white' : 'bg-white text-slate-400 hover:text-blue-600'
+                                mode === 'preview' ? 'bg-blue-500 text-white' : 'bg-surface text-muted-foreground hover:text-blue-600'
                             }`}>
                             <Eye className="w-2.5 h-2.5" /> Preview
                         </button>
                     </div>
                     <button type="button" onClick={onRemove}
-                        className="ml-1 text-slate-300 hover:text-red-400 transition-colors">
+                        className="ml-1 text-muted-foreground/50 hover:text-red-400 transition-colors">
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -144,7 +144,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                         value={block.content}
                         onChange={e => onUpdate(e.target.value)}
                         placeholder="Write text with Markdown..."
-                        className="font-mono text-sm px-4 py-3 focus:outline-none bg-white text-slate-900 placeholder:text-slate-400 min-h-[80px] border-0 overflow-hidden resize-none"
+                        className="font-mono text-sm px-4 py-3 focus:outline-none bg-surface text-foreground placeholder:text-muted-foreground min-h-[80px] border-0 overflow-hidden resize-none"
                     />
                 ) : (
                     <motion.div key="preview"
@@ -154,7 +154,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                     >
                         {block.content.trim()
                             ? <div dangerouslySetInnerHTML={{ __html: renderMarkdown(block.content) }} />
-                            : <p className="text-slate-300 italic">Nothing to preview yet.</p>
+                            : <p className="text-muted-foreground/50 italic">Nothing to preview yet.</p>
                         }
                     </motion.div>
                 )}

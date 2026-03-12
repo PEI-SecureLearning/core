@@ -29,12 +29,12 @@ export default function QuizQuestionCard({
             {/* The clickable card */}
             <button
                 type="button"
-                className="w-full text-left rounded-lg border border-gray-200 bg-white p-4 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="w-full text-left rounded-lg border border-border bg-background p-4 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 onClick={onToggle}
             >
                 <div className="flex-1 text-left min-w-0">
-                    <p className="text-xs text-gray-500">Question {index + 1}</p>
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-xs text-muted-foreground">Question {index + 1}</p>
+                    <p className="text-sm font-medium text-foreground truncate">
                         {question.prompt || "Untitled question"}
                     </p>
                 </div>
@@ -66,20 +66,20 @@ export default function QuizQuestionCard({
                             onClick={onToggle}
                         />
                         <motion.div
-                            className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col"
+                            className="relative bg-background rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col"
                             initial={{ scale: 0.95, opacity: 0, y: 10 }}
                             animate={{ scale: 1, opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } }}
                             exit={{ scale: 0.95, opacity: 0, y: 10, transition: { duration: 0.2, ease: "easeIn" } }}
                         >
                             {/* Modal Header */}
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
                                 <div>
-                                    <p className="text-xs uppercase tracking-wide text-gray-500">Edit Question</p>
-                                    <h2 className="text-lg font-semibold text-gray-900">Question {index + 1}</h2>
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Edit Question</p>
+                                    <h2 className="text-lg font-semibold text-foreground">Question {index + 1}</h2>
                                 </div>
                                 <button
                                     type="button"
-                                    className="px-4 py-2 bg-purple-700 text-white text-sm font-medium rounded-lg hover:bg-purple-800 transition-colors"
+                                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/80 transition-colors"
                                     onClick={onToggle}
                                 >
                                     Done
@@ -90,12 +90,12 @@ export default function QuizQuestionCard({
                             <div className="flex-1 overflow-y-auto p-6 space-y-5">
                                 {/* Question ID */}
                                 <div>
-                                    <label htmlFor={`${baseId}-id`} className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor={`${baseId}-id`} className="block text-sm font-medium text-foreground/90 mb-1">
                                         Question ID
                                     </label>
                                     <input
                                         id={`${baseId}-id`}
-                                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                        className="w-full rounded-md border border-border/60 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-primary/30"
                                         value={question.id}
                                         onChange={(e) => onUpdate({ id: e.target.value })}
                                     />
@@ -103,12 +103,12 @@ export default function QuizQuestionCard({
 
                                 {/* Prompt */}
                                 <div>
-                                    <label htmlFor={`${baseId}-prompt`} className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label htmlFor={`${baseId}-prompt`} className="block text-sm font-medium text-foreground/90 mb-1">
                                         Prompt
                                     </label>
                                     <textarea
                                         id={`${baseId}-prompt`}
-                                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 min-h-[100px]"
+                                        className="w-full rounded-md border border-border/60 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-primary/30 min-h-[100px]"
                                         value={question.prompt}
                                         onChange={(e) => onUpdate({ prompt: e.target.value })}
                                     />
@@ -117,10 +117,10 @@ export default function QuizQuestionCard({
                                 {/* Options */}
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
-                                        <p className="text-sm font-medium text-gray-700">Options</p>
+                                        <p className="text-sm font-medium text-foreground/90">Options</p>
                                         <button
                                             type="button"
-                                            className="text-xs font-medium text-purple-700 hover:text-purple-800 cursor-pointer"
+                                            className="text-xs font-medium text-primary hover:text-primary/80 cursor-pointer"
                                             onClick={onAddOption}
                                         >
                                             + Add option
@@ -130,7 +130,7 @@ export default function QuizQuestionCard({
                                         {question.options.map((opt, optIndex) => (
                                             <div key={`${question.id}-opt-${optIndex}`} className="flex gap-2">
                                                 <input
-                                                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                    className="flex-1 rounded-md border border-border/60 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-primary/30"
                                                     value={opt}
                                                     onChange={(e) => {
                                                         const nextOptions = [...question.options];
@@ -152,14 +152,14 @@ export default function QuizQuestionCard({
                                 </div>
 
                                 {/* Answer + Feedback */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-gray-100">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-border/40">
                                     <div>
-                                        <label htmlFor={`${baseId}-answer`} className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor={`${baseId}-answer`} className="block text-sm font-medium text-foreground/90 mb-1">
                                             Correct answer
                                         </label>
                                         <select
                                             id={`${baseId}-answer`}
-                                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                            className="w-full rounded-md border border-border/60 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-primary/30"
                                             value={question.answer_index}
                                             onChange={(e) => onUpdate({ answer_index: Number(e.target.value) })}
                                         >
@@ -171,12 +171,12 @@ export default function QuizQuestionCard({
                                         </select>
                                     </div>
                                     <div>
-                                        <label htmlFor={`${baseId}-feedback`} className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor={`${baseId}-feedback`} className="block text-sm font-medium text-foreground/90 mb-1">
                                             Feedback
                                         </label>
                                         <textarea
                                             id={`${baseId}-feedback`}
-                                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                            className="w-full rounded-md border border-border/60 px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-primary/30"
                                             value={question.feedback}
                                             onChange={(e) => onUpdate({ feedback: e.target.value })}
                                             placeholder="Explanation shown after answering"

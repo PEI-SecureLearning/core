@@ -176,17 +176,17 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 16 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        className="w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                        className="w-full max-w-2xl max-h-[85vh] bg-surface rounded-2xl shadow-2xl border border-border overflow-hidden flex flex-col"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-900 truncate">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                            <h2 className="text-lg font-bold text-foreground truncate">
                                 {loading ? 'Loading…' : content?.title ?? 'Content Details'}
                             </h2>
                             <button
                                 type="button"
                                 onClick={handleClose}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -196,7 +196,7 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                         <div className="flex-1 overflow-y-auto px-6 py-5">
                             {loading && (
                                 <div className="flex items-center justify-center py-12">
-                                    <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-[#A78BFA]" />
                                 </div>
                             )}
 
@@ -205,18 +205,18 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                                     {/* Title + Actions */}
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <h3 className="text-xl font-bold text-purple-900">{content.title}</h3>
-                                            <p className="text-xs text-gray-400 mt-0.5 font-mono">{content.content_piece_id}</p>
+                                            <h3 className="text-xl font-bold text-[#A78BFA]">{content.title}</h3>
+                                            <p className="text-xs text-muted-foreground mt-0.5 font-mono">{content.content_piece_id}</p>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 uppercase">
+                                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#7C3AED]/15 text-[#A78BFA] uppercase">
                                                 {content.content_format}
                                             </span>
                                             <button
                                                 type="button"
                                                 disabled={isDeleting}
                                                 onClick={handleDelete}
-                                                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60 transition-colors"
+                                                className="flex items-center gap-1 rounded-lg border border-red-400/30 px-3 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-60 transition-colors"
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                                 {isDeleting ? 'Deleting…' : 'Delete'}
@@ -225,71 +225,71 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                                     </div>
 
                                     {/* Metadata grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm text-gray-700 rounded-lg bg-gray-50 p-4 border border-gray-100">
-                                        <div><span className="font-semibold text-gray-900">Kind:</span> {content.kind}</div>
-                                        <div><span className="font-semibold text-gray-900">Format:</span> {content.content_format}</div>
-                                        <div className="md:col-span-2 break-all"><span className="font-semibold text-gray-900">Path:</span> {content.path}</div>
-                                        <div><span className="font-semibold text-gray-900">Created:</span> {new Date(content.created_at).toLocaleString()}</div>
-                                        <div><span className="font-semibold text-gray-900">Updated:</span> {new Date(content.updated_at).toLocaleString()}</div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm text-foreground rounded-lg bg-surface-subtle p-4 border border-border">
+                                        <div><span className="font-semibold text-foreground">Kind:</span> <span className="text-muted-foreground">{content.kind}</span></div>
+                                        <div><span className="font-semibold text-foreground">Format:</span> <span className="text-muted-foreground">{content.content_format}</span></div>
+                                        <div className="md:col-span-2 break-all"><span className="font-semibold text-foreground">Path:</span> <span className="text-muted-foreground">{content.path}</span></div>
+                                        <div><span className="font-semibold text-foreground">Created:</span> <span className="text-muted-foreground">{new Date(content.created_at).toLocaleString()}</span></div>
+                                        <div><span className="font-semibold text-foreground">Updated:</span> <span className="text-muted-foreground">{new Date(content.updated_at).toLocaleString()}</span></div>
                                     </div>
 
                                     {/* Description */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Description</h4>
-                                        <p className="text-sm text-gray-700">{content.description || 'No description.'}</p>
+                                        <h4 className="text-sm font-semibold text-foreground mb-1">Description</h4>
+                                        <p className="text-sm text-muted-foreground">{content.description || 'No description.'}</p>
                                     </div>
 
                                     {/* Body */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Body</h4>
-                                        <pre className="whitespace-pre-wrap rounded-lg bg-gray-50 border border-gray-200 p-3 text-sm text-gray-700 max-h-60 overflow-y-auto">
+                                        <h4 className="text-sm font-semibold text-foreground mb-1">Body</h4>
+                                        <pre className="whitespace-pre-wrap rounded-lg bg-surface-subtle border border-border p-3 text-sm text-muted-foreground max-h-60 overflow-y-auto">
                                             {content.body || 'No text body.'}
                                         </pre>
                                     </div>
 
                                     {/* Source URL */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Source URL</h4>
+                                        <h4 className="text-sm font-semibold text-foreground mb-1">Source URL</h4>
                                         {content.source_url ? (
                                             <a
                                                 href={content.source_url}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="text-sm text-purple-700 hover:text-purple-900 underline break-all"
+                                                className="text-sm text-[#A78BFA] hover:text-[#7C3AED] underline break-all"
                                             >
                                                 {content.source_url}
                                             </a>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No source URL.</p>
+                                            <p className="text-sm text-muted-foreground">No source URL.</p>
                                         )}
                                     </div>
 
                                     {/* File */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900 mb-1">File</h4>
+                                        <h4 className="text-sm font-semibold text-foreground mb-1">File</h4>
                                         {content.file ? (
-                                            <div className="space-y-1 text-sm text-gray-700">
-                                                <p><span className="font-medium text-gray-900">Name:</span> {content.file.filename}</p>
-                                                <p><span className="font-medium text-gray-900">Type:</span> {content.file.content_type}</p>
-                                                <p><span className="font-medium text-gray-900">Size:</span> {content.file.size} bytes</p>
+                                            <div className="space-y-1 text-sm text-muted-foreground">
+                                                <p><span className="font-medium text-foreground">Name:</span> {content.file.filename}</p>
+                                                <p><span className="font-medium text-foreground">Type:</span> {content.file.content_type}</p>
+                                                <p><span className="font-medium text-foreground">Size:</span> {content.file.size} bytes</p>
 
                                                 {previewFileUrl && isImageFile && (
                                                     <div className="pt-3">
-                                                        <p className="font-medium text-gray-900 mb-2">Preview</p>
+                                                        <p className="font-medium text-foreground mb-2">Preview</p>
                                                         <img
                                                             src={previewFileUrl}
                                                             alt={content.file.filename}
-                                                            className="max-h-72 w-auto rounded-lg border border-gray-200"
+                                                            className="max-h-72 w-auto rounded-lg border border-border"
                                                         />
                                                     </div>
                                                 )}
 
                                                 {previewFileUrl && isVideoFile && (
                                                     <div className="pt-3">
-                                                        <p className="font-medium text-gray-900 mb-2">Preview</p>
+                                                        <p className="font-medium text-foreground mb-2">Preview</p>
                                                         <video
                                                             controls
-                                                            className="max-h-72 w-full rounded-lg border border-gray-200 bg-black"
+                                                            className="max-h-72 w-full rounded-lg border border-border bg-black"
                                                         >
                                                             <source src={previewFileUrl} type={content.file.content_type} />
                                                             Your browser does not support the video element.
@@ -298,23 +298,23 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                                                 )}
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No file attached.</p>
+                                            <p className="text-sm text-muted-foreground">No file attached.</p>
                                         )}
                                     </div>
 
                                     {/* Tags */}
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900 mb-1">Tags</h4>
+                                        <h4 className="text-sm font-semibold text-foreground mb-1">Tags</h4>
                                         {content.tags.length > 0 ? (
                                             <div className="flex flex-wrap gap-2">
                                                 {content.tags.map((tag) => (
-                                                    <span key={tag} className="px-2 py-1 rounded-full bg-gray-100 border border-gray-200 text-xs text-gray-700">
+                                                    <span key={tag} className="px-2 py-1 rounded-full bg-surface-subtle border border-border text-xs text-muted-foreground">
                                                         {tag}
                                                     </span>
                                                 ))}
                                             </div>
                                         ) : (
-                                            <p className="text-sm text-gray-500">No tags.</p>
+                                            <p className="text-sm text-muted-foreground">No tags.</p>
                                         )}
                                     </div>
                                 </div>

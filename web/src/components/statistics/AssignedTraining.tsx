@@ -51,7 +51,7 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
       `}</style>
 
       <div
-        className={`flex-1 bg-white/60 backdrop-blur-xl rounded-b-xl border-t-3 border-purple-500
+        className={`flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
           shadow-lg shadow-slate-300/50 p-5
           hover:shadow-2xl hover:shadow-purple-200/60
           transition-all duration-500 hover:-translate-y-1 group ${className}`}
@@ -60,13 +60,13 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[15px] font-semibold text-slate-800">Assigned Training</h3>
+          <h3 className="text-[15px] font-semibold text-foreground">Assigned Training</h3>
         </div>
 
         {/* Progress Display */}
         <div className="flex items-baseline gap-1 mb-1">
           <span
-            className="text-5xl font-bold text-purple-600 transition-all duration-300"
+            className="text-5xl font-bold text-primary transition-all duration-300"
             style={{
               textShadow: isHovered ? '0 0 20px rgba(139, 92, 246, 0.35)' : 'none',
               transform: isHovered ? 'scale(1.05)' : 'scale(1)',
@@ -76,14 +76,14 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
           >
             {assigned}
           </span>
-          <span className="text-xl text-slate-400 mx-0.5">/</span>
-          <span className="text-2xl font-semibold text-slate-600">{total}</span>
+          <span className="text-xl text-muted-foreground/70 mx-0.5">/</span>
+          <span className="text-2xl font-semibold text-muted-foreground">{total}</span>
         </div>
 
-        <p className="text-[12px] text-slate-500 mb-3 font-medium">courses completed</p>
+        <p className="text-[12px] text-muted-foreground mb-3 font-medium">courses completed</p>
 
         {/* Progress Bar */}
-        <div className="relative w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-1">
+        <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden mb-1">
           <div
             className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-purple-400 via-violet-400 to-purple-600 transition-all duration-700 ease-out"
             style={{
@@ -97,16 +97,16 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[11px] text-purple-500 font-semibold">{completionRate}% complete</span>
-          <span className="text-[11px] text-slate-400">{total - assigned} remaining</span>
+          <span className="text-[11px] text-primary/90 font-semibold">{completionRate}% complete</span>
+          <span className="text-[11px] text-muted-foreground/70">{total - assigned} remaining</span>
         </div>
 
         {/* Details Button */}
         <button
           onClick={() => setShowModal(true)}
-          className="group/btn flex items-center gap-1.5 text-[13px] font-semibold text-purple-600
-            hover:text-purple-700 transition-all duration-200 cursor-pointer
-            bg-purple-50 hover:bg-purple-100 border border-purple-100 hover:border-purple-200
+          className="group/btn flex items-center gap-1.5 text-[13px] font-semibold text-primary
+            hover:text-primary transition-all duration-200 cursor-pointer
+            bg-primary/10 hover:bg-primary/20 border border-purple-100 hover:border-primary/30
             px-3 py-1.5 rounded-lg"
         >
           View details
@@ -117,30 +117,30 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
       {/* Modal */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm"
           style={{ animation: 'fadeIn 0.2s ease-out' }}
           onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
         >
           <div
-            className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 w-full max-w-md border border-white/60"
+            className="bg-background/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 w-full max-w-md border border-white/60"
             style={{ animation: 'slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h4 className="text-lg font-semibold text-slate-800">Assigned Courses</h4>
-                <p className="text-[12px] text-slate-500">{assigned}/{total} completed</p>
+                <h4 className="text-lg font-semibold text-foreground">Assigned Courses</h4>
+                <p className="text-[12px] text-muted-foreground">{assigned}/{total} completed</p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer group/close"
+                className="p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer group/close"
               >
-                <X size={18} className="text-slate-400 group-hover/close:text-slate-600 transition-colors group-hover/close:rotate-90 transition-transform duration-200" />
+                <X size={18} className="text-muted-foreground/70 group-hover/close:text-muted-foreground transition-colors group-hover/close:rotate-90 transition-transform duration-200" />
               </button>
             </div>
 
             {/* Mini progress bar in modal */}
-            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mb-5">
+            <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mb-5">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-700"
                 style={{ width: `${completionRate}%` }}
@@ -153,12 +153,12 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
                   key={idx}
                   href={course.href}
                   className="row-slide flex items-center justify-between p-3 rounded-xl
-                    bg-slate-50/80 hover:bg-purple-50/60 border border-transparent hover:border-purple-100/60
+                    bg-surface-subtle/80 hover:bg-primary/10/60 border border-transparent hover:border-purple-100/60
                     group/row"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${course.done ? 'bg-emerald-500' : 'bg-amber-400'}`} />
-                    <span className="text-[14px] font-medium text-slate-700 group-hover/row:text-purple-700 transition-colors">
+                    <span className="text-[14px] font-medium text-foreground/90 group-hover/row:text-primary transition-colors">
                       {course.name}
                     </span>
                   </div>

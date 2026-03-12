@@ -49,7 +49,7 @@ const ExpandButton = ({
             disabled={isExternallyDisabled || isActive}
             title={isExternallyDisabled ? loadingLabel : undefined}
             className={`
-                group relative overflow-hidden outline-none bg-purple-700/80 rounded-[10px]
+                group relative overflow-hidden outline-none bg-primary/80 rounded-[10px]
                 px-[20px] py-[6px] text-[1.1em] text-white font-['Inter'] cursor-pointer
                 transition-all duration-300 ease-in-out h-[38px] min-w-[140px]
                 ${isActive ? 'pr-[73px]' : 'hover:pr-[73px]'}

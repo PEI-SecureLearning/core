@@ -34,6 +34,7 @@ import { Route as SendingProfilesNewRouteImport } from './routes/sending-profile
 import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
 import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
+import { Route as ContentManagerSettingsRouteImport } from './routes/content-manager/settings'
 import { Route as ContentManagerReportRouteImport } from './routes/content-manager/report'
 import { Route as ContentManagerModulesRouteImport } from './routes/content-manager/modules'
 import { Route as ContentManagerHelpRouteImport } from './routes/content-manager/help'
@@ -46,6 +47,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
 import { Route as AdminHelpRouteImport } from './routes/admin/help'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses/$courseId/index'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
 import { Route as ContentManagerModulesNewRouteImport } from './routes/content-manager/modules_.new'
@@ -182,6 +184,11 @@ const ContentManagerTemplatesRoute = ContentManagerTemplatesRouteImport.update({
   path: '/content-manager/templates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentManagerSettingsRoute = ContentManagerSettingsRouteImport.update({
+  id: '/content-manager/settings',
+  path: '/content-manager/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContentManagerReportRoute = ContentManagerReportRouteImport.update({
   id: '/content-manager/report',
   path: '/content-manager/report',
@@ -240,6 +247,11 @@ const AdminLogsRoute = AdminLogsRouteImport.update({
 const AdminHelpRoute = AdminHelpRouteImport.update({
   id: '/help',
   path: '/help',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
@@ -313,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
@@ -322,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/help': typeof ContentManagerHelpRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
   '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -361,6 +375,7 @@ export interface FileRoutesByTo {
   '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
@@ -370,6 +385,7 @@ export interface FileRoutesByTo {
   '/content-manager/help': typeof ContentManagerHelpRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
   '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
@@ -410,6 +426,7 @@ export interface FileRoutesById {
   '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
@@ -419,6 +436,7 @@ export interface FileRoutesById {
   '/content-manager/help': typeof ContentManagerHelpRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
   '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -612,6 +630,7 @@ export interface RootRouteChildren {
   ContentManagerHelpRoute: typeof ContentManagerHelpRoute
   ContentManagerModulesRoute: typeof ContentManagerModulesRoute
   ContentManagerReportRoute: typeof ContentManagerReportRoute
+  ContentManagerSettingsRoute: typeof ContentManagerSettingsRoute
   ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
@@ -968,6 +987,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminHelpRoute: typeof AdminHelpRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminReportRoute: typeof AdminReportRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -979,6 +999,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminHelpRoute: AdminHelpRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminReportRoute: AdminReportRoute,
   AdminUsersRoute: AdminUsersRoute,
@@ -1037,6 +1058,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContentManagerHelpRoute: ContentManagerHelpRoute,
   ContentManagerModulesRoute: ContentManagerModulesRoute,
   ContentManagerReportRoute: ContentManagerReportRoute,
+  ContentManagerSettingsRoute: ContentManagerSettingsRoute,
   ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
   SendingProfilesIdRoute: SendingProfilesIdRoute,

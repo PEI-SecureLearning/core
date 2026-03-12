@@ -3,9 +3,9 @@ import { FileText } from "lucide-react";
 
 export function EmptyState() {
   return (
-    <Card className="bg-white/80 border-dashed">
+    <Card className="bg-background/80 border-dashed">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-slate-800">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <FileText size={18} />
           No templates yet
         </CardTitle>

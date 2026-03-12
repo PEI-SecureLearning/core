@@ -35,7 +35,7 @@ export default function PolicyEditor({
             >
                 <div className="flex items-center gap-2">
                     <motion.svg
-                        className="w-4 h-4 text-gray-500"
+                        className="w-4 h-4 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -45,8 +45,8 @@ export default function PolicyEditor({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </motion.svg>
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Policy (Markdown)</h2>
-                        <p className="text-xs text-gray-500">Last updated: {policyUpdated}</p>
+                        <h2 className="text-lg font-semibold text-foreground">Policy (Markdown)</h2>
+                        <p className="text-xs text-muted-foreground">Last updated: {policyUpdated}</p>
                     </div>
                 </div>
                 <AnimatePresence>
@@ -68,7 +68,7 @@ export default function PolicyEditor({
                             />
                             <button
                                 type="button"
-                                className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
+                                className="px-3 py-2 rounded-lg border border-border text-sm hover:bg-surface-subtle cursor-pointer disabled:opacity-60"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={importingPolicy}
                             >
@@ -94,20 +94,20 @@ export default function PolicyEditor({
                             <textarea
                                 value={policyDraft}
                                 onChange={(e) => onDraftChange(e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 p-3 text-sm font-mono resize-none h-full"
+                                className="w-full rounded-lg border border-border p-3 text-sm font-mono resize-none h-full"
                             />
-                            <div className="rounded-lg border border-gray-200 p-3 bg-white overflow-y-auto">
+                            <div className="rounded-lg border border-border p-3 bg-background overflow-y-auto">
                                 <div className="flex justify-end pb-2">
                                     <button
                                         type="button"
-                                        className="text-xs text-purple-700 hover:text-purple-800 cursor-pointer"
+                                        className="text-xs text-primary hover:text-primary/80 cursor-pointer"
                                         onClick={onOpenPreview}
                                     >
                                         Open full preview
                                     </button>
                                 </div>
                                 <ReactMarkdown
-                                    className="prose prose-sm max-w-none text-gray-800"
+                                    className="prose prose-sm max-w-none text-foreground"
                                     components={markdownComponents}
                                 >
                                     {policyDraft}

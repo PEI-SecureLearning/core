@@ -40,7 +40,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
 
     return (
         <>
-        <div className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-white group">
+        <div className="flex flex-col border border-violet-200 rounded-xl overflow-hidden bg-surface group">
             <div className="flex items-center gap-1 px-3 py-1.5 bg-violet-50 border-b border-violet-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-violet-100 text-violet-600">
                     Media
@@ -54,7 +54,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
                             className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border transition-all ${
                                 block.mediaType === o.type
                                     ? 'bg-violet-600 text-white border-violet-600'
-                                    : 'bg-white text-slate-400 border-slate-200 hover:border-violet-300 hover:text-violet-600'
+                                    : 'bg-surface text-muted-foreground border-border hover:border-violet-300 hover:text-violet-600'
                             }`}
                         >
                             {o.icon}
@@ -63,27 +63,27 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
                     ))}
                 </div>
                 <button type="button" onClick={onRemove}
-                    className="ml-auto text-slate-300 hover:text-red-400 transition-colors">
+                    className="ml-auto text-muted-foreground/50 hover:text-red-400 transition-colors">
                     <X className="w-3.5 h-3.5" />
                 </button>
             </div>
 
             <div className="flex flex-col gap-2.5 px-4 py-3">
                 <div className="flex flex-col gap-1">
-                    <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                         {meta.label} source
                     </label>
 
                     {block.contentId ? (
                         /* ── Platform file chosen — show media preview with overlay controls ── */
-                        <div className="relative rounded-lg overflow-hidden border border-violet-200 bg-slate-50 group/preview">
+                        <div className="relative rounded-lg overflow-hidden border border-violet-200 bg-surface-subtle group/preview">
                             {/* Media preview */}
                             {block.mediaType === 'image' && block.url && (
                                 <img src={block.url} alt={block.caption || 'preview'}
                                     className="max-h-48 w-full object-contain" />
                             )}
                             {block.mediaType === 'image' && !block.url && (
-                                <div className="flex items-center justify-center h-24 text-slate-300 gap-2 text-xs italic">
+                                <div className="flex items-center justify-center h-24 text-muted-foreground/50 gap-2 text-xs italic">
                                     <ImageIcon className="w-4 h-4" /> Loading…
                                 </div>
                             )}
@@ -129,7 +129,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
                     value={block.caption}
                     onChange={e => onUpdate({ caption: e.target.value })}
                     placeholder="Caption (optional)…"
-                    className="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300/50 text-slate-700 placeholder:text-slate-400"
+                    className="text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300/50 text-foreground placeholder:text-muted-foreground"
                 />
             </div>
         </div>

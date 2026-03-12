@@ -38,24 +38,24 @@ export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
     return (
         <div className="flex flex-col h-full">
             <div className="px-4 pt-4 pb-3 flex-shrink-0">
-                <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
+                <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
                     Module Library
                 </h2>
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search modules..."
-                        className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300"
+                        className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
                     />
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2">
                 {filtered.length === 0 ? (
-                    <p className="text-sm text-slate-400 italic text-center py-8">
+                    <p className="text-sm text-muted-foreground italic text-center py-8">
                         No modules found
                     </p>
                 ) : (

@@ -25,26 +25,26 @@ interface ButtonStateConfig {
 }
 
 const BUTTON_BASE_CLASSES = "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:cursor-not-allowed";
-const BORDER_BASE = "border-2 bg-white";
+const BORDER_BASE = "border-2 bg-background";
 
 const BUTTON_STATES: Record<ButtonState, ButtonStateConfig> = {
   success: {
-    className: `${BORDER_BASE} border-green-500 text-green-700`,
+    className: `${BORDER_BASE} border-green-500 text-green-600`,
     title: "Test passed",
     icon: <CheckCircle className="h-4 w-4" />,
   },
   error: {
-    className: `${BORDER_BASE} border-red-500 text-red-700 hover:bg-red-50`,
+    className: `${BORDER_BASE} border-red-500 text-red-500 hover:bg-red-500/10`,
     title: "Test failed - click to retry",
     icon: <XCircle className="h-4 w-4" />,
   },
   testing: {
-    className: `${BORDER_BASE} border-amber-500 text-amber-700`,
+    className: `${BORDER_BASE} border-amber-500 text-amber-600`,
     title: "Testing connection",
     icon: <Loader2 className="h-4 w-4 animate-spin" />,
   },
   default: {
-    className: `${BORDER_BASE} border-amber-500 text-amber-700 hover:bg-amber-50 disabled:opacity-50`,
+    className: `${BORDER_BASE} border-amber-500 text-amber-600 hover:bg-amber-500/10 disabled:opacity-50`,
     title: "Test SMTP connection",
   },
 };
@@ -92,10 +92,10 @@ function ProfileSmtpConfig({
   const buttonTitle = isSuccess && testStatus ? testStatus : config.title;
 
   return (
-    <div className="liquid-glass-card p-6 relative z-10">
+    <div className="bg-surface border border-border rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h4 className="text-gray-800 font-semibold flex items-center gap-2">
-          <Server className="h-5 w-5 text-purple-500" />
+        <h4 className="text-foreground font-semibold flex items-center gap-2">
+          <Server className="h-5 w-5 text-primary/90" />
           SMTP Server Details
         </h4>
         
@@ -123,46 +123,46 @@ function ProfileSmtpConfig({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Host *</label>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">Host *</label>
           <input
             type="text"
             value={host}
             onChange={(e) => setHost(e.target.value)}
             placeholder="smtp.provider.com"
-            className="liquid-glass-input w-full px-4 py-2.5 text-gray-800 placeholder-gray-400"
+            className="w-full px-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Port *</label>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">Port *</label>
           <input
             type="number"
             value={port}
             onChange={(e) => setPort(Number(e.target.value))}
-            className="liquid-glass-input w-full px-4 py-2.5 text-gray-800 placeholder-gray-400"
+            className="w-full px-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           />
         </div>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">Username *</label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="liquid-glass-input w-full px-4 py-2.5 text-gray-800 placeholder-gray-400"
+            className="w-full px-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
             autoComplete="off"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+          <label className="block text-sm font-medium text-foreground/90 mb-1">Password *</label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-accent-secondary" />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="liquid-glass-input w-full pl-10 pr-4 py-2.5 text-gray-800 placeholder-gray-400"
+              className="w-full pl-10 pr-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
               autoComplete="new-password"
             />
           </div>

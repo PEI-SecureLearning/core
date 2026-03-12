@@ -136,13 +136,13 @@ export function BulkImportModal({
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50 p-6">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden border border-gray-200">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div className="bg-background rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden border border-border">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-surface-subtle">
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Bulk Import Users</h2>
-                        <p className="text-sm text-gray-500">{bulkUsers.length} users imported from CSV</p>
+                        <h2 className="text-lg font-semibold text-foreground">Bulk Import Users</h2>
+                        <p className="text-sm text-muted-foreground">{bulkUsers.length} users imported from CSV</p>
                     </div>
-                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all cursor-pointer">
+                    <button onClick={onClose} className="p-2 text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted rounded-lg transition-all cursor-pointer">
                         <X size={20} />
                     </button>
                 </div>
@@ -150,7 +150,7 @@ export function BulkImportModal({
                 <div className="p-6 max-h-[50vh] overflow-y-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="text-left text-gray-500 border-b border-gray-200">
+                            <tr className="text-left text-muted-foreground border-b border-border">
                                 <th className="pb-3 font-medium">Username</th>
                                 <th className="pb-3 font-medium">Name</th>
                                 <th className="pb-3 font-medium">Email</th>
@@ -161,20 +161,20 @@ export function BulkImportModal({
                         </thead>
                         <tbody>
                             {bulkUsers.map((u, i) => (
-                                <tr key={i} className="border-b border-gray-100 last:border-0">
-                                    <td className="py-3 text-gray-900">{u.username}</td>
-                                    <td className="py-3 text-gray-700">{u.name}</td>
-                                    <td className="py-3 text-gray-600">{u.email}</td>
+                                <tr key={i} className="border-b border-border/40 last:border-0">
+                                    <td className="py-3 text-foreground">{u.username}</td>
+                                    <td className="py-3 text-foreground/90">{u.name}</td>
+                                    <td className="py-3 text-muted-foreground">{u.email}</td>
                                     <td className="py-3">
-                                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+                                        <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground">
                                             {u.role || "—"}
                                         </span>
                                     </td>
-                                    <td className="py-3 text-gray-600">
+                                    <td className="py-3 text-muted-foreground">
                                         {u.groups && u.groups.length ? u.groups.join(", ") : "—"}
                                     </td>
                                     <td className="py-3">
-                                        <span className={`text-xs ${u.status.includes("created") ? "text-green-600" : u.status.includes("error") ? "text-rose-600" : "text-gray-400"}`}>
+                                        <span className={`text-xs ${u.status.includes("created") ? "text-green-600" : u.status.includes("error") ? "text-rose-600" : "text-muted-foreground/70"}`}>
                                             {u.status}
                                         </span>
                                     </td>
@@ -184,8 +184,8 @@ export function BulkImportModal({
                     </table>
                 </div>
 
-                <div className="px-6 py-4 flex justify-end gap-3 border-t border-gray-100 bg-gray-50">
-                    <button onClick={onClose} className="px-5 py-2.5 rounded-xs text-[14px] font-medium text-gray-600 bg-white hover:bg-gray-100 transition-all border border-gray-200 cursor-pointer">
+                <div className="px-6 py-4 flex justify-end gap-3 border-t border-border/40 bg-surface-subtle">
+                    <button onClick={onClose} className="px-5 py-2.5 rounded-xs text-[14px] font-medium text-muted-foreground bg-background hover:bg-muted transition-all border border-border cursor-pointer">
                         Close
                     </button>
                     <button

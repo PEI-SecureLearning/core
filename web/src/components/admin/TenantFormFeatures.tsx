@@ -26,8 +26,8 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
                 flex flex-row items-center w-full text-left relative cursor-pointer group
                 p-4 rounded-2xl border-2 transition-all duration-300 ease-out
                 ${enabled
-                    ? 'border-purple-500 bg-white shadow-xl shadow-purple-500/10'
-                    : 'border-slate-100 bg-slate-50/50 hover:border-slate-200 hover:bg-white'
+                    ? 'border-primary bg-background shadow-xl shadow-purple-500/10'
+                    : 'border-border/40 bg-surface-subtle/50 hover:border-border hover:bg-background'
                 }
             `}
         >
@@ -38,8 +38,8 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
                         absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center
                         transition-all duration-500 z-10
                         ${enabled
-                        ? 'bg-purple-600 scale-100 rotate-0'
-                        : 'bg-slate-200 scale-90 -rotate-12 group-hover:scale-100 group-hover:rotate-0'
+                        ? 'bg-primary scale-100 rotate-0'
+                        : 'bg-muted/60 scale-90 -rotate-12 group-hover:scale-100 group-hover:rotate-0'
                     }
                     `}>
                     <Check className={`w-3.5 h-3.5 transition-opacity ${enabled ? 'opacity-100 text-white' : 'opacity-0'}`} />
@@ -55,10 +55,10 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
                 </div>
 
                 {/* Content */}
-                <h4 className={`text-[13px] font-bold mb-1 transition-colors duration-300 ${enabled ? 'text-purple-700' : 'text-slate-900'}`}>
+                <h4 className={`text-[13px] font-bold mb-1 transition-colors duration-300 ${enabled ? 'text-primary' : 'text-foreground'}`}>
                     {title}
                 </h4>
-                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
                     {description}
                 </p>
             </div>
@@ -67,11 +67,11 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
                     shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider
                     transition-all duration-300 border
                     ${enabled
-                    ? 'bg-purple-600 text-white border-transparent'
-                    : 'bg-white text-slate-400 border-slate-200'
+                    ? 'bg-primary text-white border-transparent'
+                    : 'bg-background text-muted-foreground/70 border-border'
                 }
                 `}>
-                <span className={`w-1.5 h-1.5 rounded-full ${enabled ? 'bg-white animate-pulse' : 'bg-slate-300'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${enabled ? 'bg-background animate-pulse' : 'bg-muted-foreground/40'}`} />
                 {enabled ? 'Active feature' : 'Deployment Disabled'}
             </div>
         </motion.button>
@@ -82,14 +82,14 @@ export function TenantFormFeatures({
     features, setFeatures
 }: TenantFormFeaturesProps) {
     return (
-        <div className="w-full bg-white p-2 rounded-2xl h-full flex flex-col">
+        <div className="w-full bg-background p-2 rounded-2xl h-full flex flex-col">
             <div className="flex items-center gap-2  px-1">
                 <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow shadow-purple-200/50">
                     <Plug className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                    <h3 className="text-md font-bold text-slate-700">Feature Modules</h3>
-                    <p className="text-xs text-slate-500">Select features for this tenant</p>
+                    <h3 className="text-md font-bold text-foreground/90">Feature Modules</h3>
+                    <p className="text-xs text-muted-foreground">Select features for this tenant</p>
                 </div>
             </div>
 

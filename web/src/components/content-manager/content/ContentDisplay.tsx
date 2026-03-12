@@ -192,7 +192,7 @@ export function ContentDisplay({
                     <button
                         type="button"
                         onClick={() => setSelectedDir(dir)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-sm ${isSelected ? "bg-purple-100 text-purple-900" : "text-gray-700 hover:bg-gray-100"
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-sm ${isSelected ? "bg-[#7C3AED]/15 text-[#A78BFA]" : "text-muted-foreground hover:bg-surface-subtle"
                             }`}
                         style={{ paddingLeft: `${8 + level * 14}px` }}
                     >
@@ -208,7 +208,7 @@ export function ContentDisplay({
                         ) : (
                             <span className="w-3" />
                         )}
-                        {isExpanded ? <FolderOpen className="w-4 h-4 text-purple-500" /> : <Folder className="w-4 h-4 text-purple-500" />}
+                        {isExpanded ? <FolderOpen className="w-4 h-4 text-[#A78BFA]" /> : <Folder className="w-4 h-4 text-[#A78BFA]" />}
                         <span className="truncate">{label}</span>
                     </button>
                     {isExpanded && (
@@ -219,7 +219,7 @@ export function ContentDisplay({
                                     className="flex items-center gap-1.5 py-1"
                                     style={{ paddingLeft: `${8 + (level + 1) * 14}px` }}
                                 >
-                                    <Folder className="w-4 h-4 text-purple-500 shrink-0" />
+                                    <Folder className="w-4 h-4 text-[#A78BFA] shrink-0" />
                                     <input
                                         autoFocus
                                         value={newFolderName}
@@ -230,7 +230,7 @@ export function ContentDisplay({
                                         }}
                                         onBlur={confirmCreateFolder}
                                         placeholder="folder name"
-                                        className="flex-1 min-w-0 rounded border border-purple-300 px-1.5 py-0.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-purple-400 bg-purple-50/50"
+                                        className="flex-1 min-w-0 rounded border border-[#7C3AED]/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#7C3AED] bg-surface"
                                     />
                                     <button
                                         type="button"
@@ -245,7 +245,7 @@ export function ContentDisplay({
                                         type="button"
                                         onMouseDown={(e) => e.preventDefault()}
                                         onClick={cancelCreateFolder}
-                                        className="p-0.5 rounded text-gray-400 hover:bg-gray-100"
+                                        className="p-0.5 rounded text-muted-foreground hover:bg-surface"
                                         title="Cancel"
                                     >
                                         <X className="w-3.5 h-3.5" />
@@ -264,14 +264,14 @@ export function ContentDisplay({
             animate={{ opacity: 1 }}
             className="w-full h-full flex gap-4"
         >
-            <aside className="w-72 min-w-72 bg-white rounded-b-xl rounded-t-sm border border-gray-200 p-3 overflow-y-auto shadow-md">
-                <div className="flex items-center justify-between mb-2 border-b-2 border-gray-100">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">Directories</p>
+            <aside className="w-72 min-w-72 bg-surface rounded-b-xl rounded-t-sm border border-border p-3 overflow-y-auto">
+                <div className="flex items-center justify-between mb-2 border-b-2 border-border pb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Directories</p>
                     <button
                         type="button"
                         onClick={startCreatingFolder}
                         title="Create folder"
-                        className="p-1 rounded-md text-gray-400 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                        className="p-1 rounded-md text-muted-foreground hover:text-[#A78BFA] hover:bg-[#7C3AED]/10 transition-colors"
                     >
                         <FolderPlus className="w-4 h-4" />
                     </button>
@@ -279,34 +279,34 @@ export function ContentDisplay({
                 <div className="space-y-1">{renderTree("")}</div>
             </aside>
 
-            <div className="flex-1 bg-white rounded-b-xl rounded-t-sm border border-gray-200 overflow-y-auto shadow-md">
-                <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-3">
+            <div className="flex-1 bg-surface rounded-b-xl rounded-t-sm border border-border overflow-y-auto">
+                <div className="px-4 py-3 border-b border-border flex items-center gap-3">
                     <div className="text-sm shrink-0">
-                        <span className="font-semibold text-gray-900">{selectedDir}</span>
-                        <span className="text-gray-500"> ({visibleItems.length} items)</span>
+                        <span className="font-semibold text-foreground">{selectedDir}</span>
+                        <span className="text-muted-foreground"> ({visibleItems.length} items)</span>
                     </div>
 
                     <div className="flex-1" />
 
                     {/* Search */}
                     <div className="relative w-56">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="text"
                             placeholder="Search content…"
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="w-full bg-white border border-gray-200 rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700 placeholder:text-gray-400"
+                            className="w-full bg-surface border border-border rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
                     {/* Sort */}
                     <div className="relative">
-                        <SortAsc className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                        <SortAsc className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                         <select
                             value={sortBy}
                             onChange={(e) => onSortChange(e.target.value)}
-                            className="bg-white border border-gray-200 rounded-lg py-1.5 pl-8 pr-6 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer text-gray-600"
+                            className="bg-surface border border-border rounded-lg py-1.5 pl-8 pr-6 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 cursor-pointer text-muted-foreground"
                         >
                             <option value="title">Sort by Name</option>
                             <option value="id">Newest First</option>
@@ -317,28 +317,29 @@ export function ContentDisplay({
                     <button
                         type="button"
                         onClick={() => setShowNewModal(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-sm font-semibold transition-all duration-200 active:scale-[0.97]"
+                        style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
                     >
                         <Plus className="w-3.5 h-3.5" />
                         File
                     </button>
                 </div>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-border">
                     {visibleItems.map((item) => (
-                        <div key={item.id} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-gray-50">
+                        <div key={item.id} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-surface-subtle transition-colors">
                             <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                                <p className="text-xs text-gray-500 truncate">{item.path}</p>
+                                <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                                <p className="text-xs text-muted-foreground truncate">{item.path}</p>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
-                                <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 uppercase">
+                                <span className="text-xs px-2 py-1 rounded-full bg-[#7C3AED]/15 text-[#A78BFA] uppercase">
                                     {item.content_format}
                                 </span>
                                 <button
                                     onClick={() => onViewContent(item.content_piece_id)}
                                     aria-label="Open content"
                                     title="Open"
-                                    className="p-1 rounded text-purple-700 hover:text-purple-900 hover:bg-purple-50"
+                                    className="p-1 rounded text-[#A78BFA] hover:text-[#7C3AED] hover:bg-[#7C3AED]/10 transition-colors"
                                 >
                                     <Eye className="w-4 h-4" />
                                 </button>
@@ -346,7 +347,7 @@ export function ContentDisplay({
                                     onClick={() => onDeleteContent(item.content_piece_id)}
                                     aria-label="Delete content"
                                     title="Delete"
-                                    className="p-1 rounded text-red-700 hover:text-red-900 hover:bg-red-50"
+                                    className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -354,7 +355,7 @@ export function ContentDisplay({
                         </div>
                     ))}
                     {visibleItems.length === 0 && (
-                        <div className="px-4 py-8 text-sm text-gray-500 flex items-center gap-2">
+                        <div className="px-4 py-8 text-sm text-muted-foreground flex items-center gap-2">
                             <FileStack className="w-4 h-4" />
                             No content in this directory.
                         </div>

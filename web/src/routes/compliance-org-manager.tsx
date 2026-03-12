@@ -341,23 +341,23 @@ function ComplianceOrgManager() {
   };
 
   // ── render ─────────────────────────────────────────────────────────────────
-  if (loading) return <div className="p-6 text-sm text-gray-500">Loading compliance data…</div>;
+  if (loading) return <div className="p-6 text-sm text-muted-foreground">Loading compliance data…</div>;
 
   return (
     <div className="px-6 py-4 flex flex-col gap-6 h-full overflow-hidden">
       {/* Page header */}
-      <div className="border-b border-gray-200 pb-4 flex items-start justify-between shrink-0">
+      <div className="border-b border-border pb-4 flex items-start justify-between shrink-0">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-700">Compliance Management</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-foreground/90">Compliance Management</h1>
+          <p className="text-sm text-muted-foreground">
             Update your organization&apos;s compliance policy and quiz. Changes will require members to re-accept the policy.
           </p>
         </div>
         <button
           data-testid="save-quiz-btn"
           className={`px-5 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-colors disabled:opacity-60 ${hasPendingChanges
-            ? "bg-purple-700 text-white hover:bg-purple-800"
-            : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+            ? "bg-primary text-white hover:bg-primary/80"
+            : "bg-muted/60 text-muted-foreground hover:bg-muted/80"
             }`}
           onClick={saveAll}
           disabled={saving || !hasPendingChanges}

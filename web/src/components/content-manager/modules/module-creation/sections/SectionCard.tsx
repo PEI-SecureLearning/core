@@ -136,17 +136,17 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm transition-all ${cardBorder}`}
+            className={`flex flex-col bg-surface rounded-2xl overflow-hidden shadow-sm transition-all ${cardBorder}`}
         >
             {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
             <div
                 onClick={onSelect}
                 onDoubleClick={e => { e.stopPropagation(); onUpdate({ collapsed: !section.collapsed }) }}
                 aria-label={`Select section ${index + 1}`}
-                className="flex items-center gap-2 px-4 py-3 bg-slate-50 border-b border-slate-100 relative cursor-pointer w-full text-left"
+                className="flex items-center gap-2 px-4 py-3 bg-surface-subtle border-b border-border relative cursor-pointer w-full text-left"
             >
                 <span
-                    className={`cursor-grab active:cursor-grabbing text-slate-300 ${theme.grip} transition-colors flex-shrink-0 touch-none relative z-10 ${isDragging ? theme.grip.replace('hover:', '') : ''}`}
+                    className={`cursor-grab active:cursor-grabbing text-muted-foreground/50 ${theme.grip} transition-colors flex-shrink-0 touch-none relative z-10 ${isDragging ? theme.grip.replace('hover:', '') : ''}`}
                     {...attributes}
                     {...listeners}
                     aria-label="Drag to reorder section"
@@ -181,7 +181,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                 <div className="flex-1" />
 
                 {section.blocks.length > 0 && (
-                    <span className="text-[10px] text-slate-400 flex-shrink-0 relative z-10 pointer-events-none">
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0 relative z-10 pointer-events-none">
                         {section.blocks.length} {section.blocks.length === 1 ? 'block' : 'blocks'}
                     </span>
                 )}
@@ -193,7 +193,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                 <button
                     type="button"
                     onClick={e => { e.stopPropagation(); onUpdate({ collapsed: !section.collapsed }) }}
-                    className={`text-slate-400 ${theme.chevron} transition-colors flex-shrink-0 relative z-10`}
+                    className={`text-muted-foreground ${theme.chevron} transition-colors flex-shrink-0 relative z-10`}
                 >
                     <motion.div animate={{ rotate: section.collapsed ? -90 : 0 }} transition={{ duration: 0.2 }}>
                         <ChevronDown className="w-4 h-4" />
@@ -203,7 +203,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                 <button
                     type="button"
                     onClick={e => { e.stopPropagation(); onRemove() }}
-                    className="text-slate-300 hover:text-red-400 transition-colors flex-shrink-0 relative z-10"
+                    className="text-muted-foreground/50 hover:text-red-400 transition-colors flex-shrink-0 relative z-10"
                 >
                     <Trash2 className="w-4 h-4" />
                 </button>
@@ -219,8 +219,8 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                     >
                         <div className="flex flex-col gap-3 p-4">
                             {section.blocks.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-                                    <p className="text-sm font-medium text-slate-500 mb-4">This section is empty</p>
+                                <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-surface-subtle rounded-lg border-2 border-dashed border-border">
+                                    <p className="text-sm font-medium text-muted-foreground mb-4">This section is empty</p>
                                     <AddBlockMenu onAdd={addBlock} accent={accentColor} />
                                 </div>
                             ) : (

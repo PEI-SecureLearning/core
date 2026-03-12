@@ -145,12 +145,12 @@ export default function EmailTemplatePicker() {
 
       {/* Sending Profile Selector */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-normal text-slate-500 tracking-wide uppercase flex items-center gap-1.5">
+        <label className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5">
           <Send size={12} />
           Sending Profile <span className="text-rose-400">*</span>
         </label>
         {sendingProfilesLoading ? (
-          <div className="flex items-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="animate-spin" size={16} />
             Loading sending profiles...
           </div>
@@ -166,7 +166,7 @@ export default function EmailTemplatePicker() {
               onChange={(e) =>
                 handleSelectSendingProfile(Number(e.target.value))
               }
-              className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full max-w-md cursor-pointer"
+              className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full max-w-md cursor-pointer"
               style={inputStyle}
             >
               <option value="" disabled>
@@ -179,7 +179,7 @@ export default function EmailTemplatePicker() {
               ))}
             </select>
             {data.sending_profile_id && (
-              <p className="text-[12px] text-slate-500">
+              <p className="text-[12px] text-muted-foreground">
                 SMTP:{" "}
                 {
                   sendingProfiles.find((p) => p.id === data.sending_profile_id)
@@ -193,14 +193,14 @@ export default function EmailTemplatePicker() {
 
       {/* Search */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-normal text-slate-500 tracking-wide uppercase">
+        <label className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase">
           Search Email Templates
         </label>
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded-xl px-4 py-3 text-[14px] text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full max-w-md"
+          className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 placeholder:text-muted-foreground/70 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full max-w-md"
           style={inputStyle}
           placeholder="Search templates..."
         />
@@ -209,7 +209,7 @@ export default function EmailTemplatePicker() {
       {/* Templates Grid */}
       <div className="flex-1 ">
         {isLoading ? (
-          <div className="flex items-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="animate-spin" size={16} />
             Loading templates...
           </div>
@@ -222,8 +222,8 @@ export default function EmailTemplatePicker() {
                   key={template.id}
                   onClick={() => handleSelectTemplate(template)}
                   className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${selected
-                      ? "ring-2 ring-purple-500 bg-purple-50/50"
-                      : "hover:bg-slate-50/50"
+                      ? "ring-2 ring-primary/30 bg-primary/10/50"
+                      : "hover:bg-surface-subtle/50"
                     }`}
                   style={{
                     background: selected
@@ -235,20 +235,20 @@ export default function EmailTemplatePicker() {
                   }}
                 >
                   {selected && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary/90 flex items-center justify-center">
                       <Check size={14} className="text-white" strokeWidth={3} />
                     </div>
                   )}
                   <div className="flex items-center gap-2 mb-2">
-                    <Mail size={16} className="text-purple-500" />
-                    <h3 className="text-[14px] font-medium text-slate-700">
+                    <Mail size={16} className="text-primary/90" />
+                    <h3 className="text-[14px] font-medium text-foreground/90">
                       {template.name}
                     </h3>
                   </div>
-                  <p className="text-[13px] font-medium text-slate-600 mb-1">
+                  <p className="text-[13px] font-medium text-muted-foreground mb-1">
                     {template.subject}
                   </p>
-                  <p className="text-[12px] text-slate-500 line-clamp-2">
+                  <p className="text-[12px] text-muted-foreground line-clamp-2">
                     {template.description || "No description provided."}
                   </p>
                 </div>
@@ -259,9 +259,9 @@ export default function EmailTemplatePicker() {
 
         {filteredTemplates.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Mail size={40} className="text-slate-300 mb-3" />
-            <p className="text-slate-500 text-[14px]">No templates found</p>
-            <p className="text-slate-400 text-[13px]">
+            <Mail size={40} className="text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground text-[14px]">No templates found</p>
+            <p className="text-muted-foreground/70 text-[13px]">
               Try a different search term
             </p>
           </div>
@@ -270,7 +270,7 @@ export default function EmailTemplatePicker() {
 
       {/* Selected indicator */}
       {(data.email_template || data.email_template_id) && (
-        <div className="text-[13px] text-purple-600 font-medium">
+        <div className="text-[13px] text-primary font-medium">
           ✓ Selected:{" "}
           {data.email_template?.name ||
             templates.find(

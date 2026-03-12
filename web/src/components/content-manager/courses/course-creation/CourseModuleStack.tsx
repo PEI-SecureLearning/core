@@ -59,29 +59,29 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
     return (
         <div className="flex flex-col h-full">
             <div className="px-4 pt-4 pb-3 flex-shrink-0">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-700 mb-1">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-foreground mb-1">
                     Course Modules
                 </h2>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-muted-foreground">
                     {moduleCountLabel}
                 </p>
             </div>
 
             <div
                 ref={setNodeRef}
-                className={`flex-1 overflow-y-auto px-4 pb-4 transition-colors duration-200 ${isOver ? 'bg-purple-50/50' : ''
+                className={`flex-1 overflow-y-auto px-4 pb-4 transition-colors duration-200 ${isOver ? 'bg-[#7C3AED]/5' : ''
                     }`}
             >
                 {modules.length === 0 ? (
                     <div className={`flex flex-col items-center justify-center h-full gap-3 border-2 border-dashed rounded-xl transition-colors duration-200 ${isOver
-                        ? 'border-purple-400 bg-purple-50/50'
-                        : 'border-slate-200'
+                        ? 'border-[#7C3AED]/60 bg-[#7C3AED]/5'
+                        : 'border-border'
                         }`}>
-                        <Layers className="w-10 h-10 text-slate-200" />
-                        <p className="text-sm text-slate-400 font-medium">
+                        <Layers className="w-10 h-10 text-muted-foreground/20" />
+                        <p className="text-sm text-muted-foreground font-medium">
                             Drop modules here
                         </p>
-                        <p className="text-xs text-slate-300">
+                        <p className="text-xs text-muted-foreground/50">
                             Drag from the library on the left
                         </p>
                     </div>

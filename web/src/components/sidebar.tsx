@@ -140,6 +140,10 @@ const contentManagerGroups: SidebarGroupProps[] = [
   },
 ];
 
+const contentManagerStandaloneLinks: SidebarLinkProps[] = [
+  { href: "/content-manager/settings", label: "Settings", icon: Settings },
+];
+
 function SidebarLink({
   href,
   label,
@@ -153,10 +157,10 @@ function SidebarLink({
       to={href}
       activeOptions={{ exact: !!exact }}
       activeProps={{
-        className: "text-purple-700 bg-purple-50 font-medium px-2",
+        className: "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium px-2",
       }}
       inactiveProps={{
-        className: "text-gray-700 hover:bg-gray-100",
+        className: "text-foreground hover:bg-muted",
       }}
       className={`flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md group ${indent ? "pl-4 lg:pl-5" : ""}`}
       title={isCollapsed ? label : undefined}
@@ -185,7 +189,7 @@ function SidebarGroup({ label, icon: Icon, links, isCollapsed }: SidebarGroupPro
         onClick={() => !isCollapsed && setOpen((o) => !o)}
         title={isCollapsed ? label : undefined}
         className={`w-full flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md transition-colors
-          ${isAnyActive ? "text-purple-700 font-medium" : "text-gray-700 hover:bg-gray-100"}`}
+          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-foreground hover:bg-muted"}`}
       >
         <Icon className="h-4 w-4 flex-shrink-0" />
         <span
@@ -272,14 +276,14 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-300 ease-in-out ${
+      className={`h-full bg-sidebar border-r border-sidebar-border flex flex-col rounded-bl-xl transition-all duration-300 ease-in-out ${
         shouldShowContent ? "w-[13%] min-w-[120px] lg:min-w-[180px]" : "w-12"
       }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Toggle Button */}
-      <div className="relative py-1 h-10 border-b border-gray-200">
+      <div className="relative py-1 h-10 border-b border-sidebar-border">
         <button
           onClick={() => {
             if (hoverTimeout.current) {
@@ -289,7 +293,7 @@ export function Sidebar() {
             setIsHovered(false);
             setIsCollapsed((c) => !c);
           }}
-          className={`absolute top-1/2 -translate-y-1/2 p-2 hover:bg-gray-200 rounded-lg transition-all duration-300 text-gray-600 ${
+          className={`absolute top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-lg transition-all duration-300 text-muted-foreground ${
             shouldShowContent ? "right-2" : "left-1/2 -translate-x-1/2"
           }`}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -322,6 +326,11 @@ export function Sidebar() {
             {contentManagerGroups.map((group) => (
               <SidebarGroup key={group.label} {...group} isCollapsed={!shouldShowContent} />
             ))}
+            {contentManagerStandaloneLinks.map((link) => (
+              <li key={link.href}>
+                <SidebarLink {...link} isCollapsed={!shouldShowContent} />
+              </li>
+            ))}
           </ul>
         )}
 
@@ -343,7 +352,7 @@ export function Sidebar() {
       </nav>
 
       {/* Footer - Report / Help */}
-      <div className="px-2 lg:px-1 py-1 border-t border-gray-200">
+      <div className="px-2 lg:px-1 py-1 border-t border-sidebar-border">
         <SidebarLink href={reportHref} label="Report a problem" icon={AlertCircle} isCollapsed={!shouldShowContent} />
         <SidebarLink href={helpHref} label="Help" icon={CircleQuestionMark} isCollapsed={!shouldShowContent} />
       </div>

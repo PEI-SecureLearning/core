@@ -280,8 +280,8 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                 <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
 
                     {/* Header */}
-                    <div className="flex items-center gap-3 px-5 py-2.5 border-b border-slate-200 bg-white">
-                        <span className="font-semibold uppercase tracking-wide text-xs text-slate-500">Sections</span>
+                    <div className="flex items-center gap-3 px-5 py-2.5 border-b border-border bg-surface">
+                        <span className="font-semibold uppercase tracking-wide text-xs text-muted-foreground">Sections</span>
                         <div className="flex-1" />
                         <ViewTabToggle
                             view={view}
@@ -289,10 +289,10 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                             mainCount={data.sections.length}
                             refreshCount={(data.refreshSections ?? []).length}
                         />
-                        <div className="w-px h-4 bg-slate-200 shrink-0" />
+                        <div className="w-px h-4 bg-border shrink-0" />
                         {view === 'module' ? (
                             <button type="button" onClick={addSection}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200">
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25">
                                 <Plus className="w-3.5 h-3.5" /> Add Section
                             </button>
                         ) : (
@@ -330,11 +330,11 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                                     </SortableContext>
                                     {data.sections.length === 0 && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                            className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                                            className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
                                             <p className="text-sm font-medium">No sections yet</p>
-                                            <p className="text-xs text-slate-300">Add a section to start building your module</p>
+                                            <p className="text-xs text-muted-foreground/50">Add a section to start building your module</p>
                                             <button type="button" onClick={addSection}
-                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200">
+                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25">
                                                 <Plus className="w-4 h-4" /> Add First Section
                                             </button>
                                         </motion.div>
@@ -365,9 +365,9 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                                     </SortableContext>
                                     {(data.refreshSections ?? []).length === 0 && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                                            className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+                                            className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
                                             <p className="text-sm font-medium">No refresh sections yet</p>
-                                            <p className="text-xs text-slate-300">Shorter content that reinforces the main module</p>
+                                            <p className="text-xs text-muted-foreground/50">Shorter content that reinforces the main module</p>
                                             <button type="button" onClick={addRefreshSection}
                                                 className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
                                                 <Plus className="w-4 h-4" /> Add First Refresh Section

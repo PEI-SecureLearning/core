@@ -97,20 +97,20 @@ function RouteComponent() {
     if (loading) {
         return (
             <div className="flex items-center justify-center w-full h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#A78BFA]" />
             </div>
         )
     }
 
     if (error || !formData) {
         return (
-            <div className="flex flex-col items-center justify-center h-full w-full gap-3 text-slate-400 py-20">
+            <div className="flex flex-col items-center justify-center h-full w-full gap-3 text-muted-foreground py-20">
                 <AlertCircle className="w-8 h-8 text-red-400" />
-                <p className="text-sm font-medium text-red-500">{error ?? 'Module not found'}</p>
+                <p className="text-sm font-medium text-red-400">{error ?? 'Module not found'}</p>
                 <button
                     type="button"
                     onClick={() => navigate({ to: '/content-manager/modules' })}
-                    className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
+                    className="text-sm text-[#A78BFA] hover:text-[#7C3AED] transition-colors"
                 >
                     ← Back to Modules
                 </button>

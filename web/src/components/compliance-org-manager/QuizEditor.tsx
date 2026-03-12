@@ -50,7 +50,7 @@ export default function QuizEditor({
             >
                 <div className="flex items-center gap-2">
                     <motion.svg
-                        className="w-4 h-4 text-gray-500"
+                        className="w-4 h-4 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -60,8 +60,8 @@ export default function QuizEditor({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </motion.svg>
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Quiz Question Bank</h2>
-                        <p className="text-xs text-gray-500">Last updated: {quizUpdated}</p>
+                        <h2 className="text-lg font-semibold text-foreground">Quiz Question Bank</h2>
+                        <p className="text-xs text-muted-foreground">Last updated: {quizUpdated}</p>
                     </div>
                 </div>
                 <AnimatePresence>
@@ -90,7 +90,7 @@ export default function QuizEditor({
                         transition={{ duration: 0.25, ease: "easeInOut" }}
                         style={{ overflow: "hidden" }}
                     >
-                        <div className="pt-4 space-y-4 flex-1 min-h-0 overflow-y-auto bg-gray-50/10 rounded-lg border border-gray-150 p-6">
+                        <div className="pt-4 space-y-4 flex-1 min-h-0 overflow-y-auto bg-surface-subtle/10 rounded-lg border border-border/30 p-6">
                             {/* Settings steppers */}
                             <div className="flex flex-row justify-end items-center space-x-8 pr-2">
                                 <QuizSettings
@@ -104,7 +104,7 @@ export default function QuizEditor({
 
                                 <button
                                     data-testid="add-question-btn"
-                                    className="h-fit translate-y-6 py-2 px-4 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 cursor-pointer"
+                                    className="h-fit translate-y-6 py-2 px-4 rounded-lg border border-border text-sm hover:bg-surface-subtle cursor-pointer"
                                     onClick={onAddQuestion}
                                 >
                                     Add question

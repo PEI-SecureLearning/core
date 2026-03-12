@@ -19,31 +19,31 @@ export function UserManagementHeader({
     onNewUser,
 }: UserManagementHeaderProps) {
     return (
-        <div className="h-16 lg:h-20 w-full flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-4 border-b border-gray-200 flex-shrink-0">
+        <div className="h-16 lg:h-20 w-full flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-4 border-b border-border flex-shrink-0">
             <div className="flex-shrink-0">
-                <h1 className="font-bold text-base sm:text-lg lg:text-xl text-gray-900">
+                <h1 className="font-bold text-base sm:text-lg lg:text-xl text-foreground">
                     User Management
                 </h1>
             </div>
 
             <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
                 <div className="relative flex-1 max-w-xs lg:max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                     <input
                         type="text"
                         placeholder="Search users..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2 text-sm border border-border/60 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
                     />
                 </div>
 
-                <div className="hidden sm:flex items-center bg-gray-100 rounded-md p-1">
+                <div className="hidden sm:flex items-center bg-muted rounded-md p-1">
                     <button
                         onClick={() => setView("table")}
                         className={`p-2 rounded-md transition-colors ${view === "table"
-                                ? "bg-white text-purple-600 shadow-sm"
-                                : "text-gray-600 hover:text-gray-900"
+                                ? "bg-background text-primary shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                             } cursor-pointer`}
                         aria-label="Table view"
                     >
@@ -52,8 +52,8 @@ export function UserManagementHeader({
                     <button
                         onClick={() => setView("grid")}
                         className={`p-2 rounded-md transition-colors ${view === "grid"
-                                ? "bg-white text-purple-600 shadow-sm"
-                                : "text-gray-600 hover:text-gray-900"
+                                ? "bg-background text-primary shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
                             } cursor-pointer`}
                         aria-label="Grid view"
                     >
@@ -63,7 +63,7 @@ export function UserManagementHeader({
 
                 <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm cursor-pointer"
+                    className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 border border-border/60 text-foreground/90 rounded-lg hover:bg-surface-subtle transition-colors font-medium text-sm cursor-pointer"
                 >
                     <Upload className="h-4 w-4" />
                     <span className="hidden lg:inline">Bulk Import</span>
@@ -71,7 +71,7 @@ export function UserManagementHeader({
 
                 <button
                     onClick={onNewUser}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap cursor-pointer"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary text-white rounded-md hover:bg-primary transition-colors font-medium text-sm whitespace-nowrap cursor-pointer"
                 >
                     <Plus className="h-4 w-4" />
                     <span className="hidden sm:inline">New User</span>

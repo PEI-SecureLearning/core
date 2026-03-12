@@ -7,10 +7,10 @@ export function StatsHeader() {
         <BarChart3 size={20} className="text-white" />
       </div>
       <div>
-        <h1 className="font-semibold text-xl text-slate-900 tracking-tight">
+        <h1 className="font-semibold text-xl text-foreground tracking-tight">
           Statistics Overview
         </h1>
-        <p className="text-sm text-slate-500">Track your security awareness progress</p>
+        <p className="text-sm text-muted-foreground">Track your security awareness progress</p>
       </div>
     </div>
   );

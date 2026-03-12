@@ -150,7 +150,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
         }
     };
 
-    const inputClass = "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-shadow";
+    const inputClass = "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 transition-shadow";
 
     return (
         <AnimatePresence>
@@ -168,15 +168,15 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 16 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        className="w-full max-w-lg max-h-[85vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
+                        className="w-full max-w-lg max-h-[85vh] bg-surface rounded-xl shadow-2xl overflow-hidden flex flex-col border border-border"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-900">New File</h2>
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                            <h2 className="text-lg font-bold text-foreground">New File</h2>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -185,7 +185,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                         {/* Form */}
                         <form onSubmit={handleCreateContent} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
                             <div className="space-y-1 relative" ref={pathContainerRef}>
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Path</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Path</label>
                                 <input
                                     value={path}
                                     onChange={(e) => {
@@ -220,7 +220,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                                     autoComplete="off"
                                 />
                                 {showPathSuggestions && pathSuggestions.length > 0 && (
-                                    <div className="absolute z-30 left-0 right-0 top-full mt-1 max-h-44 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                                    <div className="absolute z-30 left-0 right-0 top-full mt-1 max-h-44 overflow-y-auto rounded-lg border border-border bg-surface shadow-lg">
                                         {pathSuggestions.map((suggestion, idx) => (
                                             <button
                                                 key={suggestion}
@@ -232,11 +232,11 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                                                     setHighlightedIndex(-1);
                                                 }}
                                                 className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left transition-colors ${idx === highlightedIndex
-                                                    ? 'bg-purple-50 text-purple-800'
-                                                    : 'text-gray-700 hover:bg-gray-50'
+                                                    ? 'bg-[#7C3AED]/15 text-[#A78BFA]'
+                                                    : 'text-foreground hover:bg-surface-subtle'
                                                     }`}
                                             >
-                                                <Folder className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                                                <Folder className="w-3.5 h-3.5 text-[#A78BFA] shrink-0" />
                                                 <span className="truncate">{suggestion}</span>
                                             </button>
                                         ))}
@@ -245,7 +245,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Title</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</label>
                                 <input
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
@@ -255,7 +255,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Description</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
                                 <input
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
@@ -265,7 +265,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Content Mode</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Content Mode</label>
                                 <select
                                     value={mode}
                                     onChange={(e) => setMode(e.target.value as 'file' | 'text')}
@@ -277,7 +277,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tags</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tags</label>
                                 <input
                                     value={tagsInput}
                                     onChange={(e) => setTagsInput(e.target.value)}
@@ -288,7 +288,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
 
                             {mode === 'file' ? (
                                 <div className="space-y-1">
-                                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">File</label>
+                                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">File</label>
                                     <input
                                         type="file"
                                         onChange={(e) => setFile(e.target.files?.[0] || null)}
@@ -298,7 +298,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                             ) : (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Format</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Format</label>
                                         <select
                                             value={contentFormat}
                                             onChange={(e) => setContentFormat(e.target.value as 'text' | 'markdown' | 'html' | 'link')}
@@ -313,7 +313,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
 
                                     {contentFormat === 'link' ? (
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Source URL</label>
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Source URL</label>
                                             <input
                                                 value={sourceUrl}
                                                 onChange={(e) => setSourceUrl(e.target.value)}
@@ -323,7 +323,7 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                                         </div>
                                     ) : (
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Body</label>
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Body</label>
                                             <textarea
                                                 value={body}
                                                 onChange={(e) => setBody(e.target.value)}
@@ -340,14 +340,15 @@ export function NewContentModal({ open, onClose, onCreated, folderPaths = [] }: 
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                    className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-surface-subtle transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:from-purple-700 hover:to-purple-800 transition-all duration-200 disabled:opacity-60 active:scale-[0.97]"
+                                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+                                    className="rounded-lg px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-[0_0_16px_rgba(124,58,237,0.4)] transition-all duration-200 disabled:opacity-60 active:scale-[0.97]"
                                 >
                                     {isSubmitting ? 'Saving...' : 'Create'}
                                 </button>

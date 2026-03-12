@@ -3,6 +3,7 @@ import { useKeycloak } from "@react-keycloak/web";
 import UserGroupsHeader from "@/components/usergroups/userGroupsHeader";
 import UserGroupsGrid from "@/components/usergroups/userGroupsGrid";
 import UserGroupsTable from "@/components/usergroups/userGroupsTable";
+import ConfirmDeleteModal from "@/components/usergroups/ConfirmDeleteModal";
 import {
   fetchGroups,
   fetchGroupMembers,
@@ -17,6 +18,8 @@ export default function UserGroupsPage() {
     { id?: string; name?: string; memberCount?: number }[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const tokenRealm = useMemo(() => {
     const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
@@ -65,6 +68,23 @@ export default function UserGroupsPage() {
     }
   }, [realm]);
 
+  const pendingGroupName =
+    groups.find((g) => g.id === pendingDeleteId)?.name ?? "this group";
+
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteId || !realm) return;
+    setIsDeleting(true);
+    try {
+      await deleteGroup(realm, pendingDeleteId, keycloak.token || undefined);
+      setPendingDeleteId(null);
+      loadData(realm);
+    } catch (err) {
+      console.error("Failed to delete group", err);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="h-full w-full animate-[fadeIn_0.4s_ease-out]">
       <style>{`
@@ -77,9 +97,7 @@ export default function UserGroupsPage() {
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div className="h-1/12 w-full border-b flex items-center px-4 font-semibold text-lg">
-        <UserGroupsHeader view={view} setView={setView} />
-      </div>
+      <UserGroupsHeader view={view} setView={setView} />
       <div
         className="h-11/12 w-full overflow-y-auto p-4 space-y-4"
         style={{ animation: "fadeInDelay 0.5s ease-out 0.1s both" }}
@@ -88,44 +106,31 @@ export default function UserGroupsPage() {
           <UserGroupsGrid
             groups={groups}
             isLoading={isLoading && !groups.length}
-            onDelete={async (id) => {
-              const realm = tokenRealm || "";
-              if (!realm) return;
-              const confirmed = window.confirm("Delete this group?");
-              if (!confirmed) return;
-              try {
-                await deleteGroup(realm, id, keycloak.token || undefined);
-                loadData(realm);
-              } catch (err) {
-                console.error("Failed to delete group", err);
-              }
-            }}
+            onDelete={(id) => setPendingDeleteId(id)}
           />
         ) : (
           <UserGroupsTable
             groups={groups}
-            onDelete={async (id) => {
-              const realm = tokenRealm || "";
-              if (!realm) return;
-              const confirmed = window.confirm("Delete this group?");
-              if (!confirmed) return;
-              try {
-                await deleteGroup(realm, id, keycloak.token || undefined);
-                loadData(realm);
-              } catch (err) {
-                console.error("Failed to delete group", err);
-              }
-            }}
+            onDelete={(id) => setPendingDeleteId(id)}
           />
         )}
 
         {!realm && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             Resolving realm from token...
           </div>
         )}
       </div>
+
+      {pendingDeleteId && (
+        <ConfirmDeleteModal
+          groupName={pendingGroupName}
+          isLoading={isDeleting}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

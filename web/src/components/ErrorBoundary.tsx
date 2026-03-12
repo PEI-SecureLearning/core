@@ -40,15 +40,15 @@ class ErrorBoundary extends Component<Props, State> {
             // we can try to render children (though they might be broken) or a generic error UI.
             // For now, let's render a simple fallback if it wasn't a chunk error that triggered reload.
             return (
-                <div className="flex items-center justify-center min-h-screen bg-gray-50">
-                    <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Something went wrong</h2>
-                        <p className="text-gray-600 mb-6">
+                <div className="flex items-center justify-center min-h-screen bg-surface-subtle">
+                    <div className="text-center p-8 bg-background rounded-xl shadow-lg max-w-md">
+                        <h2 className="text-2xl font-bold text-foreground mb-4">Something went wrong</h2>
+                        <p className="text-muted-foreground mb-6">
                             We encountered an unexpected error. Please try refreshing the page.
                         </p>
                         <button
                             onClick={() => window.location.reload()}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors"
                         >
                             Refresh Page
                         </button>

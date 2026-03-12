@@ -26,14 +26,15 @@ function RouteComponent() {
     }
 
     return (
-        <div className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative">
+        <div className="w-full h-full py-4 px-6 bg-background flex flex-col relative">
             <div className="w-full h-auto mb-6 flex flex-col gap-6 relative z-20">
                 <div className="flex flex-row items-center justify-between">
                     <PageTitle title="Modules" />
                     <button
                         type="button"
                         onClick={handleNewModule}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.97]"
+                        style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
                     >
                         <Plus size={16} strokeWidth={2.5} />
                         New Module
@@ -58,7 +59,7 @@ function RouteComponent() {
                 />
             </div>
 
-            <div className="flex-1 rounded-2xl p-8 relative overflow-hidden bg-white/50 backdrop-blur-sm z-10 border border-gray-200 shadow-inner overflow-y-auto">
+            <div className="flex-1 rounded-2xl p-8 relative overflow-hidden bg-surface z-10 border border-border overflow-y-auto">
                 <ModuleDisplay search={search} sort={sort} cols={cols} onResultCountChange={setResultCount} />
             </div>
 

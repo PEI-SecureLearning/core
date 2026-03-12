@@ -4,74 +4,99 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* ── Light mode brand palette ───────────────────────────────────────────
+     Uses white/light surfaces with the same purple accent as dark mode.
+  ──────────────────────────────────────────────────────────────────────── */
+  --background: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-subtle: #F9FAFB;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #7C3AED;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #111827;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #7C3AED;
+  --accent-foreground: #FFFFFF;
+  --accent-secondary: #A78BFA;
+  --accent-gradient-end: #9333EA;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #E5E7EB;
+  --input: #F3F4F6;
+  --ring: #7C3AED;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #F9FAFB;
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #7C3AED;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #7C3AED;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* ── Brand palette ───────────────────────────────────────────────────────
+     Background (primary)  #0C0A0F
+     Surface               #18151C
+     Surface subtle        #131019
+     Foreground            #EDEDED
+     Muted text            #A1A1AA
+     Accent primary        #7C3AED
+     Accent secondary      #A78BFA
+     Accent gradient end   #9333EA
+     Accent gradient mid   #9B6BFF
+     Border (accent tint)  rgba(167,139,250,0.18)
+  ──────────────────────────────────────────────────────────────────────── */
+  --background: #0C0A0F;
+  --surface: #18151C;
+  --surface-subtle: #131019;
+  --foreground: #EDEDED;
+  --card: #18151C;
+  --card-foreground: #EDEDED;
+  --popover: #18151C;
+  --popover-foreground: #EDEDED;
+  --primary: #7C3AED;
+  --primary-foreground: #EDEDED;
+  --secondary: #18151C;
+  --secondary-foreground: #EDEDED;
+  --muted: #18151C;
+  --muted-foreground: #A1A1AA;
+  --accent: #7C3AED;
+  --accent-foreground: #EDEDED;
+  --accent-secondary: #A78BFA;
+  --accent-gradient-end: #9333EA;
+  --accent-gradient-mid: #9B6BFF;
+  --accent-border: rgba(167, 139, 250, 0.18);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  --border: rgba(167, 139, 250, 0.18);
+  --input: #18151C;
+  --ring: #7C3AED;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar: #131019;
+  --sidebar-foreground: #EDEDED;
+  --sidebar-primary: #7C3AED;
+  --sidebar-primary-foreground: #EDEDED;
+  --sidebar-accent: #18151C;
+  --sidebar-accent-foreground: #EDEDED;
+  --sidebar-border: rgba(167, 139, 250, 0.18);
+  --sidebar-ring: #7C3AED;
 }
 
 @theme inline {
@@ -89,6 +114,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-secondary: var(--accent-secondary, #A78BFA);
+  --color-surface: var(--surface, var(--card));
+  --color-surface-subtle: var(--surface-subtle, var(--background));
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -134,6 +162,21 @@ body,
   padding: 0;
   overflow: hidden;
   /* Stops the main window from scrolling */
+}
+
+/* ─── Theme transition (View Transition API) ───────────────────────────────
+   Suppress the default cross-fade so only the clip-path wipe animation runs.
+   The actual animation is kicked off in JS (useThemeTransition hook).
+   ─────────────────────────────────────────────────────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* The incoming snapshot sits on top */
+::view-transition-new(root) {
+  z-index: 10;
 }
 
 /* Custom Purple Scrollbars */

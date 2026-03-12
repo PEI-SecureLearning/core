@@ -24,8 +24,8 @@ const statusColors: Record<CampaignStatus, { bg: string; border: string }> = {
     border: "border-emerald-400/30",
   },
   canceled: {
-    bg: "bg-gradient-to-r from-slate-300 to-slate-400",
-    border: "border-slate-400/30",
+    bg: "bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/50",
+    border: "border-border/30",
   },
 };
 

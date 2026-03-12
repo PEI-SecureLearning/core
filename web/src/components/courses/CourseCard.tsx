@@ -57,10 +57,10 @@ function ProgressBadge({ progress }: { progress: number }) {
     return null
 }
 
-function ProgressBar({ progress, color = 'bg-purple-500' }: { progress: number; color?: string }) {
+function ProgressBar({ progress, color = 'bg-primary/90' }: { progress: number; color?: string }) {
     if (progress === 0) return null
     return (
-        <div className="h-1 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div className="h-1 w-full rounded-full bg-muted overflow-hidden">
             <div
                 className={`h-full rounded-full ${color} transition-all duration-500`}
                 style={{ width: `${progress}%` }}
@@ -84,7 +84,7 @@ function Banner({
 
     if (item.coverImageUrl) {
         return (
-            <div className={`relative ${height} overflow-hidden bg-slate-100`}>
+            <div className={`relative ${height} overflow-hidden bg-muted`}>
                 <img
                     src={item.coverImageUrl}
                     alt={item.title}
@@ -92,21 +92,21 @@ function Banner({
                 />
                 {item.category && (
                     <div className="absolute top-2 left-3 z-10">
-                        <span className="px-2.5 py-0.5 bg-white/85 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-purple-800 border border-purple-500/30">
+                        <span className="px-2.5 py-0.5 bg-background/85 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-wider text-primary/80 border border-primary/30">
                             {item.category}
                         </span>
                     </div>
                 )}
                 {item.difficultyBadge && (
                     <div className="absolute top-2 right-3 z-10">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-slate-100/90 text-slate-600 border-slate-300'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-muted/90 text-muted-foreground border-border/60'}`}>
                             {item.difficultyBadge}
                         </span>
                     </div>
                 )}
                 {item.statusBadge && (
                     <div className="absolute bottom-2 right-3 z-10">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md bg-slate-100/90 text-slate-600 border-slate-300">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md bg-muted/90 text-muted-foreground border-border/60">
                             {item.statusBadge}
                         </span>
                     </div>
@@ -133,7 +133,7 @@ function Banner({
             )}
             {item.difficultyBadge && (
                 <div className="absolute top-2 right-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-white/20 text-white border-white/30'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-background/20 text-white border-white/30'}`}>
                         {item.difficultyBadge}
                     </span>
                 </div>
@@ -150,7 +150,7 @@ function CardHorizontal({ item, to, params }: { item: CardItem; to: string; para
         <Link
             to={to as any}
             params={params as any}
-            className="group flex flex-row rounded-r-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
+            className="group flex flex-row rounded-r-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
         >
             {/* Left colour strip / cover */}
             {item.coverImageUrl ? (
@@ -175,26 +175,26 @@ function CardHorizontal({ item, to, params }: { item: CardItem; to: string; para
             <div className="flex flex-col flex-1 p-5 gap-2 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                     {item.category && (
-                        <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">
+                        <span className="text-xs font-medium text-primary uppercase tracking-wide">
                             {item.category}
                         </span>
                     )}
                     {item.difficultyBadge && (
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${item.difficultyBadgeClass ?? 'bg-slate-100 text-slate-600 border-slate-300'}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${item.difficultyBadgeClass ?? 'bg-muted text-muted-foreground border-border/60'}`}>
                             {item.difficultyBadge}
                         </span>
                     )}
                 </div>
 
-                <h3 className="text-base font-semibold text-gray-900 group-hover:text-purple-700 transition-colors leading-snug">
+                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
                     {item.title}
                 </h3>
 
-                <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 flex-1">
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1">
                     {item.description}
                 </p>
 
-                <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground/70">
                     {item.duration && (
                         <span className="flex items-center gap-1">
                             <Clock size={12} /> {item.duration}
@@ -211,7 +211,7 @@ function CardHorizontal({ item, to, params }: { item: CardItem; to: string; para
                         </span>
                     )}
                     {showProg && (item.progress ?? 0) > 0 && (
-                        <span className="ml-auto text-purple-600 font-semibold">{item.progress}%</span>
+                        <span className="ml-auto text-primary font-semibold">{item.progress}%</span>
                     )}
                 </div>
 
@@ -229,30 +229,30 @@ function CardVertical({ item, to, params }: { item: CardItem; to: string; params
         <Link
             to={to as any}
             params={params as any}
-            className="group flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
+            className="group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
         >
             <Banner item={item} height="h-36" iconSize="text-5xl" />
 
             <div className="flex flex-col flex-1 p-4 gap-2">
                 {item.category && (
-                    <span className="text-xs font-medium text-purple-600 uppercase tracking-wide">
+                    <span className="text-xs font-medium text-primary uppercase tracking-wide">
                         {item.category}
                     </span>
                 )}
-                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-purple-700 transition-colors leading-snug">
+                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
                     {item.title}
                 </h3>
-                <p className="text-xs text-gray-500 leading-relaxed line-clamp-3 flex-1">
+                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
                     {item.description}
                 </p>
-                <div className="flex items-center gap-3 pt-2 border-t border-gray-100 mt-1">
+                <div className="flex items-center gap-3 pt-2 border-t border-border/40 mt-1">
                     {item.duration && (
-                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
                             <Clock size={12} /> {item.duration}
                         </span>
                     )}
                     {item.unitCount !== undefined && (
-                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
                             <BarChart2 size={12} /> {item.unitCount} {item.unitLabel ?? 'modules'}
                         </span>
                     )}
@@ -271,32 +271,32 @@ function CardCompact({ item, to, params }: { item: CardItem; to: string; params:
         <Link
             to={to as any}
             params={params as any}
-            className="group flex flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
+            className="group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
         >
             <Banner item={item} height="h-24" iconSize="text-4xl" />
 
             <div className="flex flex-col flex-1 p-3 gap-1.5">
                 {item.category && (
-                    <span className="text-[10px] font-medium text-purple-600 uppercase tracking-wide">
+                    <span className="text-[10px] font-medium text-primary uppercase tracking-wide">
                         {item.category}
                     </span>
                 )}
-                <h3 className="text-xs font-semibold text-gray-900 group-hover:text-purple-700 transition-colors leading-snug line-clamp-2">
+                <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
                     {item.title}
                 </h3>
-                <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
                     {item.duration && (
-                        <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
                             <Clock size={10} /> {item.duration}
                         </span>
                     )}
                     {item.unitCount !== undefined && (
-                        <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
                             <BarChart2 size={10} /> {item.unitCount}
                         </span>
                     )}
                     {showProg && (item.progress ?? 0) > 0 && (
-                        <span className="text-[10px] font-semibold text-purple-600">{item.progress}%</span>
+                        <span className="text-[10px] font-semibold text-primary">{item.progress}%</span>
                     )}
                 </div>
                 {showProg && <ProgressBar progress={item.progress ?? 0} />}
