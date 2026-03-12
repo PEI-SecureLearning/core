@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { Plus } from 'lucide-react'
-import { PageTitle } from '@/components/content-manager/shared/PageTitle'
 import UniversalFilters, { type GridCols } from '@/components/courses/UniversalFilters'
 import { ModuleDisplay } from '@/components/content-manager/modules/ModuleDisplay'
-import type { ModuleSortValue } from '@/components/content-manager/modules/ToolBarModules'
+
+type ModuleSortValue = 'newest' | 'oldest' | 'title_asc' | 'title_desc'
 
 export const Route = createFileRoute('/content-manager/modules')({
     component: RouteComponent,
@@ -28,13 +28,17 @@ function RouteComponent() {
     return (
         <div className="w-full h-full py-4 px-6 bg-background flex flex-col relative">
             <div className="w-full h-auto mb-6 flex flex-col gap-6 relative z-20">
-                <div className="flex flex-row items-center justify-between">
-                    <PageTitle title="Modules" />
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Modules</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Create and manage learning modules to build your course content.
+                        </p>
+                    </div>
                     <button
                         type="button"
                         onClick={handleNewModule}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.97]"
-                        style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
                     >
                         <Plus size={16} strokeWidth={2.5} />
                         New Module
