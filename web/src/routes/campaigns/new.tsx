@@ -3,7 +3,7 @@ import { type ComponentType } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
 import SendingProfilePicker from "@/components/campaigns/new-campaign/SendingProfilePicker";
-import LandingPageTemplatePicker from "@/components/campaigns/new-campaign/LandingPageTemplatePicker";
+import PhishingKitPicker from "@/components/campaigns/new-campaign/PhishingKitPicker";
 import TargetGroupSelector from "@/components/campaigns/new-campaign/TargetGroupSelector";
 import CampaignScheduler from "@/components/campaigns/new-campaign/CampaignScheduler";
 import Stepper, { Step } from "@/components/ui/Stepper";
@@ -47,7 +47,7 @@ function CampaignStepper() {
     {
       name: "phishing-kits",
       label: "Phishing Kits",
-      component: LandingPageTemplatePicker,
+      component: PhishingKitPicker,
     },
     {
       name: "target-groups",
@@ -72,9 +72,9 @@ function CampaignStepper() {
         return true;
       case 2: // Sending Profiles (not mandatory)
         return true;
-      case 3: // Landing Page
-        if (!data.landing_page_template_id && !data.landing_page_template) {
-          toast.error("Please select a landing page template.");
+      case 3: // Phishing Kits
+        if (data.phishing_kit_ids.length === 0) {
+          toast.error("Please select at least one phishing kit.");
           return false;
         }
         return true;

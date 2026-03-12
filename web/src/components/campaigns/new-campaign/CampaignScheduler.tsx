@@ -241,7 +241,7 @@ export default function CampaignScheduler() {
             </p>
           </div>
 
-          {/* Templates Summary */}
+          {/* Phishing Kits Summary */}
           <div
             className="p-4 rounded-xl"
             style={{
@@ -250,31 +250,16 @@ export default function CampaignScheduler() {
             }}
           >
             <h3 className="text-[13px] font-medium text-slate-600 mb-2">
-              Templates
+              Phishing Kits
             </h3>
             <div className="space-y-1">
               <p className="text-[12px] text-slate-500">
-                Email:{" "}
-                {data.email_template || data.email_template_id ? (
+                {data.phishing_kit_ids.length > 0 ? (
                   <span className="text-purple-600 font-medium">
-                    {data.email_template?.name
-                      ? `Selected: ${data.email_template.name}`
-                      : `Selected (ID: ${data.email_template_id})`}
+                    {data.phishing_kit_ids.length} kit(s) selected
                   </span>
                 ) : (
-                  <span className="text-amber-600">Not selected</span>
-                )}
-              </p>
-              <p className="text-[12px] text-slate-500">
-                Landing Page:{" "}
-                {data.landing_page_template || data.landing_page_template_id ? (
-                  <span className="text-purple-600 font-medium">
-                    {data.landing_page_template?.name
-                      ? `Selected: ${data.landing_page_template.name}`
-                      : `Selected (ID: ${data.landing_page_template_id})`}
-                  </span>
-                ) : (
-                  <span className="text-amber-600">Not selected</span>
+                  <span className="text-amber-600">No kits selected</span>
                 )}
               </p>
             </div>

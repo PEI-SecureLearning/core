@@ -57,18 +57,18 @@ export default function PhishingKitEmailTemplatePicker() {
   const filteredTemplates = templates.filter(
     (t) =>
       t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (t.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+      (t.description || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleSelectTemplate = (template: EmailTemplate) => {
     updateData({
-      email_template_id: Number(template.id),
+      email_template_id: template.id,
       email_template_name: template.name,
     });
   };
 
   const isTemplateSelected = (templateId: string) => {
-    return data.email_template_id === Number(templateId);
+    return data.email_template_id === templateId;
   };
 
   return (
@@ -161,7 +161,9 @@ export default function PhishingKitEmailTemplatePicker() {
         {filteredTemplates.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Mail size={40} className="text-slate-300 mb-3" />
-            <p className="text-slate-500 text-[14px]">No email templates found</p>
+            <p className="text-slate-500 text-[14px]">
+              No email templates found
+            </p>
             <p className="text-slate-400 text-[13px]">
               Try a different search term
             </p>

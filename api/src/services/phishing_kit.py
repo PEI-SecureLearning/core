@@ -10,18 +10,41 @@ from src.models import (
     PhishingKitSendingProfileLink,
 )
 
+from src.models.email_template import EmailTemplate
+from src.models.landing_page import LandingPageTemplate
 
 class PhishingKitService:
+
+    def _get_or_create_email_template(self, session: Session, mongo_id: str, name: str = "") -> EmailTemplate:
+        template = session.exec(select(EmailTemplate).where(EmailTemplate.content_link == mongo_id)).first()
+        if not template:
+            template = EmailTemplate(content_link=mongo_id, name=name)
+            session.add(template)
+            session.commit()
+            session.refresh(template)
+        return template
+
+    def _get_or_create_landing_page_template(self, session: Session, mongo_id: str, name: str = "") -> LandingPageTemplate:
+        template = session.exec(select(LandingPageTemplate).where(LandingPageTemplate.content_link == mongo_id)).first()
+        if not template:
+            template = LandingPageTemplate(content_link=mongo_id, name=name)
+            session.add(template)
+            session.commit()
+            session.refresh(template)
+        return template
 
     def create_phishing_kit(
         self, data: PhishingKitCreate, realm: str, session: Session
     ) -> PhishingKit:
+        email_tmpl = self._get_or_create_email_template(session, data.email_template_id)
+        landing_tmpl = self._get_or_create_landing_page_template(session, data.landing_page_template_id)
+
         kit = PhishingKit(
             name=data.name,
             description=data.description,
             args=data.args,
-            email_template_id=data.email_template_id,
-            landing_page_template_id=data.landing_page_template_id,
+            email_template_id=email_tmpl.id,
+            landing_page_template_id=landing_tmpl.id,
             realm_name=realm,
         )
         session.add(kit)
@@ -59,12 +82,10 @@ class PhishingKitService:
                 description=kit.description,
                 args=kit.args,
                 email_template_name=(
-                    kit.email_template.name if kit.email_template else None
+                    kit.email_template.name if kit.email_template and kit.email_template.name else kit.email_template.content_link if kit.email_template else None
                 ),
                 landing_page_template_name=(
-                    kit.landing_page_template.name
-                    if kit.landing_page_template
-                    else None
+                    kit.landing_page_template.name if kit.landing_page_template and kit.landing_page_template.name else kit.landing_page_template.content_link if kit.landing_page_template else None
                 ),
                 sending_profile_names=[sp.name for sp in kit.sending_profiles],
             )
@@ -92,11 +113,14 @@ class PhishingKitService:
         if not kit:
             return None
 
+        email_tmpl = self._get_or_create_email_template(session, data.email_template_id)
+        landing_tmpl = self._get_or_create_landing_page_template(session, data.landing_page_template_id)
+
         kit.name = data.name
         kit.description = data.description
         kit.args = data.args
-        kit.email_template_id = data.email_template_id
-        kit.landing_page_template_id = data.landing_page_template_id
+        kit.email_template_id = email_tmpl.id
+        kit.landing_page_template_id = landing_tmpl.id
 
         # Re-sync M2M sending profiles: delete old links, add new ones
         old_links = session.exec(

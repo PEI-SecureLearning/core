@@ -61,13 +61,13 @@ export default function PhishingKitLandingPagePicker() {
 
   const handleSelectTemplate = (template: LandingPageTemplate) => {
     updateData({
-      landing_page_template_id: Number(template.id),
+      landing_page_template_id: template.id,
       landing_page_template_name: template.name,
     });
   };
 
   const isTemplateSelected = (templateId: string) => {
-    return data.landing_page_template_id === Number(templateId);
+    return data.landing_page_template_id === templateId;
   };
 
   return (

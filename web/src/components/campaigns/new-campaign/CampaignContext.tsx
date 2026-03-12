@@ -5,9 +5,8 @@ export interface CampaignData {
   name: string;
   description: string;
 
-  // Templates (can be existing ids or inline selections)
-  landing_page_template_id: number | null;
-  landing_page_template: TemplateSelection | null;
+  // Templates and Profiles
+  phishing_kit_ids: number[];
   sending_profile_ids: number[];
 
   // Target Groups
@@ -26,8 +25,7 @@ export interface CampaignCreatePayload {
   end_date: string;
   sending_interval_seconds: number;
   sending_profile_ids: number[];
-  landing_page_template_id: number | null;
-  landing_page_template: TemplateSelection | null;
+  phishing_kit_ids: number[];
   user_group_ids: string[];
 }
 
@@ -63,8 +61,7 @@ const getInitialCampaignData = (initialGroupIds: string[] = []): CampaignData =>
   return {
     name: "",
     description: "",
-    landing_page_template_id: null,
-    landing_page_template: null,
+    phishing_kit_ids: [],
     sending_profile_ids: [],
     user_group_ids: initialGroupIds,
     begin_date,
@@ -99,12 +96,8 @@ export function CampaignProvider({
   const getValidationErrors = (): string[] => {
     const errors: string[] = [];
 
-    const hasLandingTemplate =
-      data.landing_page_template_id !== null ||
-      data.landing_page_template !== null;
-
     if (!data.name.trim()) errors.push("Campaign name is required.");
-    if (!hasLandingTemplate) errors.push("Select a landing page template.");
+    if (data.phishing_kit_ids.length === 0) errors.push("Select at least one phishing kit.");
     // sending_profile_ids is optional; the user is warned in the UI if empty.
     if (data.user_group_ids.length === 0)
       errors.push("Select at least one target group.");
@@ -134,8 +127,7 @@ export function CampaignProvider({
       end_date: data.end_date!,
       sending_interval_seconds: data.sending_interval_seconds,
       sending_profile_ids: data.sending_profile_ids,
-      landing_page_template_id: data.landing_page_template_id,
-      landing_page_template: data.landing_page_template,
+      phishing_kit_ids: data.phishing_kit_ids,
       user_group_ids: data.user_group_ids,
     };
   };

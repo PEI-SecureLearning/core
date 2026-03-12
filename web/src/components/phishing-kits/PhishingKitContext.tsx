@@ -4,9 +4,9 @@ export interface PhishingKitData {
   name: string;
   description: string;
   args: Record<string, string>;
-  email_template_id: number | null;
+  email_template_id: string | null;
   email_template_name: string | null;
-  landing_page_template_id: number | null;
+  landing_page_template_id: string | null;
   landing_page_template_name: string | null;
   sending_profile_ids: number[];
 }

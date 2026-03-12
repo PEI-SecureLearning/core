@@ -20,7 +20,8 @@ import {
   Blocks,
   FileStack,
   Send,
-  User
+  User,
+  Package
 } from "lucide-react";
 
 
@@ -76,6 +77,13 @@ const userLinks: SidebarLinkProps[] = [
     href: "/templates",
     label: "Templates",
     icon: FileText,
+    roles: ["ORG_MANAGER"],
+    feature: "phishing",
+  },
+  {
+    href: "/phishing-kits",
+    label: "Phishing Kits",
+    icon: Package,
     roles: ["ORG_MANAGER"],
     feature: "phishing",
   },

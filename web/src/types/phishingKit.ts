@@ -12,7 +12,7 @@ export interface PhishingKitCreate {
   name: string;
   description?: string;
   args: Record<string, string>;
-  email_template_id: number;
-  landing_page_template_id: number;
+  email_template_id: string;
+  landing_page_template_id: string;
   sending_profile_ids: number[];
 }

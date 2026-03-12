@@ -8,8 +8,8 @@ class PhishingKitCreate(SQLModel):
     name: str
     description: Optional[str] = None
     args: dict[str, str] = {}
-    email_template_id: int
-    landing_page_template_id: int
+    email_template_id: str
+    landing_page_template_id: str
     sending_profile_ids: list[int] = []
 
 
