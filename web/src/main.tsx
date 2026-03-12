@@ -9,9 +9,6 @@ import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
 
-const stripBasePath = (pathname: string) =>
-  pathname.replace(/^\/app(?=\/|$)/, '') || '/'
-
 const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
 
 const initOptions: Keycloak.KeycloakInitOptions = {
@@ -101,8 +98,8 @@ const App = () => {
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const appPath = stripBasePath(window.location.pathname)
-  const isAdminRoute = appPath.startsWith("/admin") || appPath.startsWith("/content-manager");
+  const path = window.location.pathname || '/'
+  const isAdminRoute = path.startsWith("/admin") || path.startsWith("/content-manager");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 
