@@ -127,7 +127,7 @@ const contentManagerStandaloneLinks: SidebarLinkProps[] = [
   { href: "/content-manager/settings", label: "Settings", icon: Settings },
 ];
 
-// ─── SidebarLink ────────────────────────────────────────────────────────────
+// SidebarLink
 
 function SidebarLink({
   href,
@@ -143,7 +143,7 @@ function SidebarLink({
       activeOptions={{ exact: !!exact }}
       activeProps={{ className: "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium" }}
       inactiveProps={{ className: "text-muted-foreground hover:bg-muted" }}
-      className={`flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md ${indent ? "pl-4 lg:pl-5" : ""}`}
+      className={`flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm ${indent ? "pl-4 lg:pl-5" : ""}`}
       title={isCollapsed ? label : undefined}
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
@@ -152,7 +152,7 @@ function SidebarLink({
   );
 }
 
-// ─── SidebarGroup ───────────────────────────────────────────────────────────
+// SidebarGroup
 
 function SidebarGroup({
   label,
@@ -187,7 +187,7 @@ function SidebarGroup({
       <button
         onClick={handleToggle}
         title={sidebarExpanded ? undefined : label}
-        className={`w-full flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md transition-colors
+        className={`w-full flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm transition-colors
           ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
       >
         <Icon className="h-4 w-4 flex-shrink-0" />
@@ -208,7 +208,7 @@ function SidebarGroup({
   );
 }
 
-// ─── Sidebar ────────────────────────────────────────────────────────────────
+// Sidebar
 
 export function Sidebar() {
   // `isCollapsed` = the permanent/default state toggled by the button.
@@ -286,7 +286,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 lg:px-1 py-4 overflow-hidden">
+      <nav className="flex-1 py-4 overflow-hidden">
         {isAdminRoute && (
           <ul className="space-y-1">
             {adminLinks.map((link) => (

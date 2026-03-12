@@ -2,7 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Layers } from 'lucide-react'
-import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
+import type { PlaceholderModule } from '../modules/module-creation/placeholderModules'
 import { CourseModuleCard } from './CourseModuleCard'
 
 interface CourseModuleStackProps {

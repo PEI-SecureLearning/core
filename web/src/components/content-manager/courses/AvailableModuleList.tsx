@@ -1,8 +1,8 @@
 import { useDraggable } from '@dnd-kit/core'
 import { Search } from 'lucide-react'
 import { useState } from 'react'
-import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
-import { PLACEHOLDER_MODULES } from '../../modules/module-creation/placeholderModules'
+import type { PlaceholderModule } from '../modules/module-creation/placeholderModules'
+import { PLACEHOLDER_MODULES } from '../modules/module-creation/placeholderModules'
 import { CourseModuleCard } from './CourseModuleCard'
 
 interface AvailableModuleListProps {

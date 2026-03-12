@@ -44,10 +44,10 @@ import { Route as CampaignsTimelineRouteImport } from './routes/campaigns/timeli
 import { Route as CampaignsNewRouteImport } from './routes/campaigns/new'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
 import { Route as AdminHelpRouteImport } from './routes/admin/help'
-import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses/$courseId/index'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
 import { Route as ContentManagerModulesNewRouteImport } from './routes/content-manager/modules_.new'
@@ -234,6 +234,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReportRoute = AdminReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -247,11 +252,6 @@ const AdminLogsRoute = AdminLogsRouteImport.update({
 const AdminHelpRoute = AdminHelpRouteImport.update({
   id: '/help',
   path: '/help',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
@@ -479,6 +479,7 @@ export interface FileRouteTypes {
     | '/admin/help'
     | '/admin/logs'
     | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
@@ -488,6 +489,7 @@ export interface FileRouteTypes {
     | '/content-manager/help'
     | '/content-manager/modules'
     | '/content-manager/report'
+    | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
     | '/sending-profiles/$id'
@@ -527,6 +529,7 @@ export interface FileRouteTypes {
     | '/admin/help'
     | '/admin/logs'
     | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
@@ -536,6 +539,7 @@ export interface FileRouteTypes {
     | '/content-manager/help'
     | '/content-manager/modules'
     | '/content-manager/report'
+    | '/content-manager/settings'
     | '/content-manager/templates'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
@@ -575,6 +579,7 @@ export interface FileRouteTypes {
     | '/admin/help'
     | '/admin/logs'
     | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
@@ -584,6 +589,7 @@ export interface FileRouteTypes {
     | '/content-manager/help'
     | '/content-manager/modules'
     | '/content-manager/report'
+    | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
     | '/sending-profiles/$id'
@@ -828,6 +834,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentManagerTemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content-manager/settings': {
+      id: '/content-manager/settings'
+      path: '/content-manager/settings'
+      fullPath: '/content-manager/settings'
+      preLoaderRoute: typeof ContentManagerSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/content-manager/report': {
       id: '/content-manager/report'
       path: '/content-manager/report'
@@ -889,6 +902,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/report': {
@@ -987,9 +1007,9 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminHelpRoute: typeof AdminHelpRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminReportRoute: typeof AdminReportRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminTenantsTenantIdRoute: typeof AdminTenantsTenantIdRoute
@@ -999,9 +1019,9 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminHelpRoute: AdminHelpRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminReportRoute: AdminReportRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminTenantsTenantIdRoute: AdminTenantsTenantIdRoute,

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { CourseCreator } from '@/components/content-manager/courses/course-creation/CourseCreator'
+import { CourseCreator } from '@/components/content-manager/courses/CourseCreator'
 
 export const Route = createFileRoute('/content-manager/courses_/new')({
     component: RouteComponent,

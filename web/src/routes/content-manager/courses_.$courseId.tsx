@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { BookOpen } from 'lucide-react'
 import { COURSES } from '@/components/courses/courseData'
-import { CoursePreview } from '@/components/content-manager/courses/course-creation/CoursePreview'
+import { CoursePreview } from '@/components/content-manager/courses/CoursePreview'
 import type { PlaceholderModule } from '@/components/content-manager/modules/module-creation/placeholderModules'
 
 export const Route = createFileRoute('/content-manager/courses_/$courseId')({
