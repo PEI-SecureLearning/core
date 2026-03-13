@@ -11,7 +11,18 @@ import {
   updatePhishingKit,
 } from "@/services/phishingKitsApi";
 import type { PhishingKitCreate } from "@/types/phishingKit";
-import { CheckCircle2 } from "lucide-react";
+import {
+  BookOpen,
+  BookOpenCheck,
+  Check,
+  CheckCircle2,
+  File,
+  FileCheck,
+  Mail,
+  MailCheck,
+  Send,
+} from "lucide-react";
+import { toast } from "sonner";
 
 interface PhishingKitFormProps {
   readonly editId?: number;
@@ -43,24 +54,35 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
   const { data, getValidationErrors, isValid } = usePhishingKit();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
-
-  const stepLabels = [
-    "Basic Info",
-    "Email Template",
-    "Landing Page",
-    "Sending Profiles",
-  ];
+  const stepIcons = [BookOpen, Mail, File, Send] as const;
+  const stepCompletedIcons = [BookOpenCheck, MailCheck, FileCheck, Check] as const;
 
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        return !!data.name.trim();
+        if (!data.name.trim()) {
+          toast.error("Please provide a phishing kit name.");
+          return false;
+        }
+        return true;
       case 2:
-        return !!data.email_template_id;
+        if (!data.email_template_id) {
+          toast.error("Please select an email template.");
+          return false;
+        }
+        return true;
       case 3:
-        return !!data.landing_page_template_id;
+        if (!data.landing_page_template_id) {
+          toast.error("Please select a landing page template.");
+          return false;
+        }
+        return true;
       case 4:
-        return data.sending_profile_ids.length > 0;
+        if (data.sending_profile_ids.length === 0) {
+          toast.error("Please select at least one sending profile.");
+          return false;
+        }
+        return true;
       default:
         return true;
     }
@@ -135,7 +157,8 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
       )}
       <div className="flex-1 min-h-0">
         <Stepper
-          stepLabels={stepLabels}
+          stepIcons={stepIcons}
+          stepCompletedIcons={stepCompletedIcons}
           validateStep={validateStep}
           onBeforeComplete={handleComplete}
           onFinalStepCompleted={() => {}}

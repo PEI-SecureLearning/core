@@ -29,7 +29,6 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   backButtonText?: string;
   nextButtonText?: string;
   disableStepIndicators?: boolean;
-  stepLabels?: string[];
   stepIcons?: readonly LucideIcon[];
   stepCompletedIcons?: readonly LucideIcon[];
   stepWarnings?: readonly number[];
@@ -55,7 +54,6 @@ export default function Stepper({
   backButtonText = "Back",
   nextButtonText = "Continue",
   disableStepIndicators = false,
-  stepLabels = [],
   stepIcons = [],
   stepCompletedIcons = [],
   stepWarnings = [],
@@ -133,7 +131,6 @@ export default function Stepper({
           {stepsArray.map((_, index) => {
             const stepNumber = index + 1;
             const isNotLastStep = index < totalSteps - 1;
-            const label = stepLabels[index] || `Step ${stepNumber}`;
 
             // Handler that validates all steps before jumping
             const handleStepClick = (clicked: number) => {
@@ -166,7 +163,6 @@ export default function Stepper({
                 ) : (
                   <StepIndicator
                     step={stepNumber}
-                    label={label}
                     stepIcon={stepIcons[index]}
                     completedStepIcon={stepCompletedIcons[index]}
                     disableStepIndicators={disableStepIndicators}
@@ -339,7 +335,6 @@ export function Step({ children }: StepProps) {
 interface StepIndicatorProps {
   readonly step: number;
   readonly currentStep: number;
-  readonly label: string;
   readonly stepIcon?: LucideIcon;
   readonly completedStepIcon?: LucideIcon;
   readonly onClickStep: (clicked: number) => void;
@@ -350,7 +345,6 @@ interface StepIndicatorProps {
 function StepIndicator({
   step,
   currentStep,
-  label,
   stepIcon,
   completedStepIcon,
   onClickStep,
@@ -430,17 +424,7 @@ function StepIndicator({
       >
         {indicatorContent}
       </motion.div>
-      <motion.span
-        className="text-[11px] font-normal whitespace-nowrap tracking-wide"
-        variants={{
-          inactive: { color: "rgb(148, 163, 184)" },
-          warning: { color: "rgb(148, 163, 184)" },
-          active: { color: "#a855f7" },
-          complete: { color: "#9333ea" },
-        }}
-      >
-        {label}
-      </motion.span>
+      
     </motion.div>
   );
 }

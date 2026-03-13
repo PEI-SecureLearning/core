@@ -234,7 +234,7 @@ export default function SearchableMultiPicker<
             style={{ width: anchorWidth ?? "100%" }}
             className="p-0 shadow-lg border-slate-200"
           >
-            <ScrollArea className="max-h-[250px]">
+            <ScrollArea>
               <div className="p-1">
                 {filteredItems.length === 0 ? (
                   <p className="font-medium text-center text-sm py-3 text-slate-400">
@@ -268,8 +268,14 @@ export default function SearchableMultiPicker<
             </h3>
           </div>
 
-          <ScrollArea className="max-w-2xl h-full min-h-[180px] rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30">
-            <div className="flex flex-col gap-2 p-4 min-h-full">
+          <ScrollArea className="max-w-2xl h-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30">
+            <div
+              className={
+                selectedIds.length > 0
+                  ? "flex flex-col gap-2 p-4 h-full"
+                  : "flex h-full items-center justify-center align-middle p-4"
+              }
+            >
               {selectedIds.length > 0
                 ? selectedIds.map((id) => {
                     const item = items.find((candidate) => candidate.id === id);

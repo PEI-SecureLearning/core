@@ -166,7 +166,6 @@ function CampaignStepper() {
       validateStep={validateStep}
       backButtonText="Previous"
       nextButtonText="Next"
-      stepLabels={steps.map((s) => s.label)}
       stepIcons={stepIcons}
       stepCompletedIcons={stepCompletedIcons}
       stepWarnings={stepWarnings}

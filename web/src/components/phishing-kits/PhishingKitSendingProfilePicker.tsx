@@ -11,8 +11,7 @@ export default function PhishingKitSendingProfilePicker() {
         updateData({ sending_profile_ids: ids })
       }
       tooltipLines={[
-        "Select one or more SMTP profiles for this phishing kit.",
-        "Emails will be sent through the selected profiles.",
+            "Emails will be sent through the selected profiles.",
       ]}
     />
   );

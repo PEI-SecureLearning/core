@@ -1,5 +1,5 @@
 - refactor campaign creator:
-  - [ ] use same ui from sending profile picker for group selector
+  - [x] use same ui from sending profile picker for group selector
   - [ ] refresh button in campaign main page
   - [x] enable popover on focus for sending profile selector
 
@@ -8,4 +8,13 @@
   
 - refactor campaign editor completely
 
-- [x] add icons to new campaign forms steps
+- stepper improvements
+  - [x] add icons to new campaign forms steps
+  - [x] remove step names to have a cleaner look
+
+- phishing kit forms improvements
+  - [ ] change ui for template selectors.
+  - [ ] include template preview for the template selectors.
+  - [ ] include a grid / list view for the templates, as well as an import button to use a custom one.
+  
+- 
