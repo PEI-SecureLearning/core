@@ -36,16 +36,16 @@ function statusMeta(mod: CourseModule): StatusMeta {
             labelColor: 'text-amber-600',
             iconBg: 'bg-amber-400',
             icon: <Clock3 size={22} className="text-white" />,
-            barColor: 'bg-purple-500',
+            barColor: 'bg-primary/90',
             cta: 'Continue',
         }
     }
     return {
         label: 'Not started',
-        labelColor: 'text-gray-400',
-        iconBg: 'bg-gray-200',
-        icon: <Circle size={22} className="text-gray-400" />,
-        barColor: 'bg-gray-200',
+        labelColor: 'text-muted-foreground/70',
+        iconBg: 'bg-muted/60',
+        icon: <Circle size={22} className="text-muted-foreground/70" />,
+        barColor: 'bg-muted/60',
         cta: 'Start',
     }
 }
@@ -71,7 +71,7 @@ export default function ModuleCard({ module: mod, courseId }: ModuleCardProps) {
             <div className="flex-1 min-w-0 space-y-2">
                 {/* Title + Status + difficulty */}
                 <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+                    <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                         {mod.title}
                     </h3>
                     <span className={`text-xs font-semibold ${meta.labelColor}`}>
@@ -83,12 +83,12 @@ export default function ModuleCard({ module: mod, courseId }: ModuleCardProps) {
                 </div>
 
                 {/* Description */}
-                <p className="text-sm text-gray-500 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                     {mod.description}
                 </p>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground/70">
                     <span className="flex items-center gap-1">
                         <BookOpen size={12} />
                         {mod.lessons} Lessons
@@ -103,14 +103,14 @@ export default function ModuleCard({ module: mod, courseId }: ModuleCardProps) {
 
                     {/* CTA */}
                     {courseId && (
-                        <span className="ml-auto flex items-center gap-1 text-purple-600 font-semibold group-hover:text-purple-800 transition-colors">
+                        <span className="ml-auto flex items-center gap-1 text-primary font-semibold group-hover:text-primary/80 transition-colors">
                             {meta.cta} <ArrowRight size={12} />
                         </span>
                     )}
                 </div>
 
                 {/* Progress bar */}
-                <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                     <div
                         className={`h-full rounded-full ${meta.barColor} transition-all duration-500`}
                         style={{ width: `${mod.completion}%` }}
@@ -125,7 +125,7 @@ export default function ModuleCard({ module: mod, courseId }: ModuleCardProps) {
             <Link
                 to={'/courses/$courseId/modules/$moduleId' as any}
                 params={{ courseId, moduleId: mod.id } as any}
-                className="group rounded-xl border border-gray-200 bg-white shadow-sm p-5 flex items-start gap-4 hover:shadow-lg hover:border-purple-300 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer no-underline"
+                className="group rounded-xl border border-border bg-background shadow-sm p-5 flex items-start gap-4 hover:shadow-lg hover:border-primary/50 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer no-underline"
             >
                 {content}
             </Link>
@@ -133,7 +133,7 @@ export default function ModuleCard({ module: mod, courseId }: ModuleCardProps) {
     }
 
     return (
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200">
+        <div className="rounded-xl border border-border bg-background shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow duration-200">
             {content}
         </div>
     )

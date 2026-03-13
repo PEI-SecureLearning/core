@@ -46,7 +46,7 @@ export function AppLoader({
 
     return (
         <div
-            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white"
+            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background"
             style={{
                 transition: 'opacity 600ms cubic-bezier(0.4,0,0.2,1)',
                 opacity: fading ? 0 : 1,
@@ -72,22 +72,22 @@ export function AppLoader({
                         style={{ animation: 'sl-pulse 2.4s ease-in-out infinite' }}
                     />
                     <div className="flex flex-col leading-none">
-                        <span className="font-bold text-3xl text-slate-800 tracking-tight">Secure</span>
-                        <span className="font-bold text-2xl text-purple-600 tracking-tight translate-x-3">Learning</span>
+                        <span className="font-bold text-3xl text-foreground tracking-tight">Secure</span>
+                        <span className="font-bold text-2xl text-primary tracking-tight translate-x-3">Learning</span>
                     </div>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-48 h-0.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className="w-48 h-0.5 rounded-full bg-muted overflow-hidden">
                     <div
-                        className="h-full rounded-full bg-purple-400"
+                        className="h-full rounded-full bg-accent-secondary"
                         style={{ animation: 'sl-bar 1.8s ease-in-out infinite' }}
                     />
                 </div>
 
                 {/* Status label */}
                 <p
-                    className="text-[13px] text-slate-400 tracking-wide"
+                    className="text-[13px] text-muted-foreground/70 tracking-wide"
                     style={{ animation: 'sl-fade 1.8s ease-in-out infinite' }}
                 >
                     {label}

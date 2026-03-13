@@ -29,7 +29,7 @@ export function SortableBlock({ id, children }: { readonly id: string; readonly 
                 ref={setActivatorNodeRef}
                 type="button"
                 className={`cursor-grab active:cursor-grabbing flex-shrink-0 touch-none mt-2.5 transition-colors ${
-                    isDragging ? 'text-slate-400' : 'text-slate-300 hover:text-slate-400'
+                    isDragging ? 'text-muted-foreground' : 'text-muted-foreground/50 hover:text-muted-foreground'
                 }`}
                 aria-label="Drag to reorder block"
                 {...attributes}

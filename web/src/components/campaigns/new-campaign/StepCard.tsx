@@ -14,8 +14,8 @@ export default function StepCard({ index, label, active }: StepCardProps) {
         className={cn(
           "py-0 px-3.5 rounded-full flex items-center justify-center font-semibold text-sm border",
           active
-            ? "bg-purple-500 text-white border-purple-500"
-            : "bg-gray-200 text-gray-700 border-gray-300"
+            ? "bg-primary/90 text-white border-primary"
+            : "bg-muted/60 text-foreground/90 border-border/60"
         )}
       >
         {index + 1}

@@ -16,25 +16,25 @@ export function CourseCreatorTopBar({
     canPreview,
 }: CourseCreatorTopBarProps) {
     return (
-        <div className="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-3 bg-surface border-b border-border shadow-sm flex-shrink-0">
             <div className="flex items-center gap-4 flex-1 min-w-0">
                 <button
                     type="button"
                     onClick={onBack}
-                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-purple-700 transition-colors flex-shrink-0"
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#A78BFA] transition-colors flex-shrink-0"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back
                 </button>
 
-                <div className="h-5 w-px bg-slate-200 flex-shrink-0" />
+                <div className="h-5 w-px bg-border flex-shrink-0" />
 
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => onTitleChange(e.target.value)}
                     placeholder="Untitled Course"
-                    className="flex-1 text-lg font-bold text-slate-800 placeholder:text-slate-300 bg-transparent border-none outline-none focus:ring-0 min-w-0"
+                    className="flex-1 text-lg font-bold text-foreground placeholder:text-muted-foreground/40 bg-transparent border-none outline-none focus:ring-0 min-w-0"
                 />
             </div>
 
@@ -43,9 +43,10 @@ export function CourseCreatorTopBar({
                     type="button"
                     onClick={onPreview}
                     disabled={!canPreview}
+                    style={canPreview ? { background: 'linear-gradient(135deg, #7C3AED, #9333EA)' } : undefined}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${canPreview
-                        ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-200'
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        ? 'text-white shadow-md shadow-[#7C3AED]/25'
+                        : 'bg-surface-subtle text-muted-foreground cursor-not-allowed'
                         }`}
                 >
                     <Eye className="w-4 h-4" />
@@ -53,7 +54,7 @@ export function CourseCreatorTopBar({
                 </button>
                 <button
                     type="button"
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-sm shadow-purple-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     Publish
                 </button>

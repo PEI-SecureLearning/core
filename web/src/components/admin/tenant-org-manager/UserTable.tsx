@@ -1,5 +1,6 @@
 import { Mail, Shield, Trash2, Loader2 } from "lucide-react";
 import type { UserRecord } from "./types";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface UserTableProps {
     users: UserRecord[];
@@ -12,39 +13,39 @@ export function UserTable({ users, deletingIds, onDeleteUser }: UserTableProps) 
         const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
         if (isOrgManager) {
             return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-purple-100 text-purple-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary/20 text-primary">
                     <Shield size={12} />
                     Org Manager
                 </span>
             );
         }
         return (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground">
                 User
             </span>
         );
     };
 
     return (
-        <div className="liquid-glass-card overflow-hidden ">
-            <table className="w-full border-2 border-gray-100 shadow-md">
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+            <table className="w-full">
                 <thead>
-                    <tr className="bg-gray-50/80 border-b border-gray-200/60">
-                        <th className="text-left px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    <tr className="bg-surface-subtle/80 border-b border-border/60">
+                        <th className="text-left px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                             User
                         </th>
-                        <th className="text-left px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="text-left px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                             Email
                         </th>
-                        <th className="text-left px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="text-left px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                             Role
                         </th>
-                        <th className="text-right px-6 py-4 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="text-right px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100/60">
+                <tbody className="divide-y divide-border/60">
                     {users.map((user) => {
                         const id = user.id || user.username || "";
                         const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
@@ -54,21 +55,19 @@ export function UserTable({ users, deletingIds, onDeleteUser }: UserTableProps) 
                             user.username;
 
                         return (
-                            <tr key={id} className="hover:bg-gray-50/60 transition-colors">
+                            <tr key={id} className="hover:bg-surface-subtle/60 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-md bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
-                                            {(user.firstName?.[0] || user.username?.[0] || "U").toUpperCase()}
-                                        </div>
+                                        <UserAvatar name={user.firstName || user.username || "U"} size="sm" shape="rounded" />
                                         <div>
-                                            <p className="font-medium text-[14px] text-gray-900">{fullName}</p>
-                                            <p className="text-[12px] text-gray-500">@{user.username}</p>
+                                            <p className="font-medium text-[14px] text-foreground">{fullName}</p>
+                                            <p className="text-[12px] text-muted-foreground">@{user.username}</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2 text-[14px] text-gray-600">
-                                        <Mail size={14} className="text-gray-400" />
+                                    <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
+                                        <Mail size={14} className="text-muted-foreground/70" />
                                         {user.email || "—"}
                                     </div>
                                 </td>
@@ -78,7 +77,7 @@ export function UserTable({ users, deletingIds, onDeleteUser }: UserTableProps) 
                                         <button
                                             onClick={() => onDeleteUser(id)}
                                             disabled={isDeleting}
-                                            className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="p-2 text-muted-foreground/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isDeleting ? (
                                                 <Loader2 size={16} className="animate-spin" />

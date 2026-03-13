@@ -27,16 +27,16 @@ const UserRow = memo(function UserRow({
     <div key={id} className="flex items-center justify-between px-3 py-2 gap-3">
       <div className="truncate">
         <span className="font-medium">{user.username}</span>
-        {user.email ? <span className="text-gray-500"> · {user.email}</span> : null}
+        {user.email ? <span className="text-muted-foreground"> · {user.email}</span> : null}
       </div>
       <div className="flex items-center gap-3">
-        <div className="text-xs text-gray-500 hidden sm:block">
+        <div className="text-xs text-muted-foreground hidden sm:block">
           {user.firstName || user.lastName ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "—"}
         </div>
         {!isOrgManager && (
           <button
             type="button"
-            className="liquid-glass-button-destructive"
+            className="px-3 py-1.5 rounded-md text-sm font-medium text-rose-500 border border-rose-500/30 hover:bg-rose-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             disabled={!id || isDeleting}
             onClick={() => onDelete(id)}
           >
@@ -62,7 +62,7 @@ const UsersListContent = memo(function UsersListContent({
 }) {
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-600">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading users...
       </div>
@@ -70,7 +70,7 @@ const UsersListContent = memo(function UsersListContent({
   }
 
   if (users.length === 0) {
-    return <div className="text-sm text-gray-500">No users found.</div>;
+    return <div className="text-sm text-muted-foreground">No users found.</div>;
   }
 
   return (
@@ -93,7 +93,7 @@ const UsersListContent = memo(function UsersListContent({
 // Main component - animation surface only
 function UsersList({ realm, users, isLoading, deletingIds, onDelete }: Props) {
   return (
-    <Card className="shadow-sm border border-gray-100">
+    <Card className="shadow-sm border border-border/40">
       <CardHeader>
         <CardTitle className="text-lg">Users in Realm</CardTitle>
         <CardDescription>Listing users for realm {realm || "resolving..."}.</CardDescription>

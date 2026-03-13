@@ -1,5 +1,5 @@
 import { Blocks, Clock, GripVertical, X } from 'lucide-react'
-import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
+import type { PlaceholderModule } from '../modules/module-creation/placeholderModules'
 
 interface CourseModuleCardProps {
     readonly module: PlaceholderModule
@@ -10,9 +10,9 @@ interface CourseModuleCardProps {
 }
 
 const DIFFICULTY_COLOR: Record<string, string> = {
-    Easy:   'bg-green-100 text-green-700 border-green-300',
-    Medium: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-    Hard:   'bg-red-100 text-red-700 border-red-300',
+    Easy:   'bg-green-500/15 text-green-400 border-green-500/30',
+    Medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+    Hard:   'bg-red-500/15 text-red-400 border-red-500/30',
 }
 
 export function CourseModuleCard({
@@ -26,15 +26,15 @@ export function CourseModuleCard({
 
     return (
         <div
-            className={`flex items-center gap-3 p-3 rounded-xl border bg-white transition-all ${isDimmed
-                    ? 'opacity-40 border-slate-100'
-                    : 'border-slate-200 hover:border-purple-300 hover:shadow-md hover:shadow-purple-100/50'
+            className={`flex items-center gap-3 p-3 rounded-xl border bg-surface transition-all ${isDimmed
+                    ? 'opacity-40 border-border'
+                    : 'border-border hover:border-[#7C3AED]/40 hover:shadow-md hover:shadow-[#7C3AED]/10'
                 }`}
         >
             {variant === 'stack' && (
                 <div
                     {...dragHandleProps}
-                    className="flex-shrink-0 text-slate-300 hover:text-purple-500 cursor-grab active:cursor-grabbing transition-colors"
+                    className="flex-shrink-0 text-muted-foreground/40 hover:text-[#A78BFA] cursor-grab active:cursor-grabbing transition-colors"
                 >
                     <GripVertical className="w-4 h-4" />
                 </div>
@@ -47,11 +47,11 @@ export function CourseModuleCard({
             />
 
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-800 truncate">
+                <p className="text-sm font-semibold text-foreground truncate">
                     {module.title}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-medium text-[#A78BFA] bg-[#7C3AED]/15 px-1.5 py-0.5 rounded">
                         {module.category}
                     </span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${difficultyColor}`}>
@@ -61,11 +61,11 @@ export function CourseModuleCard({
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     {module.estimatedTime}
                 </span>
-                <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Blocks className="w-3 h-3" />
                     {module.unitCount}
                 </span>
@@ -75,7 +75,7 @@ export function CourseModuleCard({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                     <X className="w-3.5 h-3.5" />
                 </button>

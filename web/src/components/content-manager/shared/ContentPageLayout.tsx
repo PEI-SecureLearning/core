@@ -22,7 +22,7 @@ export function ContentPageLayout({ title, children, onNew }: ContentPageLayoutP
         <motion.div
             layoutId={`card-${title}`}
             transition={transition}
-            className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative"
+            className="w-full h-full py-4 px-6 bg-background flex flex-col relative"
         >
             <div className="w-full h-[8%] flex flex-row relative z-10">
                 <PageTitle title={title} />
@@ -31,7 +31,7 @@ export function ContentPageLayout({ title, children, onNew }: ContentPageLayoutP
                 </div>
             </div>
 
-            <div className="w-full h-[92%] rounded-lg p-10 relative overflow-y-auto bg-gray-100 z-10 border border-gray-200">
+            <div className="w-full h-[92%] rounded-lg p-10 relative overflow-y-auto bg-surface z-10 border border-border">
                 {children}
             </div>
 

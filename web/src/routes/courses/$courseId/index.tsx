@@ -14,11 +14,11 @@ function CourseDetail() {
 
     if (!course) {
         return (
-            <div className="p-6 flex flex-col items-center justify-center h-full text-center text-gray-500">
-                <BookOpen size={48} className="mb-4 text-gray-300" />
-                <h2 className="text-xl font-semibold text-gray-800">Course not found</h2>
+            <div className="p-6 flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                <BookOpen size={48} className="mb-4 text-muted-foreground/50" />
+                <h2 className="text-xl font-semibold text-foreground">Course not found</h2>
                 <p className="text-sm mt-1">The course you're looking for doesn't exist.</p>
-                <Link to="/courses" className="mt-4 text-sm text-purple-600 hover:text-purple-700 font-medium">
+                <Link to="/courses" className="mt-4 text-sm text-primary hover:text-primary font-medium">
                     ← Back to courses
                 </Link>
             </div>
@@ -32,12 +32,12 @@ function CourseDetail() {
     return (
         <div className="p-6 space-y-6 h-full w-full overflow-y-auto overflow-y-hidden">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-sm text-gray-500 h-[2%]">
-                <Link to="/courses" className="hover:text-purple-600 transition-colors">
+            <nav className="flex items-center gap-1 text-sm text-muted-foreground h-[2%]">
+                <Link to="/courses" className="hover:text-primary transition-colors">
                     Courses
                 </Link>
-                <ChevronRight size={14} className="text-gray-400" />
-                <span className="text-gray-800 font-medium">{course.title}</span>
+                <ChevronRight size={14} className="text-muted-foreground/70" />
+                <span className="text-foreground font-medium">{course.title}</span>
             </nav>
 
             {/* Hero header */}

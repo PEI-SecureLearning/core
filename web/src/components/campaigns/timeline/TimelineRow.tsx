@@ -44,21 +44,21 @@ export const TimelineRow = memo(function TimelineRow({
   if (startPercent + widthPercent > 100) widthPercent = 100 - startPercent;
 
   return (
-    <div className="flex h-16 group hover:bg-slate-50 transition-colors">
+    <div className="flex h-16 group hover:bg-surface-subtle transition-colors">
       {/* Coluna Fixa: Informação da Campanha */}
       <div
-        className="flex-shrink-0 p-3 border-r border-slate-100 flex flex-col justify-center gap-1.5 bg-white/50 backdrop-blur-sm z-10 sticky left-0"
+        className="flex-shrink-0 p-3 border-r border-border/40 flex flex-col justify-center gap-1.5 bg-background/50 backdrop-blur-sm z-10 sticky left-0"
         style={{ width: campaignColumnWidth }}
       >
         <div
-          className="font-medium text-slate-700 text-sm truncate"
+          className="font-medium text-foreground/90 text-sm truncate"
           title={campaign.name}
         >
           {campaign.name}
         </div>
 
         {/* Stats Row (Agora usando os campos flat do backend) */}
-        <div className="flex items-center gap-3 text-[11px] text-slate-400">
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground/70">
           <div className="flex items-center gap-1" title="Sent">
             <Mail size={12} />
             <span>{campaign.total_sent ?? 0}</span>
@@ -81,7 +81,7 @@ export const TimelineRow = memo(function TimelineRow({
           {weeks.map((week) => (
             <div
               key={week.weekNumber}
-              className="flex-1 border-r border-slate-100/60 last:border-r-0"
+              className="flex-1 border-r border-border/40/60 last:border-r-0"
             />
           ))}
         </div>

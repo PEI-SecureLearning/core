@@ -21,19 +21,18 @@
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 
-// ── Primitive enums ────────────────────────────────────────────────────────────
+// Primitive enums
 
 export type ModuleStatus  = 'draft' | 'published' | 'archived';
 export type Difficulty    = 'Easy' | 'Medium' | 'Hard';
 export type QuestionType  = 'multiple_choice' | 'true_false' | 'short_answer';
 export type RichMediaType = 'image' | 'video' | 'audio' | 'file';
 
-// ── Choice + Question ──────────────────────────────────────────────────────────
+// Choice + Question 
 
 export interface ModuleChoice {
   id:         string;
   text:       string;
-  /** Renamed from camelCase `isCorrect` — matches the DB/API field name. */
   is_correct: boolean;
 }
 
@@ -42,11 +41,10 @@ export interface ModuleQuestion {
   type:    QuestionType;
   text:    string;
   choices: ModuleChoice[];
-  /** Free-text expected answer for `short_answer` questions. */
   answer:  string;
 }
 
-// ── Block types (discriminated on `kind`) ──────────────────────────────────────
+// Block types 
 
 export interface ModuleTextBlock {
   id:      string;
@@ -76,7 +74,7 @@ export type ModuleBlock =
   | ModuleRichContentBlock
   | ModuleQuestionBlock;
 
-// ── Section ────────────────────────────────────────────────────────────────────
+// Section
 
 export interface ModuleSection {
   id:                      string;
@@ -87,12 +85,11 @@ export interface ModuleSection {
   collapsed:               boolean;
   require_correct_answers: boolean;
   is_optional:             boolean;
-  /** Minimum number of seconds the learner must spend on this section. */
   min_time_spent:          number;
   blocks:                  ModuleBlock[];
 }
 
-// ── Module payloads ────────────────────────────────────────────────────────────
+// Module payloads
 
 /**
  * Body sent on POST /modules.

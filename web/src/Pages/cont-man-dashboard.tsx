@@ -5,17 +5,17 @@ import { DashCard } from "@/components/content-manager/shared/DashCard";
 
 function ContManDashboard() {
     return (
-        <div className="w-full h-full bg-gray-50/50">
+        <div className="w-full h-full bg-background">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="h-[10%] px-8 py-4 flex flex-col md:flex-row justify-between items-start gap-4"
             >
                 <div className="flex flex-col mt-5">
-                    <h1 className="text-6xl font-bold text-gray-900 tracking-tight">
+                    <h1 className="text-6xl font-bold text-foreground tracking-tight">
                         Dashboard
                     </h1>
-                    <p className="text-gray-500 mt-2 text-lg -translate-y-3 translate-x-10">
+                    <p className="text-muted-foreground mt-2 text-lg -translate-y-3 translate-x-10">
                         Manage courses, modules, and content.
                     </p>
                 </div >

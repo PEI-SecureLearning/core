@@ -10,10 +10,10 @@ type QuizSettingsProps = {
 function TooltipIcon({ text }: { text: string }) {
     return (
         <div className="relative group">
-            <span className="h-5 w-5 rounded-full border border-purple-600 text-xs text-purple-700 flex items-center justify-center cursor-default">
+            <span className="h-5 w-5 rounded-full border border-primary text-xs text-primary flex items-center justify-center cursor-default">
                 ?
             </span>
-            <div className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-md bg-gray-50 border border-purple-600 px-3 py-2 text-xs text-gray-700 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-56 -translate-x-1/2 rounded-md bg-surface-subtle border border-primary px-3 py-2 text-xs text-foreground/90 opacity-0 transition-opacity group-hover:opacity-100">
                 {text}
             </div>
         </div>
@@ -37,8 +37,8 @@ function StepperButton({
         <button
             type="button"
             className={`h-8 w-12 rounded-md text-xl font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${variant === "filled"
-                ? "bg-purple-700 text-white hover:bg-purple-800"
-                : "border border-gray-200 text-gray-700 hover:bg-gray-50"
+                ? "bg-primary text-white hover:bg-primary/80"
+                : "border border-border text-foreground/90 hover:bg-surface-subtle"
                 }`}
             onClick={onClick}
             disabled={disabled}
@@ -62,7 +62,7 @@ export default function QuizSettings({
             {/* Questions per quiz */}
             <div className="w-full max-w-xs">
                 <div className="flex items-center justify-center gap-2">
-                    <label htmlFor="question-count" className="text-base font-semibold text-gray-800">
+                    <label htmlFor="question-count" className="text-base font-semibold text-foreground">
                         Questions per quiz
                     </label>
                     <TooltipIcon text="Number of questions (randomly selected from the bank) to be asked per quiz." />
@@ -77,7 +77,7 @@ export default function QuizSettings({
                     </StepperButton>
                     <div
                         id="question-count"
-                        className="bg-white h-12 min-w-[80px] rounded-md border border-gray-200 text-gray-900 flex items-center justify-center text-base font-semibold"
+                        className="bg-background h-12 min-w-[80px] rounded-md border border-border text-foreground flex items-center justify-center text-base font-semibold"
                     >
                         {questionCount}
                     </div>
@@ -95,7 +95,7 @@ export default function QuizSettings({
             {/* Passing score */}
             <div className="w-full max-w-xs">
                 <div className="flex items-center justify-center gap-2">
-                    <label htmlFor="passing-score" className="text-base font-semibold text-gray-800">
+                    <label htmlFor="passing-score" className="text-base font-semibold text-foreground">
                         Passing score (%)
                     </label>
                     <TooltipIcon text="Percentage required to pass the quiz." />
@@ -112,7 +112,7 @@ export default function QuizSettings({
                     <div
                         id="passing-score"
                         data-testid="passing-score-display"
-                        className="h-12 min-w-[80px] rounded-md border border-gray-200 text-gray-900 flex items-center justify-center text-base font-semibold"
+                        className="h-12 min-w-[80px] rounded-md border border-border text-foreground flex items-center justify-center text-base font-semibold"
                     >
                         {passingScore}%
                     </div>

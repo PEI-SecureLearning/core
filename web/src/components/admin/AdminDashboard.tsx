@@ -66,33 +66,33 @@ function SystemLogsCard({ item }: { item: Variants }) {
     return (
         <motion.div
             variants={item}
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col"
+            className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow flex flex-col"
         >
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
                         <Activity className="w-6 h-6 text-green-600" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">System Logs</h3>
+                    <h3 className="text-lg font-semibold text-foreground">System Logs</h3>
                 </div>
             </div>
 
             <div className="flex-1 space-y-2 mb-4 min-h-[120px]">
                 {loading ? (
-                    <div className="flex items-center gap-2 text-gray-400 py-4 justify-center">
+                    <div className="flex items-center gap-2 text-muted-foreground/70 py-4 justify-center">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span className="text-sm">Loading…</span>
                     </div>
                 ) : logs.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-4 text-center">No recent events.</p>
+                    <p className="text-sm text-muted-foreground/70 py-4 text-center">No recent events.</p>
                 ) : (
                     logs.map((log) => (
                         <div key={log.id} className="flex items-start gap-2 text-sm">
                             <span
                                 className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${levelDot[log.level]}`}
                             />
-                            <span className="flex-1 text-gray-700 truncate">{log.message}</span>
-                            <span className="text-xs text-gray-400 flex-shrink-0 flex items-center gap-1">
+                            <span className="flex-1 text-foreground/90 truncate">{log.message}</span>
+                            <span className="text-xs text-muted-foreground/70 flex-shrink-0 flex items-center gap-1">
                                 {levelIcon(log.level)}
                                 {relativeTime(log.timestamp)}
                             </span>
@@ -128,7 +128,7 @@ export function AdminDashboard() {
     };
 
     return (
-        <div className="min-h-full w-full bg-gray-50/50">
+        <div className="min-h-full w-full bg-surface-subtle/50">
             <div className="max-w-6xl mx-auto space-y-8 ">
                 {/* Header Section */}
                 <motion.div
@@ -141,10 +141,10 @@ export function AdminDashboard() {
                             <Shield className="w-4 h-4" />
                             <span>Platform Administration</span>
                         </div>
-                        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                        <h1 className="text-4xl font-bold text-foreground tracking-tight">
                             Admin Console
                         </h1>
-                        <p className="text-gray-500 mt-2 text-lg">
+                        <p className="text-muted-foreground mt-2 text-lg">
                             Manage tenants, users, and platform settings.
                         </p>
                     </div>
@@ -157,47 +157,47 @@ export function AdminDashboard() {
                     animate="show"
                     className="grid grid-cols-1 md:grid-cols-3 gap-6"
                 >
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <motion.div variants={item} className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow">
                         <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
                             <Building2 className="w-6 h-6 text-blue-600" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Tenant Management</h3>
-                        <p className="text-gray-500 mb-4">Create and manage organizations, configure features and access controls.</p>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Tenant Management</h3>
+                        <p className="text-muted-foreground mb-4">Create and manage organizations, configure features and access controls.</p>
                         <Link to="/admin/tenants" className="text-blue-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             View Tenants <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
 
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-                            <Users className="w-6 h-6 text-purple-600" />
+                    <motion.div variants={item} className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                            <Users className="w-6 h-6 text-primary" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">User Administration</h3>
-                        <p className="text-gray-500 mb-4">Manage platform users, roles, and permissions across all tenants.</p>
-                        <Link to="/admin/users" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">User Administration</h3>
+                        <p className="text-muted-foreground mb-4">Manage platform users, roles, and permissions across all tenants.</p>
+                        <Link to="/admin/users" className="text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             Manage Users <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
 
                     <SystemLogsCard item={item} />
 
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                    <motion.div variants={item} className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow">
                         <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mb-4">
                             <Settings className="w-6 h-6 text-indigo-600" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Platform Settings</h3>
-                        <p className="text-gray-500 mb-4">Configure global platform settings, integrations, and defaults.</p>
-                        <span className="text-gray-400 font-medium inline-flex items-center gap-1">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Platform Settings</h3>
+                        <p className="text-muted-foreground mb-4">Configure global platform settings, integrations, and defaults.</p>
+                        <span className="text-muted-foreground/70 font-medium inline-flex items-center gap-1">
                             Coming Soon
                         </span>
                     </motion.div>
 
-                    <motion.div variants={item} className=" bg-white-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-white">
-                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
+                    <motion.div variants={item} className=" bg-background-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-white">
+                        <div className="w-12 h-12 bg-background/20 rounded-lg flex items-center justify-center mb-4">
                             <Building2 className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-lg text-slate-700 font-semibold mb-2">Create New Tenant</h3>
-                        <p className="text-slate-500/80 mb-4">Set up a new organization with custom configuration and features.</p>
+                        <h3 className="text-lg text-foreground/90 font-semibold mb-2">Create New Tenant</h3>
+                        <p className="text-muted-foreground/80 mb-4">Set up a new organization with custom configuration and features.</p>
 
                     </motion.div>
                 </motion.div>

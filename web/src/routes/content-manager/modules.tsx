@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { Plus } from 'lucide-react'
-import { PageTitle } from '@/components/content-manager/shared/PageTitle'
 import UniversalFilters, { type GridCols } from '@/components/courses/UniversalFilters'
 import { ModuleDisplay } from '@/components/content-manager/modules/ModuleDisplay'
-import type { ModuleSortValue } from '@/components/content-manager/modules/ToolBarModules'
+
+type ModuleSortValue = 'newest' | 'oldest' | 'title_asc' | 'title_desc'
 
 export const Route = createFileRoute('/content-manager/modules')({
     component: RouteComponent,
@@ -26,10 +26,15 @@ function RouteComponent() {
     }
 
     return (
-        <div className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative">
+        <div className="w-full h-full py-4 px-6 bg-background flex flex-col relative">
             <div className="w-full h-auto mb-6 flex flex-col gap-6 relative z-20">
-                <div className="flex flex-row items-center justify-between">
-                    <PageTitle title="Modules" />
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-foreground">Modules</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Create and manage learning modules to build your course content.
+                        </p>
+                    </div>
                     <button
                         type="button"
                         onClick={handleNewModule}
@@ -58,7 +63,7 @@ function RouteComponent() {
                 />
             </div>
 
-            <div className="flex-1 rounded-2xl p-8 relative overflow-hidden bg-white/50 backdrop-blur-sm z-10 border border-gray-200 shadow-inner overflow-y-auto">
+            <div className="flex-1 rounded-2xl p-8 relative overflow-hidden bg-surface z-10 border border-border overflow-y-auto">
                 <ModuleDisplay search={search} sort={sort} cols={cols} onResultCountChange={setResultCount} />
             </div>
 
