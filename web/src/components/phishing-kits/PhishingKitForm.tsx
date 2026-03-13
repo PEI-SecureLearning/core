@@ -90,7 +90,7 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
 
   const handleComplete = async (): Promise<boolean> => {
     if (!isValid()) {
-      setSubmitError(getValidationErrors().join(" "));
+      toast.error(getValidationErrors().join(" "));
       return false;
     }
 
@@ -155,7 +155,7 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
           {submitError}
         </div>
       )}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 ">
         <Stepper
           stepIcons={stepIcons}
           stepCompletedIcons={stepCompletedIcons}

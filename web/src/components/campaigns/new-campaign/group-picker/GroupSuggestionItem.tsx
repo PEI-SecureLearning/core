@@ -33,10 +33,10 @@ export default function GroupSuggestionItem({
       }}
       onMouseEnter={onHighlight}
       className={cn(
-        "w-full h-auto justify-start px-4 py-3 rounded-md text-left transition-colors",
+        "w-full h-auto justify-start px-4 py-3 rounded-md text-left transition-colors text-foreground hover:text-foreground",
         highlighted
-          ? "bg-slate-100 ring-1 ring-inset ring-slate-200"
-          : "hover:bg-slate-50",
+          ? "bg-muted ring-1 ring-inset ring-border hover:bg-muted dark:hover:bg-muted"
+          : "hover:bg-transparent dark:hover:bg-transparent",
       )}
     >
       <div className="flex flex-col gap-1.5">

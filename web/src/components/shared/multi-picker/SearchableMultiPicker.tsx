@@ -148,7 +148,7 @@ export default function SearchableMultiPicker<
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 text-sm">
+      <div className="flex items-center gap-2 text-slate-500 text-sm w-full">
         <Loader2 className="animate-spin" size={16} />
         {loadingText}
       </div>
@@ -157,7 +157,7 @@ export default function SearchableMultiPicker<
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 p-2 rounded bg-rose-50 border border-rose-200 text-rose-700">
+      <div className="flex items-center gap-2 p-2 rounded bg-rose-50 border border-rose-200 text-rose-700 w-full">
         <CircleQuestionMark size={14} />
         <span>{error}</span>
       </div>
@@ -165,7 +165,7 @@ export default function SearchableMultiPicker<
   }
 
   return (
-    <div className="h-full w-full flex flex-col gap-4 p-2 overflow-y-auto">
+    <div className="h-full w-full flex flex-col gap-4  overflow-y-auto">
       <div className="flex flex-col gap-3 relative w-full h-full">
         <label className="text-[12px] font-normal text-slate-500 tracking-wide uppercase flex items-center gap-1.5">
           {labelIcon}
@@ -201,7 +201,7 @@ export default function SearchableMultiPicker<
           <PopoverAnchor asChild>
             <div
               ref={anchorRef}
-              className="w-full max-w-2xl relative flex items-center"
+              className="w-full relative flex items-center"
             >
               <Input
                 value={inputValue}
@@ -259,7 +259,7 @@ export default function SearchableMultiPicker<
         </Popover>
 
         <div className="flex flex-col gap-3 mt-4 h-full overflow-hidden">
-          <div className="flex items-center justify-between max-w-2xl">
+          <div className="flex items-center justify-between w-full">
             <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <span>{selectedTitle}</span>
               <span className="flex items-center justify-center bg-slate-100 text-slate-500 rounded-full px-2 py-0.5 text-[10px]">
@@ -268,7 +268,7 @@ export default function SearchableMultiPicker<
             </h3>
           </div>
 
-          <ScrollArea className="max-w-2xl h-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30">
+          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30">
             <div
               className={
                 selectedIds.length > 0

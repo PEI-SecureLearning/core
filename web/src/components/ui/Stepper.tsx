@@ -114,7 +114,7 @@ export default function Stepper({
         }
       `}</style>
       <div
-        className="size-full rounded-2xl flex flex-col justify-center align-middle overflow-hidden"
+        className="size-full rounded-2xl flex flex-col justify-start  align-middle overflow-hidden"
         style={{
           background: 'rgba(255, 255, 255, 0.65)',
           backdropFilter: 'blur(24px)',
@@ -125,64 +125,66 @@ export default function Stepper({
       >
         {/* Step Indicators */}
         <div
-          className={`${stepContainerClassName} flex items-center py-6 px-8 border-b border-border/40`}
+          className={`${stepContainerClassName} w-full border-b border-border/40 px-8 py-6`}
           style={{ background: 'rgba(255, 255, 255, 0.4)' }}
         >
-          {stepsArray.map((_, index) => {
-            const stepNumber = index + 1;
-            const isNotLastStep = index < totalSteps - 1;
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-center">
+            {stepsArray.map((_, index) => {
+              const stepNumber = index + 1;
+              const isNotLastStep = index < totalSteps - 1;
 
-            // Handler that validates all steps before jumping
-            const handleStepClick = (clicked: number) => {
-              // Allow going back without validation
-              if (clicked < currentStep) {
-                setDirection(-1);
-                updateStep(clicked);
-                return;
-              }
-              // For jumping forward, validate all steps in between
-              if (validateStep) {
-                for (let step = currentStep; step < clicked; step++) {
-                  if (!validateStep(step)) {
-                    return; // Stop at first invalid step
+              // Handler that validates all steps before jumping
+              const handleStepClick = (clicked: number) => {
+                // Allow going back without validation
+                if (clicked < currentStep) {
+                  setDirection(-1);
+                  updateStep(clicked);
+                  return;
+                }
+                // For jumping forward, validate all steps in between
+                if (validateStep) {
+                  for (let step = currentStep; step < clicked; step++) {
+                    if (!validateStep(step)) {
+                      return; // Stop at first invalid step
+                    }
                   }
                 }
-              }
-              setDirection(1);
-              updateStep(clicked);
-            };
+                setDirection(1);
+                updateStep(clicked);
+              };
 
-            return (
-              <React.Fragment key={stepNumber}>
-                {renderStepIndicator ? (
-                  renderStepIndicator({
-                    step: stepNumber,
-                    currentStep,
-                    onStepClick: handleStepClick,
-                  })
-                ) : (
-                  <StepIndicator
-                    step={stepNumber}
-                    stepIcon={stepIcons[index]}
-                    completedStepIcon={stepCompletedIcons[index]}
-                    disableStepIndicators={disableStepIndicators}
-                    currentStep={currentStep}
-                    onClickStep={handleStepClick}
-                    isWarning={stepWarnings.includes(stepNumber)}
-                  />
-                )}
-                {isNotLastStep && (
-                  <StepConnector
-                    isComplete={currentStep > stepNumber}
-                  />
-                )}
-              </React.Fragment>
-            );
-          })}
+              return (
+                <React.Fragment key={stepNumber}>
+                  {renderStepIndicator ? (
+                    renderStepIndicator({
+                      step: stepNumber,
+                      currentStep,
+                      onStepClick: handleStepClick,
+                    })
+                  ) : (
+                    <StepIndicator
+                      step={stepNumber}
+                      stepIcon={stepIcons[index]}
+                      completedStepIcon={stepCompletedIcons[index]}
+                      disableStepIndicators={disableStepIndicators}
+                      currentStep={currentStep}
+                      onClickStep={handleStepClick}
+                      isWarning={stepWarnings.includes(stepNumber)}
+                    />
+                  )}
+                  {isNotLastStep && (
+                    <StepConnector
+                      isComplete={currentStep > stepNumber}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-hidden relative bg-muted/30">
           <StepContentWrapper
             isCompleted={isCompleted}
             currentStep={currentStep}
@@ -325,7 +327,7 @@ interface StepProps {
 export function Step({ children }: StepProps) {
   return (
     <div className="w-full h-full flex flex-col items-center px-8 py-6">
-      <div className="flex-1 px-1 max-w-2xl w-full min-h-0 overflow-auto">
+      <div className="flex-1 px-1 max-w-5xl w-full min-h-0 overflow-auto">
         {children}
       </div>
     </div>
@@ -342,6 +344,8 @@ interface StepIndicatorProps {
   readonly isWarning?: boolean;
 }
 
+type StepStatus = "active" | "inactive" | "complete" | "warning";
+
 function StepIndicator({
   step,
   currentStep,
@@ -351,13 +355,15 @@ function StepIndicator({
   disableStepIndicators = false,
   isWarning = false,
 }: StepIndicatorProps) {
-  let baseStatus: "active" | "inactive" | "complete" = "complete";
+  let status: StepStatus = "complete";
   if (currentStep === step) {
-    baseStatus = "active";
+    status = "active";
   } else if (currentStep < step) {
-    baseStatus = "inactive";
+    status = "inactive";
+  } else if (isWarning) {
+    // Keep "warning" visually identical to inactive while preventing completed visuals.
+    status = "warning";
   }
-  const status = baseStatus === "complete" && isWarning ? "warning" : baseStatus;
 
   const handleClick = () => {
     if (step !== currentStep && !disableStepIndicators) {
@@ -368,25 +374,28 @@ function StepIndicator({
   const StepIcon = stepIcon;
   const CompletedStepIcon = completedStepIcon;
 
-  let indicatorContent: ReactNode;
-  if (status === "complete") {
-    indicatorContent = CompletedStepIcon ? (
-      <CompletedStepIcon className="h-5 w-5 text-white" strokeWidth={2.3} />
-    ) : (
-      <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
+  const indicatorContent: ReactNode = (() => {
+    if (status === "complete") {
+      return CompletedStepIcon ? (
+        <CompletedStepIcon className="h-5 w-5 text-white" strokeWidth={2.3} />
+      ) : (
+        <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
+      );
+    }
+
+    if (StepIcon) {
+      return (
+        <StepIcon
+          className={status === "active" ? "h-5 w-5 text-white" : "h-5 w-5 text-slate-400"}
+          strokeWidth={2.2}
+        />
+      );
+    }
+
+    return (
+      <span className={status === "active" ? "text-white" : "text-muted-foreground/70"}>{step}</span>
     );
-  } else if (StepIcon) {
-    indicatorContent = (
-      <StepIcon
-        className={status === "active" ? "h-5 w-5 text-white" : "h-5 w-5 text-slate-400"}
-        strokeWidth={2.2}
-      />
-    );
-  } else {
-    indicatorContent = (
-      <span className={status === "active" ? "text-white" : "text-slate-400"}>{step}</span>
-    );
-  }
+  })();
 
   return (
     <motion.div
@@ -400,37 +409,29 @@ function StepIndicator({
           inactive: {
             scale: 1,
             backgroundColor: "rgba(241, 245, 249, 0.8)",
-            borderColor: "rgba(203, 213, 225, 0.6)"
+            borderColor: "rgba(203, 213, 225, 0.6)",
           },
           warning: {
             scale: 1,
             backgroundColor: "rgba(241, 245, 249, 0.8)",
-            borderColor: "rgba(203, 213, 225, 0.6)"
+            borderColor: "rgba(203, 213, 225, 0.6)",
           },
           active: {
             scale: 1,
             backgroundColor: "#a855f7",
-            borderColor: "#a855f7"
+            borderColor: "#a855f7",
           },
           complete: {
             scale: 1,
             backgroundColor: "#9333ea",
-            borderColor: "#9333ea"
+            borderColor: "#9333ea",
           },
         }}
         transition={{ duration: 0.2 }}
         className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2"
-        // style={{ boxShadow: status === 'active' ? '0 4px 14px #623493' : 'none' }}
       >
-        {status === "complete" ? (
-          <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
-        ) : status === "active" ? (
-          <span className="text-white">{step}</span>
-        ) : (
-          <span className="text-muted-foreground/70">{step}</span>
-        )}
+        {indicatorContent}
       </motion.div>
-      
     </motion.div>
   );
 }
@@ -443,7 +444,7 @@ function StepConnector({ isComplete }: Readonly<StepConnectorProps>) {
   const color = "#9333ea";
 
   return (
-    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-muted/60/60">
+    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-muted/60">
       <motion.div
         className="absolute left-0 top-0 h-full rounded-full"
         initial={false}

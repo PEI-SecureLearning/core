@@ -1,7 +1,8 @@
 - refactor campaign creator:
   - [x] use same ui from sending profile picker for group selector
-  - [ ] refresh button in campaign main page
+  - [x] refresh button in campaign main page
   - [x] enable popover on focus for sending profile selector
+  - [ ] refactor campaign summary
 
 - phishing kit refactor
   - [ ] display kit dto to also get the name of the templates + some other useful info
@@ -13,8 +14,10 @@
   - [x] remove step names to have a cleaner look
 
 - phishing kit forms improvements
-  - [ ] change ui for template selectors.
-  - [ ] include template preview for the template selectors.
-  - [ ] include a grid / list view for the templates, as well as an import button to use a custom one.
+  - [x] change ui for template selectors.
+  - [x] include template preview for the template selectors.
+  - [x] include a grid / list view for the templates, as well as an import button to use a custom one.
+  - [ ] improve preview focus.
   
-- 
+- template page improvements
+  - [ ] fix font on refresh button

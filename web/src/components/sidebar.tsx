@@ -58,62 +58,12 @@ const userDashboard: SidebarLinkProps = {
 };
 
 const userStandaloneLinks: SidebarLinkProps[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  
   {
-    href: "/campaigns",
-    label: "Campaigns",
-    icon: Megaphone,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
+    href: "/statistics",
+    label: "Statistics",
+    icon: BarChart3,
   },
-  {
-    href: "/sending-profiles",
-    label: "Sending Profiles",
-    icon: Send,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
-  },
-  {
-    href: "/templates",
-    label: "Templates",
-    icon: FileText,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
-  },
-  {
-    href: "/phishing-kits",
-    label: "Phishing Kits",
-    icon: Package,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
-  },
-  {
-    href: "/compliance-org-manager",
-    label: "Compliance",
-    icon: ShieldCheck,
-    roles: ["ORG_MANAGER"],
-  },
-  {
-    href: "/tenants-org-manager",
-    label: "User Management",
-    icon: User,
-    roles: ["ORG_MANAGER"],
-
-  },
-  {
-    href: "/usergroups",
-    label: "User groups",
-    icon: Users,
-    roles: ["ORG_MANAGER"],
-  },
-  {
-    href: "/courses",
-    label: "Courses",
-    icon: BookOpen,
-    roles: ["DEFAULT_USER"],
-    feature: "lms",
-  },
-  { href: "/statistics", label: "Statistics", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -128,6 +78,7 @@ const userGroups = (realmFeatures: Record<string, boolean>, userRoles: string[])
       { href: "/campaigns", label: "Campaigns", icon: Megaphone },
       { href: "/sending-profiles", label: "Sending Profiles", icon: Send },
       { href: "/templates", label: "Templates", icon: FileText },
+      { href: "/phishing-kits", label: "Phishing Kits", icon: Package },
     );
   }
   if (phishingLinks.length) groups.push({ label: "Phishing", icon: Fish, links: phishingLinks });
@@ -141,7 +92,7 @@ const userGroups = (realmFeatures: Record<string, boolean>, userRoles: string[])
   const mgmtLinks: SidebarLinkProps[] = [];
   if (hasRole("ORG_MANAGER")) {
     mgmtLinks.push(
-      { href: "/tenants-org-manager", label: "User Management", icon: User },
+      { href: "/tenants-org-manager", label: "Users", icon: User },
       { href: "/usergroups", label: "User Groups", icon: Users },
       { href: "/compliance-org-manager", label: "Compliance", icon: ShieldCheck },
     );
@@ -199,10 +150,10 @@ function SidebarLink({
       activeOptions={{ exact: !!exact }}
       activeProps={{ className: "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium" }}
       inactiveProps={{ className: "text-muted-foreground hover:bg-muted" }}
-      className={`flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm ${indent ? "pl-4 lg:pl-5" : ""}`}
+      className={`flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm ${indent ? "pl-6" : ""}`}
       title={isCollapsed ? label : undefined}
     >
-      <Icon className="h-4 w-4 flex-shrink-0" />
+      <Icon className="h-4 w-4 shrink-0" />
       <span className="sidebar-label whitespace-nowrap">{label}</span>
     </Link>
   );
@@ -243,13 +194,13 @@ function SidebarGroup({
       <button
         onClick={handleToggle}
         title={sidebarExpanded ? undefined : label}
-        className={`w-full flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm transition-colors
+        className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
           ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
       >
-        <Icon className="h-4 w-4 flex-shrink-0" />
+        <Icon className="h-4 w-4 shrink-0" />
         <span className="sidebar-label flex-1 text-left whitespace-nowrap">{label}</span>
         <ChevronDown
-          className={`sidebar-label h-3 w-3 flex-shrink-0 transition-transform duration-200 ${showChildren ? "rotate-180" : ""}`}
+          className={`sidebar-label h-3 w-3 shrink-0 transition-transform duration-200 ${showChildren ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -325,13 +276,13 @@ export function Sidebar() {
   return (
     <aside
       data-collapsed={expanded ? "false" : "true"}
-      style={{ width: expanded ? "clamp(120px, 13%, 260px)" : "3rem" }}
+      style={{ width: expanded ? "clamp(120px, 18%, 260px)" : "3rem" }}
       className="h-full bg-sidebar border-r border-sidebar-border flex flex-col rounded-bl-xl overflow-hidden transition-[width] duration-300 ease-in-out"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Toggle button — right-aligned, toggles the permanent state */}
-      <div className="h-10 border-b border-sidebar-border flex-shrink-0 flex items-center justify-end px-2">
+      <div className="h-10 border-b border-sidebar-border shrink-0 flex items-center justify-end px-2">
         <button
           onClick={handleToggle}
           className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"

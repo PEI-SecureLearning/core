@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useKeycloak } from "@react-keycloak/web";
+import { fetchOrgManagerCampaigns, type Campaign as ServiceCampaign } from "@/services/campaignsApi";
 import {
   Plus,
   Search,
@@ -14,21 +15,8 @@ import {
   XCircle,
   Clock,
   CalendarRange,
+  RefreshCw,
 } from "lucide-react";
-
-type ApiCampaignStatus = "scheduled" | "running" | "completed" | "canceled";
-
-interface ApiCampaign {
-  id: number;
-  name: string;
-  description?: string;
-  begin_date: string;
-  end_date: string;
-  status: ApiCampaignStatus;
-  total_sent: number;
-  total_opened: number;
-  total_clicked: number;
-}
 
 interface Campaign {
   id: string;
@@ -49,9 +37,7 @@ interface TemplateDoc {
   path?: string | null;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL;
-
-function mapStatus(status: ApiCampaignStatus): Campaign["status"] {
+function mapStatus(status: ServiceCampaign["status"]): Campaign["status"] {
   switch (status) {
     case "running":   return "running";
     case "completed": return "completed";
@@ -156,6 +142,7 @@ function CampaignsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [emailTemplate] = useState<TemplateDoc | null>(null);
@@ -163,24 +150,27 @@ function CampaignsPage() {
   const [detailLoading] = useState(false);
   const [detailError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const realm = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1];
-    if (!realm) { setError("Could not resolve realm from token."); return; }
+  const realm = useMemo(() => {
+    return (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1] ?? null;
+  }, [keycloak.tokenParsed]);
 
-    const fetchCampaigns = async () => {
-      setLoading(true);
+  const fetchCampaigns = useCallback(
+    async (showPageLoader = false) => {
+      if (!realm) {
+        setError("Could not resolve realm from token.");
+        return;
+      }
+
+      if (showPageLoader) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+
       setError(null);
       try {
-        const res = await fetch(
-          `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns`,
-          { headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" } }
-        );
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || `Failed to load campaigns (${res.status})`);
-        }
-        const data = (await res.json()) as { campaigns: ApiCampaign[] };
-        const mapped: Campaign[] = (data.campaigns || []).map((c) => ({
+        const data = await fetchOrgManagerCampaigns(realm, keycloak.token);
+        const mapped: Campaign[] = data.map((c) => ({
           id: String(c.id),
           name: c.name,
           description: c.description || "",
@@ -194,10 +184,15 @@ function CampaignsPage() {
         setError(err instanceof Error ? err.message : "Failed to load campaigns");
       } finally {
         setLoading(false);
+        setIsRefreshing(false);
       }
-    };
-    fetchCampaigns();
-  }, [keycloak.token, keycloak.tokenParsed]);
+    },
+    [realm, keycloak.token],
+  );
+
+  useEffect(() => {
+    void fetchCampaigns(true);
+  }, [fetchCampaigns]);
 
   const filteredCampaigns = campaigns.filter((c) => {
     const matchesSearch =
@@ -290,6 +285,17 @@ function CampaignsPage() {
           <CalendarRange size={16} />
           Timeline
         </Link>
+        <button
+          type="button"
+          onClick={() => void fetchCampaigns(false)}
+          disabled={loading || isRefreshing}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200
+                     bg-surface border border-border text-muted-foreground hover:text-accent-secondary hover:border-accent-secondary/40
+                     disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
+          Refresh
+        </button>
       </div>
 
       {/* ── Stat cards ─────────────────────────────────────────────────── */}
