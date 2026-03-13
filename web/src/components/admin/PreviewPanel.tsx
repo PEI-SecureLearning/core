@@ -20,7 +20,7 @@ export function PreviewPanel({
 }: PreviewPanelProps) {
     return (
         <div className="w-full flex flex-col gap-2">
-            <div className="bg-white/80 backdrop-blur-md rounded-md border border-slate-200/60 overflow-hidden shadow-2xl shadow-purple-500/5">
+            <div className="bg-background/80 backdrop-blur-md rounded-md border border-border/60 overflow-hidden shadow-2xl shadow-purple-500/5">
                 <PreviewPanelHeader />
                 <PreviewPanelLogo logoPreviewUrl={logoPreviewUrl} />
                 <PreviewPanelDetails

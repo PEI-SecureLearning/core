@@ -63,7 +63,7 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                     <Image className="w-3.5 h-3.5 text-white" />
                 </div>
                 <div>
-                    <h3 className="text-xs font-bold text-gray-900">Brand Logo</h3>
+                    <h3 className="text-xs font-bold text-foreground">Brand Logo</h3>
                 </div>
             </div>
 
@@ -76,7 +76,7 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
             />
             <button
                 type="button"
-                className="flex-1 border-2 border-dashed border-blue-200/70 rounded-xl flex flex-col items-center justify-center p-4 bg-white/60 backdrop-blur-sm cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all duration-300 group min-h-[120px] overflow-hidden"
+                className="flex-1 border-2 border-dashed border-blue-200/70 rounded-xl flex flex-col items-center justify-center p-4 bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all duration-300 group min-h-[120px] overflow-hidden"
                 onClick={handleClick}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={handleDrop}
@@ -94,10 +94,10 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shadow shadow-blue-100/50">
                             <Upload className="w-4 h-4 text-blue-500" />
                         </div>
-                        <p className="text-xs font-semibold text-gray-700 text-center">
+                        <p className="text-xs font-semibold text-foreground/90 text-center">
                             Upload Logo
                         </p>
-                        <p className="text-[10px] text-gray-400 mt-1">
+                        <p className="text-[10px] text-muted-foreground/70 mt-1">
                             SVG, PNG, JPG (max. 2MB)
                         </p>
                     </>

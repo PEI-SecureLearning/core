@@ -17,9 +17,9 @@ const InfoRow = memo(function InfoRow({
   value: string | number;
 }) {
   return (
-    <div className="flex justify-between items-center p-3 rounded-xl bg-white/40 backdrop-blur-sm border border-white/30 transition-colors hover:bg-white/60">
-      <span className="text-gray-600 font-medium text-sm">{label}</span>
-      <span className="font-semibold text-gray-800 text-sm truncate max-w-[150px]">
+    <div className="flex justify-between items-center p-3 rounded-lg bg-surface-subtle border border-border hover:bg-muted transition-colors">
+      <span className="text-muted-foreground font-medium text-sm">{label}</span>
+      <span className="font-semibold text-foreground text-sm truncate max-w-[150px]">
         {value || "-"}
       </span>
     </div>
@@ -34,33 +34,33 @@ function ProfilePreview({
   headerCount,
 }: Props) {
   return (
-    <div className="liquid-glass-card h-full p-6 flex flex-col relative z-10">
+    <div className="bg-surface border border-border rounded-lg h-full p-6 flex flex-col">
       <div className="flex items-center gap-3 mb-5">
-        <div className="h-10 w-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg animate-pulse-glow">
+        <div className="h-10 w-10 bg-primary rounded-lg flex items-center justify-center shadow-sm">
           <Send className="h-5 w-5 text-white pl-0.5" />
         </div>
-        <h3 className="font-semibold text-gray-800 text-lg tracking-tight">
+        <h3 className="font-semibold text-foreground text-lg tracking-tight">
           Preview
         </h3>
       </div>
 
       <div className="flex-1 space-y-5">
         {/* Visual Card */}
-        <div className="flex flex-col items-center p-6 bg-gradient-to-br from-white/60 to-purple-50/40 rounded-2xl border border-white/50 backdrop-blur-sm">
-          <div className="liquid-avatar h-20 w-20 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center shadow-xl mb-4 text-white text-2xl font-bold">
+        <div className="flex flex-col items-center p-6 bg-surface-subtle rounded-lg border border-border">
+          <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center mb-4 text-white text-2xl font-bold">
             {name ? name.charAt(0).toUpperCase() : "?"}
           </div>
-          <p className="font-semibold text-gray-800 text-center text-lg break-all">
+          <p className="font-semibold text-foreground text-center text-lg break-all">
             {name || "Profile Name"}
           </p>
-          <p className="text-sm text-purple-600 mt-1">
+          <p className="text-sm text-primary mt-1">
             {fromEmail || "email@example.com"}
           </p>
         </div>
 
         {/* Technical Details */}
         <div className="space-y-3">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">
+          <p className="text-xs font-bold text-muted-foreground/70 uppercase tracking-wider ml-1">
             Configuration
           </p>
           <InfoRow label="SMTP Host" value={smtpHost} />

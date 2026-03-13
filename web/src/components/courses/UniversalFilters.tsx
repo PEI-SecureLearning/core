@@ -57,18 +57,18 @@ export default function UniversalFilters<T extends string>({
             <div className="flex flex-col lg:flex-row gap-3">
                 {/* Search input */}
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70" size={16} />
                     <input
                         type="text"
                         placeholder={`Search ${entityName}s...`}
                         value={search}
                         onChange={e => onSearchChange(e.target.value)}
-                        className="w-full pl-9 pr-10 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white transition-all"
+                        className="w-full pl-9 pr-10 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background transition-all"
                     />
                     {search && (
                         <button
                             onClick={handleClear}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground"
                         >
                             <X size={14} />
                         </button>
@@ -80,7 +80,7 @@ export default function UniversalFilters<T extends string>({
                     <select
                         value={primaryFilterValue}
                         onChange={e => onPrimaryFilterChange(e.target.value as T)}
-                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700 cursor-pointer"
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground/90 cursor-pointer"
                     >
                         {primaryFilterOptions.map(opt => (
                             <option key={opt} value={opt}>
@@ -93,7 +93,7 @@ export default function UniversalFilters<T extends string>({
                     <select
                         value={secondaryFilterValue}
                         onChange={e => onSecondaryFilterChange(e.target.value)}
-                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700 cursor-pointer"
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-border text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground/90 cursor-pointer"
                     >
                         {secondaryFilterOptions.map(opt => (
                             <option key={opt} value={opt}>
@@ -103,15 +103,15 @@ export default function UniversalFilters<T extends string>({
                     </select>
 
                     {/* Column toggle */}
-                    <div className="hidden sm:flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1">
+                    <div className="hidden sm:flex items-center gap-1 rounded-lg border border-border bg-background px-1">
                         {colOptions.map(opt => (
                             <button
                                 key={opt.cols}
                                 onClick={() => onColsChange(opt.cols)}
                                 title={opt.label}
                                 className={`p-1.5 rounded-md transition-all ${cols === opt.cols
-                                    ? 'bg-purple-100 text-purple-700 shadow-sm'
-                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                    ? 'bg-primary/20 text-primary shadow-sm'
+                                    : 'text-muted-foreground/70 hover:text-muted-foreground hover:bg-surface-subtle'
                                     }`}
                             >
                                 {opt.icon}
@@ -122,7 +122,7 @@ export default function UniversalFilters<T extends string>({
             </div>
 
             {/* Results count */}
-            <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
                 {resultCount} {resultCount === 1 ? entityName : `${entityName}s`} found
             </p>
         </div>

@@ -22,7 +22,7 @@ export default function RiskTrendChart() {
   const trend = latestValue - previousValue;
 
   return (
-    <div className="w-full bg-white/60 backdrop-blur-xl rounded-2xl border-2 border-gray-100 shadow-lg shadow-slate-300/50 p-6 hover:shadow-xl transition-all duration-300">
+    <div className="w-full bg-background/60 backdrop-blur-xl rounded-2xl border-2 border-border/40 shadow-lg shadow-slate-300/50 p-6 hover:shadow-xl transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -30,8 +30,8 @@ export default function RiskTrendChart() {
             <TrendingUp size={20} className="text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">Risk Trend</h3>
-            <p className="text-[13px] text-slate-500">Monthly security risk assessment</p>
+            <h3 className="text-lg font-semibold text-foreground">Risk Trend</h3>
+            <p className="text-[13px] text-muted-foreground">Monthly security risk assessment</p>
           </div>
         </div>
 
@@ -40,7 +40,7 @@ export default function RiskTrendChart() {
           <span className={`text-[13px] font-semibold ${trend >= 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
             {trend >= 0 ? '+' : ''}{trend}%
           </span>
-          <span className="text-[12px] text-slate-500">vs last month</span>
+          <span className="text-[12px] text-muted-foreground">vs last month</span>
         </div>
       </div>
 

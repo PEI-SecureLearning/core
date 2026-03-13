@@ -35,7 +35,7 @@ function EditProfileFooter({ onSave, onDelete, isValid, isLoading, status }: Rea
         <button
           onClick={onDelete}
           disabled={isLoading}
-          className="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
         >
           <Trash2 className="h-4 w-4" />
@@ -45,7 +45,7 @@ function EditProfileFooter({ onSave, onDelete, isValid, isLoading, status }: Rea
         <div className="flex gap-4">
           <Link
             to="/sending-profiles"
-            className="liquid-glass-button-secondary px-6 py-2.5 text-sm"
+            className="px-6 py-2.5 rounded-lg text-sm font-medium border border-border bg-surface hover:bg-surface-subtle text-foreground transition-colors"
           >
             Cancel
           </Link>
@@ -53,7 +53,7 @@ function EditProfileFooter({ onSave, onDelete, isValid, isLoading, status }: Rea
           <button
             onClick={onSave}
             disabled={!isValid || isLoading}
-            className="liquid-glass-button bg-purple-600 hover:bg-purple-700 flex items-center gap-2 px-6 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {buttonContent.icon}
             {buttonContent.text}

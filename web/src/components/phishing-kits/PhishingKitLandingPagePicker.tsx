@@ -83,7 +83,7 @@ export default function PhishingKitLandingPagePicker() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="landing-page-search"
-          className="text-[12px] font-normal text-slate-500 tracking-wide uppercase"
+          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase"
         >
           Search Landing Page Templates
         </label>
@@ -92,7 +92,7 @@ export default function PhishingKitLandingPagePicker() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="rounded-xl px-4 py-3 text-[14px] text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full max-w-md"
+          className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 placeholder:text-muted-foreground/70 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full max-w-md"
           style={inputStyle}
           placeholder="Search templates..."
         />
@@ -101,7 +101,7 @@ export default function PhishingKitLandingPagePicker() {
       {/* Templates Grid */}
       <div className="flex-1">
         {isLoading ? (
-          <div className="flex items-center gap-2 text-slate-500 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="animate-spin" size={16} />
             Loading templates...
           </div>
@@ -115,8 +115,8 @@ export default function PhishingKitLandingPagePicker() {
                   onClick={() => handleSelectTemplate(template)}
                   className={`relative p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
                     selected
-                      ? "ring-2 ring-purple-500 bg-purple-50/50"
-                      : "hover:bg-slate-50/50"
+                      ? "ring-2 ring-primary/30 bg-primary/10/50"
+                      : "hover:bg-surface-subtle/50"
                   }`}
                   style={{
                     background: selected
@@ -128,7 +128,7 @@ export default function PhishingKitLandingPagePicker() {
                   }}
                 >
                   {selected && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary/90 flex items-center justify-center">
                       <Check size={14} className="text-white" strokeWidth={3} />
                     </div>
                   )}
@@ -137,13 +137,13 @@ export default function PhishingKitLandingPagePicker() {
                     className="w-full h-24 rounded-lg mb-3 flex items-center justify-center"
                     style={{ background: "rgba(148, 163, 184, 0.1)" }}
                   >
-                    <Layout size={32} className="text-slate-400" />
+                    <Layout size={32} className="text-muted-foreground/70" />
                   </div>
 
-                  <h3 className="text-[14px] font-medium text-slate-700 mb-1">
+                  <h3 className="text-[14px] font-medium text-foreground/90 mb-1">
                     {template.name}
                   </h3>
-                  <p className="text-[12px] text-slate-500 line-clamp-2">
+                  <p className="text-[12px] text-muted-foreground line-clamp-2">
                     {template.description || "No description provided."}
                   </p>
                 </div>
@@ -154,9 +154,9 @@ export default function PhishingKitLandingPagePicker() {
 
         {filteredTemplates.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Layout size={40} className="text-slate-300 mb-3" />
-            <p className="text-slate-500 text-[14px]">No templates found</p>
-            <p className="text-slate-400 text-[13px]">
+            <Layout size={40} className="text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground text-[14px]">No templates found</p>
+            <p className="text-muted-foreground/70 text-[13px]">
               Try a different search term
             </p>
           </div>
@@ -165,7 +165,7 @@ export default function PhishingKitLandingPagePicker() {
 
       {/* Selected indicator */}
       {data.landing_page_template_name && (
-        <div className="text-[13px] text-purple-600 font-medium">
+        <div className="text-[13px] text-primary font-medium">
           ✓ Selected: {data.landing_page_template_name}
         </div>
       )}

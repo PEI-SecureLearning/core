@@ -1,5 +1,6 @@
 import { Mail, Shield, Trash2, Loader2 } from "lucide-react";
 import type { UserRecord } from "./types";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface UserGridProps {
     users: UserRecord[];
@@ -12,18 +13,28 @@ export function UserGrid({ users, deletingIds, onDeleteUser }: UserGridProps) {
         const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
         if (isOrgManager) {
             return (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-purple-100 text-purple-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary/20 text-primary">
                     <Shield size={12} />
                     Org Manager
                 </span>
             );
         }
         return (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-muted text-muted-foreground">
                 User
             </span>
         );
     };
+
+    if (users.length === 0) {
+        return (
+            <div className="py-12 text-center">
+                <UserAvatar name="U" size="lg" />
+                <p className="text-[14px] font-medium text-muted-foreground mt-3">No users found</p>
+                <p className="text-[13px] text-muted-foreground/70 mt-1">Add your first user to get started</p>
+            </div>
+        );
+    }
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -38,17 +49,15 @@ export function UserGrid({ users, deletingIds, onDeleteUser }: UserGridProps) {
                 return (
                     <div
                         key={id}
-                        className="liquid-glass-card p-5 hover:shadow-xl transition-all duration-200"
+                        className="bg-surface border border-border rounded-lg p-5 hover:shadow-md transition-shadow duration-200"
                     >
                         <div className="flex items-start justify-between mb-4">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-semibold text-lg">
-                                {(user.firstName?.[0] || user.username?.[0] || "U").toUpperCase()}
-                            </div>
+                            <UserAvatar name={user.firstName || user.username || "U"} size="lg" />
                             {!isOrgManager && (
                                 <button
                                     onClick={() => onDeleteUser(id)}
                                     disabled={isDeleting}
-                                    className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-2 text-muted-foreground/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isDeleting ? (
                                         <Loader2 size={16} className="animate-spin" />
@@ -58,11 +67,11 @@ export function UserGrid({ users, deletingIds, onDeleteUser }: UserGridProps) {
                                 </button>
                             )}
                         </div>
-                        <h3 className="font-semibold text-[15px] text-gray-900 truncate">
+                        <h3 className="font-semibold text-[15px] text-foreground truncate">
                             {fullName}
                         </h3>
-                        <p className="text-[13px] text-gray-500 truncate">@{user.username}</p>
-                        <p className="text-[12px] text-gray-400 truncate mt-1 flex items-center gap-1">
+                        <p className="text-[13px] text-muted-foreground truncate">@{user.username}</p>
+                        <p className="text-[12px] text-muted-foreground/70 truncate mt-1 flex items-center gap-1">
                             <Mail size={12} />
                             {user.email || "—"}
                         </p>

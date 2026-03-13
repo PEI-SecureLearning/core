@@ -37,14 +37,20 @@ import { Route as PhishingKitsNewRouteImport } from './routes/phishing-kits/new'
 import { Route as PhishingKitsIdRouteImport } from './routes/phishing-kits/$id'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
 import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
+import { Route as ContentManagerSettingsRouteImport } from './routes/content-manager/settings'
+import { Route as ContentManagerReportRouteImport } from './routes/content-manager/report'
 import { Route as ContentManagerModulesRouteImport } from './routes/content-manager/modules'
+import { Route as ContentManagerHelpRouteImport } from './routes/content-manager/help'
 import { Route as ContentManagerCoursesRouteImport } from './routes/content-manager/courses'
 import { Route as ContentManagerContentRouteImport } from './routes/content-manager/content'
 import { Route as CampaignsTimelineRouteImport } from './routes/campaigns/timeline'
 import { Route as CampaignsNewRouteImport } from './routes/campaigns/new'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
+import { Route as AdminHelpRouteImport } from './routes/admin/help'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses/$courseId/index'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
 import { Route as ContentManagerModulesNewRouteImport } from './routes/content-manager/modules_.new'
@@ -196,9 +202,24 @@ const ContentManagerTemplatesRoute = ContentManagerTemplatesRouteImport.update({
   path: '/content-manager/templates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContentManagerSettingsRoute = ContentManagerSettingsRouteImport.update({
+  id: '/content-manager/settings',
+  path: '/content-manager/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerReportRoute = ContentManagerReportRouteImport.update({
+  id: '/content-manager/report',
+  path: '/content-manager/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContentManagerModulesRoute = ContentManagerModulesRouteImport.update({
   id: '/content-manager/modules',
   path: '/content-manager/modules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerHelpRoute = ContentManagerHelpRouteImport.update({
+  id: '/content-manager/help',
+  path: '/content-manager/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContentManagerCoursesRoute = ContentManagerCoursesRouteImport.update({
@@ -231,9 +252,24 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportRoute = AdminReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminLogsRoute = AdminLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminHelpRoute = AdminHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => AdminRoute,
 } as any)
 const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
@@ -304,14 +340,20 @@ export interface FileRoutesByFullPath {
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
   '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
+  '/content-manager/help': typeof ContentManagerHelpRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
@@ -351,14 +393,20 @@ export interface FileRoutesByTo {
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
   '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
+  '/content-manager/help': typeof ContentManagerHelpRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
   '/phishing-kits/new': typeof PhishingKitsNewRoute
@@ -399,14 +447,20 @@ export interface FileRoutesById {
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
   '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
   '/content-manager/content': typeof ContentManagerContentRouteWithChildren
   '/content-manager/courses': typeof ContentManagerCoursesRoute
+  '/content-manager/help': typeof ContentManagerHelpRoute
   '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
@@ -449,14 +503,20 @@ export interface FileRouteTypes {
     | '/statistics'
     | '/templates'
     | '/tenants-org-manager'
+    | '/admin/help'
     | '/admin/logs'
+    | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
     | '/campaigns/timeline'
     | '/content-manager/content'
     | '/content-manager/courses'
+    | '/content-manager/help'
     | '/content-manager/modules'
+    | '/content-manager/report'
+    | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
     | '/phishing-kits/$id'
@@ -496,14 +556,20 @@ export interface FileRouteTypes {
     | '/statistics'
     | '/templates'
     | '/tenants-org-manager'
+    | '/admin/help'
     | '/admin/logs'
+    | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
     | '/campaigns/timeline'
     | '/content-manager/content'
     | '/content-manager/courses'
+    | '/content-manager/help'
     | '/content-manager/modules'
+    | '/content-manager/report'
+    | '/content-manager/settings'
     | '/content-manager/templates'
     | '/phishing-kits/$id'
     | '/phishing-kits/new'
@@ -543,14 +609,20 @@ export interface FileRouteTypes {
     | '/statistics'
     | '/templates'
     | '/tenants-org-manager'
+    | '/admin/help'
     | '/admin/logs'
+    | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
     | '/campaigns/timeline'
     | '/content-manager/content'
     | '/content-manager/courses'
+    | '/content-manager/help'
     | '/content-manager/modules'
+    | '/content-manager/report'
+    | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
     | '/phishing-kits/$id'
@@ -597,7 +669,10 @@ export interface RootRouteChildren {
   CampaignsTimelineRoute: typeof CampaignsTimelineRoute
   ContentManagerContentRoute: typeof ContentManagerContentRouteWithChildren
   ContentManagerCoursesRoute: typeof ContentManagerCoursesRoute
+  ContentManagerHelpRoute: typeof ContentManagerHelpRoute
   ContentManagerModulesRoute: typeof ContentManagerModulesRoute
+  ContentManagerReportRoute: typeof ContentManagerReportRoute
+  ContentManagerSettingsRoute: typeof ContentManagerSettingsRoute
   ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
   PhishingKitsIdRoute: typeof PhishingKitsIdRoute
@@ -819,11 +894,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentManagerTemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/content-manager/settings': {
+      id: '/content-manager/settings'
+      path: '/content-manager/settings'
+      fullPath: '/content-manager/settings'
+      preLoaderRoute: typeof ContentManagerSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/report': {
+      id: '/content-manager/report'
+      path: '/content-manager/report'
+      fullPath: '/content-manager/report'
+      preLoaderRoute: typeof ContentManagerReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/content-manager/modules': {
       id: '/content-manager/modules'
       path: '/content-manager/modules'
       fullPath: '/content-manager/modules'
       preLoaderRoute: typeof ContentManagerModulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/help': {
+      id: '/content-manager/help'
+      path: '/content-manager/help'
+      fullPath: '/content-manager/help'
+      preLoaderRoute: typeof ContentManagerHelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content-manager/courses': {
@@ -868,11 +964,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/report': {
+      id: '/admin/report'
+      path: '/report'
+      fullPath: '/admin/report'
+      preLoaderRoute: typeof AdminReportRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/logs': {
       id: '/admin/logs'
       path: '/logs'
       fullPath: '/admin/logs'
       preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/help': {
+      id: '/admin/help'
+      path: '/help'
+      fullPath: '/admin/help'
+      preLoaderRoute: typeof AdminHelpRouteImport
       parentRoute: typeof AdminRoute
     }
     '/courses/$courseId/': {
@@ -949,7 +1066,10 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminHelpRoute: typeof AdminHelpRoute
   AdminLogsRoute: typeof AdminLogsRoute
+  AdminReportRoute: typeof AdminReportRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminTenantsTenantIdRoute: typeof AdminTenantsTenantIdRoute
@@ -958,7 +1078,10 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminHelpRoute: AdminHelpRoute,
   AdminLogsRoute: AdminLogsRoute,
+  AdminReportRoute: AdminReportRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminTenantsTenantIdRoute: AdminTenantsTenantIdRoute,
@@ -1012,7 +1135,10 @@ const rootRouteChildren: RootRouteChildren = {
   CampaignsTimelineRoute: CampaignsTimelineRoute,
   ContentManagerContentRoute: ContentManagerContentRouteWithChildren,
   ContentManagerCoursesRoute: ContentManagerCoursesRoute,
+  ContentManagerHelpRoute: ContentManagerHelpRoute,
   ContentManagerModulesRoute: ContentManagerModulesRoute,
+  ContentManagerReportRoute: ContentManagerReportRoute,
+  ContentManagerSettingsRoute: ContentManagerSettingsRoute,
   ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
   PhishingKitsIdRoute: PhishingKitsIdRoute,

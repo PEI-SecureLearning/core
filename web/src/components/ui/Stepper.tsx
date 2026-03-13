@@ -125,7 +125,7 @@ export default function Stepper({
       >
         {/* Step Indicators */}
         <div
-          className={`${stepContainerClassName} flex items-center py-6 px-8 border-b border-slate-200/40`}
+          className={`${stepContainerClassName} flex items-center py-6 px-8 border-b border-border/40`}
           style={{ background: 'rgba(255, 255, 255, 0.4)' }}
         >
           {stepsArray.map((_, index) => {
@@ -196,7 +196,7 @@ export default function Stepper({
         {/* Footer with Navigation */}
         {!isCompleted && (
           <div
-            className={`px-8 py-5 border-t border-slate-200/40 ${footerClassName}`}
+            className={`px-8 py-5 border-t border-border/40 ${footerClassName}`}
             style={{ background: 'rgba(255, 255, 255, 0.4)' }}
           >
             <div
@@ -205,7 +205,7 @@ export default function Stepper({
               {currentStep !== 1 && (
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-normal text-slate-600 transition-all duration-150 hover:bg-slate-100/60"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-normal text-muted-foreground transition-all duration-150 hover:bg-muted/60"
                   style={{
                     background: 'rgba(255, 255, 255, 0.5)',
                     border: '1px solid rgba(148, 163, 184, 0.2)'
@@ -422,7 +422,13 @@ function StepIndicator({
         className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2"
         // style={{ boxShadow: status === 'active' ? '0 4px 14px #623493' : 'none' }}
       >
-        {indicatorContent}
+        {status === "complete" ? (
+          <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
+        ) : status === "active" ? (
+          <span className="text-white">{step}</span>
+        ) : (
+          <span className="text-muted-foreground/70">{step}</span>
+        )}
       </motion.div>
       
     </motion.div>
@@ -437,7 +443,7 @@ function StepConnector({ isComplete }: Readonly<StepConnectorProps>) {
   const color = "#9333ea";
 
   return (
-    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-slate-200/60">
+    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-muted/60/60">
       <motion.div
         className="absolute left-0 top-0 h-full rounded-full"
         initial={false}

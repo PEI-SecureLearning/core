@@ -17,7 +17,6 @@ import type {
 } from "../components/compliance-org-manager/types";
 
 import PolicyEditor from "../components/compliance-org-manager/PolicyEditor";
-import PolicyPreviewModal from "../components/compliance-org-manager/PolicyPreviewModal";
 import QuizEditor from "../components/compliance-org-manager/QuizEditor";
 
 export const Route = createFileRoute("/compliance-org-manager")({
@@ -43,9 +42,6 @@ function ComplianceOrgManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [importingPolicy, setImportingPolicy] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [policyCollapsed, setPolicyCollapsed] = useState(true);
-  const [quizCollapsed, setQuizCollapsed] = useState(true);
 
   // ── dirty tracking ──────────────────────────────────────────────────────────
   const savedPolicyRef = useRef("");
@@ -228,10 +224,21 @@ function ComplianceOrgManager() {
       if (filename.endsWith(".pdf") || file.type === "application/pdf") {
         const formData = new FormData();
         formData.append("file", file);
-        const resp = await apiClient.post<ComplianceImportResponse>(
-          `/org-manager/${encodeURIComponent(realm)}/compliance/policy/import`,
-          formData
+        const apiBase = import.meta.env.VITE_API_URL as string;
+        const response = await fetch(
+          `${apiBase}/org-manager/${encodeURIComponent(realm)}/compliance/policy/import`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+            body: formData,
+          }
         );
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          toast.error((err as { detail?: string }).detail ?? "Failed to import PDF.");
+          return;
+        }
+        const resp = await response.json() as ComplianceImportResponse;
         if (!resp.content_md?.trim()) { toast.error("Imported PDF has no usable text."); return; }
         setPolicyDraft(resp.content_md);
         toast.success("PDF imported. Review and click Save All.");
@@ -310,54 +317,24 @@ function ComplianceOrgManager() {
     });
   };
 
-  // ── panel toggles ──────────────────────────────────────────────────────────
-
-  const CLOSE_DURATION_MS = 250; // matches exit transition duration
-
-  const handleTogglePolicy = () => {
-    if (policyCollapsed && !quizCollapsed) {
-      // opening policy, quiz is open: close quiz first
-      setQuizCollapsed(true);
-      setTimeout(() => {
-        setPolicyCollapsed(false);
-      }, CLOSE_DURATION_MS);
-    } else {
-      // just toggle policy
-      setPolicyCollapsed((c) => !c);
-    }
-  };
-
-  const handleToggleQuiz = () => {
-    if (quizCollapsed && !policyCollapsed) {
-      // opening quiz, policy is open: close policy first
-      setPolicyCollapsed(true);
-      setTimeout(() => {
-        setQuizCollapsed(false);
-      }, CLOSE_DURATION_MS);
-    } else {
-      // just toggle quiz
-      setQuizCollapsed((c) => !c);
-    }
-  };
-
   // ── render ─────────────────────────────────────────────────────────────────
-  if (loading) return <div className="p-6 text-sm text-gray-500">Loading compliance data…</div>;
+  if (loading) return <div className="p-6 text-sm text-muted-foreground">Loading compliance data…</div>;
 
   return (
     <div className="px-6 py-4 flex flex-col gap-6 h-full overflow-hidden">
       {/* Page header */}
-      <div className="border-b border-gray-200 pb-4 flex items-start justify-between shrink-0">
+      <div className="border-b border-border pb-4 flex items-start justify-between shrink-0">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-700">Compliance Management</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-foreground/90">Compliance Management</h1>
+          <p className="text-sm text-muted-foreground">
             Update your organization&apos;s compliance policy and quiz. Changes will require members to re-accept the policy.
           </p>
         </div>
         <button
           data-testid="save-quiz-btn"
           className={`px-5 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-colors disabled:opacity-60 ${hasPendingChanges
-            ? "bg-purple-700 text-white hover:bg-purple-800"
-            : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+            ? "bg-primary text-white hover:bg-primary/80"
+            : "bg-muted/60 text-muted-foreground hover:bg-muted/80"
             }`}
           onClick={saveAll}
           disabled={saving || !hasPendingChanges}
@@ -376,42 +353,33 @@ function ComplianceOrgManager() {
         </button>
       </div>
 
-      <PolicyEditor
-        policyDraft={policyDraft}
-        policyUpdated={policyUpdated}
-        importingPolicy={importingPolicy}
-        collapsed={policyCollapsed}
-        onToggleCollapse={handleTogglePolicy}
-        onDraftChange={setPolicyDraft}
-        onImportFile={handleImportFile}
-        onOpenPreview={() => setShowPreviewModal(true)}
-      />
-
-      <QuizEditor
-        quizDraft={quizDraft}
-        quizSettings={quizSettings}
-        quizUpdated={quizUpdated}
-        collapsed={quizCollapsed}
-        onToggleCollapse={handleToggleQuiz}
-        maxQuestionCount={maxQuestionCount}
-        possiblePassingScores={possiblePassingScores}
-        expandedQuestions={expandedQuestions}
-        onQuestionCountChange={handleQuestionCountChange}
-        onPassingScoreChange={handlePassingScoreChange}
-        onToggleQuestion={toggleQuestion}
-        onUpdateQuestion={updateQuestion}
-        onRemoveQuestion={removeQuestion}
-        onAddOption={addOption}
-        onRemoveOption={removeOption}
-        onAddQuestion={addQuestion}
-      />
-
-      {showPreviewModal && (
-        <PolicyPreviewModal
+      {/* Side-by-side layout: Policy on left, Quiz on right */}
+      <div className="flex flex-row gap-6 flex-1 min-h-0 overflow-hidden">
+        <PolicyEditor
           policyDraft={policyDraft}
-          onClose={() => setShowPreviewModal(false)}
+          policyUpdated={policyUpdated}
+          importingPolicy={importingPolicy}
+          onDraftChange={setPolicyDraft}
+          onImportFile={handleImportFile}
         />
-      )}
+
+        <QuizEditor
+          quizDraft={quizDraft}
+          quizSettings={quizSettings}
+          quizUpdated={quizUpdated}
+          maxQuestionCount={maxQuestionCount}
+          possiblePassingScores={possiblePassingScores}
+          expandedQuestions={expandedQuestions}
+          onQuestionCountChange={handleQuestionCountChange}
+          onPassingScoreChange={handlePassingScoreChange}
+          onToggleQuestion={toggleQuestion}
+          onUpdateQuestion={updateQuestion}
+          onRemoveQuestion={removeQuestion}
+          onAddOption={addOption}
+          onRemoveOption={removeOption}
+          onAddQuestion={addQuestion}
+        />
+      </div>
     </div>
   );
 }

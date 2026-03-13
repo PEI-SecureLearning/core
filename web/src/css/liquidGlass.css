@@ -5,14 +5,9 @@
 /* Container with frosted glass background */
 .liquid-glass-container {
     position: relative;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--background);
     overflow: hidden;
     border-radius: 5px;
-    box-shadow:
-        0 8px 32px rgba(147, 51, 234, 0.1),
-        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
     max-height: 100%;
     display: flex;
     flex-direction: column;
@@ -25,7 +20,7 @@
     position: absolute;
     border-radius: 50%;
     filter: blur(60px);
-    opacity: 0.25;
+    opacity: 0.08;
     pointer-events: none;
     will-change: auto;
 }
@@ -33,7 +28,7 @@
 .liquid-blob-1 {
     width: 95%;
     height: 400px;
-    background: hsl(271, 100%, 90%);
+    background: var(--primary);
     top: -100px;
     right: 10px;
 }
@@ -41,7 +36,7 @@
 .liquid-blob-2 {
     width: 20%;
     height: 95%;
-    background: hsl(271, 100%, 90%);
+    background: var(--primary);
     bottom: 0px;
     left: -20px;
 }
@@ -49,7 +44,7 @@
 .liquid-blob-3 {
     width: 95%;
     height: 50%;
-    background: hsl(271, 100%, 90%);
+    background: var(--accent-secondary);
     top: 70%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -59,24 +54,24 @@
 .liquid-glass-header {
     position: relative;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--surface-subtle);
 }
 
 /* Footer glass effect */
 .liquid-glass-footer {
     position: relative;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--surface);
 }
 
 /* ================================
    Liquid Glass Card
    ================================ */
 .liquid-glass-card {
-    background: rgba(255, 255, 255, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(147, 51, 234, 0.08);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.06);
     position: relative;
     overflow: hidden;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -84,36 +79,38 @@
 
 .liquid-glass-card:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 36px rgba(147, 51, 234, 0.1);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.1);
 }
 
 /* ================================
    Liquid Glass Input
    ================================ */
 .liquid-glass-input {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(168, 85, 247, 0.2);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
     border-radius: 6px;
+    color: var(--foreground);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .liquid-glass-input:focus {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(168, 85, 247, 0.5);
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    background: var(--surface);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
     outline: none;
 }
 
 .liquid-glass-input::placeholder {
-    color: rgba(107, 114, 128, 0.6);
+    color: var(--muted-foreground);
+    opacity: 0.6;
 }
 
 /* ================================
    Liquid Glass Button
    ================================ */
 .liquid-glass-button {
-    background: rgba(147, 51, 234, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: var(--primary);
+    border: 1px solid transparent;
     border-radius: 8px;
     color: white;
     font-weight: 600;
@@ -121,32 +118,33 @@
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
         box-shadow 0.2s ease,
         background-color 0.2s ease;
-    box-shadow: 0 4px 16px rgba(147, 51, 234, 0.25);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
     cursor: pointer;
 }
 
 .liquid-glass-button:hover:not(:disabled) {
     transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 24px rgba(147, 51, 234, 0.35);
-    background: rgba(139, 40, 228, 0.95);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+    filter: brightness(1.1);
 }
 
 .liquid-glass-button:active:not(:disabled) {
     transform: translateY(0) scale(0.98);
-    box-shadow: 0 2px 8px rgba(147, 51, 234, 0.2);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
 }
 
 .liquid-glass-button:disabled {
-    background: rgba(156, 163, 175, 0.6);
+    background: var(--muted);
+    color: var(--muted-foreground);
     box-shadow: none;
     cursor: not-allowed;
 }
 
 .liquid-glass-button-secondary {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(168, 85, 247, 0.3);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    color: #6b21a8;
+    color: var(--foreground);
     font-weight: 600;
     padding: 12px 24px;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -157,14 +155,14 @@
 
 .liquid-glass-button-secondary:hover {
     transform: translateY(-2px) scale(1.02);
-    background: rgba(255, 255, 255, 0.95);
-    border-color: rgba(168, 85, 247, 0.5);
+    background: var(--surface-subtle);
+    border-color: var(--primary);
 }
 
 /* Destructive/Delete button */
 .liquid-glass-button-destructive {
     background: rgba(239, 68, 68, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid transparent;
     border-radius: 10px;
     color: white;
     font-weight: 600;
@@ -189,7 +187,8 @@
 }
 
 .liquid-glass-button-destructive:disabled {
-    background: rgba(156, 163, 175, 0.6);
+    background: var(--muted);
+    color: var(--muted-foreground);
     box-shadow: none;
     cursor: not-allowed;
 }
@@ -199,7 +198,7 @@
    ================================ */
 .purple-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(168, 85, 247, 0.5) rgba(233, 213, 255, 0.3);
+    scrollbar-color: color-mix(in srgb, var(--primary) 50%, transparent) color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .purple-scrollbar::-webkit-scrollbar {
@@ -207,18 +206,18 @@
 }
 
 .purple-scrollbar::-webkit-scrollbar-track {
-    background: rgba(233, 213, 255, 0.3);
+    background: color-mix(in srgb, var(--primary) 8%, transparent);
     border-radius: 8px;
     margin: 4px;
 }
 
 .purple-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(168, 85, 247, 0.6);
+    background: color-mix(in srgb, var(--primary) 50%, transparent);
     border-radius: 8px;
 }
 
 .purple-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(147, 51, 234, 0.8);
+    background: color-mix(in srgb, var(--primary) 70%, transparent);
 }
 
 /* ================================
@@ -259,14 +258,14 @@
    List Items
    ================================ */
 .liquid-list-item {
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
     border-radius: 8px;
     transition: background-color 0.15s ease;
 }
 
 .liquid-list-item:hover {
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--muted);
 }
 
 /* Avatar - no glow effect */

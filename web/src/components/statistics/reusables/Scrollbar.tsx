@@ -90,12 +90,12 @@ export default function CustomScrollbar({ children, className = "", maxHeight = 
       <div
         ref={trackRef}
         onClick={handleTrackClick}
-        className="relative w-1 bg-gray-200 rounded-full flex-shrink-0 cursor-pointer"
+        className="relative w-1 bg-muted/60 rounded-full flex-shrink-0 cursor-pointer"
         style={{ minHeight: maxHeight }}
       >
         <div
           onMouseDown={handleThumbMouseDown}
-          className="absolute left-0 w-full bg-purple-600 rounded-full transition-all duration-150 cursor-grab active:cursor-grabbing"
+          className="absolute left-0 w-full bg-primary rounded-full transition-all duration-150 cursor-grab active:cursor-grabbing"
           style={{
             height: `${thumbHeight}px`,
             top: `${thumbTop}px`,

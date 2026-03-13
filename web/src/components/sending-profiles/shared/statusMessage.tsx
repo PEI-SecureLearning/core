@@ -17,8 +17,8 @@ export const MESSAGE_STYLES: Record<MessageType, MessageStyle> = {
     dotClass: "bg-green-500",
   },
   info: {
-    containerClass: "text-gray-600 border-purple-200/30",
-    dotClass: "bg-purple-400",
+    containerClass: "text-muted-foreground border-primary/30/30",
+    dotClass: "bg-accent-secondary",
   },
 };
 
@@ -48,7 +48,7 @@ export const StatusMessage = memo(function StatusMessage({
 
   return (
     <div
-      className={`text-sm px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border ${style.containerClass}`}
+      className={`text-sm px-4 py-2 bg-background/50 backdrop-blur-sm rounded-xl border ${style.containerClass}`}
     >
       <span
         className={`inline-block w-2 h-2 rounded-full mr-2 animate-pulse ${style.dotClass}`}

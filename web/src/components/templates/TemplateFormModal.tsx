@@ -27,17 +27,17 @@ export function TemplateFormModal({ showForm, editingTemplate, form, setForm, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden border">
+      <div className="w-full max-w-3xl rounded-2xl bg-background shadow-2xl overflow-hidden border">
         <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
               {editingTemplate ? "Edit template" : "New template"}
             </p>
-            <h3 className="text-lg font-semibold text-slate-900">
+            <h3 className="text-lg font-semibold text-foreground">
               {editingTemplate ? editingTemplate.name : "Add phishing template"}
             </h3>
           </div>
-          <Button variant="ghost" onClick={onClose} className="text-slate-600">
+          <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
             Close
           </Button>
         </div>
@@ -81,7 +81,7 @@ export function TemplateFormModal({ showForm, editingTemplate, form, setForm, on
             onChange={(e) => setForm({ ...form, html: e.target.value })}
           />
         </div>
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-slate-50">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-surface-subtle">
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>

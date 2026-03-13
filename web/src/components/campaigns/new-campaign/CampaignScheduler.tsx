@@ -77,18 +77,18 @@ export default function CampaignScheduler() {
         }}
       >
         <div className="flex items-center gap-2">
-          <CalendarDays size={18} className="text-purple-500" />
-          <h2 className="text-[15px] font-medium text-slate-700 tracking-tight">
+          <CalendarDays size={18} className="text-primary/90" />
+          <h2 className="text-[15px] font-medium text-foreground/90 tracking-tight">
             Schedule Campaign
           </h2>
         </div>
 
         {/* Start Date & Time */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-[13px] font-medium text-slate-600">Start</h3>
+          <h3 className="text-[13px] font-medium text-muted-foreground">Start</h3>
           <div className="flex gap-4">
             <div className="flex flex-col gap-2 flex-1">
-              <label className="text-[11px] font-normal text-slate-500 flex items-center gap-1.5 tracking-wide uppercase">
+              <label className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 tracking-wide uppercase">
                 <Calendar size={12} />
                 Date
               </label>
@@ -96,12 +96,12 @@ export default function CampaignScheduler() {
                 type="date"
                 value={beginDate}
                 onChange={(e) => setBeginDate(e.target.value)}
-                className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full"
+                className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full"
                 style={inputStyle}
               />
             </div>
             <div className="flex flex-col gap-2 flex-1">
-              <label className="text-[11px] font-normal text-slate-500 flex items-center gap-1.5 tracking-wide uppercase">
+              <label className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 tracking-wide uppercase">
                 <Clock size={12} />
                 Time
               </label>
@@ -109,7 +109,7 @@ export default function CampaignScheduler() {
                 type="time"
                 value={beginTime}
                 onChange={(e) => setBeginTime(e.target.value)}
-                className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full"
+                className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full"
                 style={inputStyle}
               />
             </div>
@@ -118,10 +118,10 @@ export default function CampaignScheduler() {
 
         {/* End Date & Time */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-[13px] font-medium text-slate-600">End</h3>
+          <h3 className="text-[13px] font-medium text-muted-foreground">End</h3>
           <div className="flex gap-4">
             <div className="flex flex-col gap-2 flex-1">
-              <label className="text-[11px] font-normal text-slate-500 flex items-center gap-1.5 tracking-wide uppercase">
+              <label className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 tracking-wide uppercase">
                 <Calendar size={12} />
                 Date
               </label>
@@ -129,12 +129,12 @@ export default function CampaignScheduler() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full"
+                className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full"
                 style={inputStyle}
               />
             </div>
             <div className="flex flex-col gap-2 flex-1">
-              <label className="text-[11px] font-normal text-slate-500 flex items-center gap-1.5 tracking-wide uppercase">
+              <label className="text-[11px] font-normal text-muted-foreground flex items-center gap-1.5 tracking-wide uppercase">
                 <Clock size={12} />
                 Time
               </label>
@@ -142,7 +142,7 @@ export default function CampaignScheduler() {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full"
+                className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full"
                 style={inputStyle}
               />
             </div>
@@ -151,13 +151,13 @@ export default function CampaignScheduler() {
 
         {/* Interval */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-[13px] font-medium text-slate-600 flex items-center gap-1.5">
-            <Timer size={14} className="text-purple-500" />
+          <h3 className="text-[13px] font-medium text-muted-foreground flex items-center gap-1.5">
+            <Timer size={14} className="text-primary/90" />
             Email Send Interval
           </h3>
           <div className="flex gap-4">
             <div className="flex flex-col gap-2 flex-1">
-              <label className="text-[11px] font-normal text-slate-500 tracking-wide uppercase">
+              <label className="text-[11px] font-normal text-muted-foreground tracking-wide uppercase">
                 Hours
               </label>
               <input
@@ -167,12 +167,12 @@ export default function CampaignScheduler() {
                 onChange={(e) =>
                   setIntervalHours(Math.max(0, parseInt(e.target.value) || 0))
                 }
-                className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full"
+                className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full"
                 style={inputStyle}
               />
             </div>
             <div className="flex flex-col gap-2 flex-1">
-              <label className="text-[11px] font-normal text-slate-500 tracking-wide uppercase">
+              <label className="text-[11px] font-normal text-muted-foreground tracking-wide uppercase">
                 Minutes
               </label>
               <input
@@ -185,12 +185,12 @@ export default function CampaignScheduler() {
                     Math.min(59, Math.max(0, parseInt(e.target.value) || 0))
                   )
                 }
-                className="rounded-xl px-4 py-3 text-[14px] text-slate-700 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 w-full"
+                className="rounded-xl px-4 py-3 text-[14px] text-foreground/90 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400 w-full"
                 style={inputStyle}
               />
             </div>
           </div>
-          <p className="text-[12px] text-slate-400">
+          <p className="text-[12px] text-muted-foreground/70">
             Emails will be sent every{" "}
             {intervalHours > 0 ? `${intervalHours}h ` : ""}
             {intervalMinutes > 0
@@ -211,8 +211,8 @@ export default function CampaignScheduler() {
         }}
       >
         <div className="flex items-center gap-2 mb-4">
-          <Calendar size={18} className="text-purple-500" />
-          <h2 className="text-[15px] font-medium text-slate-700 tracking-tight">
+          <Calendar size={18} className="text-primary/90" />
+          <h2 className="text-[15px] font-medium text-foreground/90 tracking-tight">
             Campaign Summary
           </h2>
         </div>
@@ -226,15 +226,15 @@ export default function CampaignScheduler() {
               border: "1px solid rgba(148, 163, 184, 0.15)",
             }}
           >
-            <h3 className="text-[13px] font-medium text-slate-600 mb-2">
+            <h3 className="text-[13px] font-medium text-muted-foreground mb-2">
               Basic Info
             </h3>
-            <p className="text-[14px] text-slate-700 font-medium">
+            <p className="text-[14px] text-foreground/90 font-medium">
               {data.name || (
-                <span className="text-slate-400 italic">No name set</span>
+                <span className="text-muted-foreground/70 italic">No name set</span>
               )}
             </p>
-            <p className="text-[12px] text-slate-500 mt-1 line-clamp-2">
+            <p className="text-[12px] text-muted-foreground mt-1 line-clamp-2">
               {data.description || (
                 <span className="italic">No description</span>
               )}
@@ -253,9 +253,9 @@ export default function CampaignScheduler() {
               Phishing Kits
             </h3>
             <div className="space-y-1">
-              <p className="text-[12px] text-slate-500">
+              <p className="text-[12px] text-muted-foreground">
                 {data.phishing_kit_ids.length > 0 ? (
-                  <span className="text-purple-600 font-medium">
+                  <span className="text-primary font-medium">
                     {data.phishing_kit_ids.length} kit(s) selected
                   </span>
                 ) : (
@@ -273,12 +273,12 @@ export default function CampaignScheduler() {
               border: "1px solid rgba(148, 163, 184, 0.15)",
             }}
           >
-            <h3 className="text-[13px] font-medium text-slate-600 mb-2">
+            <h3 className="text-[13px] font-medium text-muted-foreground mb-2">
               Target Groups
             </h3>
-            <p className="text-[12px] text-slate-500">
+            <p className="text-[12px] text-muted-foreground">
               {data.user_group_ids.length > 0 ? (
-                <span className="text-purple-600 font-medium">
+                <span className="text-primary font-medium">
                   {data.user_group_ids.length} group(s) selected
                 </span>
               ) : (
@@ -295,33 +295,33 @@ export default function CampaignScheduler() {
               border: "1px solid rgba(148, 163, 184, 0.15)",
             }}
           >
-            <h3 className="text-[13px] font-medium text-slate-600 mb-2">
+            <h3 className="text-[13px] font-medium text-muted-foreground mb-2">
               Schedule
             </h3>
             <div className="space-y-1">
-              <p className="text-[12px] text-slate-500">
+              <p className="text-[12px] text-muted-foreground">
                 Start:{" "}
                 {beginDate && beginTime ? (
-                  <span className="text-purple-600 font-medium">
+                  <span className="text-primary font-medium">
                     {formatDate(beginDate)} at {formatTime(beginTime)}
                   </span>
                 ) : (
                   <span className="text-amber-600">Not set</span>
                 )}
               </p>
-              <p className="text-[12px] text-slate-500">
+              <p className="text-[12px] text-muted-foreground">
                 End:{" "}
                 {endDate && endTime ? (
-                  <span className="text-purple-600 font-medium">
+                  <span className="text-primary font-medium">
                     {formatDate(endDate)} at {formatTime(endTime)}
                   </span>
                 ) : (
                   <span className="text-amber-600">Not set</span>
                 )}
               </p>
-              <p className="text-[12px] text-slate-500">
+              <p className="text-[12px] text-muted-foreground">
                 Interval:{" "}
-                <span className="text-purple-600 font-medium">
+                <span className="text-primary font-medium">
                   {data.sending_interval_seconds} seconds ({intervalHours}h{" "}
                   {intervalMinutes}m)
                 </span>

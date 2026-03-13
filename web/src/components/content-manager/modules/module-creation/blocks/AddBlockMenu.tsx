@@ -74,7 +74,7 @@ export function AddBlockMenu({ onAdd, accent = 'purple' }: {
                             exit={{ opacity: 0, y: -4, scale: 0.97 }}
                             transition={{ duration: 0.12 }}
                             style={{ top: menuPos.top, left: menuPos.left }}
-                            className="fixed z-50 bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-200/80 overflow-hidden min-w-[220px]"
+                            className="fixed z-50 bg-surface rounded-xl border border-border shadow-xl shadow-slate-200/80 overflow-hidden min-w-[220px]"
                             role="menu"
                         >
                             {options.map(opt => (
@@ -87,8 +87,8 @@ export function AddBlockMenu({ onAdd, accent = 'purple' }: {
                                 >
                                     <span className={`${theme.menuIcon} mt-0.5`} aria-hidden="true">{opt.icon}</span>
                                     <span className="flex flex-col">
-                                        <span className="text-sm font-semibold text-slate-700">{opt.label}</span>
-                                        <span className="text-[11px] text-slate-400">{opt.desc}</span>
+                                        <span className="text-sm font-semibold text-foreground">{opt.label}</span>
+                                        <span className="text-[11px] text-muted-foreground">{opt.desc}</span>
                                     </span>
                                 </button>
                             ))}

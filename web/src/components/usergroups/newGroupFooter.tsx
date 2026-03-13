@@ -13,8 +13,8 @@ interface NewGroupFooterProps {
 // Memoized status message
 const StatusMessage = memo(function StatusMessage({ status }: { status: string }) {
   return (
-    <div className="text-sm text-gray-600 px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border border-purple-200/30">
-      <span className="inline-block w-2 h-2 bg-purple-400 rounded-full mr-2 animate-pulse"></span>
+    <div className="text-sm text-muted-foreground px-4 py-2 bg-surface-subtle rounded-xl border border-border">
+      <span className="inline-block w-2 h-2 bg-accent-secondary rounded-full mr-2 animate-pulse"></span>
       {status}
     </div>
   );
@@ -40,7 +40,7 @@ function NewGroupFooter({
       <div className="flex gap-4 justify-end">
         <Link
           to="/usergroups"
-          className="liquid-glass-button-secondary px-6 py-2.5 text-sm"
+          className="px-6 py-2.5 rounded-lg text-sm font-medium border border-border bg-surface hover:bg-surface-subtle text-foreground transition-colors"
         >
           Cancel
         </Link>
@@ -48,7 +48,7 @@ function NewGroupFooter({
           id="create-group-btn"
           onClick={onSubmit}
           disabled={isDisabled}
-          className="liquid-glass-button flex items-center gap-2 px-6 py-2.5 text-sm"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isLoading ? (
             <>

@@ -3,7 +3,7 @@ import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { AnimatePresence } from 'framer-motion'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
-import type { PlaceholderModule } from '../../modules/module-creation/placeholderModules'
+import type { PlaceholderModule } from '../modules/module-creation/placeholderModules'
 import { CourseCreatorTopBar } from './CourseCreatorTopBar'
 import { AvailableModuleList } from './AvailableModuleList'
 import { CourseModuleStack } from './CourseModuleStack'
@@ -63,7 +63,7 @@ export function CourseCreator({ onBack }: CourseCreatorProps) {
     }, [])
 
     return (
-        <div className="fixed inset-0 w-full h-full flex flex-col bg-slate-50">
+        <div className="fixed inset-0 w-full h-full flex flex-col bg-background">
             <CourseCreatorTopBar
                 title={courseTitle}
                 onTitleChange={setCourseTitle}
@@ -86,7 +86,7 @@ export function CourseCreator({ onBack }: CourseCreatorProps) {
                             onRemove={handleRemove}
                         />
                     </div>
-                    <div className="w-[30%] flex-shrink-0 bg-white border-r border-slate-200 overflow-hidden">
+                    <div className="w-[30%] flex-shrink-0 bg-surface border-r border-border overflow-hidden">
                         <AvailableModuleList selectedIds={selectedIds} />
                     </div>
 

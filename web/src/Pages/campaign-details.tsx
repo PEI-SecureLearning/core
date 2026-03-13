@@ -124,9 +124,9 @@ export default function CampaignDetails() {
 
   if (loading)
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50 text-slate-600">
+      <div className="flex h-screen w-full items-center justify-center bg-surface-subtle text-muted-foreground">
         <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <p>Aguenta aí que estou a carregar...</p>
         </div>
       </div>
@@ -149,15 +149,15 @@ export default function CampaignDetails() {
         <div className="flex items-center gap-4">
           <Link
             to="/campaigns"
-            className="p-2.5 rounded-xl bg-white/60 backdrop-blur-md text-slate-500 hover:text-purple-600 hover:bg-white transition-all shadow-sm hover:shadow-md border border-slate-200/60"
+            className="p-2.5 rounded-xl bg-background/60 backdrop-blur-md text-muted-foreground hover:text-primary hover:bg-background transition-all shadow-sm hover:shadow-md border border-border/60"
           >
             <ChevronLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
               {isEditable ? "Editar Campanha" : "Detalhes da Campanha"}
             </h1>
-            <p className="text-slate-500 mt-1 text-[14px]">
+            <p className="text-muted-foreground mt-1 text-[14px]">
               {isEditable
                 ? "Podes mudar os dados aqui, mas despacha-te."
                 : "Só podes ver. Tira as mãos daí!"}
@@ -168,7 +168,7 @@ export default function CampaignDetails() {
           <div
             className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-medium ${isEditable
               ? "bg-amber-50 text-amber-700 border-amber-200"
-              : "bg-slate-100 text-slate-600 border-slate-200"
+              : "bg-muted text-muted-foreground border-border"
               }`}
           >
             {isEditable ? <Clock size={16} /> : <Ban size={16} />}
@@ -203,12 +203,12 @@ export default function CampaignDetails() {
 
       {/* Formulário Vidro */}
       <div className="max-w-4xl mx-auto ">
-        <div className="  bg-white/60 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-xl shadow-slate-200/40 p-6 md:p-8">
+        <div className="  bg-background/60 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-xl shadow-slate-200/40 p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6 ">
             {/* Nome */}
             <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2 uppercase tracking-wide">
-                <Type size={14} className="text-purple-500" />
+              <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
+                <Type size={14} className="text-primary/90" />
                 Nome da Campanha
               </label>
               <input
@@ -220,15 +220,15 @@ export default function CampaignDetails() {
                     prev ? { ...prev, name: e.target.value } : null
                   )
                 }
-                className="w-full px-4 py-3 bg-white/50 border border-slate-200/80 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed placeholder:text-slate-400 font-medium text-slate-700"
+                className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 font-medium text-foreground/90"
                 placeholder="Ex: Campanha de Phishing Q1"
               />
             </div>
 
             {/* Descrição */}
             <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2 uppercase tracking-wide">
-                <AlignLeft size={14} className="text-purple-500" />
+              <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
+                <AlignLeft size={14} className="text-primary/90" />
                 Descrição
               </label>
               <textarea
@@ -240,7 +240,7 @@ export default function CampaignDetails() {
                     prev ? { ...prev, description: e.target.value } : null
                   )
                 }
-                className="w-full px-4 py-3 bg-white/50 border border-slate-200/80 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all resize-none disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed placeholder:text-slate-400 text-slate-600"
+                className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all resize-none disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 text-muted-foreground"
                 placeholder="Escreve aí os detalhes da brincadeira..."
               />
             </div>
@@ -248,8 +248,8 @@ export default function CampaignDetails() {
             {/* Datas */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2 uppercase tracking-wide">
-                  <Calendar size={14} className="text-purple-500" />
+                <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
+                  <Calendar size={14} className="text-primary/90" />
                   Data de Início
                 </label>
                 <input
@@ -261,13 +261,13 @@ export default function CampaignDetails() {
                       prev ? { ...prev, begin_date: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-3 bg-white/50 border border-slate-200/80 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed text-slate-700 font-medium"
+                  className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground/90 font-medium"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[13px] font-semibold text-slate-700 flex items-center gap-2 uppercase tracking-wide">
-                  <Calendar size={14} className="text-purple-500" />
+                <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
+                  <Calendar size={14} className="text-primary/90" />
                   Data de Fim
                 </label>
                 <input
@@ -279,16 +279,16 @@ export default function CampaignDetails() {
                       prev ? { ...prev, end_date: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-3 bg-white/50 border border-slate-200/80 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed text-slate-700 font-medium"
+                  className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground/90 font-medium"
                 />
               </div>
             </div>
 
             {/* Footer Actions */}
-            <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-end gap-3">
+            <div className="pt-6 mt-6 border-t border-border/40 flex items-center justify-end gap-3">
               <Link
                 to="/campaigns"
-                className="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors font-medium text-sm"
+                className="px-5 py-2.5 rounded-xl text-muted-foreground hover:bg-muted transition-colors font-medium text-sm"
               >
                 Cancelar
               </Link>

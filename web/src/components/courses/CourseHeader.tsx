@@ -3,7 +3,7 @@ import type { Course } from './courseData'
 
 const difficultyBadge: Record<string, string> = {
     Beginner: 'bg-emerald-100 text-emerald-700',
-    Intermediate: 'bg-purple-100 text-purple-700',
+    Intermediate: 'bg-primary/20 text-primary',
     Advanced: 'bg-red-100 text-red-700',
 }
 
@@ -14,7 +14,7 @@ type CourseHeaderProps = {
 
 export default function CourseHeader({ course, overallProgress }: CourseHeaderProps) {
     return (
-        <div className="relative z-10 rounded-b-lg border-l-4 border-purple-500 ring-1 ring-gray-200 bg-white shadow-md overflow-hidden">
+        <div className="relative z-10 rounded-b-lg border-l-4 border-primary ring-1 ring-gray-200 bg-background shadow-md overflow-hidden">
             <div className="flex flex-col lg:flex-row">
                 {/* Left content */}
                 <div className="flex-1 p-4 lg:p-5 space-y-2">
@@ -23,29 +23,29 @@ export default function CourseHeader({ course, overallProgress }: CourseHeaderPr
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${difficultyBadge[course.difficulty]}`}>
                             {course.difficulty}
                         </span>
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary">
                             {course.modules.length} Modules
                         </span>
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-xl lg:text-2xl font-bold text-gray-900 leading-tight">
+                    <h1 className="text-xl lg:text-2xl font-bold text-foreground leading-tight">
                         {course.title}
                     </h1>
 
                     {/* Description */}
-                    <p className="text-sm text-gray-500 leading-relaxed max-w-2xl">
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
                         {course.description}
                     </p>
 
                     {/* Stats row */}
-                    <div className="flex items-center gap-5 text-sm text-gray-600">
+                    <div className="flex items-center gap-5 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                            <Clock size={15} className="text-purple-500" />
+                            <Clock size={15} className="text-primary/90" />
                             {course.duration}
                         </span>
                         <span className="flex items-center gap-1.5">
-                            <Users size={15} className="text-purple-500" />
+                            <Users size={15} className="text-primary/90" />
                             {course.userCount} Users
                         </span>
                     </div>
@@ -53,10 +53,10 @@ export default function CourseHeader({ course, overallProgress }: CourseHeaderPr
                     {/* Progress */}
                     <div className="space-y-1 pt-1">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-gray-600">Course Progress</span>
-                            <span className="text-xs font-bold text-purple-600">{overallProgress}%</span>
+                            <span className="text-xs font-medium text-muted-foreground">Course Progress</span>
+                            <span className="text-xs font-bold text-primary">{overallProgress}%</span>
                         </div>
-                        <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
                             <div
                                 className="h-full rounded-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all duration-700 ease-out"
                                 style={{ width: `${overallProgress}%` }}
@@ -67,7 +67,7 @@ export default function CourseHeader({ course, overallProgress }: CourseHeaderPr
 
                 {/* Right illustration area */}
                 <div className={`hidden lg:flex items-center justify-center w-60 bg-gradient-to-br ${course.color} bg-opacity-10`}>
-                    <div className="w-24 h-24 rounded-2xl bg-purple-200/40 flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-2xl bg-primary/30 flex items-center justify-center">
                         <span className="text-4xl select-none">{course.icon}</span>
                     </div>
                 </div>
