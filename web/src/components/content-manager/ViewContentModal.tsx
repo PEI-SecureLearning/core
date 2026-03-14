@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Trash2, X } from 'lucide-react';
+import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
 type ContentDetail = {
     content_piece_id: string;
+    folder_id?: string | null;
     path: string;
     title: string;
     description: string | null;
@@ -29,37 +30,68 @@ type ContentDetail = {
     updated_at: string;
 };
 
+type ContentFolder = {
+    folder_id: string;
+    path: string;
+};
+
 interface ViewContentModalProps {
     contentPieceId: string | null;
+    startInEditMode?: boolean;
     onClose: () => void;
-    onDeleted: () => void;
+    onUpdated: () => void;
 }
 
-export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewContentModalProps) {
+export function ViewContentModal({ contentPieceId, startInEditMode = false, onClose, onUpdated }: ViewContentModalProps) {
     const { keycloak } = useKeycloak();
     const [content, setContent] = useState<ContentDetail | null>(null);
+    const [folders, setFolders] = useState<ContentFolder[]>([]);
     const [loading, setLoading] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [folderId, setFolderId] = useState('fld_root');
+    const [body, setBody] = useState('');
+    const [sourceUrl, setSourceUrl] = useState('');
+    const [tagsInput, setTagsInput] = useState('');
     const open = !!contentPieceId;
+
+    const sortedFolders = useMemo(
+        () => [...folders].sort((left, right) => left.path.localeCompare(right.path, undefined, { sensitivity: 'base', numeric: true })),
+        [folders]
+    );
 
     // Fetch content details when contentPieceId changes
     useEffect(() => {
         if (!contentPieceId) {
             setContent(null);
+            setIsEditing(false);
             return;
         }
 
         const fetchDetails = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`${API_BASE}/content/${encodeURIComponent(contentPieceId)}`, {
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                    },
-                });
-                if (!res.ok) throw new Error('Failed to load details');
-                const data = await res.json();
+                const headers = {
+                    Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                };
+                const [contentRes, foldersRes] = await Promise.all([
+                    fetch(`${API_BASE}/content/${encodeURIComponent(contentPieceId)}`, { headers }),
+                    fetch(`${API_BASE}/content/folders`, { headers }),
+                ]);
+                if (!contentRes.ok || !foldersRes.ok) throw new Error('Failed to load details');
+                const data = await contentRes.json() as ContentDetail;
+                const folderData = await foldersRes.json() as ContentFolder[];
                 setContent(data);
+                setFolders(folderData);
+                setTitle(data.title);
+                setDescription(data.description || '');
+                setFolderId(data.folder_id || 'fld_root');
+                setBody(data.body || '');
+                setSourceUrl(data.source_url || '');
+                setTagsInput(data.tags.join(', '));
+                setIsEditing(startInEditMode);
             } catch {
                 toast.error('Could not load content details.');
                 onClose();
@@ -69,43 +101,69 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
         };
 
         fetchDetails().catch(() => undefined);
-    }, [contentPieceId, keycloak.token]);
+    }, [contentPieceId, keycloak.token, onClose, startInEditMode]);
 
     // Load protected file preview
     const isImageFile = !!content?.file?.content_type?.startsWith('image/');
     const isVideoFile = !!content?.file?.content_type?.startsWith('video/');
     const previewFileUrl = content?.file?.file_url || null;
 
-    const handleDelete = async () => {
-        if (!content) return;
-        const confirmed = window.confirm('Delete this content piece?');
-        if (!confirmed) return;
-
-        setIsDeleting(true);
-        try {
-            const res = await fetch(
-                `${API_BASE}/content/${encodeURIComponent(content.content_piece_id)}`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                    },
-                }
-            );
-            if (!res.ok) throw new Error('Failed to delete');
-            toast.success('Content deleted successfully.');
-            onDeleted();
-            onClose();
-        } catch {
-            toast.error('Could not delete content.');
-        } finally {
-            setIsDeleting(false);
-        }
-    };
-
     const handleClose = () => {
         setContent(null);
+        setIsEditing(false);
         onClose();
+    };
+
+    const handleSave = async () => {
+        if (!content) return;
+        if (!title.trim()) {
+            toast.error('Title is required.');
+            return;
+        }
+        if (content.content_format === 'link' && !sourceUrl.trim()) {
+            toast.error('Source URL is required.');
+            return;
+        }
+        if (!content.file && content.content_format !== 'link' && !body.trim()) {
+            toast.error('Body is required.');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const res = await fetch(`${API_BASE}/content/${encodeURIComponent(content.content_piece_id)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                },
+                body: JSON.stringify({
+                    folder_id: folderId,
+                    title: title.trim(),
+                    description: description.trim() || null,
+                    body: content.file || content.content_format === 'link' ? null : body,
+                    source_url: content.content_format === 'link' ? sourceUrl.trim() : null,
+                    tags: tagsInput.split(',').map((tag) => tag.trim()).filter(Boolean),
+                }),
+            });
+            if (!res.ok) throw new Error('Failed to update content');
+            const updated = await res.json() as ContentDetail;
+            setContent(updated);
+            setTitle(updated.title);
+            setDescription(updated.description || '');
+            setFolderId(updated.folder_id || 'fld_root');
+            setBody(updated.body || '');
+            setSourceUrl(updated.source_url || '');
+            setTagsInput(updated.tags.join(', '));
+            setIsEditing(false);
+            onUpdated();
+            toast.success('Content updated successfully.');
+            handleClose();
+        } catch {
+            toast.error('Could not update content.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -160,17 +218,58 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                                             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 uppercase">
                                                 {content.content_format}
                                             </span>
-                                            <button
-                                                type="button"
-                                                disabled={isDeleting}
-                                                onClick={handleDelete}
-                                                className="flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60 transition-colors"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                                {isDeleting ? 'Deleting…' : 'Delete'}
-                                            </button>
                                         </div>
                                     </div>
+
+                                    {isEditing && (
+                                        <div className="space-y-4 rounded-lg border border-purple-100 bg-purple-50/40 p-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Title</label>
+                                                    <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Folder</label>
+                                                    <select value={folderId} onChange={(e) => setFolderId(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                                                        {sortedFolders.map((folder) => (
+                                                            <option key={folder.folder_id} value={folder.folder_id}>{folder.path}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Description</label>
+                                                <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                            </div>
+                                            {!content.file && content.content_format !== 'link' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Body</label>
+                                                    <textarea value={body} onChange={(e) => setBody(e.target.value)} className="min-h-28 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                </div>
+                                            )}
+                                            {content.content_format === 'link' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Source URL</label>
+                                                    <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                </div>
+                                            )}
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Tags</label>
+                                                <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <button
+                                                    type="button"
+                                                    disabled={isSaving}
+                                                    onClick={handleSave}
+                                                    className="flex items-center gap-1 rounded-lg bg-purple-700 px-3 py-2 text-xs font-semibold text-white hover:bg-purple-800 disabled:opacity-60"
+                                                >
+                                                    <Save className="w-3 h-3" />
+                                                    {isSaving ? 'Saving...' : 'Save'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Metadata grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm text-gray-700 rounded-lg bg-gray-50 p-4 border border-gray-100">

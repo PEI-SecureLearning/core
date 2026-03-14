@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { motion, AnimatePresence } from 'motion/react';
 import { Folder, X } from 'lucide-react';
@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
-type ContentCollection = {
-    collection_id: string;
+type ContentFolder = {
+    folder_id: string;
     name: string;
     path: string;
 };
@@ -16,20 +16,20 @@ interface NewContentModalProps {
     open: boolean;
     onClose: () => void;
     onCreated: () => void;
-    collections?: ContentCollection[];
-    defaultCollectionId?: string;
+    folders?: ContentFolder[];
+    defaultFolderId?: string;
 }
 
 export function NewContentModal({
     open,
     onClose,
     onCreated,
-    collections = [],
-    defaultCollectionId,
+    folders = [],
+    defaultFolderId = 'fld_root',
 }: NewContentModalProps) {
     const { keycloak } = useKeycloak();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedCollectionId, setSelectedCollectionId] = useState(defaultCollectionId ?? 'col_root');
+    const [selectedFolderId, setSelectedFolderId] = useState(defaultFolderId);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [mode, setMode] = useState<'file' | 'text'>('file');
@@ -39,13 +39,17 @@ export function NewContentModal({
     const [tagsInput, setTagsInput] = useState('');
     const [file, setFile] = useState<File | null>(null);
 
-    const sortedCollections = useMemo(
-        () => [...collections].sort((left, right) => left.path.localeCompare(right.path, undefined, { sensitivity: 'base', numeric: true })),
-        [collections]
+    useEffect(() => {
+        setSelectedFolderId(defaultFolderId);
+    }, [defaultFolderId, open]);
+
+    const sortedFolders = useMemo(
+        () => [...folders].sort((left, right) => left.path.localeCompare(right.path, undefined, { sensitivity: 'base', numeric: true })),
+        [folders]
     );
 
     const resetForm = () => {
-        setSelectedCollectionId(defaultCollectionId ?? 'col_root');
+        setSelectedFolderId(defaultFolderId);
         setTitle('');
         setDescription('');
         setMode('file');
@@ -63,7 +67,7 @@ export function NewContentModal({
             .filter((tag) => tag.length > 0);
 
     const getCreateValidationError = () => {
-        if (!selectedCollectionId) return 'A destination folder is required.';
+        if (!selectedFolderId) return 'A destination folder is required.';
         if (!title.trim()) return 'Title is required.';
 
         if (mode === 'file') {
@@ -71,20 +75,14 @@ export function NewContentModal({
             return null;
         }
 
-        if (contentFormat === 'link' && !sourceUrl.trim()) {
-            return 'Source URL is required for link content.';
-        }
-
-        if (contentFormat !== 'link' && !body.trim()) {
-            return 'Body is required for text/markdown/html content.';
-        }
-
+        if (contentFormat === 'link' && !sourceUrl.trim()) return 'Source URL is required for link content.';
+        if (contentFormat !== 'link' && !body.trim()) return 'Body is required for text/markdown/html content.';
         return null;
     };
 
     const createFileContent = async (parsedTags: string[], selectedFile: File) => {
         const formData = new FormData();
-        formData.append('collection_id', selectedCollectionId);
+        formData.append('folder_id', selectedFolderId);
         formData.append('title', title);
         formData.append('description', description);
         formData.append('tags', parsedTags.join(','));
@@ -92,12 +90,9 @@ export function NewContentModal({
 
         const res = await fetch(`${API_BASE}/content/upload`, {
             method: 'POST',
-            headers: {
-                Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-            },
+            headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '' },
             body: formData,
         });
-
         if (!res.ok) throw new Error('Upload failed');
     };
 
@@ -109,7 +104,7 @@ export function NewContentModal({
                 Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
             },
             body: JSON.stringify({
-                collection_id: selectedCollectionId,
+                folder_id: selectedFolderId,
                 title,
                 description: description || null,
                 content_format: contentFormat,
@@ -118,7 +113,6 @@ export function NewContentModal({
                 tags: parsedTags,
             }),
         });
-
         if (!res.ok) throw new Error('Content creation failed');
     };
 
@@ -133,13 +127,11 @@ export function NewContentModal({
         setIsSubmitting(true);
         try {
             const parsedTags = parseTags(tagsInput);
-
             if (mode === 'file' && file) {
                 await createFileContent(parsedTags, file);
             } else {
                 await createTextContent(parsedTags);
             }
-
             toast.success('Content created successfully.');
             resetForm();
             onCreated();
@@ -172,12 +164,8 @@ export function NewContentModal({
                         className="w-full max-w-lg max-h-[85vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
                     >
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-900">New File</h2>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                            >
+                            <h2 className="text-lg font-bold text-gray-900">New Content</h2>
+                            <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
@@ -187,14 +175,10 @@ export function NewContentModal({
                                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Folder</label>
                                 <div className="relative">
                                     <Folder className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-500" />
-                                    <select
-                                        value={selectedCollectionId}
-                                        onChange={(e) => setSelectedCollectionId(e.target.value)}
-                                        className={`${inputClass} pl-9`}
-                                    >
-                                        {sortedCollections.map((collection) => (
-                                            <option key={collection.collection_id} value={collection.collection_id}>
-                                                {collection.path}
+                                    <select value={selectedFolderId} onChange={(e) => setSelectedFolderId(e.target.value)} className={`${inputClass} pl-9`}>
+                                        {sortedFolders.map((folder) => (
+                                            <option key={folder.folder_id} value={folder.folder_id}>
+                                                {folder.path}
                                             </option>
                                         ))}
                                     </select>
@@ -233,11 +217,7 @@ export function NewContentModal({
                                 <>
                                     <div className="space-y-1">
                                         <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Format</label>
-                                        <select
-                                            value={contentFormat}
-                                            onChange={(e) => setContentFormat(e.target.value as 'text' | 'markdown' | 'html' | 'link')}
-                                            className={inputClass}
-                                        >
+                                        <select value={contentFormat} onChange={(e) => setContentFormat(e.target.value as 'text' | 'markdown' | 'html' | 'link')} className={inputClass}>
                                             <option value="text">Text</option>
                                             <option value="markdown">Markdown</option>
                                             <option value="html">HTML</option>
@@ -263,11 +243,7 @@ export function NewContentModal({
                                 <button type="button" onClick={onClose} className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
                                     Cancel
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:from-purple-700 hover:to-purple-800 transition-all duration-200 disabled:opacity-60 active:scale-[0.97]"
-                                >
+                                <button type="submit" disabled={isSubmitting} className="rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:from-purple-700 hover:to-purple-800 transition-all duration-200 disabled:opacity-60 active:scale-[0.97]">
                                     {isSubmitting ? 'Saving...' : 'Create'}
                                 </button>
                             </div>
