@@ -4,14 +4,14 @@ import React, {
   useRef,
   useLayoutEffect,
   type HTMLAttributes,
-  type ReactNode,
+  type ReactNode
 } from "react";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
   Check,
   ChevronLeft,
   ChevronRight,
-  type LucideIcon,
+  type LucideIcon
 } from "lucide-react";
 
 interface StepperProps extends HTMLAttributes<HTMLDivElement> {
@@ -42,8 +42,8 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
 export default function Stepper({
   children,
   initialStep = 1,
-  onStepChange = () => { },
-  onFinalStepCompleted = () => { },
+  onStepChange = () => {},
+  onFinalStepCompleted = () => {},
   onBeforeComplete,
   validateStep,
   stepContainerClassName = "",
@@ -57,7 +57,7 @@ export default function Stepper({
   stepIcons = [],
   stepCompletedIcons = [],
   stepWarnings = [],
-  renderStepIndicator,
+  renderStepIndicator
 }: Readonly<StepperProps>) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [direction, setDirection] = useState<number>(0);
@@ -113,20 +113,10 @@ export default function Stepper({
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div
-        className="size-full rounded-2xl flex flex-col justify-start  align-middle overflow-hidden"
-        style={{
-          background: 'rgba(255, 255, 255, 0.65)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
-          boxShadow: '0 8px 32px rgba(147, 51, 234, 0.08)'
-        }}
-      >
+      <div className="size-full rounded-2xl flex flex-col justify-start align-middle overflow-hidden bg-card  shadow-sm">
         {/* Step Indicators */}
         <div
-          className={`${stepContainerClassName} w-full border-b border-border/40 px-8 py-6`}
-          style={{ background: 'rgba(255, 255, 255, 0.4)' }}
+          className={`${stepContainerClassName} w-full border-b border-border px-8 py-6 bg-surface`}
         >
           <div className="mx-auto flex w-full max-w-4xl items-center justify-center">
             {stepsArray.map((_, index) => {
@@ -159,7 +149,7 @@ export default function Stepper({
                     renderStepIndicator({
                       step: stepNumber,
                       currentStep,
-                      onStepClick: handleStepClick,
+                      onStepClick: handleStepClick
                     })
                   ) : (
                     <StepIndicator
@@ -173,9 +163,7 @@ export default function Stepper({
                     />
                   )}
                   {isNotLastStep && (
-                    <StepConnector
-                      isComplete={currentStep > stepNumber}
-                    />
+                    <StepConnector isComplete={currentStep > stepNumber} />
                   )}
                 </React.Fragment>
               );
@@ -184,7 +172,7 @@ export default function Stepper({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-hidden relative bg-muted/30">
+        <div className="flex-1 overflow-hidden relative bg-surface-subtle">
           <StepContentWrapper
             isCompleted={isCompleted}
             currentStep={currentStep}
@@ -198,8 +186,7 @@ export default function Stepper({
         {/* Footer with Navigation */}
         {!isCompleted && (
           <div
-            className={`px-8 py-5 border-t border-border/40 ${footerClassName}`}
-            style={{ background: 'rgba(255, 255, 255, 0.4)' }}
+            className={`px-8 py-5 border-t border-border bg-muted/20 ${footerClassName}`}
           >
             <div
               className={`flex ${currentStep > 1 ? "justify-between" : "justify-end"} items-center`}
@@ -207,11 +194,7 @@ export default function Stepper({
               {currentStep !== 1 && (
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-normal text-muted-foreground transition-all duration-150 hover:bg-muted/60"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.5)',
-                    border: '1px solid rgba(148, 163, 184, 0.2)'
-                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-normal text-muted-foreground transition-all duration-150 hover:bg-muted/60 bg-background border border-border"
                   {...backButtonProps}
                 >
                   <ChevronLeft size={16} />
@@ -220,11 +203,7 @@ export default function Stepper({
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium text-white transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
-                  boxShadow: '0 4px 14px rgba(147, 51, 234, 0.25)'
-                }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium text-primary-foreground bg-primary transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] hover:bg-primary/90"
                 {...nextButtonProps}
               >
                 {isLastStep ? "Complete" : nextButtonText}
@@ -251,7 +230,7 @@ function StepContentWrapper({
   currentStep,
   direction,
   children,
-  className = "",
+  className = ""
 }: StepContentWrapperProps) {
   return (
     <motion.div style={{ position: "relative" }} className={className}>
@@ -279,7 +258,7 @@ interface SlideTransitionProps {
 function SlideTransition({
   children,
   direction,
-  onHeightReady,
+  onHeightReady
 }: SlideTransitionProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -308,16 +287,16 @@ function SlideTransition({
 const stepVariants: Variants = {
   enter: (dir: number) => ({
     x: dir >= 0 ? "80px" : "-80px",
-    opacity: 0,
+    opacity: 0
   }),
   center: {
     x: "0px",
-    opacity: 1,
+    opacity: 1
   },
   exit: (dir: number) => ({
     x: dir >= 0 ? "-40px" : "40px",
-    opacity: 0,
-  }),
+    opacity: 0
+  })
 };
 
 interface StepProps {
@@ -353,7 +332,7 @@ function StepIndicator({
   completedStepIcon,
   onClickStep,
   disableStepIndicators = false,
-  isWarning = false,
+  isWarning = false
 }: StepIndicatorProps) {
   let status: StepStatus = "complete";
   if (currentStep === step) {
@@ -374,26 +353,53 @@ function StepIndicator({
   const StepIcon = stepIcon;
   const CompletedStepIcon = completedStepIcon;
 
+  const indicatorClassName = (() => {
+    switch (status) {
+      case "active":
+      case "complete":
+        return "bg-primary border-primary text-primary-foreground";
+      case "warning":
+      case "inactive":
+      default:
+        return "bg-muted border-border text-muted-foreground";
+    }
+  })();
+
   const indicatorContent: ReactNode = (() => {
     if (status === "complete") {
       return CompletedStepIcon ? (
-        <CompletedStepIcon className="h-5 w-5 text-white" strokeWidth={2.3} />
+        <CompletedStepIcon
+          className="h-5 w-5 text-primary-foreground"
+          strokeWidth={2.3}
+        />
       ) : (
-        <Check className="h-5 w-5 text-white" strokeWidth={2.5} />
+        <Check className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
       );
     }
 
     if (StepIcon) {
       return (
         <StepIcon
-          className={status === "active" ? "h-5 w-5 text-white" : "h-5 w-5 text-slate-400"}
+          className={
+            status === "active"
+              ? "h-5 w-5 text-primary-foreground"
+              : "h-5 w-5 text-muted-foreground"
+          }
           strokeWidth={2.2}
         />
       );
     }
 
     return (
-      <span className={status === "active" ? "text-white" : "text-muted-foreground/70"}>{step}</span>
+      <span
+        className={
+          status === "active"
+            ? "text-primary-foreground"
+            : "text-muted-foreground"
+        }
+      >
+        {step}
+      </span>
     );
   })();
 
@@ -407,28 +413,20 @@ function StepIndicator({
       <motion.div
         variants={{
           inactive: {
-            scale: 1,
-            backgroundColor: "rgba(241, 245, 249, 0.8)",
-            borderColor: "rgba(203, 213, 225, 0.6)",
+            scale: 1
           },
           warning: {
-            scale: 1,
-            backgroundColor: "rgba(241, 245, 249, 0.8)",
-            borderColor: "rgba(203, 213, 225, 0.6)",
+            scale: 1
           },
           active: {
-            scale: 1,
-            backgroundColor: "#a855f7",
-            borderColor: "#a855f7",
+            scale: 1
           },
           complete: {
-            scale: 1,
-            backgroundColor: "#9333ea",
-            borderColor: "#9333ea",
-          },
+            scale: 1
+          }
         }}
         transition={{ duration: 0.2 }}
-        className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2"
+        className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2 ${indicatorClassName}`}
       >
         {indicatorContent}
       </motion.div>
@@ -441,16 +439,13 @@ interface StepConnectorProps {
 }
 
 function StepConnector({ isComplete }: Readonly<StepConnectorProps>) {
-  const color = "#9333ea";
-
   return (
-    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-muted/60">
+    <div className="relative mx-4 h-0.5 flex-1 overflow-hidden rounded-full bg-border">
       <motion.div
-        className="absolute left-0 top-0 h-full rounded-full"
+        className="absolute left-0 top-0 h-full rounded-full bg-primary"
         initial={false}
         animate={{
-          width: isComplete ? "100%" : "0%",
-          backgroundColor: isComplete ? color : "transparent"
+          width: isComplete ? "100%" : "0%"
         }}
         transition={{ duration: 0.3, ease: "easeOut" }}
       />

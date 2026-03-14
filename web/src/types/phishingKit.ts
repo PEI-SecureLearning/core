@@ -4,7 +4,11 @@ export interface PhishingKitDisplayInfo {
   description?: string;
   args: Record<string, string>;
   email_template_name?: string;
+  email_template_created_at?: string;
+  email_template_updated_at?: string;
   landing_page_template_name?: string;
+  landing_page_template_created_at?: string;
+  landing_page_template_updated_at?: string;
   sending_profile_names: string[];
 }
 

@@ -11,7 +11,7 @@ import {
   PackageCheck,
   Package,
   UserRoundCheck,
-  UserRound,
+  UserRound
 } from "lucide-react";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
 import SendingProfilePicker from "@/components/campaigns/new-campaign/SendingProfilePicker";
@@ -21,7 +21,7 @@ import CampaignScheduler from "@/components/campaigns/new-campaign/CampaignSched
 import Stepper, { Step } from "@/components/ui/Stepper";
 import {
   CampaignProvider,
-  useCampaign,
+  useCampaign
 } from "@/components/campaigns/new-campaign/CampaignContext";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -30,9 +30,9 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export const Route = createFileRoute("/campaigns/new")({
   validateSearch: z.object({
-    groupId: z.string().optional(),
+    groupId: z.string().optional()
   }),
-  component: RouteComponent,
+  component: RouteComponent
 });
 
 interface StepConfig {
@@ -51,23 +51,23 @@ function CampaignStepper() {
     {
       name: "target-groups",
       label: "Target Groups",
-      component: TargetGroupSelector,
+      component: TargetGroupSelector
     },
     {
       name: "phishing-kits",
       label: "Phishing Kits",
-      component: PhishingKitPicker,
+      component: PhishingKitPicker
     },
     {
       name: "sending-profiles",
       label: "Sending Profiles",
-      component: SendingProfilePicker,
+      component: SendingProfilePicker
     },
     {
       name: "schedule",
       label: "Review",
-      component: CampaignScheduler,
-    },
+      component: CampaignScheduler
+    }
   ];
 
   const stepIcons = [BookOpen, UserRound, Package, Mail, Calendar] as const;
@@ -76,7 +76,7 @@ function CampaignStepper() {
     UserRoundCheck,
     PackageCheck,
     MailCheck,
-    CalendarCheck2,
+    CalendarCheck2
   ] as const;
   const sendingProfilesStepIndex =
     steps.findIndex((step) => step.name === "sending-profiles") + 1;
@@ -120,7 +120,7 @@ function CampaignStepper() {
       toast.error(
         errors.length
           ? errors.join(" ")
-          : "Campaign data is incomplete. Please fill in all required fields.",
+          : "Campaign data is incomplete. Please fill in all required fields."
       );
       return false;
     }
@@ -136,9 +136,9 @@ function CampaignStepper() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : ""
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -152,7 +152,7 @@ function CampaignStepper() {
     } catch (error) {
       console.error("Failed to create campaign:", error);
       toast.error(
-        error instanceof Error ? error.message : "Failed to create campaign",
+        error instanceof Error ? error.message : "Failed to create campaign"
       );
       return false;
     }
@@ -184,7 +184,7 @@ function RouteComponent() {
   const initialGroupIds = groupId ? [groupId] : [];
 
   return (
-    <div className="size-full p-6 bg-linear-to-br from-slate-50 via-white to-purple-50/30">
+    <div className="size-full p-6 bg-background ">
       <CampaignProvider initialGroupIds={initialGroupIds}>
         <CampaignStepper />
       </CampaignProvider>

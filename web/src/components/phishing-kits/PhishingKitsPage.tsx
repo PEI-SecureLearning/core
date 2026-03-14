@@ -39,7 +39,7 @@ export default function PhishingKitsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-white to-purple-50/40">
+      <div className="flex flex-col h-full bg-background">
         {Header}
         <ScrollArea className="flex-1 px-8 pb-8">
           <LoadingGrid />
@@ -49,7 +49,7 @@ export default function PhishingKitsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-white to-purple-50/40">
+    <div className="flex flex-col h-full bg-background">
       {Header}
 
       <ScrollArea className="flex-1 px-8 pb-8">

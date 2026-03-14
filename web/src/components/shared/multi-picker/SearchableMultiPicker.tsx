@@ -5,19 +5,22 @@ import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverAnchor,
-  PopoverContent,
+  PopoverContent
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
+  TooltipTrigger
 } from "@/components/ui/tooltip";
 
 type PickerItemId = string | number;
 
-interface SearchableMultiPickerProps<T extends { id: TId }, TId extends PickerItemId> {
+interface SearchableMultiPickerProps<
+  T extends { id: TId },
+  TId extends PickerItemId
+> {
   readonly items: readonly T[];
   readonly selectedIds: readonly TId[];
   readonly onSelectedIdsChange: (ids: TId[]) => void;
@@ -27,7 +30,7 @@ interface SearchableMultiPickerProps<T extends { id: TId }, TId extends PickerIt
     highlighted: boolean,
     onSelect: () => void,
     bindRef: (el: HTMLButtonElement | null) => void,
-    onHighlight: () => void,
+    onHighlight: () => void
   ) => ReactNode;
   readonly renderSelectedItem: (item: T, onRemove: () => void) => ReactNode;
   readonly renderEmptySelected: ReactNode;
@@ -45,7 +48,7 @@ interface SearchableMultiPickerProps<T extends { id: TId }, TId extends PickerIt
 
 export default function SearchableMultiPicker<
   T extends { id: TId },
-  TId extends PickerItemId,
+  TId extends PickerItemId
 >({
   items,
   selectedIds,
@@ -63,7 +66,7 @@ export default function SearchableMultiPicker<
   loadingText,
   error,
   noResultsText,
-  maxSuggestions = 5,
+  maxSuggestions = 5
 }: Readonly<SearchableMultiPickerProps<T, TId>>) {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -74,14 +77,14 @@ export default function SearchableMultiPicker<
 
   const unselectedItems = useMemo(
     () => items.filter((item) => !selectedIds.includes(item.id)),
-    [items, selectedIds],
+    [items, selectedIds]
   );
 
   const filteredItems = useMemo(() => {
     const search = inputValue.toLowerCase().trim();
     const matched = search
       ? unselectedItems.filter((item) =>
-          getSearchText(item).toLowerCase().includes(search),
+          getSearchText(item).toLowerCase().includes(search)
         )
       : unselectedItems;
     return matched.slice(0, maxSuggestions);
@@ -93,7 +96,7 @@ export default function SearchableMultiPicker<
       setHighlightedIndex(-1);
       setOpen(true);
     },
-    [],
+    []
   );
 
   const handleToggleSelection = useCallback(
@@ -101,13 +104,13 @@ export default function SearchableMultiPicker<
       onSelectedIdsChange(
         selectedIds.includes(itemId)
           ? selectedIds.filter((id) => id !== itemId)
-          : [...selectedIds, itemId],
+          : [...selectedIds, itemId]
       );
       setInputValue("");
       setHighlightedIndex(-1);
       setOpen(false);
     },
-    [onSelectedIdsChange, selectedIds],
+    [onSelectedIdsChange, selectedIds]
   );
 
   const handleKeyDown = useCallback(
@@ -141,14 +144,14 @@ export default function SearchableMultiPicker<
         setHighlightedIndex(-1);
       }
     },
-    [filteredItems, handleToggleSelection, highlightedIndex, open],
+    [filteredItems, handleToggleSelection, highlightedIndex, open]
   );
 
   const anchorWidth = anchorRef.current?.offsetWidth;
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 text-sm w-full">
+      <div className="flex items-center gap-2 text-muted-foreground text-sm w-full">
         <Loader2 className="animate-spin" size={16} />
         {loadingText}
       </div>
@@ -157,7 +160,7 @@ export default function SearchableMultiPicker<
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 p-2 rounded bg-rose-50 border border-rose-200 text-rose-700 w-full">
+      <div className="flex items-center gap-2 p-2 rounded bg-destructive/10 border border-destructive/30 text-destructive w-full">
         <CircleQuestionMark size={14} />
         <span>{error}</span>
       </div>
@@ -167,18 +170,18 @@ export default function SearchableMultiPicker<
   return (
     <div className="h-full w-full flex flex-col gap-4  overflow-y-auto">
       <div className="flex flex-col gap-3 relative w-full h-full">
-        <label className="text-[12px] font-normal text-slate-500 tracking-wide uppercase flex items-center gap-1.5">
+        <label className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5">
           {labelIcon}
           {label}
           {tooltipLines && tooltipLines.length > 0 && (
             <TooltipProvider>
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
-                  <CircleQuestionMark size={14} className="text-purple-500" />
+                  <CircleQuestionMark size={14} className="text-primary" />
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="bg-purple-50 border-purple-200 text-purple-800"
+                  className="bg-popover border-border text-popover-foreground"
                 >
                   <div className="text-[12px] font-medium space-y-1 max-w-[300px]">
                     {tooltipLines.map((line) => (
@@ -199,10 +202,7 @@ export default function SearchableMultiPicker<
           modal={false}
         >
           <PopoverAnchor asChild>
-            <div
-              ref={anchorRef}
-              className="w-full relative flex items-center"
-            >
+            <div ref={anchorRef} className="w-full relative flex items-center">
               <Input
                 value={inputValue}
                 onChange={handleInputChange}
@@ -211,7 +211,7 @@ export default function SearchableMultiPicker<
                 onBlur={() => setOpen(false)}
                 onKeyDown={handleKeyDown}
                 placeholder={searchPlaceholder}
-                className="pl-9 h-[46px] text-[14px] bg-white/70 border-slate-300/50 focus-visible:ring-1 focus-visible:ring-purple-200/50 focus-visible:border-purple-500/50 focus-visible:transition transition backdrop-blur-md"
+                className="pl-9 h-[46px] text-[14px] bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -221,7 +221,7 @@ export default function SearchableMultiPicker<
               />
               <Search
                 size={15}
-                className="absolute left-3 text-purple-600 font-bold pointer-events-none"
+                className="absolute left-3 text-primary font-bold pointer-events-none"
               />
             </div>
           </PopoverAnchor>
@@ -232,12 +232,12 @@ export default function SearchableMultiPicker<
             onOpenAutoFocus={(e) => e.preventDefault()}
             onFocusOutside={(e) => e.preventDefault()}
             style={{ width: anchorWidth ?? "100%" }}
-            className="p-0 shadow-lg border-slate-200"
+            className="p-0 shadow-lg border-border bg-popover"
           >
             <ScrollArea>
               <div className="p-1">
                 {filteredItems.length === 0 ? (
-                  <p className="font-medium text-center text-sm py-3 text-slate-400">
+                  <p className="font-medium text-center text-sm py-3 text-muted-foreground">
                     {noResultsText}
                   </p>
                 ) : (
@@ -249,8 +249,8 @@ export default function SearchableMultiPicker<
                       (el) => {
                         itemRefs.current[idx] = el;
                       },
-                      () => setHighlightedIndex(idx),
-                    ),
+                      () => setHighlightedIndex(idx)
+                    )
                   )
                 )}
               </div>
@@ -260,15 +260,15 @@ export default function SearchableMultiPicker<
 
         <div className="flex flex-col gap-3 mt-4 h-full overflow-hidden">
           <div className="flex items-center justify-between w-full">
-            <h3 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+            <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <span>{selectedTitle}</span>
-              <span className="flex items-center justify-center bg-slate-100 text-slate-500 rounded-full px-2 py-0.5 text-[10px]">
+              <span className="flex items-center justify-center bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px]">
                 {selectedIds.length}
               </span>
             </h3>
           </div>
 
-          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30">
+          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-border bg-muted/30">
             <div
               className={
                 selectedIds.length > 0
@@ -280,7 +280,9 @@ export default function SearchableMultiPicker<
                 ? selectedIds.map((id) => {
                     const item = items.find((candidate) => candidate.id === id);
                     if (!item) return null;
-                    return renderSelectedItem(item, () => handleToggleSelection(id));
+                    return renderSelectedItem(item, () =>
+                      handleToggleSelection(id)
+                    );
                   })
                 : renderEmptySelected}
             </div>

@@ -327,7 +327,10 @@ function ComplianceOrgManager() {
         <div>
           <h1 className="text-2xl font-semibold text-foreground/90">Compliance Management</h1>
           <p className="text-sm text-muted-foreground">
-            Update your organization&apos;s compliance policy and quiz. Changes will require members to re-accept the policy.
+            Update your organization&apos;s compliance policy and quiz.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Changes will require members to re-accept the policy.
           </p>
         </div>
         <button

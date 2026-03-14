@@ -5,7 +5,7 @@
   - [ ] refactor campaign summary
 
 - phishing kit refactor
-  - [ ] display kit dto to also get the name of the templates + some other useful info
+  - [x] display kit dto to also get the name of the templates + some other useful info
   
 - refactor campaign editor completely
 
@@ -21,3 +21,6 @@
   
 - template page improvements
   - [ ] fix font on refresh button
+
+- edit pages for sending profiles and kits:
+  - [x] fill in information properly on the forms

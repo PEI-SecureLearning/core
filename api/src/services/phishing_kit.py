@@ -15,19 +15,19 @@ from src.models.landing_page import LandingPageTemplate
 
 class PhishingKitService:
 
-    def _get_or_create_email_template(self, session: Session, mongo_id: str, name: str = "") -> EmailTemplate:
-        template = session.exec(select(EmailTemplate).where(EmailTemplate.content_link == mongo_id)).first()
+    def _get_or_create_email_template(self, session: Session, data: PhishingKitCreate) -> EmailTemplate:
+        template = session.exec(select(EmailTemplate).where(EmailTemplate.content_link == data.email_template_id)).first()
         if not template:
-            template = EmailTemplate(content_link=mongo_id, name=name)
+            template = EmailTemplate(content_link=data.email_template_id, name=data.email_template_name)
             session.add(template)
             session.commit()
             session.refresh(template)
         return template
 
-    def _get_or_create_landing_page_template(self, session: Session, mongo_id: str, name: str = "") -> LandingPageTemplate:
-        template = session.exec(select(LandingPageTemplate).where(LandingPageTemplate.content_link == mongo_id)).first()
+    def _get_or_create_landing_page_template(self, session: Session, data: PhishingKitCreate) -> LandingPageTemplate:
+        template = session.exec(select(LandingPageTemplate).where(LandingPageTemplate.content_link == data.landing_page_template_id)).first()
         if not template:
-            template = LandingPageTemplate(content_link=mongo_id, name=name)
+            template = LandingPageTemplate(content_link=data.landing_page_template_id, name=data.landing_page_template_name)
             session.add(template)
             session.commit()
             session.refresh(template)
@@ -36,12 +36,8 @@ class PhishingKitService:
     def create_phishing_kit(
         self, data: PhishingKitCreate, realm: str, session: Session
     ) -> PhishingKit:
-        email_tmpl = self._get_or_create_email_template(
-            session, data.email_template_id, data.email_template_name
-        )
-        landing_tmpl = self._get_or_create_landing_page_template(
-            session, data.landing_page_template_id, data.landing_page_template_name
-        )
+        email_tmpl = self._get_or_create_email_template(session, data)
+        landing_tmpl = self._get_or_create_landing_page_template(session, data)
 
         kit = PhishingKit(
             name=data.name,
@@ -79,26 +75,11 @@ class PhishingKitService:
             )
         )
         kits = session.exec(statement).all()
-        return [
-            PhishingKitDisplayInfo(
-                id=kit.id,
-                name=kit.name,
-                description=kit.description,
-                args=kit.args,
-                email_template_name=(
-                    kit.email_template.name if kit.email_template and kit.email_template.name else kit.email_template.content_link if kit.email_template else None
-                ),
-                landing_page_template_name=(
-                    kit.landing_page_template.name if kit.landing_page_template and kit.landing_page_template.name else kit.landing_page_template.content_link if kit.landing_page_template else None
-                ),
-                sending_profile_names=[sp.name for sp in kit.sending_profiles],
-            )
-            for kit in kits
-        ]
+        return [self._to_display_info(kit) for kit in kits]
 
     def get_phishing_kit(
         self, kit_id: int, session: Session
-    ) -> Optional[PhishingKit]:
+    ) -> Optional[PhishingKitDisplayInfo]:
         statement = (
             select(PhishingKit)
             .where(PhishingKit.id == kit_id)
@@ -108,7 +89,25 @@ class PhishingKitService:
                 selectinload(PhishingKit.sending_profiles),
             )
         )
-        return session.exec(statement).first()
+        kit = session.exec(statement).first()
+        return self._to_display_info(kit) if kit else None
+
+    def _to_display_info(self, kit: PhishingKit) -> PhishingKitDisplayInfo:
+        et = kit.email_template
+        lpt = kit.landing_page_template
+        return PhishingKitDisplayInfo(
+            id=kit.id,
+            name=kit.name,
+            description=kit.description,
+            args=kit.args,
+            email_template_name=et.name if et else None,
+            email_template_created_at=et.created_at if et else None,
+            email_template_updated_at=et.updated_at if et else None,
+            landing_page_template_name=lpt.name if lpt else None,
+            landing_page_template_created_at=lpt.created_at if lpt else None,
+            landing_page_template_updated_at=lpt.updated_at if lpt else None,
+            sending_profile_names=[sp.name for sp in kit.sending_profiles],
+        )
 
     def update_phishing_kit(
         self, kit_id: int, data: PhishingKitCreate, session: Session
@@ -117,12 +116,8 @@ class PhishingKitService:
         if not kit:
             return None
 
-        email_tmpl = self._get_or_create_email_template(
-            session, data.email_template_id, data.email_template_name
-        )
-        landing_tmpl = self._get_or_create_landing_page_template(
-            session, data.landing_page_template_id, data.landing_page_template_name
-        )
+        email_tmpl = self._get_or_create_email_template(session, data)
+        landing_tmpl = self._get_or_create_landing_page_template(session, data)
 
         kit.name = data.name
         kit.description = data.description

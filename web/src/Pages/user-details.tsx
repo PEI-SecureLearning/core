@@ -4,7 +4,6 @@ import {
   Trash2,
   Send,
   X,
-  Search,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -19,6 +18,7 @@ import {
 } from "@/services/userGroupsApi";
 import ConfirmDeleteModal from "@/components/usergroups/ConfirmDeleteModal";
 import { GroupMembersTable } from "@/components/usergroups/GroupMembersTable";
+import SearchBar from "@/components/shared/SearchBar";
 
 interface Member {
   id?: string;
@@ -141,7 +141,7 @@ export default function UserGroupDetail() {
   return (
     <div className="h-full w-full flex flex-col bg-surface-subtle">
       {/* Header */}
-      <div className="bg-background border-b border-border px-3 sm:px-4 lg:px-6 py-3 flex-shrink-0">
+      <div className="bg-background border-b border-border px-3 sm:px-4 lg:px-6 py-3 shrink-0">
         <div className="flex items-center justify-between h-12">
           <div className="flex items-center gap-3">
             <Link
@@ -151,7 +151,7 @@ export default function UserGroupDetail() {
               <ArrowLeft className="h-5 w-5 text-muted-foreground" />
             </Link>
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-md bg-primary/20 flex items-center justify-center flex-shrink-0">
+              <div className="h-9 w-9 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
                 <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -216,15 +216,13 @@ export default function UserGroupDetail() {
               </button>
             </div>
             <div className="p-5 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-                <input
-                  className="w-full rounded-md border border-border/60 bg-surface-subtle pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-foreground placeholder:text-muted-foreground/60"
-                  placeholder="Search by name or email..."
-                  value={searchUser}
-                  onChange={(e) => setSearchUser(e.target.value)}
-                />
-              </div>
+              <SearchBar
+                value={searchUser}
+                onChange={setSearchUser}
+                placeholder="Search by name or email..."
+                iconClassName="text-primary"
+                inputClassName="h-10 rounded-md border-border/60 bg-surface-subtle"
+              />
               <div className="max-h-64 overflow-y-auto border border-border rounded-md divide-y divide-border/60">
                 {filteredUsers.map((u) => (
                   <button

@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Optional
 from sqlmodel import SQLModel
+
 
 
 class PhishingKitCreate(SQLModel):
@@ -22,5 +24,9 @@ class PhishingKitDisplayInfo(SQLModel):
     description: Optional[str] = None
     args: dict[str, str] = {}
     email_template_name: Optional[str] = None
+    email_template_created_at: Optional[datetime] = None
+    email_template_updated_at: Optional[datetime] = None
     landing_page_template_name: Optional[str] = None
+    landing_page_template_created_at: Optional[datetime] = None
+    landing_page_template_updated_at: Optional[datetime] = None
     sending_profile_names: list[str] = []

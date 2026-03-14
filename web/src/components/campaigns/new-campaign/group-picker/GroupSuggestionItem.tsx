@@ -20,7 +20,7 @@ export default function GroupSuggestionItem({
   highlighted,
   onSelect,
   onHighlight,
-  buttonRef,
+  buttonRef
 }: Readonly<GroupSuggestionItemProps>) {
   return (
     <Button
@@ -36,15 +36,15 @@ export default function GroupSuggestionItem({
         "w-full h-auto justify-start px-4 py-3 rounded-md text-left transition-colors text-foreground hover:text-foreground",
         highlighted
           ? "bg-muted ring-1 ring-inset ring-border hover:bg-muted dark:hover:bg-muted"
-          : "hover:bg-transparent dark:hover:bg-transparent",
+          : "hover:bg-transparent dark:hover:bg-transparent"
       )}
     >
       <div className="flex flex-col gap-1.5">
-        <span className="font-medium text-slate-700 text-sm leading-none">
+        <span className="font-medium text-foreground text-sm leading-none">
           {group.name}
         </span>
         {group.path && (
-          <span className="text-xs text-slate-500 truncate max-w-sm">
+          <span className="text-xs text-muted-foreground truncate max-w-sm">
             {group.path}
           </span>
         )}
