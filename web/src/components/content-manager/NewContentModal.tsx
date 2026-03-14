@@ -143,7 +143,7 @@ export function NewContentModal({
         }
     };
 
-    const inputClass = 'w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-shadow';
+    const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 transition-shadow';
 
     return (
         <AnimatePresence>
@@ -153,7 +153,7 @@ export function NewContentModal({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
                     onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
                 >
                     <motion.div
@@ -163,18 +163,18 @@ export function NewContentModal({
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                         className="w-full max-w-lg max-h-[85vh] bg-surface rounded-xl shadow-2xl overflow-hidden flex flex-col border border-border"
                     >
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-900">New Content</h2>
-                            <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                            <h2 className="text-lg font-bold text-foreground">New Content</h2>
+                            <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-subtle transition-colors">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         <form onSubmit={handleCreateContent} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Folder</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Folder</label>
                                 <div className="relative">
-                                    <Folder className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-500" />
+                                    <Folder className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A78BFA]" />
                                     <select value={selectedFolderId} onChange={(e) => setSelectedFolderId(e.target.value)} className={`${inputClass} pl-9`}>
                                         {sortedFolders.map((folder) => (
                                             <option key={folder.folder_id} value={folder.folder_id}>
@@ -186,17 +186,17 @@ export function NewContentModal({
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Title</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</label>
                                 <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Content title" className={inputClass} />
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Description</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
                                 <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional description" className={inputClass} />
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Content Mode</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Content Mode</label>
                                 <select value={mode} onChange={(e) => setMode(e.target.value as 'file' | 'text')} className={inputClass}>
                                     <option value="file">Upload file</option>
                                     <option value="text">Write text</option>
@@ -204,19 +204,19 @@ export function NewContentModal({
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tags</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tags</label>
                                 <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="Comma separated tags" className={inputClass} />
                             </div>
 
                             {mode === 'file' ? (
                                 <div className="space-y-1">
-                                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">File</label>
+                                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">File</label>
                                     <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} className={inputClass} />
                                 </div>
                             ) : (
                                 <>
                                     <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Format</label>
+                                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Format</label>
                                         <select value={contentFormat} onChange={(e) => setContentFormat(e.target.value as 'text' | 'markdown' | 'html' | 'link')} className={inputClass}>
                                             <option value="text">Text</option>
                                             <option value="markdown">Markdown</option>
@@ -227,12 +227,12 @@ export function NewContentModal({
 
                                     {contentFormat === 'link' ? (
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Source URL</label>
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Source URL</label>
                                             <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://..." className={inputClass} />
                                         </div>
                                     ) : (
                                         <div className="space-y-1">
-                                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Body</label>
+                                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Body</label>
                                             <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Body content" className={`${inputClass} min-h-28 resize-y`} />
                                         </div>
                                     )}
@@ -240,10 +240,10 @@ export function NewContentModal({
                             )}
 
                             <div className="flex justify-end gap-3 pt-2">
-                                <button type="button" onClick={onClose} className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                                <button type="button" onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors">
                                     Cancel
                                 </button>
-                                <button type="submit" disabled={isSubmitting} className="rounded-lg bg-gradient-to-r from-purple-600 to-purple-700 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:from-purple-700 hover:to-purple-800 transition-all duration-200 disabled:opacity-60 active:scale-[0.97]">
+                                <button type="submit" disabled={isSubmitting} className="rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:from-[#6D28D9] hover:to-[#5B21B6] transition-all duration-200 disabled:opacity-60 active:scale-[0.97]">
                                     {isSubmitting ? 'Saving...' : 'Create'}
                                 </button>
                             </div>

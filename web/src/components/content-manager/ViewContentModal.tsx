@@ -174,7 +174,7 @@ export function ViewContentModal({ contentPieceId, startInEditMode = false, onCl
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
                     onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
                 >
                     <motion.div
@@ -222,15 +222,15 @@ export function ViewContentModal({ contentPieceId, startInEditMode = false, onCl
                                     </div>
 
                                     {isEditing && (
-                                        <div className="space-y-4 rounded-lg border border-purple-100 bg-purple-50/40 p-4">
+                                        <div className="space-y-4 rounded-lg border border-[#7C3AED]/20 bg-[#7C3AED]/8 p-4">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Title</label>
-                                                    <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Title</label>
+                                                    <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Folder</label>
-                                                    <select value={folderId} onChange={(e) => setFolderId(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Folder</label>
+                                                    <select value={folderId} onChange={(e) => setFolderId(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30">
                                                         {sortedFolders.map((folder) => (
                                                             <option key={folder.folder_id} value={folder.folder_id}>{folder.path}</option>
                                                         ))}
@@ -238,31 +238,31 @@ export function ViewContentModal({ contentPieceId, startInEditMode = false, onCl
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Description</label>
-                                                <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Description</label>
+                                                <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
                                             </div>
                                             {!content.file && content.content_format !== 'link' && (
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Body</label>
-                                                    <textarea value={body} onChange={(e) => setBody(e.target.value)} className="min-h-28 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Body</label>
+                                                    <textarea value={body} onChange={(e) => setBody(e.target.value)} className="min-h-28 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
                                                 </div>
                                             )}
                                             {content.content_format === 'link' && (
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Source URL</label>
-                                                    <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Source URL</label>
+                                                    <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
                                                 </div>
                                             )}
                                             <div className="space-y-1">
-                                                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Tags</label>
-                                                <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-400" />
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tags</label>
+                                                <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
                                             </div>
                                             <div className="flex justify-end">
                                                 <button
                                                     type="button"
                                                     disabled={isSaving}
                                                     onClick={handleSave}
-                                                    className="flex items-center gap-1 rounded-lg bg-purple-700 px-3 py-2 text-xs font-semibold text-white hover:bg-purple-800 disabled:opacity-60"
+                                                    className="flex items-center gap-1 rounded-lg bg-[#7C3AED] px-3 py-2 text-xs font-semibold text-white hover:bg-[#6D28D9] disabled:opacity-60"
                                                 >
                                                     <Save className="w-3 h-3" />
                                                     {isSaving ? 'Saving...' : 'Save'}
