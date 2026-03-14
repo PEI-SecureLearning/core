@@ -168,11 +168,15 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
         if (!data.coverImageId || data.coverImage) return
         const token = getToken?.()
         let revoked = false
-        fetch(`${API_BASE}/content/${encodeURIComponent(data.coverImageId)}/file`, {
+        fetch(`${API_BASE}/content/${encodeURIComponent(data.coverImageId)}/file-url`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
-            .then(r => r.ok ? r.blob() : Promise.reject(new Error('not ok')))
-            .then(blob => { if (!revoked) onChange({ coverImage: URL.createObjectURL(blob) }) })
+            .then(r => r.ok ? r.json() as Promise<{ url: string | null }> : Promise.reject(new Error('not ok')))
+            .then(payload => {
+                if (!revoked && payload.url) {
+                    onChange({ coverImage: payload.url })
+                }
+            })
             .catch(() => { /* thumbnail stays empty */ })
         return () => { revoked = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps

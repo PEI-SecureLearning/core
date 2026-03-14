@@ -28,11 +28,15 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken }: 
         if (!block.contentId || block.url) return
         const token = getToken?.()
         let revoked = false
-        fetch(`${API_BASE}/content/${encodeURIComponent(block.contentId)}/file`, {
+        fetch(`${API_BASE}/content/${encodeURIComponent(block.contentId)}/file-url`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
-            .then(r => r.ok ? r.blob() : Promise.reject(new Error('not ok')))
-            .then(blob => { if (!revoked) onUpdate({ url: URL.createObjectURL(blob) }) })
+            .then(r => r.ok ? r.json() as Promise<{ url: string | null }> : Promise.reject(new Error('not ok')))
+            .then(payload => {
+                if (!revoked && payload.url) {
+                    onUpdate({ url: payload.url })
+                }
+            })
             .catch(() => { /* preview stays empty */ })
         return () => { revoked = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -20,6 +20,9 @@ type ContentDetail = {
         filename: string;
         content_type: string;
         size: number;
+        storage?: 'inline' | 'gridfs' | 'garage' | null;
+        object_key?: string | null;
+        etag?: string | null;
         file_url?: string | null;
         data_base64?: string | null;
     } | null;
@@ -38,8 +41,6 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
     const [content, setContent] = useState<ContentDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [protectedPreviewUrl, setProtectedPreviewUrl] = useState<string | null>(null);
-
     const open = !!contentPieceId;
 
     // Fetch content details when contentPieceId changes
@@ -78,51 +79,7 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
         content?.file?.data_base64 && content.file.content_type
             ? `data:${content.file.content_type};base64,${content.file.data_base64}`
             : null;
-    const previewFileUrl = inlineFileDataUrl || protectedPreviewUrl;
-
-    useEffect(() => {
-        if (!content?.file || inlineFileDataUrl) {
-            setProtectedPreviewUrl((prev) => {
-                if (prev) URL.revokeObjectURL(prev);
-                return null;
-            });
-            return;
-        }
-
-        const loadPreview = async () => {
-            try {
-                const res = await fetch(
-                    `${API_BASE}/content/${encodeURIComponent(content.content_piece_id)}/file`,
-                    {
-                        headers: {
-                            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                        },
-                    }
-                );
-                if (!res.ok) throw new Error('Failed to load preview');
-                const blob = await res.blob();
-                const objectUrl = URL.createObjectURL(blob);
-                setProtectedPreviewUrl((prev) => {
-                    if (prev) URL.revokeObjectURL(prev);
-                    return objectUrl;
-                });
-            } catch {
-                setProtectedPreviewUrl((prev) => {
-                    if (prev) URL.revokeObjectURL(prev);
-                    return null;
-                });
-            }
-        };
-
-        void loadPreview();
-
-        return () => {
-            setProtectedPreviewUrl((prev) => {
-                if (prev) URL.revokeObjectURL(prev);
-                return null;
-            });
-        };
-    }, [content?.content_piece_id, content?.file, inlineFileDataUrl, keycloak.token]);
+    const previewFileUrl = inlineFileDataUrl || content?.file?.file_url || null;
 
     const handleDelete = async () => {
         if (!content) return;
@@ -152,10 +109,6 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
     };
 
     const handleClose = () => {
-        setProtectedPreviewUrl((prev) => {
-            if (prev) URL.revokeObjectURL(prev);
-            return null;
-        });
         setContent(null);
         onClose();
     };

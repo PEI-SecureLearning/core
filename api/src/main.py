@@ -20,12 +20,17 @@ from src.routers import (
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
+from src.core.object_storage import ensure_bucket, garage_enabled
+from src.core.settings import settings
 from src.tasks import start_scheduler, shutdown_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    if garage_enabled():
+        await ensure_bucket(settings.GARAGE_BUCKET_CONTENT)
+        await ensure_bucket(settings.GARAGE_BUCKET_LOGOS)
     try:
         start_scheduler()
         yield
