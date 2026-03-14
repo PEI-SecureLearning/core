@@ -453,12 +453,11 @@ async def update_content_piece(content_piece_id: str, payload: ContentPieceUpdat
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="source_url is required when content_format is 'link'",
             )
-    elif content_format != "file":
-        if not payload.body:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="body is required for text/markdown/html content",
-            )
+    elif content_format != "file" and not payload.body:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="body is required for text/markdown/html content",
+        )
 
     resolved_folder_id = await _resolve_folder_id(
         folder_id=payload.folder_id or existing.get("folder_id"),

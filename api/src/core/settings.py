@@ -30,11 +30,12 @@ class Settings(BaseSettings):
 
   # Garage object storage (S3-compatible)
   FILE_STORAGE_BACKEND: str = "garage"
-  GARAGE_S3_ENDPOINT: str = "http://garage:3900"
-  GARAGE_S3_PUBLIC_ENDPOINT: str = "http://localhost:3900"
+  GARAGE_S3_ENDPOINT: str
+  GARAGE_S3_PUBLIC_ENDPOINT: str
   GARAGE_S3_REGION: str = "garage"
   GARAGE_ACCESS_KEY_ID: str = ""
   GARAGE_SECRET_ACCESS_KEY: str = ""
+  GARAGE_EXPECTED_BUCKET_OWNER: str = ""
   GARAGE_FORCE_PATH_STYLE: bool = True
   GARAGE_BUCKET_CONTENT: str = "securelearning-content"
   GARAGE_BUCKET_LOGOS: str = "securelearning-logos"

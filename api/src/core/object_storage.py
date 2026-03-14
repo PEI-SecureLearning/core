@@ -66,6 +66,11 @@ def _normalize_prefix(prefix: str) -> str:
     return f"{cleaned}/" if cleaned else ""
 
 
+def _expected_bucket_owner() -> str | None:
+    owner = settings.GARAGE_EXPECTED_BUCKET_OWNER.strip()
+    return owner or None
+
+
 def build_object_key(prefix: str, object_id: str, filename: str | None = None) -> str:
     base = _normalize_prefix(prefix)
     safe_name = (filename or "").strip().replace("\\", "/").split("/")[-1]
@@ -80,7 +85,11 @@ async def ensure_bucket(bucket: str) -> None:
 
     def _ensure() -> None:
         try:
-            client.head_bucket(Bucket=bucket)
+            head_args = {"Bucket": bucket}
+            expected_owner = _expected_bucket_owner()
+            if expected_owner:
+                head_args["ExpectedBucketOwner"] = expected_owner
+            client.head_bucket(**head_args)
         except ClientError as exc:
             error_code = exc.response.get("Error", {}).get("Code")
             if error_code not in {"404", "NoSuchBucket"}:
@@ -108,11 +117,17 @@ async def put_bytes(
     client = _get_client()
 
     def _put() -> str | None:
+        put_args = {
+            "Bucket": bucket,
+            "Key": key,
+            "Body": data,
+            "ContentType": content_type,
+        }
+        expected_owner = _expected_bucket_owner()
+        if expected_owner:
+            put_args["ExpectedBucketOwner"] = expected_owner
         response = client.put_object(
-            Bucket=bucket,
-            Key=key,
-            Body=data,
-            ContentType=content_type,
+            **put_args,
         )
         etag = response.get("ETag")
         return etag.strip('"') if isinstance(etag, str) else None
@@ -129,7 +144,11 @@ async def get_object(*, bucket: str, key: str) -> StoredObject:
     client = _get_client()
 
     def _get() -> StoredObject:
-        response = client.get_object(Bucket=bucket, Key=key)
+        get_args = {"Bucket": bucket, "Key": key}
+        expected_owner = _expected_bucket_owner()
+        if expected_owner:
+            get_args["ExpectedBucketOwner"] = expected_owner
+        response = client.get_object(**get_args)
         raw = response["Body"].read()
         return StoredObject(
             stream=BytesIO(raw),
@@ -150,7 +169,11 @@ async def delete_object(*, bucket: str, key: str) -> None:
     client = _get_client()
 
     def _delete() -> None:
-        client.delete_object(Bucket=bucket, Key=key)
+        delete_args = {"Bucket": bucket, "Key": key}
+        expected_owner = _expected_bucket_owner()
+        if expected_owner:
+            delete_args["ExpectedBucketOwner"] = expected_owner
+        client.delete_object(**delete_args)
 
     try:
         await asyncio.to_thread(_delete)
@@ -164,9 +187,13 @@ def generate_presigned_get_url(*, bucket: str, key: str, expires_in: int | None 
     client = _get_public_client()
     ttl = expires_in or settings.GARAGE_PRESIGNED_URL_TTL_SECONDS
     try:
+        params = {"Bucket": bucket, "Key": key}
+        expected_owner = _expected_bucket_owner()
+        if expected_owner:
+            params["ExpectedBucketOwner"] = expected_owner
         return client.generate_presigned_url(
             "get_object",
-            Params={"Bucket": bucket, "Key": key},
+            Params=params,
             ExpiresIn=ttl,
         )
     except (ClientError, BotoCoreError) as exc:
