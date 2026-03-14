@@ -73,7 +73,7 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
 
   return (
     <div
-      className={`flex-1 bg-white/60 backdrop-blur-xl rounded-b-xl border-t-3 border-purple-500
+      className={`flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
         shadow-lg shadow-slate-300/50 p-5
         hover:shadow-2xl hover:shadow-purple-200/60
         transition-all duration-500 hover:-translate-y-1 group ${className}`}
@@ -101,7 +101,7 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
 
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[15px] font-semibold text-slate-800">{title}</h3>
+        <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
       </div>
 
       {/* Percentage Display */}
@@ -117,7 +117,7 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
         >
           {percentage}
         </span>
-        <span className="text-xl text-slate-400 font-medium">%</span>
+        <span className="text-xl text-muted-foreground/70 font-medium">%</span>
       </div>
 
       {/* Status Badge */}
@@ -130,7 +130,7 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
       </div>
 
       {/* Progress Bar */}
-      <div className="relative w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+      <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden">
         <div
           className={`absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-out ${colors.bar}`}
           style={{
@@ -144,7 +144,7 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
         {[25, 50, 75].map((mark) => (
           <div
             key={mark}
-            className="absolute top-0 bottom-0 w-px bg-white/60"
+            className="absolute top-0 bottom-0 w-px bg-background/60"
             style={{ left: `${mark}%` }}
           />
         ))}
@@ -152,8 +152,8 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
 
       {/* Scale labels */}
       <div className="flex justify-between mt-1.5">
-        <span className="text-[10px] text-slate-400">0%</span>
-        <span className="text-[10px] text-slate-400">100%</span>
+        <span className="text-[10px] text-muted-foreground/70">0%</span>
+        <span className="text-[10px] text-muted-foreground/70">100%</span>
       </div>
     </div>
   );

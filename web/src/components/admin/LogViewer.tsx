@@ -69,14 +69,14 @@ export function LogViewer() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Platform Logs</h2>
-                    <p className="text-gray-500 mt-1">Monitor system activity and events</p>
+                    <h2 className="text-2xl font-bold text-foreground">Platform Logs</h2>
+                    <p className="text-muted-foreground mt-1">Monitor system activity and events</p>
                 </div>
                 <div className="flex gap-2">
                     <button
                         onClick={fetchLogs}
                         disabled={loading}
-                        className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-2 disabled:opacity-50"
+                        className="px-3 py-1.5 text-sm font-medium bg-background border border-border rounded-lg hover:bg-surface-subtle text-foreground/90 flex items-center gap-2 disabled:opacity-50"
                     >
                         <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
                         Refresh
@@ -91,20 +91,20 @@ export function LogViewer() {
                 </div>
             )}
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col h-[600px]">
-                <div className="p-4 border-b border-gray-200 flex gap-4 bg-gray-50 rounded-t-xl">
+            <div className="bg-background rounded-xl border border-border shadow-sm flex flex-col h-[600px]">
+                <div className="p-4 border-b border-border flex gap-4 bg-surface-subtle rounded-t-xl">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70" size={18} />
                         <input
                             type="text"
                             placeholder="Search logs..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full pl-9 pr-4 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
                     <select
-                        className="pl-3 pr-8 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="pl-3 pr-8 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background"
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
                     >
@@ -120,38 +120,38 @@ export function LogViewer() {
                     {loading ? (
                         <div className="flex justify-center items-center py-12">
                             <Loader2 className="animate-spin text-blue-600" size={32} />
-                            <span className="ml-3 text-gray-600">Loading logs...</span>
+                            <span className="ml-3 text-muted-foreground">Loading logs...</span>
                         </div>
                     ) : filteredLogs.length === 0 ? (
-                        <div className="flex flex-col justify-center items-center py-12 text-gray-500">
-                            <Info size={48} className="text-gray-300 mb-4" />
+                        <div className="flex flex-col justify-center items-center py-12 text-muted-foreground">
+                            <Info size={48} className="text-muted-foreground/50 mb-4" />
                             <p className="font-medium">No logs found</p>
                             <p className="text-sm mt-1">Events will appear here when activity occurs</p>
                         </div>
                     ) : (
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-gray-50 sticky top-0 z-10">
+                            <thead className="bg-surface-subtle sticky top-0 z-10">
                                 <tr>
-                                    <th className="px-6 py-3 font-medium text-gray-500 w-48">Timestamp</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500 w-24">Level</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500">Message</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500 w-40">Source</th>
-                                    <th className="px-6 py-3 font-medium text-gray-500 w-40">User</th>
+                                    <th className="px-6 py-3 font-medium text-muted-foreground w-48">Timestamp</th>
+                                    <th className="px-6 py-3 font-medium text-muted-foreground w-24">Level</th>
+                                    <th className="px-6 py-3 font-medium text-muted-foreground">Message</th>
+                                    <th className="px-6 py-3 font-medium text-muted-foreground w-40">Source</th>
+                                    <th className="px-6 py-3 font-medium text-muted-foreground w-40">User</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-border">
                                 {filteredLogs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{formatTimestamp(log.timestamp)}</td>
+                                    <tr key={log.id} className="hover:bg-surface-subtle">
+                                        <td className="px-6 py-3 text-muted-foreground whitespace-nowrap">{formatTimestamp(log.timestamp)}</td>
                                         <td className="px-6 py-3 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 {getIcon(log.level)}
-                                                <span className="capitalize text-gray-700">{log.level}</span>
+                                                <span className="capitalize text-foreground/90">{log.level}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3 text-gray-900">{log.message}</td>
-                                        <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{log.source}</td>
-                                        <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{log.user || 'System'}</td>
+                                        <td className="px-6 py-3 text-foreground">{log.message}</td>
+                                        <td className="px-6 py-3 text-muted-foreground whitespace-nowrap">{log.source}</td>
+                                        <td className="px-6 py-3 text-muted-foreground whitespace-nowrap">{log.user || 'System'}</td>
                                     </tr>
                                 ))}
                             </tbody>

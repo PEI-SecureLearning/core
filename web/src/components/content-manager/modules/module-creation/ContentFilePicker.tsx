@@ -73,10 +73,10 @@ function mimeMatchesFilter(contentType: string, filter: PickerMediaFilter): bool
 }
 
 function fileIcon(contentType: string) {
-    if (contentType.startsWith('image/')) return <ImageIcon className="w-4 h-4 text-purple-400 flex-shrink-0" />
+    if (contentType.startsWith('image/')) return <ImageIcon className="w-4 h-4 text-[#A78BFA] flex-shrink-0" />
     if (contentType.startsWith('video/')) return <Video      className="w-4 h-4 text-blue-400   flex-shrink-0" />
     if (contentType.startsWith('audio/')) return <Music      className="w-4 h-4 text-green-400  flex-shrink-0" />
-    return <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+    return <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
 }
 
 function humanSize(bytes: number): string {
@@ -213,7 +213,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                         onClick={() => setSelectedDir(dir)}
                         style={{ paddingLeft: `${8 + level * 14}px` }}
                         className={`w-full flex items-center gap-2 py-1.5 pr-2 rounded text-left text-sm transition-colors ${
-                            isSelected ? 'bg-purple-100 text-purple-900 font-medium' : 'text-gray-700 hover:bg-gray-100'
+                            isSelected ? 'bg-[#7C3AED]/15 text-[#A78BFA] font-medium' : 'text-foreground hover:bg-surface'
                         }`}
                     >
                         {hasChildren ? (
@@ -341,7 +341,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
 
     function renderLibrary() {
         if (loading) return (
-            <div className="flex-1 flex items-center justify-center gap-3 text-slate-400">
+            <div className="flex-1 flex items-center justify-center gap-3 text-muted-foreground">
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span className="text-sm">Loading files…</span>
             </div>
@@ -352,8 +352,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
         return (
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 {/* Sidebar tree */}
-                <aside className="w-52 flex-shrink-0 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 px-1">
+                <aside className="w-52 flex-shrink-0 border-r border-border p-3 overflow-y-auto bg-surface-subtle/50">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-1">
                         Directories
                     </p>
                     <div className="space-y-0.5">{renderTree('')}</div>
@@ -361,13 +361,13 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
 
                 {/* File list */}
                 <div className="flex-1 overflow-y-auto">
-                    <div className="px-4 py-2.5 border-b border-slate-100 text-xs text-slate-500 bg-white sticky top-0">
-                        <span className="font-semibold text-slate-700">{selectedDir}</span>
+                    <div className="px-4 py-2.5 border-b border-border text-xs text-muted-foreground bg-surface sticky top-0">
+                        <span className="font-semibold text-foreground">{selectedDir}</span>
                         <span> · {visibleItems.length} {visibleItems.length === 1 ? 'item' : 'items'}</span>
                     </div>
 
                     {visibleItems.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-48 gap-2 text-slate-300">
+                        <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground/50">
                             <Folder className="w-8 h-8" />
                             <p className="text-sm">No {acceptLabel[accept].toLowerCase()} here</p>
                         </div>
@@ -378,36 +378,36 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                                 const previewUrl = resolvePreviewUrl(item)
                                 return (
                                     <div key={item.id}
-                                        className="flex items-center gap-3 px-4 py-3 hover:bg-purple-50/50 transition-colors">
-                                        {item.file ? fileIcon(item.file.content_type) : <FileText className="w-4 h-4 text-slate-300 flex-shrink-0" />}
+                                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#7C3AED]/10/50 transition-colors">
+                                        {item.file ? fileIcon(item.file.content_type) : <FileText className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />}
 
                                         {item.file?.content_type.startsWith('image/') && previewUrl && (
                                             <img
                                                 src={previewUrl}
                                                 alt=""
-                                                className="w-10 h-10 rounded object-cover border border-slate-100 flex-shrink-0"
+                                                className="w-10 h-10 rounded object-cover border border-border flex-shrink-0"
                                             />
                                         )}
 
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-slate-800 truncate">{item.title}</p>
-                                            <p className="text-xs text-slate-400 truncate">{item.path}</p>
+                                            <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{item.path}</p>
                                         </div>
 
                                         <div className="flex items-center gap-2 flex-shrink-0">
                                             {item.file && (
-                                                <span className="text-[10px] text-slate-400">
+                                                <span className="text-[10px] text-muted-foreground">
                                                     {humanSize(item.file.size)}
                                                 </span>
                                             )}
-                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase font-medium">
+                                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface text-muted-foreground uppercase font-medium">
                                                 {item.content_format}
                                             </span>
                                             <button
                                                 type="button"
                                                 disabled={isSelecting}
                                                 onClick={() => void handleSelect(item)}
-                                                className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-wait"
+                                                className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors disabled:opacity-50 disabled:cursor-wait"
                                             >
                                                 {isSelecting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Use'}
                                             </button>
@@ -426,9 +426,9 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
 
     function renderUpload() {
         if (uploadDone) return (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-slate-500 px-8">
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground px-8">
                 <CheckCircle2 className="w-10 h-10 text-green-500" />
-                <p className="text-sm font-medium text-slate-700">Uploaded! Switching to library…</p>
+                <p className="text-sm font-medium text-foreground">Uploaded! Switching to library…</p>
             </div>
         )
 
@@ -444,8 +444,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                     onDrop={onDropFile}
                     className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors py-10 ${
                         dragOver
-                            ? 'border-purple-400 bg-purple-50'
-                            : 'border-slate-200 hover:border-purple-300 hover:bg-purple-50/40'
+                            ? 'border-[#7C3AED]/60 bg-[#7C3AED]/10'
+                            : 'border-border hover:border-[#7C3AED]/40 hover:bg-[#7C3AED]/10/40'
                     }`}
                 >
                     <input
@@ -458,20 +458,20 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                     />
                     {uploadFile ? (
                         <>
-                            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-[#7C3AED]/15 flex items-center justify-center">
                                 {fileIcon(uploadFile.type)}
                             </div>
                             <div className="text-center">
-                                <p className="text-sm font-medium text-slate-800">{uploadFile.name}</p>
-                                <p className="text-xs text-slate-400">{humanSize(uploadFile.size)} · click to change</p>
+                                <p className="text-sm font-medium text-foreground">{uploadFile.name}</p>
+                                <p className="text-xs text-muted-foreground">{humanSize(uploadFile.size)} · click to change</p>
                             </div>
                         </>
                     ) : (
                         <>
-                            <Upload className="w-8 h-8 text-slate-300" />
+                            <Upload className="w-8 h-8 text-muted-foreground/50" />
                             <div className="text-center">
-                                <p className="text-sm font-medium text-slate-600">Drag & drop or click to browse</p>
-                                <p className="text-xs text-slate-400">{acceptLabel[accept]}</p>
+                                <p className="text-sm font-medium text-muted-foreground">Drag & drop or click to browse</p>
+                                <p className="text-xs text-muted-foreground">{acceptLabel[accept]}</p>
                             </div>
                         </>
                     )}
@@ -480,47 +480,47 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                 {/* Metadata fields */}
                 <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="cfp-title" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Title</label>
+                        <label htmlFor="cfp-title" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Title</label>
                         <input
                             id="cfp-title"
                             type="text"
                             value={uploadTitle}
                             onChange={e => setUploadTitle(e.target.value)}
                             placeholder="My file"
-                            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="cfp-path" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Directory path</label>
+                        <label htmlFor="cfp-path" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Directory path</label>
                         <input
                             id="cfp-path"
                             type="text"
                             value={uploadPath}
                             onChange={e => setUploadPath(e.target.value)}
                             placeholder="content/images"
-                            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300 font-mono"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40 font-mono"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="cfp-desc" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Description <span className="normal-case font-normal text-slate-400">(optional)</span></label>
+                        <label htmlFor="cfp-desc" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Description <span className="normal-case font-normal text-muted-foreground">(optional)</span></label>
                         <input
                             id="cfp-desc"
                             type="text"
                             value={uploadDesc}
                             onChange={e => setUploadDesc(e.target.value)}
                             placeholder="Short description…"
-                            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label htmlFor="cfp-tags" className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Tags <span className="normal-case font-normal text-slate-400">(comma-separated)</span></label>
+                        <label htmlFor="cfp-tags" className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Tags <span className="normal-case font-normal text-muted-foreground">(comma-separated)</span></label>
                         <input
                             id="cfp-tags"
                             type="text"
                             value={uploadTags}
                             onChange={e => setUploadTags(e.target.value)}
                             placeholder="tag1, tag2"
-                            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-purple-300"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
                         />
                     </div>
                 </div>
@@ -534,7 +534,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                 <button
                     type="submit"
                     disabled={!uploadFile || uploading}
-                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-purple-200"
+                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-[#7C3AED]/25"
                 >
                     {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</> : <><Upload className="w-4 h-4" /> Upload & Use</>}
                 </button>
@@ -555,19 +555,19 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
             />
 
             {/* Panel */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 h-[82vh] flex flex-col overflow-hidden">
+            <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-4xl mx-4 h-[82vh] flex flex-col overflow-hidden">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 flex-shrink-0">
+                <div className="flex items-center justify-between px-6 py-3.5 border-b border-border flex-shrink-0">
                     {/* Tabs */}
-                    <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                    <div className="flex items-center gap-1 bg-surface rounded-lg p-1">
                         <button
                             type="button"
                             onClick={() => setTab('library')}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                                 tab === 'library'
-                                    ? 'bg-white text-purple-700 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-surface text-[#A78BFA] shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             <FolderOpen className="w-3.5 h-3.5" />
@@ -578,8 +578,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             onClick={() => { setTab('upload'); setUploadDone(false) }}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                                 tab === 'upload'
-                                    ? 'bg-white text-purple-700 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-surface text-[#A78BFA] shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             <Upload className="w-3.5 h-3.5" />
@@ -591,18 +591,18 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                     <div className="flex items-center gap-3">
                         {tab === 'library' && (
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                                 <input
                                     type="text"
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     placeholder={`Search ${acceptLabel[accept].toLowerCase()}…`}
-                                    className="pl-9 pr-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300/50 w-52"
+                                    className="pl-9 pr-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 w-52"
                                 />
                             </div>
                         )}
                         <button type="button" onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 transition-colors">
+                            className="text-muted-foreground hover:text-muted-foreground transition-colors">
                             <X className="w-5 h-5" />
                         </button>
                     </div>

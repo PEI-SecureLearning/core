@@ -118,27 +118,29 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-gradient-to-br from-slate-50 via-white to-purple-50/40">
+    <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-background">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="mt-3 text-2xl font-semibold text-slate-900">Phishing templates</h1>
-          <p className="text-slate-500 mt-1 text-sm">
+          <h1 className="mt-3 text-2xl font-semibold text-foreground">Phishing templates</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             Pull campaign-ready HTML straight from the template store. Managed in MongoDB, delivered dynamically.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* 2. Conditionally show "Add template" button */}
           {isContentManager && (
-            <Button className="inline-flex items-center gap-2 bg-purple-700 hover:bg-purple-600 transition-colors" onClick={openCreateModal}>
+            <Button
+              className="inline-flex items-center gap-2 text-white border-0 transition-colors"
+              style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+              onClick={openCreateModal}
+            >
               <Plus size={16} />
               Add template
             </Button>
           )}
-
           <Button
             variant="outline"
             onClick={() => refetch()}
-            className="inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 bg-surface border-border text-foreground hover:bg-surface-subtle"
             disabled={isFetching}
           >
             <RefreshCcw size={16} className={cn("transition", isFetching && "animate-spin")} />
@@ -173,8 +175,8 @@ export default function TemplatesPage() {
                 if (bucket.length === 0) return null;
                 return (
                   <div key={pathKey} className="space-y-3">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                      <div className="h-2 w-2 rounded-full bg-purple-500" />
+                    <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      <div className="h-2 w-2 rounded-full bg-[#7C3AED]" />
                       {pathLabels[pathKey] || pathKey}
                     </div>
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

@@ -127,8 +127,8 @@ export default function TargetGroupSelector() {
   if (isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-        <span className="ml-2 text-slate-500">Loading groups...</span>
+        <Loader2 className="w-6 h-6 animate-spin text-primary/90" />
+        <span className="ml-2 text-muted-foreground">Loading groups...</span>
       </div>
     );
   }
@@ -144,7 +144,7 @@ export default function TargetGroupSelector() {
   return (
     <div className="w-full h-full flex flex-col gap-4 p-2 overflow-hidden">
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-normal text-slate-500 tracking-wide uppercase">
+        <label className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase">
           Target Groups <span className="text-rose-400">*</span>
         </label>
 
@@ -165,7 +165,7 @@ export default function TargetGroupSelector() {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Search groups..."
-            className="w-full rounded-xl px-4 py-3 text-[14px] text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+            className="w-full rounded-xl px-4 py-3 text-[14px] text-foreground/90 placeholder:text-muted-foreground/70 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
             style={inputStyle}
           />
 
@@ -173,7 +173,7 @@ export default function TargetGroupSelector() {
           {isFocused && filtered.length > 0 && (
             <ul
               ref={dropdownRef}
-              className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto rounded-xl bg-white z-50 shadow-lg border border-slate-200"
+              className="absolute top-full left-0 mt-1 w-full max-h-48 overflow-y-auto rounded-xl bg-background z-50 shadow-lg border border-border"
             >
               {filtered.map((group, index) => (
                 <li
@@ -182,8 +182,8 @@ export default function TargetGroupSelector() {
                   className={cn(
                     "px-4 py-2.5 cursor-pointer text-[14px]",
                     index === highlightedIndex
-                      ? "bg-purple-100 text-purple-700"
-                      : "hover:bg-slate-50"
+                      ? "bg-primary/20 text-primary"
+                      : "hover:bg-surface-subtle"
                   )}
                 >
                   {group.name}
@@ -193,8 +193,8 @@ export default function TargetGroupSelector() {
           )}
 
           {isFocused && filtered.length === 0 && (
-            <div className="absolute top-full left-0 mt-1 w-full rounded-xl bg-white z-50 shadow-lg border border-slate-200 p-4 text-center">
-              <p className="text-slate-500 text-[14px]">
+            <div className="absolute top-full left-0 mt-1 w-full rounded-xl bg-background z-50 shadow-lg border border-border p-4 text-center">
+              <p className="text-muted-foreground text-[14px]">
                 {groups.length === 0
                   ? "No groups available"
                   : query.length > 0
@@ -210,7 +210,7 @@ export default function TargetGroupSelector() {
       <div className="flex-1 overflow-y-auto">
         {selectedGroups.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <p className="text-[12px] text-slate-500 uppercase tracking-wide">
+            <p className="text-[12px] text-muted-foreground uppercase tracking-wide">
               Selected ({selectedGroups.length})
             </p>
             <ul className="flex flex-col gap-2">
@@ -224,15 +224,15 @@ export default function TargetGroupSelector() {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <Users size={16} className="text-purple-600" />
-                    <span className="text-purple-700">{group.name}</span>
+                    <Users size={16} className="text-primary" />
+                    <span className="text-primary">{group.name}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemove(group.id)}
-                    className="p-1 rounded-full hover:bg-purple-200/60 transition-colors"
+                    className="p-1 rounded-full hover:bg-primary/30 transition-colors"
                   >
-                    <X size={16} className="text-purple-600" />
+                    <X size={16} className="text-primary" />
                   </button>
                 </li>
               ))}
@@ -240,9 +240,9 @@ export default function TargetGroupSelector() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Users size={40} className="text-slate-300 mb-3" />
-            <p className="text-slate-500 text-[14px]">No groups selected</p>
-            <p className="text-slate-400 text-[13px]">
+            <Users size={40} className="text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground text-[14px]">No groups selected</p>
+            <p className="text-muted-foreground/70 text-[13px]">
               Search and select target groups above
             </p>
           </div>

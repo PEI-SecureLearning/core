@@ -130,22 +130,22 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
         ];
 
     const getRoleOptionClass = (value: "ORG_MANAGER" | "DEFAULT_USER"): string => {
-        if (newUserRole === value) return "bg-purple-100 border-2 border-purple-400";
-        if (createFieldError === "role") return "bg-rose-50 border border-rose-300 hover:bg-rose-100/70";
-        return "bg-gray-50 border border-gray-200 hover:bg-gray-100";
+        if (newUserRole === value) return "bg-primary/10 border-2 border-primary";
+        if (createFieldError === "role") return "bg-rose-500/10 border border-rose-400 hover:bg-rose-500/20";
+        return "bg-surface-subtle border border-border hover:bg-muted";
     };
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xl flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-200">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div className="bg-background rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-border">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border/40 bg-surface-subtle">
                     <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Create New User</h2>
-                        <p className="text-sm text-gray-500">Add a new user to your organization</p>
+                        <h2 className="text-lg font-semibold text-foreground">Create New User</h2>
+                        <p className="text-sm text-muted-foreground">Add a new user to your organization</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all cursor-pointer"
+                        className="p-2 text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted rounded-lg transition-all cursor-pointer"
                     >
                         <X size={20} />
                     </button>
@@ -153,11 +153,11 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
 
                 <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                     <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">
                             Full Name <span className="text-rose-400">*</span>
                         </label>
                         <div className="relative">
-                            <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
                             <input
                                 ref={nameInputRef}
                                 type="text"
@@ -170,9 +170,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                                     }
                                 }}
                                 placeholder="John Doe"
-                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-gray-50 text-[14px] placeholder:text-gray-400 focus:outline-none transition-all ${createFieldError === "name"
+                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "name"
                                     ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                    : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
                                     }`}
                             />
                         </div>
@@ -182,11 +182,11 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
 
                     <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">
                             Email <span className="text-rose-400">*</span>
                         </label>
                         <div className="relative">
-                            <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
                             <input
                                 ref={emailInputRef}
                                 type="email"
@@ -199,9 +199,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                                     }
                                 }}
                                 placeholder="john.doe@example.com"
-                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-gray-50 text-[14px] placeholder:text-gray-400 focus:outline-none transition-all ${createFieldError === "email"
+                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "email"
                                     ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                    : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
                                     }`}
                             />
                         </div>
@@ -211,9 +211,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
 
                     <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1.5">Username</label>
+                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">Username</label>
                         <div className="relative">
-                            <AtSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <AtSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
                             <input
                                 ref={usernameInputRef}
                                 type="text"
@@ -227,9 +227,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                                 }}
                                 placeholder="Username"
                                 maxLength={40}
-                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-gray-50 text-[14px] placeholder:text-gray-400 focus:outline-none transition-all ${createFieldError === "username"
+                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "username"
                                     ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                    : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
                                     }`}
                             />
                         </div>
@@ -239,7 +239,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
 
                     <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
+                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">
                             Role <span className="text-rose-400">*</span>
                         </label>
                         <div className="space-y-2">
@@ -257,10 +257,10 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                                     }}
                                     className={`w-full p-3 rounded-md text-left transition-all duration-200 flex items-center justify-between ${getRoleOptionClass(option.value)} cursor-pointer`}
                                 >
-                                    <span className={`font-medium text-[14px] ${newUserRole === option.value ? "text-purple-700" : "text-gray-700"}`}>
+                                    <span className={`font-medium text-[14px] ${newUserRole === option.value ? "text-primary" : "text-foreground/90"}`}>
                                         {option.label}
                                     </span>
-                                    {newUserRole === option.value && <Check size={18} className="text-purple-600" />}
+                                    {newUserRole === option.value && <Check size={18} className="text-primary" />}
                                 </button>
                             ))}
                         </div>
@@ -270,7 +270,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
 
                     <div>
-                        <label className="block text-[12px] font-medium text-gray-600 mb-1.5">Group (Optional)</label>
+                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">Group (Optional)</label>
                         <select
                             ref={groupSelectRef}
                             value={newUserGroupId}
@@ -281,9 +281,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                                     setCreateStatus(null);
                                 }
                             }}
-                            className={`w-full px-4 py-2.5 rounded-md bg-gray-50 text-[14px] focus:outline-none transition-all ${createFieldError === "group"
+                            className={`w-full px-4 py-2.5 rounded-md bg-surface-subtle text-[14px] focus:outline-none transition-all ${createFieldError === "group"
                                 ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                : "border border-gray-200 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                                : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
                                 }`}
                         >
                             <option value="">No group</option>
@@ -297,18 +297,18 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
                 </div>
 
-                <div className="px-6 py-4 border-t border-gray-100 bg-white">
+                <div className="px-6 py-4 border-t border-border/40 bg-background">
                     <div className="flex justify-end gap-3">
                         <button
                             onClick={onClose}
-                            className="px-5 py-2.5 rounded-xl text-[14px] font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all cursor-pointer"
+                            className="px-5 py-2.5 rounded-xl text-[14px] font-medium text-muted-foreground bg-muted hover:bg-muted/60 transition-all cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleCreateUser}
                             disabled={!newUserName || !newUserEmail || !newUserRole || isCreating}
-                            className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+                            className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-primary hover:bg-primary/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/25"
                         >
                             {isCreating ? (
                                 <span className="flex items-center gap-2">

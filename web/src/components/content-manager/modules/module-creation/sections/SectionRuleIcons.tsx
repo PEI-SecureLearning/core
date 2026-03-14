@@ -22,7 +22,7 @@ export function SectionRuleIcons({ section, withTooltips }: {
             {section.requireCorrectAnswers && (
                 <div className="group relative">
                     <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#0C0A0F] text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Correct answers required
                     </span>
                 </div>
@@ -30,7 +30,7 @@ export function SectionRuleIcons({ section, withTooltips }: {
             {section.isOptional && (
                 <div className="group relative">
                     <SkipForward className="w-3.5 h-3.5 text-blue-600" />
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#0C0A0F] text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Optional section
                     </span>
                 </div>
@@ -38,7 +38,7 @@ export function SectionRuleIcons({ section, withTooltips }: {
             {!!section.minTimeSpent && section.minTimeSpent > 0 && (
                 <div className="group relative">
                     <Clock className="w-3.5 h-3.5 text-orange-600" />
-                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#0C0A0F] text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Min. {section.minTimeSpent}s required
                     </span>
                 </div>

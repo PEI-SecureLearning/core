@@ -48,7 +48,7 @@ function RouteComponent() {
     };
 
     return (
-        <div className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative">
+        <div className="w-full h-full py-4 px-6 bg-background flex flex-col relative">
             <ContentDisplay
                 searchQuery={searchQuery}
                 sortBy={sortBy}

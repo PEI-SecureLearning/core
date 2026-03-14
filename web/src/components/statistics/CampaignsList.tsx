@@ -28,11 +28,11 @@ function getResultConfig(result: string) {
       };
     default:
       return {
-        color: 'text-slate-600',
-        bg: 'bg-slate-500/10',
-        hoverBg: 'hover:bg-slate-500/15',
+        color: 'text-muted-foreground',
+        bg: 'bg-muted-foreground/30',
+        hoverBg: 'hover:bg-muted-foreground/30',
         label: result,
-        dot: 'bg-slate-400',
+        dot: 'bg-muted-foreground/40',
       };
   }
 }
@@ -51,7 +51,7 @@ export default function RecentCampaigns() {
   const reportedCount = campaigns.filter(c => c.result === 'Reported').length;
 
   return (
-    <div className="flex-1 bg-white/60 backdrop-blur-xl rounded-b-xl border-t-3 border-purple-500
+    <div className="flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
       shadow-lg shadow-slate-300/50 p-6
       hover:shadow-2xl hover:shadow-purple-200/60
       transition-all duration-500 group">
@@ -68,8 +68,8 @@ export default function RecentCampaigns() {
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">Recent Campaigns</h3>
-            <p className="text-[13px] text-slate-500">{campaigns.length} phishing simulations</p>
+            <h3 className="text-lg font-semibold text-foreground">Recent Campaigns</h3>
+            <p className="text-[13px] text-muted-foreground">{campaigns.length} phishing simulations</p>
           </div>
         </div>
 
@@ -94,16 +94,16 @@ export default function RecentCampaigns() {
               key={campaign.id}
               href={campaign.detailsLink}
               className="campaign-row group/row flex items-center justify-between p-3.5 rounded-xl
-                bg-slate-50/60 border border-slate-100/60
-                hover:border-purple-200/70 hover:bg-purple-50/40
+                bg-surface-subtle/60 border border-border/40/60
+                hover:border-primary/30/70 hover:bg-primary/10/40
                 hover:shadow-md hover:shadow-purple-100/60"
             >
               <div className="flex items-center gap-3">
                 <div>
-                  <span className="text-[14px] font-medium text-slate-700 group-hover/row:text-purple-700 transition-colors duration-200 block">
+                  <span className="text-[14px] font-medium text-foreground/90 group-hover/row:text-primary transition-colors duration-200 block">
                     {campaign.name}
                   </span>
-                  <span className="text-[11px] text-slate-400">{campaign.date}</span>
+                  <span className="text-[11px] text-muted-foreground/70">{campaign.date}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -113,7 +113,7 @@ export default function RecentCampaigns() {
                     {config.label}
                   </span>
                 </div>
-                <ChevronRight size={15} className="text-slate-300 group-hover/row:text-purple-500 group-hover/row:translate-x-0.5 transition-all duration-200" />
+                <ChevronRight size={15} className="text-muted-foreground/50 group-hover/row:text-primary/90 group-hover/row:translate-x-0.5 transition-all duration-200" />
               </div>
             </a>
           );

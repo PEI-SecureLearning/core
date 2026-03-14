@@ -13,9 +13,9 @@ export const Route = createFileRoute("/statistics")({
 
 function RouteComponent() {
   return (
-    <div className="h-full w-full overflow-y-auto bg-gray-50/50">
+    <div className="h-full w-full overflow-y-auto bg-surface-subtle/50">
       {/* Header */}
-      <div className="h-[8%] w-full border-b border-gray-200 flex items-center px-6 bg-white">
+      <div className="h-[8%] w-full border-b border-border flex items-center px-6 bg-background">
         <StatsHeader />
       </div>
 

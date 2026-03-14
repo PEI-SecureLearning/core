@@ -251,7 +251,7 @@ export function ContentDisplay({
                                         }}
                                         onBlur={() => { void confirmCreateFolder(); }}
                                         placeholder="folder name"
-                                        className="flex-1 min-w-0 rounded border border-purple-300 px-1.5 py-0.5 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-purple-400 bg-purple-50/50"
+                                        className="flex-1 min-w-0 rounded border border-[#7C3AED]/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#7C3AED] bg-surface"
                                     />
                                     <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { void confirmCreateFolder(); }} className="p-0.5 rounded text-emerald-600 hover:bg-emerald-50" title="Confirm">
                                         <Check className="w-3.5 h-3.5" />
@@ -311,8 +311,8 @@ export function ContentDisplay({
                 <div className="space-y-1">{renderTree(ROOT_FOLDER_ID)}</div>
             </aside>
 
-            <div className="flex-1 bg-white rounded-b-xl rounded-t-sm border border-gray-200 overflow-y-auto shadow-md">
-                <div className="px-4 py-3 border-b border-gray-200 flex items-center gap-3">
+            <div className="flex-1 bg-surface rounded-b-xl rounded-t-sm border border-border overflow-y-auto">
+                <div className="px-4 py-3 border-b border-border flex items-center gap-3">
                     <div className="text-sm shrink-0">
                         <span className="font-semibold text-gray-900">{selectedFolderPath}</span>
                         <span className="text-gray-500"> ({visibleFolders.length + filteredCurrentItems.length} items)</span>
@@ -321,13 +321,13 @@ export function ContentDisplay({
                     <div className="flex-1" />
 
                     <div className="relative w-56">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                         <input
                             type="text"
                             placeholder="Search current folder…"
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="w-full bg-white border border-gray-200 rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-700 placeholder:text-gray-400"
+                            className="w-full bg-surface border border-border rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
@@ -362,8 +362,8 @@ export function ContentDisplay({
                     {filteredCurrentItems.map((item) => (
                         <div key={item.id} className="px-4 py-3 flex items-center justify-between gap-4 hover:bg-gray-50">
                             <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                                <p className="text-xs text-gray-500 truncate">{item.path}</p>
+                                <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                                <p className="text-xs text-muted-foreground truncate">{item.path}</p>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
                                 <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 uppercase">{item.content_format}</span>

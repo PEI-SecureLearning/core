@@ -32,7 +32,7 @@ export const WelcomePage = () => {
     };
 
     return (
-        <div className="min-h-full w-full bg-gray-50/50 p-8">
+        <div className="min-h-full w-full bg-surface-subtle/50 p-8">
             <div className="max-w-6xl mx-auto space-y-8">
                 {/* Header Section */}
                 <motion.div
@@ -41,10 +41,10 @@ export const WelcomePage = () => {
                     className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 >
                     <div>
-                        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                        <h1 className="text-4xl font-bold text-foreground tracking-tight">
                             Welcome back, {username}
                         </h1>
-                        <p className="text-gray-500 mt-2 text-lg">
+                        <p className="text-muted-foreground mt-2 text-lg">
                             Here's what's happening in your workspace today.
                         </p>
                     </div>
@@ -53,7 +53,7 @@ export const WelcomePage = () => {
                         {isAdmin && (
                             <Link
                                 to="/admin"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-lg shadow-purple-500/20"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors font-medium shadow-lg shadow-purple-500/20"
                             >
                                 <ShieldCheck className="w-4 h-4" />
                                 Admin Console
@@ -69,35 +69,35 @@ export const WelcomePage = () => {
                     animate="show"
                     className="grid grid-cols-1 md:grid-cols-3 gap-6"
                 >
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-                            <FileText className="w-6 h-6 text-purple-600" />
+                    <motion.div variants={item} className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                            <FileText className="w-6 h-6 text-primary" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Active Campaigns</h3>
-                        <p className="text-gray-500 mb-4">View and manage your ongoing phishing simulation campaigns.</p>
-                        <Link to="/campaigns" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Active Campaigns</h3>
+                        <p className="text-muted-foreground mb-4">View and manage your ongoing phishing simulation campaigns.</p>
+                        <Link to="/campaigns" className="text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             View Campaigns <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
 
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-                            <Users className="w-6 h-6 text-purple-600" />
+                    <motion.div variants={item} className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                            <Users className="w-6 h-6 text-primary" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">User Groups</h3>
-                        <p className="text-gray-500 mb-4">Manage your target groups and user assignments.</p>
-                        <Link to="/usergroups" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">User Groups</h3>
+                        <p className="text-muted-foreground mb-4">Manage your target groups and user assignments.</p>
+                        <Link to="/usergroups" className="text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             Manage Groups <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>
 
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-                            <ShieldCheck className="w-6 h-6 text-purple-600" />
+                    <motion.div variants={item} className="bg-background p-6 rounded-xl shadow-sm border border-border/40 hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                            <ShieldCheck className="w-6 h-6 text-primary" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Security Status</h3>
-                        <p className="text-gray-500 mb-4">Check your organization's overall security compliance score.</p>
-                        <Link to="/statistics" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Security Status</h3>
+                        <p className="text-muted-foreground mb-4">Check your organization's overall security compliance score.</p>
+                        <Link to="/statistics" className="text-primary font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
                             View Report <ArrowRight className="w-4 h-4" />
                         </Link>
                     </motion.div>

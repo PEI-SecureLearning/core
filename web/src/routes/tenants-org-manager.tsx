@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { createFileRoute } from "@tanstack/react-router";
 import { Users, Loader2 } from "lucide-react";
-import "../css/liquidGlass.css";
-
 import type { UserRecord, Group, BulkUser } from "../components/admin/tenant-org-manager/types";
 import { UserTable } from "../components/admin/tenant-org-manager/UserTable";
 import { UserGrid } from "../components/admin/tenant-org-manager/UserGrid";
@@ -189,18 +187,18 @@ function UsersManagement() {
       <div className="flex-1 overflow-y-auto px-4 mt-4 pb-6 purple-scrollbar">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="ml-2 text-gray-500">Loading users...</span>
+            <Loader2 className="w-6 h-6 animate-spin text-primary/90" />
+            <span className="ml-2 text-muted-foreground">Loading users...</span>
           </div>
         ) : !realm ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-500">Resolving realm...</span>
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/70" />
+            <span className="ml-2 text-muted-foreground">Resolving realm...</span>
           </div>
         ) : filteredUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <Users size={48} className="text-gray-300 mb-4" />
-            <p className="text-gray-500 text-[15px]">
+            <Users size={48} className="text-muted-foreground/50 mb-4" />
+            <p className="text-muted-foreground text-[15px]">
               {searchQuery ? "No users match search" : "No users found"}
             </p>
           </div>

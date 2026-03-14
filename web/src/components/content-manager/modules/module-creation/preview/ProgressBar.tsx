@@ -15,11 +15,11 @@ export function ProgressBar({ data, waveActive }: { readonly data: ModuleFormDat
 
     let barColor = 'bg-amber-400'
     if (pct === 100) barColor = 'bg-green-500'
-    else if (pct >= 60) barColor = 'bg-purple-500'
+    else if (pct >= 60) barColor = 'bg-[#7C3AED]'
 
     let labelColor = 'text-amber-500'
     if (pct === 100) labelColor = 'text-green-600'
-    else if (pct >= 60) labelColor = 'text-purple-600'
+    else if (pct >= 60) labelColor = 'text-[#A78BFA]'
 
     const missing = [
         !data.title.trim()            && 'Title',
@@ -77,11 +77,11 @@ export function ProgressBar({ data, waveActive }: { readonly data: ModuleFormDat
                         transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                         className="overflow-hidden"
                     >
-                        <div className="flex items-center gap-3 px-6 py-2 border-b border-slate-200 bg-white/60 backdrop-blur-sm">
-                            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">
+                        <div className="flex items-center gap-3 px-6 py-2 border-b border-border bg-surface/60 backdrop-blur-sm">
+                            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">
                                 Completion
                             </span>
-                            <div ref={barRef} className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div ref={barRef} className="flex-1 h-1.5 bg-surface rounded-full overflow-hidden">
                                 <motion.div
                                     className={`h-full rounded-full ${barColor}`}
                                     initial={{ width: 0 }}
@@ -100,7 +100,7 @@ export function ProgressBar({ data, waveActive }: { readonly data: ModuleFormDat
                                     onMouseLeave={() => { hoveringRef.current = false; hideTip() }}
                                     onFocus={showTip}
                                     onBlur={hideTip}
-                                    className="w-4 h-4 rounded-full bg-slate-200 hover:bg-amber-100 text-slate-500 hover:text-amber-600 text-[10px] font-bold flex items-center justify-center transition-colors flex-shrink-0"
+                                    className="w-4 h-4 rounded-full bg-border hover:bg-amber-100 text-muted-foreground hover:text-amber-600 text-[10px] font-bold flex items-center justify-center transition-colors flex-shrink-0"
                                     aria-label="Show missing fields"
                                 >
                                     ?
@@ -166,14 +166,14 @@ export function ProgressBar({ data, waveActive }: { readonly data: ModuleFormDat
                         exit={{ opacity: 0,    y: -4, scale: 0.97 }}
                         transition={{ duration: 0.12 }}
                         style={{ top: tipPos.top, left: tipPos.left }}
-                        className="fixed z-50 bg-white border border-slate-200 rounded-xl shadow-lg shadow-slate-200/60 px-4 py-3 min-w-[160px]"
+                        className="fixed z-50 bg-surface border border-border rounded-xl shadow-lg shadow-slate-200/60 px-4 py-3 min-w-[160px]"
                         onMouseEnter={() => { hoveringRef.current = true;  setTipVisible(true) }}
                         onMouseLeave={() => { hoveringRef.current = false; setTipVisible(false) }}
                     >
-                        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400 mb-2">Missing</p>
+                        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Missing</p>
                         <ul className="flex flex-col gap-1">
                             {missing.map(item => (
-                                <li key={item} className="flex items-center gap-2 text-xs text-slate-600">
+                                <li key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
                                     {item}
                                 </li>

@@ -77,7 +77,7 @@ export function useSendingProfileForm() {
       toast.error("Could not determine Realm. Are you logged in?");
       return;
     }
-    if (!name || !fromEmail || !smtpHost || !username || !password) {
+    if (!smtpHost || !username || !password) {
       toast.error("Please fill in all required fields before testing.");
       return;
     }

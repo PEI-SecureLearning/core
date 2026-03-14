@@ -33,13 +33,13 @@ export function SectionTitleEditor({ section, onUpdate, onStopEdit, titleMissing
                     onDoubleClick={e => e.stopPropagation()}
                     placeholder="Section title..."
                     style={{ minWidth: '10ch' }}
-                    className={`text-sm font-semibold text-slate-800 bg-white rounded-md px-2 py-0.5 focus:outline-none w-full ${
+                    className={`text-sm font-semibold text-foreground bg-surface rounded-md px-2 py-0.5 focus:outline-none w-full ${
                         titleMissing
                             ? 'border border-amber-400 focus:ring-amber-300/40'
                             : `border ${theme.inputBorder} ${theme.inputRing}`
                     }`}
                 />
-                <Pencil className={`w-3 h-3 ml-2 text-slate-300 ${theme.pencil} transition-colors flex-shrink-0`} />
+                <Pencil className={`w-3 h-3 ml-2 text-muted-foreground/50 ${theme.pencil} transition-colors flex-shrink-0`} />
             </span>
         )
     }
@@ -53,9 +53,9 @@ export function SectionTitleEditor({ section, onUpdate, onStopEdit, titleMissing
             title={titleMissing ? 'Title is required — click to add' : 'Click to edit title'}
         >
             {(() => {
-                let textCls = 'text-slate-400'
+                let textCls = 'text-muted-foreground'
                 if (titleMissing) textCls = 'text-amber-500'
-                else if (section.title) textCls = 'text-slate-800'
+                else if (section.title) textCls = 'text-foreground'
                 return (
                     <span className={`text-sm font-semibold truncate ${textCls}`}>
                         {section.title || (titleMissing ? 'Title required' : 'Untitled section')}
@@ -64,7 +64,7 @@ export function SectionTitleEditor({ section, onUpdate, onStopEdit, titleMissing
             })()}
             {titleMissing
                 ? <AlertCircle className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                : <Pencil className={`w-3 h-3 text-slate-300 ${theme.pencil} transition-colors flex-shrink-0`} />
+                : <Pencil className={`w-3 h-3 text-muted-foreground/50 ${theme.pencil} transition-colors flex-shrink-0`} />
             }
         </button>
     )

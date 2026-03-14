@@ -23,8 +23,8 @@ function FormField({ label, icon, warning, children }: {
 }) {
     return (
         <div className="flex flex-col gap-1.5">
-            <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                {icon && <span className="text-purple-400">{icon}</span>}
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {icon && <span className="text-[#A78BFA]">{icon}</span>}
                 {label}
                 {warning && <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0" />}
             </label>
@@ -57,13 +57,13 @@ function SidebarFields({ data, onChange, warnings, onBrowseCover }: {
                     className={`relative w-full h-24 rounded-xl border-2 overflow-hidden cursor-pointer transition-colors ${
                         warnings.cover
                             ? 'border-amber-300 hover:border-amber-400'
-                            : 'border-slate-200 hover:border-purple-400'
+                            : 'border-border hover:border-[#7C3AED]/60'
                     }`}
                 >
                     {data.coverImage ? (
                         <img src={data.coverImage} alt="cover" className="w-full h-full object-cover" />
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full gap-1 text-slate-400 group-hover:text-purple-500 transition-colors">
+                        <div className="flex flex-col items-center justify-center h-full gap-1 text-muted-foreground group-hover:text-[#A78BFA] transition-colors">
                             <div className="relative">
                                 <ImageIcon className="w-5 h-5" />
                                 {warnings.cover && (
@@ -98,9 +98,9 @@ function SidebarFields({ data, onChange, warnings, onBrowseCover }: {
                     value={data.title}
                     onChange={e => onChange({ title: e.target.value })}
                     placeholder="Module title..."
-                    className={`w-full bg-transparent border-b-2 px-0 py-1.5 text-base font-semibold text-slate-900 placeholder:text-slate-300 focus:outline-none transition-colors ${warnings.title
-                            ? 'border-amber-300 focus:border-purple-400'
-                            : 'border-slate-200 focus:border-purple-400'
+                    className={`w-full bg-transparent border-b-2 px-0 py-1.5 text-base font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-colors ${warnings.title
+                            ? 'border-amber-300 focus:border-[#7C3AED]/60'
+                            : 'border-border focus:border-[#7C3AED]/60'
                         }`}
                 />
             </FormField>
@@ -124,7 +124,7 @@ function SidebarFields({ data, onChange, warnings, onBrowseCover }: {
                             className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold border transition-all
                                 ${data.difficulty === d
                                     ? DIFFICULTY_COLORS[d] + ' shadow-sm'
-                                    : 'bg-slate-50 text-slate-400 border-slate-200 hover:border-slate-300'}`}>
+                                    : 'bg-surface-subtle text-muted-foreground border-border hover:border-border'}`}>
                             {d}
                         </button>
                     ))}
@@ -198,9 +198,9 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
         <motion.div
             animate={{ width: open ? 240 : 52 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="flex-shrink-0 h-full flex flex-col bg-white border-r border-slate-200 overflow-hidden relative"
+            className="flex-shrink-0 h-full flex flex-col bg-surface border-r border-border overflow-hidden relative"
         >
-            <div className="flex items-center justify-between px-3 py-4 border-b border-slate-100">
+            <div className="flex items-center justify-between px-3 py-4 border-b border-border">
                 <AnimatePresence>
                     {open && (
                         <motion.span
@@ -208,7 +208,7 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
-                            className="text-xs font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap"
+                            className="text-xs font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap"
                         >
                             Module Details
                         </motion.span>
@@ -217,7 +217,7 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
                 <button
                     type="button"
                     onClick={toggleOpen}
-                    className="ml-auto text-slate-400 hover:text-purple-600 transition-colors flex-shrink-0"
+                    className="ml-auto text-muted-foreground hover:text-[#A78BFA] transition-colors flex-shrink-0"
                     title={open ? 'Collapse sidebar' : 'Expand sidebar'}
                     aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
                     aria-expanded={open}
@@ -230,7 +230,7 @@ export function DetailsSidebar({ data, onChange, publishAttempted, getToken }: {
             </div>
 
             {!open && (
-                <div className="flex flex-col items-center gap-4 py-4 text-slate-300 flex-1">
+                <div className="flex flex-col items-center gap-4 py-4 text-muted-foreground/50 flex-1">
                     <ImageIcon className="w-4 h-4" />
                     <Clock className="w-4 h-4" />
                     <AlignLeft className="w-4 h-4" />

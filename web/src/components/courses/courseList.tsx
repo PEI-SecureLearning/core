@@ -90,7 +90,7 @@ export default function CourseList({ showNewCourse = false, basePath = '/courses
         >
             {/* ── Sticky header + filters ───────────────────────────────── */}
             <div
-                className={`sticky top-0 z-20 bg-white/90 backdrop-blur-sm border-b border-gray-100 px-6 pt-6 pb-4 space-y-4 transition-all duration-500 ease-in-out ${headerVisible
+                className={`sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border/40 px-6 pt-6 pb-4 space-y-4 transition-all duration-500 ease-in-out ${headerVisible
                     ? 'opacity-100 translate-y-0 shadow-none'
                     : 'opacity-0 -translate-y-full pointer-events-none shadow-md'
                     }`}
@@ -98,8 +98,8 @@ export default function CourseList({ showNewCourse = false, basePath = '/courses
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Courses</h1>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h1 className="text-2xl font-bold text-foreground">Courses</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
                             Browse and complete security training courses assigned to your organization.
                         </p>
                     </div>
@@ -137,19 +137,19 @@ export default function CourseList({ showNewCourse = false, basePath = '/courses
             <div className="px-6 pt-4 pb-6">
                 {filtered.length === 0 ? (
                     /* Empty State */
-                    <div className="flex flex-col items-center justify-center py-20 text-center text-slate-400">
-                        <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4">
-                            <BookOpen className="w-8 h-8 text-slate-200" />
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground/70">
+                        <div className="w-16 h-16 rounded-full bg-surface-subtle flex items-center justify-center mb-4">
+                            <BookOpen className="w-8 h-8 text-muted-foreground/40" />
                         </div>
                         {search.trim() !== '' ? (
                             <>
-                                <p className="text-sm font-medium text-slate-600">No courses match "{search}"</p>
-                                <p className="text-xs text-slate-400 mt-1">Try a different search term or reset filters.</p>
+                                <p className="text-sm font-medium text-muted-foreground">No courses match "{search}"</p>
+                                <p className="text-xs text-muted-foreground/70 mt-1">Try a different search term or reset filters.</p>
                             </>
                         ) : (
                             <>
-                                <p className="text-sm font-medium text-slate-600">No courses yet</p>
-                                <p className="text-xs text-slate-400 mt-1">Create your first course to get started.</p>
+                                <p className="text-sm font-medium text-muted-foreground">No courses yet</p>
+                                <p className="text-xs text-muted-foreground/70 mt-1">Create your first course to get started.</p>
                             </>
                         )}
                     </div>

@@ -27,14 +27,14 @@ function SettingToggle({ id, checked, onChange, icon, iconClass, label, descript
                 type="checkbox"
                 checked={checked}
                 onChange={e => onChange(e.target.checked)}
-                className={`mt-0.5 w-4 h-4 rounded border-slate-300 focus:ring-2 focus:ring-offset-0 cursor-pointer ${iconClass}`}
+                className={`mt-0.5 w-4 h-4 rounded border-border focus:ring-2 focus:ring-offset-0 cursor-pointer ${iconClass}`}
             />
             <label htmlFor={id} className="flex-1 min-w-0 cursor-pointer">
-                <div className={`flex items-center gap-1.5 text-sm font-semibold text-slate-800 transition-colors ${hoverClass}`}>
+                <div className={`flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors ${hoverClass}`}>
                     {icon}
                     <span>{label}</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">{description}</p>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{description}</p>
             </label>
         </div>
     )
@@ -53,19 +53,19 @@ export function SectionSettingsSidebar({
         return (
             <motion.div
                 animate={{ width: 52 }}
-                className="flex-shrink-0 h-full flex flex-col bg-white border-l border-slate-200 overflow-hidden"
+                className="flex-shrink-0 h-full flex flex-col bg-surface border-l border-border overflow-hidden"
             >
-                <div className="flex items-center justify-center px-3 py-4 border-b border-slate-100">
+                <div className="flex items-center justify-center px-3 py-4 border-b border-border">
                     <button
                         type="button"
                         onClick={() => setOpen(o => !o)}
-                        className="text-slate-400 hover:text-purple-600 transition-colors"
+                        className="text-muted-foreground hover:text-[#A78BFA] transition-colors"
                         title="Section settings"
                     >
                         <PanelRightOpen className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="flex flex-col items-center gap-4 py-4 text-slate-300">
+                <div className="flex flex-col items-center gap-4 py-4 text-muted-foreground/50">
                     <Settings className="w-4 h-4" />
                 </div>
             </motion.div>
@@ -76,9 +76,9 @@ export function SectionSettingsSidebar({
         <motion.div
             animate={{ width: open ? 280 : 52 }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="flex-shrink-0 h-full flex flex-col bg-white border-l border-slate-200 overflow-hidden relative"
+            className="flex-shrink-0 h-full flex flex-col bg-surface border-l border-border overflow-hidden relative"
         >
-            <div className="flex items-center justify-between px-3 py-4 border-b border-slate-100">
+            <div className="flex items-center justify-between px-3 py-4 border-b border-border">
                 <AnimatePresence>
                     {open && (
                         <motion.span
@@ -86,7 +86,7 @@ export function SectionSettingsSidebar({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.15 }}
-                            className="text-xs font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap"
+                            className="text-xs font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap"
                         >
                             Section Settings
                         </motion.span>
@@ -95,7 +95,7 @@ export function SectionSettingsSidebar({
                 <button
                     type="button"
                     onClick={() => setOpen(o => !o)}
-                    className="ml-auto text-slate-400 hover:text-purple-600 transition-colors flex-shrink-0"
+                    className="ml-auto text-muted-foreground hover:text-[#A78BFA] transition-colors flex-shrink-0"
                     title={open ? 'Collapse sidebar' : 'Expand sidebar'}
                 >
                     {open
@@ -107,7 +107,7 @@ export function SectionSettingsSidebar({
 
             {!open && (
                 <div className="flex flex-col items-center gap-2 py-4 flex-1">
-                    <Settings className="w-4 h-4 text-slate-300 mb-2" />
+                    <Settings className="w-4 h-4 text-muted-foreground/50 mb-2" />
                     <button
                         type="button"
                         title={selectedSection.requireCorrectAnswers ? 'Require correct answers: ON' : 'Require correct answers: OFF'}
@@ -115,7 +115,7 @@ export function SectionSettingsSidebar({
                         className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                             selectedSection.requireCorrectAnswers
                                 ? 'bg-green-50 text-green-500 hover:bg-green-100'
-                                : 'text-slate-300 hover:bg-slate-100 hover:text-green-400'
+                                : 'text-muted-foreground/50 hover:bg-surface hover:text-green-400'
                         }`}
                     >
                         <CheckCircle className="w-4 h-4" />
@@ -127,7 +127,7 @@ export function SectionSettingsSidebar({
                         className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                             selectedSection.isOptional
                                 ? 'bg-blue-50 text-blue-500 hover:bg-blue-100'
-                                : 'text-slate-300 hover:bg-slate-100 hover:text-blue-400'
+                                : 'text-muted-foreground/50 hover:bg-surface hover:text-blue-400'
                         }`}
                     >
                         <SkipForward className="w-4 h-4" />
@@ -139,7 +139,7 @@ export function SectionSettingsSidebar({
                         className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                             selectedSection.minTimeSpent
                                 ? 'bg-orange-50 text-orange-500 hover:bg-orange-100'
-                                : 'text-slate-300 hover:bg-slate-100 hover:text-orange-400'
+                                : 'text-muted-foreground/50 hover:bg-surface hover:text-orange-400'
                         }`}
                     >
                         <Clock className="w-4 h-4" />
@@ -177,7 +177,7 @@ export function SectionSettingsSidebar({
                             description="Users can skip this section and continue"
                         />
                         <div className="flex flex-col gap-1.5">
-                            <label htmlFor="min-time" className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                            <label htmlFor="min-time" className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                                 <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
                                 Minimum Time (seconds)
                             </label>
@@ -191,9 +191,9 @@ export function SectionSettingsSidebar({
                                 onChange={e => onUpdate(selectedSection.id, {
                                     minTimeSpent: e.target.value ? Number.parseInt(e.target.value, 10) : undefined
                                 })}
-                                className="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300/50 text-slate-800 placeholder:text-slate-400"
+                                className="w-full text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300/50 text-foreground placeholder:text-muted-foreground"
                             />
-                            <p className="text-xs text-slate-500 leading-relaxed">
+                            <p className="text-xs text-muted-foreground leading-relaxed">
                                 Minimum time before users can proceed
                             </p>
                         </div>

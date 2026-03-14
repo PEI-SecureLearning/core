@@ -291,7 +291,7 @@ export default function ComplianceFlow() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-10">
-                <Loader2 className="h-6 w-6 animate-spin text-purple-600" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
         );
     }
@@ -309,7 +309,7 @@ export default function ComplianceFlow() {
     // ── modal ────────────────────────────────────────────────────────────────────
     const modalContent = (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            <div className="w-[90vw] max-w-5xl max-h-[90vh] bg-white rounded-t-md shadow-2xl overflow-hidden flex flex-col">
+            <div className="w-[90vw] max-w-5xl max-h-[90vh] bg-background rounded-t-md shadow-2xl overflow-hidden flex flex-col">
                 <ComplianceHeader doc={doc} step={step} />
 
                 <div className="flex-1 overflow-auto p-6 space-y-4">

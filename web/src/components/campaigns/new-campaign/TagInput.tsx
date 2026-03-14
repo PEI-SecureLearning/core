@@ -53,7 +53,7 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
           }}
         >
           {/* Hashtag prefix */}
-          <span className="pl-3 text-purple-500 text-[13px] font-medium">
+          <span className="pl-3 text-primary/90 text-[13px] font-medium">
             #
           </span>
 
@@ -69,7 +69,7 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
                 setAdding(false);
               }
             }}
-            className="bg-transparent px-1.5 py-2 text-[13px] text-slate-700 placeholder:text-slate-400 outline-none w-32"
+            className="bg-transparent px-1.5 py-2 text-[13px] text-foreground/90 placeholder:text-muted-foreground/70 outline-none w-32"
             placeholder="tag name"
           />
 

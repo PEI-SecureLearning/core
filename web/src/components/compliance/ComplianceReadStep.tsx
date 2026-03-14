@@ -41,31 +41,31 @@ export default function ComplianceReadStep({
                             : String(children);
                 const id = `sec-${slugify(text || "section")}`;
                 return (
-                    <div id={id} className="mt-8 mb-3 border-b border-gray-200 pb-2 scroll-m-24">
-                        <p className="text-lg font-semibold text-gray-900">{children}</p>
+                    <div id={id} className="mt-8 mb-3 border-b border-border pb-2 scroll-m-24">
+                        <p className="text-lg font-semibold text-foreground">{children}</p>
                     </div>
                 );
             },
             h3: ({ children }: { children?: React.ReactNode }) => (
-                <p className="mt-4 mb-2 text-base font-semibold text-gray-900">{children}</p>
+                <p className="mt-4 mb-2 text-base font-semibold text-foreground">{children}</p>
             ),
             p: ({ children }: { children?: React.ReactNode }) => (
-                <p className="text-sm text-gray-800 leading-6 mb-3">{children}</p>
+                <p className="text-sm text-foreground leading-6 mb-3">{children}</p>
             ),
             ul: ({ children }: { children?: React.ReactNode }) => (
-                <ul className="list-disc pl-5 space-y-1 text-sm text-gray-800 mb-3">{children}</ul>
+                <ul className="list-disc pl-5 space-y-1 text-sm text-foreground mb-3">{children}</ul>
             ),
             ol: ({ children }: { children?: React.ReactNode }) => (
-                <ol className="list-decimal pl-5 space-y-1 text-sm text-gray-800 mb-3">{children}</ol>
+                <ol className="list-decimal pl-5 space-y-1 text-sm text-foreground mb-3">{children}</ol>
             ),
             li: ({ children }: { children?: React.ReactNode }) => <li className="leading-6">{children}</li>,
             table: ({ children }: { children?: React.ReactNode }) => (
                 <div className="overflow-x-auto mb-4">
-                    <table className="min-w-full border border-gray-200 text-sm text-gray-800">{children}</table>
+                    <table className="min-w-full border border-border text-sm text-foreground">{children}</table>
                 </div>
             ),
             thead: ({ children }: { children?: React.ReactNode }) => (
-                <thead className="bg-gray-50 text-gray-900 font-semibold">{children}</thead>
+                <thead className="bg-surface-subtle text-foreground font-semibold">{children}</thead>
             ),
             tbody: ({ children }: { children?: React.ReactNode }) => <tbody>{children}</tbody>,
             tr: ({ children }: { children?: React.ReactNode }) => <tr className="border-b">{children}</tr>,
@@ -81,16 +81,16 @@ export default function ComplianceReadStep({
 
     return (
         <div className="space-y-4">
-            <div className="pl-4 flex items-center gap-2 text-slate-700 text-lg font-semibold">
+            <div className="pl-4 flex items-center gap-2 text-foreground/90 text-lg font-semibold">
                 <span>Review the policy</span>
             </div>
 
             <div className="flex flex-col gap-3 md:flex-row md:items-start">
                 {/* ToC sidebar */}
-                <div className="md:w-56 shrink-0 rounded-lg border border-gray-200 bg-white p-3">
-                    <p className="text-xs font-semibold text-gray-700 mb-2 border-b-2 border-gray-200 pb-2">Jump to section</p>
+                <div className="md:w-56 shrink-0 rounded-lg border border-border bg-background p-3">
+                    <p className="text-xs font-semibold text-foreground/90 mb-2 border-b-2 border-border pb-2">Jump to section</p>
                     {hasDocContent ? (
-                        <div className="space-y-2 text-sm text-purple-700">
+                        <div className="space-y-2 text-sm text-primary">
                             {toc.map((entry) => (
                                 <button
                                     key={entry.id}
@@ -98,25 +98,25 @@ export default function ComplianceReadStep({
                                         const el = document.getElementById(entry.id);
                                         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                                     }}
-                                    className="block w-full font-medium text-left hover:text-purple-900 cursor-pointer"
+                                    className="block w-full font-medium text-left hover:text-primary/80 cursor-pointer"
                                 >
                                     {entry.title}
                                 </button>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-xs text-gray-500">Loading sections…</p>
+                        <p className="text-xs text-muted-foreground">Loading sections…</p>
                     )}
                 </div>
 
                 {/* Markdown content */}
-                <div className="rounded-lg border border-gray-200 bg-white p-4 max-h-[55vh] overflow-y-auto w-full">
+                <div className="rounded-lg border border-border bg-background p-4 max-h-[55vh] overflow-y-auto w-full">
                     {hasDocContent ? (
-                        <ReactMarkdown className="prose prose-sm max-w-none text-gray-800" components={markdownComponents}>
+                        <ReactMarkdown className="prose prose-sm max-w-none text-foreground" components={markdownComponents}>
                             {doc.content}
                         </ReactMarkdown>
                     ) : (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                             Policy content unavailable. Please refresh or contact an administrator.
                         </p>
                     )}

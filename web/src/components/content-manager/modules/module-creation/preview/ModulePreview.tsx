@@ -25,7 +25,7 @@ const TF_CHOICES: Choice[] = [
 function RichMediaPreview({ block }: { readonly block: Extract<Block, { kind: 'rich_content' }> }) {
     if (!block.url) {
         return (
-            <div className="flex items-center justify-center h-24 text-slate-400 gap-2 text-sm italic">
+            <div className="flex items-center justify-center h-24 text-muted-foreground gap-2 text-sm italic">
                 <ImageIcon className="w-5 h-5" />
                 No media URL set
             </div>
@@ -50,7 +50,7 @@ function RichMediaPreview({ block }: { readonly block: Extract<Block, { kind: 'r
     }
     return (
         <a href={block.url} target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-3 text-sm text-purple-600 font-medium hover:text-purple-800 transition-colors">
+            className="flex items-center gap-2 px-4 py-3 text-sm text-[#A78BFA] font-medium hover:text-[#A78BFA] transition-colors">
             <FileText className="w-4 h-4 flex-shrink-0" />
             <span className="truncate">{block.url}</span>
         </a>
@@ -71,33 +71,33 @@ function QuestionPreview({ block, qIndex, accent, answeredChoices, onMark }: {
 
     const choiceBtnClass = (c: Choice) => {
         if (answered !== c.id) {
-            return `bg-white border-slate-200 text-slate-700 ${accent === 'teal' ? 'hover:bg-teal-50/50 hover:border-teal-200' : 'hover:bg-purple-50/50 hover:border-purple-200'}`
+            return `bg-surface border-border text-foreground ${accent === 'teal' ? 'hover:bg-teal-50/50 hover:border-teal-200' : 'hover:bg-[#7C3AED]/10/50 hover:border-[#7C3AED]/30'}`
         }
         return c.isCorrect ? 'bg-green-50 border-green-400 text-green-800' : 'bg-red-50 border-red-400 text-red-800'
     }
 
     const choiceCircleClass = (c: Choice) => {
-        if (answered !== c.id) return 'border-slate-300'
+        if (answered !== c.id) return 'border-border'
         return c.isCorrect ? 'border-green-500 bg-green-100' : 'border-red-500 bg-red-100'
     }
 
     return (
-        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-100">
-                <ListChecks className={`w-3.5 h-3.5 flex-shrink-0 ${accent === 'teal' ? 'text-teal-500' : 'text-purple-500'}`} />
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${accent === 'teal' ? 'text-teal-500' : 'text-purple-500'}`}>{typeLabel}</span>
-                <span className="ml-auto text-[10px] text-slate-400">Q{qIndex}</span>
+        <div className="border border-border rounded-xl overflow-hidden bg-surface shadow-sm">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-subtle border-b border-border">
+                <ListChecks className={`w-3.5 h-3.5 flex-shrink-0 ${accent === 'teal' ? 'text-teal-500' : 'text-[#A78BFA]'}`} />
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${accent === 'teal' ? 'text-teal-500' : 'text-[#A78BFA]'}`}>{typeLabel}</span>
+                <span className="ml-auto text-[10px] text-muted-foreground">Q{qIndex}</span>
             </div>
             <div className="px-5 py-4">
-                <p className="text-sm font-semibold text-slate-800 leading-relaxed mb-4">
-                    {q.text || <em className="text-slate-400 font-normal">No question text</em>}
+                <p className="text-sm font-semibold text-foreground leading-relaxed mb-4">
+                    {q.text || <em className="text-muted-foreground font-normal">No question text</em>}
                 </p>
                 {q.type === 'short_answer' ? (
                     <div className="flex gap-2">
                         <input type="text" placeholder="Your answer…"
-                            className={`flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 ${accent === 'teal' ? 'focus:ring-teal-300/50 focus:border-teal-300' : 'focus:ring-purple-300/50 focus:border-purple-300'}`} />
+                            className={`flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 ${accent === 'teal' ? 'focus:ring-teal-300/50 focus:border-teal-300' : 'focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40'}`} />
                         <button type="button"
-                            className={`px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors ${accent === 'teal' ? 'bg-teal-600 hover:bg-teal-700' : 'bg-purple-600 hover:bg-purple-700'}`}>
+                            className={`px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors ${accent === 'teal' ? 'bg-teal-600 hover:bg-teal-700' : 'bg-[#7C3AED] hover:bg-[#7C3AED]'}`}>
                             Check
                         </button>
                     </div>
@@ -113,7 +113,7 @@ function QuestionPreview({ block, qIndex, accent, answeredChoices, onMark }: {
                                         {isSelected && c.isCorrect  && <Check className="w-2.5 h-2.5 text-green-600" />}
                                         {isSelected && !c.isCorrect && <X     className="w-2.5 h-2.5 text-red-600"   />}
                                     </span>
-                                    <span className="flex-1">{c.text || <em className="text-slate-400">Empty choice</em>}</span>
+                                    <span className="flex-1">{c.text || <em className="text-muted-foreground">Empty choice</em>}</span>
                                 </button>
                             )
                         })}
@@ -134,17 +134,17 @@ function PreviewBlock({ block, qIndex, accent, answeredChoices, onMark }: {
     if (block.kind === 'text') {
         return (
             <div
-                className="text-[15px] leading-7 text-slate-700 [&_h1]:text-slate-900 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-slate-800 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-slate-800 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-slate-900 [&_strong]:font-semibold [&_em]:text-slate-600 [&_a]:text-purple-600 [&_a]:underline [&_code]:bg-slate-100 [&_code]:text-purple-700 [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-slate-900 [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-slate-700 [&_li]:leading-7 [&_blockquote]:border-purple-400 [&_blockquote]:text-slate-500 [&_blockquote]:bg-purple-50/40 [&_blockquote]:py-1 [&_hr]:border-slate-200 [&_del]:text-slate-400 [&_table]:w-full [&_th]:bg-slate-50 [&_th]:text-slate-700 [&_th]:border-slate-200 [&_td]:text-slate-700 [&_td]:border-slate-200"
+                className="text-[15px] leading-7 text-foreground [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-[#A78BFA] [&_a]:underline [&_code]:bg-surface [&_code]:text-[#A78BFA] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-slate-900 [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground [&_li]:leading-7 [&_blockquote]:border-[#7C3AED]/60 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-[#7C3AED]/10 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground [&_th]:border-border [&_td]:text-foreground [&_td]:border-border"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(block.content || '') }}
             />
         )
     }
     if (block.kind === 'rich_content') {
         return (
-            <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+            <div className="rounded-xl overflow-hidden border border-border bg-surface-subtle">
                 <RichMediaPreview block={block} />
                 {block.caption && (
-                    <p className="text-[11px] text-slate-500 text-center px-3 py-2 border-t border-slate-200 italic">
+                    <p className="text-[11px] text-muted-foreground text-center px-3 py-2 border-t border-border italic">
                         {block.caption}
                     </p>
                 )}
@@ -166,7 +166,7 @@ function SectionBlockList({ blocks, baseQIndex, accent, answeredChoices, onMark 
     readonly onMark: (qid: string, cid: string) => void
 }) {
     if (blocks.length === 0) {
-        return <p className="text-sm text-slate-400 italic py-3">No content in this section yet.</p>
+        return <p className="text-sm text-muted-foreground italic py-3">No content in this section yet.</p>
     }
     let localQ = baseQIndex
     return (
@@ -217,17 +217,17 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-50 bg-white/10 backdrop-blur-xl flex flex-col"
+            className="fixed inset-0 z-50 bg-surface/10 backdrop-blur-xl flex flex-col"
         >
             {/* ── Top bar ── */}
-            <div className="relative flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
+            <div className="relative flex items-center justify-between px-6 py-4 bg-surface border-b border-border shadow-sm flex-shrink-0">
                 {/* Left: icon + title + meta */}
                 <div className="flex items-center gap-4 min-w-0">
-                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${accent === 'teal' ? 'bg-teal-600' : 'bg-purple-600'}`}>
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${accent === 'teal' ? 'bg-teal-600' : 'bg-[#7C3AED]'}`}>
                         {accent === 'teal' ? <RefreshCw className="w-4.5 h-4.5 text-white" /> : <BookOpen className="w-4.5 h-4.5 text-white" />}
                     </div>
-                    <span className="text-2xl font-bold text-slate-900 truncate">
-                        {data.title || <span className="italic text-slate-400">Untitled Module</span>}
+                    <span className="text-2xl font-bold text-foreground truncate">
+                        {data.title || <span className="italic text-muted-foreground">Untitled Module</span>}
                     </span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                         {data.difficulty && (
@@ -236,12 +236,12 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                             </span>
                         )}
                         {data.category && (
-                            <span className="px-2.5 py-0.5 rounded bg-slate-100 text-slate-500 text-xs font-medium">
+                            <span className="px-2.5 py-0.5 rounded bg-surface text-muted-foreground text-xs font-medium">
                                 {data.category}
                             </span>
                         )}
                         {data.estimatedTime && (
-                            <span className="flex items-center gap-1 text-slate-400 text-sm">
+                            <span className="flex items-center gap-1 text-muted-foreground text-sm">
                                 <Clock className="w-3.5 h-3.5" />
                                 {data.estimatedTime}
                             </span>
@@ -250,7 +250,7 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                 </div>
 
                 {/* Centre: "Preview" label — absolutely centred in the bar */}
-                <span className="absolute left-1/2 -translate-x-1/2 text-sm text-slate-400 italic pointer-events-none select-none hidden sm:block">
+                <span className="absolute left-1/2 -translate-x-1/2 text-sm text-muted-foreground italic pointer-events-none select-none hidden sm:block">
                     Preview
                 </span>
 
@@ -265,7 +265,7 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                         />
                     )}
                     <button type="button" onClick={onClose}
-                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 text-sm font-semibold transition-colors">
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-surface hover:bg-surface text-muted-foreground hover:text-foreground text-sm font-semibold transition-colors">
                         <X className="w-4 h-4" />
                         Close
                     </button>
@@ -273,22 +273,22 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
             </div>
 
             {/* ── Body ── */}
-            <div className="flex flex-1 overflow-hidden bg-slate-50">
+            <div className="flex flex-1 overflow-hidden bg-surface-subtle">
 
                 {/* ── Left sidebar ── */}
-                <div className="w-64 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col overflow-hidden">
+                <div className="w-64 flex-shrink-0 bg-surface border-r border-border flex flex-col overflow-hidden">
                     {/* Cover */}
-                    <div className="px-4 pt-4 pb-3 border-b border-slate-100 flex-shrink-0">
+                    <div className="px-4 pt-4 pb-3 border-b border-border flex-shrink-0">
                         {data.coverImage ? (
                             <img src={data.coverImage} alt="cover"
                                 className="w-full h-20 object-cover rounded-lg" />
                         ) : (
                             <div className={`w-full h-20 rounded-lg flex items-center justify-center bg-gradient-to-br ${accent === 'teal' ? 'from-teal-100 to-slate-100' : 'from-purple-100 to-slate-100'}`}>
-                                {accent === 'teal' ? <RefreshCw className="w-7 h-7 text-teal-300" /> : <BookOpen className="w-7 h-7 text-purple-300" />}
+                                {accent === 'teal' ? <RefreshCw className="w-7 h-7 text-teal-300" /> : <BookOpen className="w-7 h-7 text-[#A78BFA]/60" />}
                             </div>
                         )}
                         {data.description && (
-                            <p className="text-[11px] text-slate-500 leading-relaxed mt-2 line-clamp-2">
+                            <p className="text-[11px] text-muted-foreground leading-relaxed mt-2 line-clamp-2">
                                 {data.description}
                             </p>
                         )}
@@ -296,21 +296,21 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
 
                     {/* Task list */}
                     <div className="flex-1 overflow-y-auto py-2">
-                        <p className="px-4 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <p className="px-4 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                             {tab === 'refresh' ? 'Refresh Sections' : 'Sections'}
                         </p>
                         {activeSections.length === 0
-                            ? <p className="px-4 py-3 text-xs text-slate-400 italic">No sections yet</p>
+                            ? <p className="px-4 py-3 text-xs text-muted-foreground italic">No sections yet</p>
                             : activeSections.map((sec, i) => {
                                 const qCount = sec.blocks.filter(b => b.kind === 'question').length
                                 const isCollapsed = collapsedSections[sec.id]
                                 return (
                                     <button key={sec.id} type="button"
                                         onClick={() => scrollTo(sec.id)}
-                                        className={`w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-slate-50 transition-colors group border-l-2 border-transparent ${accent === 'teal' ? 'hover:border-teal-300' : 'hover:border-purple-300'}`}>
+                                        className={`w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-surface-subtle transition-colors group border-l-2 border-transparent ${accent === 'teal' ? 'hover:border-teal-300' : 'hover:border-[#7C3AED]/40'}`}>
                                         {(() => {
-                                            let badgeCls = accent === 'teal' ? 'bg-teal-600 text-white' : 'bg-purple-600 text-white'
-                                            if (isCollapsed) badgeCls = 'bg-slate-100 text-slate-400'
+                                            let badgeCls = accent === 'teal' ? 'bg-teal-600 text-white' : 'bg-[#7C3AED] text-white'
+                                            if (isCollapsed) badgeCls = 'bg-surface text-muted-foreground'
                                             return (
                                                 <span className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${badgeCls}`}>
                                                     {i + 1}
@@ -318,11 +318,11 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                                             )
                                         })()}
                                         <div className="min-w-0">
-                                            <p className={`text-xs font-semibold text-slate-700 truncate transition-colors ${accent === 'teal' ? 'group-hover:text-teal-700' : 'group-hover:text-purple-700'}`}>
+                                            <p className={`text-xs font-semibold text-foreground truncate transition-colors ${accent === 'teal' ? 'group-hover:text-teal-700' : 'group-hover:text-[#A78BFA]'}`}>
                                                 {sec.title || `Section ${i + 1}`}
                                             </p>
                                             {qCount > 0 && (
-                                                <p className="text-[10px] text-slate-400 mt-0.5">
+                                                <p className="text-[10px] text-muted-foreground mt-0.5">
                                                     {qCount} {qCount === 1 ? 'question' : 'questions'}
                                                 </p>
                                             )}
@@ -336,7 +336,7 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                 {/* ── Main scrollable content ── */}
                 <div className="flex-1 overflow-y-auto">
                     {activeSections.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-400">
+                        <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
                             <Layers className="w-10 h-10 text-slate-200" />
                             <p className="text-sm font-medium">No sections to preview</p>
                         </div>
@@ -354,22 +354,22 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                                         <div
                                             key={sec.id}
                                             ref={el => { sectionRefs.current[sec.id] = el }}
-                                            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden scroll-mt-4"
+                                            className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden scroll-mt-4"
                                         >
                                             <button
                                                 type="button"
                                                 onClick={() => toggleSection(sec.id)}
-                                                className="w-full flex items-center gap-3 px-6 py-4 bg-white hover:bg-slate-50 transition-colors text-left group"
+                                                className="w-full flex items-center gap-3 px-6 py-4 bg-surface hover:bg-surface-subtle transition-colors text-left group"
                                             >
-                                                <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${accent === 'teal' ? 'bg-teal-600' : 'bg-purple-600'}`}>
+                                                <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${accent === 'teal' ? 'bg-teal-600' : 'bg-[#7C3AED]'}`}>
                                                     {i + 1}
                                                 </span>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className={`text-base font-bold text-slate-800 transition-colors truncate ${accent === 'teal' ? 'group-hover:text-teal-700' : 'group-hover:text-purple-700'}`}>
+                                                    <p className={`text-base font-bold text-foreground transition-colors truncate ${accent === 'teal' ? 'group-hover:text-teal-700' : 'group-hover:text-[#A78BFA]'}`}>
                                                         {sec.title || `Section ${i + 1}`}
                                                     </p>
                                                     {qCount > 0 && (
-                                                        <p className="text-[11px] text-slate-400 mt-0.5">
+                                                        <p className="text-[11px] text-muted-foreground mt-0.5">
                                                             {qCount} {qCount === 1 ? 'question' : 'questions'}
                                                         </p>
                                                     )}
@@ -377,7 +377,7 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                                                 <motion.div
                                                     animate={{ rotate: isCollapsed ? -90 : 0 }}
                                                     transition={{ duration: 0.2 }}
-                                                    className={`text-slate-400 flex-shrink-0 ${accent === 'teal' ? 'group-hover:text-teal-500' : 'group-hover:text-purple-500'}`}
+                                                    className={`text-muted-foreground flex-shrink-0 ${accent === 'teal' ? 'group-hover:text-teal-500' : 'group-hover:text-[#A78BFA]'}`}
                                                 >
                                                     <ChevronDown className="w-5 h-5" />
                                                 </motion.div>
@@ -392,7 +392,7 @@ export function ModulePreview({ data, onClose }: { readonly data: ModuleFormData
                                                         transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
                                                         className="overflow-hidden"
                                                     >
-                                                        <div className="px-6 pb-6 pt-1 flex flex-col gap-5 border-t border-slate-100">
+                                                        <div className="px-6 pb-6 pt-1 flex flex-col gap-5 border-t border-border">
                                                             <SectionBlockList
                                                                 blocks={sec.blocks}
                                                                 baseQIndex={baseQIndex}

@@ -16,24 +16,24 @@ export function TemplateCard({ template, excerpt, onPreview, onEdit, onDelete, d
   const updated = new Date(template.updated_at).toLocaleString();
 
   return (
-    <Card className="bg-white/90 hover:shadow-lg transition-shadow">
+    <Card className="bg-background/90 hover:shadow-lg transition-shadow">
       <CardHeader className="space-y-2">
-        <CardTitle className="flex items-center gap-2 text-slate-900">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           {template.name}
         </CardTitle>
-        <CardDescription className="text-slate-600">{template.subject}</CardDescription>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <CardDescription className="text-muted-foreground">{template.subject}</CardDescription>
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {template.category && (
-            <span className="rounded-full bg-purple-50 px-3 py-1 text-purple-700 border border-purple-100">
+            <span className="rounded-full bg-primary/10 px-3 py-1 text-primary border border-purple-100">
               {template.category}
             </span>
           )}
-          <span className="rounded-full bg-slate-100 px-3 py-1">{updated}</span>
+          <span className="rounded-full bg-muted px-3 py-1">{updated}</span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 text-sm text-slate-700">
-        {template.description && <p className="text-slate-600">{template.description}</p>}
-        <p className="text-slate-500 leading-relaxed">
+      <CardContent className="space-y-3 text-sm text-foreground/90">
+        {template.description && <p className="text-muted-foreground">{template.description}</p>}
+        <p className="text-muted-foreground leading-relaxed">
           {excerpt}
           {excerpt.length === 140 && "…"}
         </p>
@@ -59,7 +59,7 @@ export function TemplateCard({ template, excerpt, onPreview, onEdit, onDelete, d
             Delete
           </Button>
         </div>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-muted-foreground">
           Updated {new Date(template.updated_at).toLocaleDateString()}
         </span>
       </CardFooter>

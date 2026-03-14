@@ -161,7 +161,7 @@ export function NewContentModal({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 16 }}
                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        className="w-full max-w-lg max-h-[85vh] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
+                        className="w-full max-w-lg max-h-[85vh] bg-surface rounded-xl shadow-2xl overflow-hidden flex flex-col border border-border"
                     >
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                             <h2 className="text-lg font-bold text-gray-900">New Content</h2>
