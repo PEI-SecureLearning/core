@@ -25,11 +25,10 @@ type ContentItem = {
         filename: string;
         content_type: string;
         size: number;
-        storage?: "inline" | "gridfs" | "garage" | null;
+        storage?: "garage" | null;
         object_key?: string | null;
         etag?: string | null;
         file_url?: string | null;
-        data_base64?: string | null;
     } | null;
 };
 

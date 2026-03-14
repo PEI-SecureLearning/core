@@ -20,11 +20,10 @@ type ContentDetail = {
         filename: string;
         content_type: string;
         size: number;
-        storage?: 'inline' | 'gridfs' | 'garage' | null;
+        storage?: 'garage' | null;
         object_key?: string | null;
         etag?: string | null;
         file_url?: string | null;
-        data_base64?: string | null;
     } | null;
     created_at: string;
     updated_at: string;
@@ -75,11 +74,7 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
     // Load protected file preview
     const isImageFile = !!content?.file?.content_type?.startsWith('image/');
     const isVideoFile = !!content?.file?.content_type?.startsWith('video/');
-    const inlineFileDataUrl =
-        content?.file?.data_base64 && content.file.content_type
-            ? `data:${content.file.content_type};base64,${content.file.data_base64}`
-            : null;
-    const previewFileUrl = inlineFileDataUrl || content?.file?.file_url || null;
+    const previewFileUrl = content?.file?.file_url || null;
 
     const handleDelete = async () => {
         if (!content) return;

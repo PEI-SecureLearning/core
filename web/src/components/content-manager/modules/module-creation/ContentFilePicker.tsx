@@ -37,11 +37,10 @@ export interface ContentFileItem {
         filename:     string
         content_type: string
         size:         number
-        storage?:     'inline' | 'gridfs' | 'garage' | null
+        storage?:     'garage' | null
         object_key?:  string | null
         etag?:        string | null
         file_url?:    string | null
-        data_base64?: string | null
     } | null
 }
 
@@ -88,15 +87,11 @@ function humanSize(bytes: number): string {
 
 /** Build a URL we can hand to <img> / <video> / etc. */
 function resolveUrl(item: ContentFileItem): string {
-    if (item.file?.data_base64 && item.file.content_type)
-        return `data:${item.file.content_type};base64,${item.file.data_base64}`
     if (item.file?.file_url) return item.file.file_url
     return ''
 }
 
 function resolvePreviewUrl(item: ContentFileItem): string | null {
-    if (item.file?.data_base64 && item.file.content_type)
-        return `data:${item.file.content_type};base64,${item.file.data_base64}`
     if (item.file?.file_url) return item.file.file_url
     return null
 }
@@ -243,7 +238,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
     // ── Select a file ────────────────────────────────────────────────────────
 
     const handleSelect = async (item: ContentFileItem) => {
-        if (item.file?.data_base64 || item.file?.file_url) {
+        if (item.file?.file_url) {
             onSelect(resolveUrl(item), item)
             return
         }

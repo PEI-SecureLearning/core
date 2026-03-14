@@ -6,7 +6,6 @@ from bson import ObjectId
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
     AsyncIOMotorCollection,
-    AsyncIOMotorGridFSBucket,
 )
 
 from src.core.settings import settings
@@ -43,12 +42,6 @@ def get_modules_collection() -> AsyncIOMotorCollection:
     client = _get_client()
     db = client[settings.MONGODB_DB]
     return db[settings.MONGODB_COLLECTION_MODULES]
-
-
-def get_content_gridfs_bucket() -> AsyncIOMotorGridFSBucket:
-    client = _get_client()
-    db = client[settings.MONGODB_DB]
-    return AsyncIOMotorGridFSBucket(db, bucket_name=settings.MONGODB_GRIDFS_BUCKET)
 
 
 async def close_mongo_client() -> None:
