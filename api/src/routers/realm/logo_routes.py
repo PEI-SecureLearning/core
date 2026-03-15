@@ -54,10 +54,5 @@ async def upload_realm_logo(
     dependencies=[Depends(Roles(Resource.ADMIN, Scope.VIEW))]
 )
 async def get_realm_logo(realm: SafeRealm):
-    doc = await realm_service.get_tenant_logo(realm)
-    if not doc or not doc.get("data"):
-        raise HTTPException(status_code=404, detail="Tenant logo not found")
-
-    content_type = doc.get("content_type") or "application/octet-stream"
-    data = bytes(doc.get("data"))
+    data, content_type = await realm_service.get_tenant_logo_bytes(realm)
     return StreamingResponse(iter([data]), media_type=content_type)

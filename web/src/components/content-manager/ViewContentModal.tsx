@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Trash2, X } from 'lucide-react';
+import { Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
 type ContentDetail = {
     content_piece_id: string;
+    folder_id?: string | null;
     path: string;
     title: string;
     description: string | null;
@@ -20,46 +21,77 @@ type ContentDetail = {
         filename: string;
         content_type: string;
         size: number;
+        storage?: 'garage' | null;
+        object_key?: string | null;
+        etag?: string | null;
         file_url?: string | null;
-        data_base64?: string | null;
     } | null;
     created_at: string;
     updated_at: string;
 };
 
+type ContentFolder = {
+    folder_id: string;
+    path: string;
+};
+
 interface ViewContentModalProps {
     contentPieceId: string | null;
+    startInEditMode?: boolean;
     onClose: () => void;
-    onDeleted: () => void;
+    onUpdated: () => void;
 }
 
-export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewContentModalProps) {
+export function ViewContentModal({ contentPieceId, startInEditMode = false, onClose, onUpdated }: ViewContentModalProps) {
     const { keycloak } = useKeycloak();
     const [content, setContent] = useState<ContentDetail | null>(null);
+    const [folders, setFolders] = useState<ContentFolder[]>([]);
     const [loading, setLoading] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [protectedPreviewUrl, setProtectedPreviewUrl] = useState<string | null>(null);
-
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [folderId, setFolderId] = useState('fld_root');
+    const [body, setBody] = useState('');
+    const [sourceUrl, setSourceUrl] = useState('');
+    const [tagsInput, setTagsInput] = useState('');
     const open = !!contentPieceId;
+
+    const sortedFolders = useMemo(
+        () => [...folders].sort((left, right) => left.path.localeCompare(right.path, undefined, { sensitivity: 'base', numeric: true })),
+        [folders]
+    );
 
     // Fetch content details when contentPieceId changes
     useEffect(() => {
         if (!contentPieceId) {
             setContent(null);
+            setIsEditing(false);
             return;
         }
 
         const fetchDetails = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`${API_BASE}/content/${encodeURIComponent(contentPieceId)}`, {
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                    },
-                });
-                if (!res.ok) throw new Error('Failed to load details');
-                const data = await res.json();
+                const headers = {
+                    Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                };
+                const [contentRes, foldersRes] = await Promise.all([
+                    fetch(`${API_BASE}/content/${encodeURIComponent(contentPieceId)}`, { headers }),
+                    fetch(`${API_BASE}/content/folders`, { headers }),
+                ]);
+                if (!contentRes.ok || !foldersRes.ok) throw new Error('Failed to load details');
+                const data = await contentRes.json() as ContentDetail;
+                const folderData = await foldersRes.json() as ContentFolder[];
                 setContent(data);
+                setFolders(folderData);
+                setTitle(data.title);
+                setDescription(data.description || '');
+                setFolderId(data.folder_id || 'fld_root');
+                setBody(data.body || '');
+                setSourceUrl(data.source_url || '');
+                setTagsInput(data.tags.join(', '));
+                setIsEditing(startInEditMode);
             } catch {
                 toast.error('Could not load content details.');
                 onClose();
@@ -69,95 +101,69 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
         };
 
         fetchDetails().catch(() => undefined);
-    }, [contentPieceId, keycloak.token]);
+    }, [contentPieceId, keycloak.token, onClose, startInEditMode]);
 
     // Load protected file preview
     const isImageFile = !!content?.file?.content_type?.startsWith('image/');
     const isVideoFile = !!content?.file?.content_type?.startsWith('video/');
-    const inlineFileDataUrl =
-        content?.file?.data_base64 && content.file.content_type
-            ? `data:${content.file.content_type};base64,${content.file.data_base64}`
-            : null;
-    const previewFileUrl = inlineFileDataUrl || protectedPreviewUrl;
+    const previewFileUrl = content?.file?.file_url || null;
 
-    useEffect(() => {
-        if (!content?.file || inlineFileDataUrl) {
-            setProtectedPreviewUrl((prev) => {
-                if (prev) URL.revokeObjectURL(prev);
-                return null;
-            });
+    const handleClose = () => {
+        setContent(null);
+        setIsEditing(false);
+        onClose();
+    };
+
+    const handleSave = async () => {
+        if (!content) return;
+        if (!title.trim()) {
+            toast.error('Title is required.');
+            return;
+        }
+        if (content.content_format === 'link' && !sourceUrl.trim()) {
+            toast.error('Source URL is required.');
+            return;
+        }
+        if (!content.file && content.content_format !== 'link' && !body.trim()) {
+            toast.error('Body is required.');
             return;
         }
 
-        const loadPreview = async () => {
-            try {
-                const res = await fetch(
-                    `${API_BASE}/content/${encodeURIComponent(content.content_piece_id)}/file`,
-                    {
-                        headers: {
-                            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                        },
-                    }
-                );
-                if (!res.ok) throw new Error('Failed to load preview');
-                const blob = await res.blob();
-                const objectUrl = URL.createObjectURL(blob);
-                setProtectedPreviewUrl((prev) => {
-                    if (prev) URL.revokeObjectURL(prev);
-                    return objectUrl;
-                });
-            } catch {
-                setProtectedPreviewUrl((prev) => {
-                    if (prev) URL.revokeObjectURL(prev);
-                    return null;
-                });
-            }
-        };
-
-        void loadPreview();
-
-        return () => {
-            setProtectedPreviewUrl((prev) => {
-                if (prev) URL.revokeObjectURL(prev);
-                return null;
-            });
-        };
-    }, [content?.content_piece_id, content?.file, inlineFileDataUrl, keycloak.token]);
-
-    const handleDelete = async () => {
-        if (!content) return;
-        const confirmed = window.confirm('Delete this content piece?');
-        if (!confirmed) return;
-
-        setIsDeleting(true);
+        setIsSaving(true);
         try {
-            const res = await fetch(
-                `${API_BASE}/content/${encodeURIComponent(content.content_piece_id)}`,
-                {
-                    method: 'DELETE',
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
-                    },
-                }
-            );
-            if (!res.ok) throw new Error('Failed to delete');
-            toast.success('Content deleted successfully.');
-            onDeleted();
-            onClose();
+            const res = await fetch(`${API_BASE}/content/${encodeURIComponent(content.content_piece_id)}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                },
+                body: JSON.stringify({
+                    folder_id: folderId,
+                    title: title.trim(),
+                    description: description.trim() || null,
+                    body: content.file || content.content_format === 'link' ? null : body,
+                    source_url: content.content_format === 'link' ? sourceUrl.trim() : null,
+                    tags: tagsInput.split(',').map((tag) => tag.trim()).filter(Boolean),
+                }),
+            });
+            if (!res.ok) throw new Error('Failed to update content');
+            const updated = await res.json() as ContentDetail;
+            setContent(updated);
+            setTitle(updated.title);
+            setDescription(updated.description || '');
+            setFolderId(updated.folder_id || 'fld_root');
+            setBody(updated.body || '');
+            setSourceUrl(updated.source_url || '');
+            setTagsInput(updated.tags.join(', '));
+            setIsEditing(false);
+            onUpdated();
+            toast.success('Content updated successfully.');
+            handleClose();
         } catch {
-            toast.error('Could not delete content.');
+            toast.error('Could not update content.');
         } finally {
-            setIsDeleting(false);
+            setIsSaving(false);
         }
-    };
-
-    const handleClose = () => {
-        setProtectedPreviewUrl((prev) => {
-            if (prev) URL.revokeObjectURL(prev);
-            return null;
-        });
-        setContent(null);
-        onClose();
     };
 
     return (
@@ -168,7 +174,7 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
                     onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
                 >
                     <motion.div
@@ -212,17 +218,58 @@ export function ViewContentModal({ contentPieceId, onClose, onDeleted }: ViewCon
                                             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#7C3AED]/15 text-[#A78BFA] uppercase">
                                                 {content.content_format}
                                             </span>
-                                            <button
-                                                type="button"
-                                                disabled={isDeleting}
-                                                onClick={handleDelete}
-                                                className="flex items-center gap-1 rounded-lg border border-red-400/30 px-3 py-1 text-xs font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-60 transition-colors"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                                {isDeleting ? 'Deleting…' : 'Delete'}
-                                            </button>
                                         </div>
                                     </div>
+
+                                    {isEditing && (
+                                        <div className="space-y-4 rounded-lg border border-[#7C3AED]/20 bg-[#7C3AED]/8 p-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Title</label>
+                                                    <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Folder</label>
+                                                    <select value={folderId} onChange={(e) => setFolderId(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30">
+                                                        {sortedFolders.map((folder) => (
+                                                            <option key={folder.folder_id} value={folder.folder_id}>{folder.path}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Description</label>
+                                                <input value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
+                                            </div>
+                                            {!content.file && content.content_format !== 'link' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Body</label>
+                                                    <textarea value={body} onChange={(e) => setBody(e.target.value)} className="min-h-28 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
+                                                </div>
+                                            )}
+                                            {content.content_format === 'link' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Source URL</label>
+                                                    <input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
+                                                </div>
+                                            )}
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tags</label>
+                                                <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30" />
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <button
+                                                    type="button"
+                                                    disabled={isSaving}
+                                                    onClick={handleSave}
+                                                    className="flex items-center gap-1 rounded-lg bg-[#7C3AED] px-3 py-2 text-xs font-semibold text-white hover:bg-[#6D28D9] disabled:opacity-60"
+                                                >
+                                                    <Save className="w-3 h-3" />
+                                                    {isSaving ? 'Saving...' : 'Save'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Metadata grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-sm text-foreground rounded-lg bg-surface-subtle p-4 border border-border">

@@ -19,13 +19,9 @@ const gridClass: Record<GridCols, string> = {
 
 // ── Adapt Module → CardItem ────────────────────────────────────────────────────
 
-function moduleToCardItem(mod: Module, token?: string): CardItem {
+function moduleToCardItem(mod: Module, coverImageUrl?: string): CardItem {
     const sectionCount = mod.sections?.length ?? 0
     const diffColor = DIFFICULTY_COLORS[mod.difficulty ?? 'Easy'] ?? DIFFICULTY_COLORS['Easy']
-
-    const coverImageUrl = mod.cover_image
-        ? `${API_BASE}/content/${encodeURIComponent(mod.cover_image)}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`
-        : undefined
 
     return {
         id: mod.id,
@@ -73,6 +69,7 @@ interface ModuleDisplayProps {
 export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResultCountChange }: ModuleDisplayProps) {
     const { keycloak } = useKeycloak()
     const [modules, setModules] = useState<Module[]>([])
+    const [coverUrls, setCoverUrls] = useState<Record<string, string>>({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -104,6 +101,42 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
         void load()
         return () => { cancelled = true }
     }, [keycloak.token, debouncedSearch, sort])
+
+    useEffect(() => {
+        let cancelled = false
+        const coverIds = Array.from(new Set(modules.map((mod) => mod.cover_image).filter(Boolean))) as string[]
+
+        if (coverIds.length === 0) {
+            setCoverUrls({})
+            return
+        }
+
+        async function loadCoverUrls() {
+            const entries = await Promise.all(
+                coverIds.map(async (coverId) => {
+                    try {
+                        const res = await fetch(`${API_BASE}/content/${encodeURIComponent(coverId)}/file-url`, {
+                            headers: {
+                                Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                            },
+                        })
+                        if (!res.ok) return [coverId, ''] as const
+                        const payload = await res.json() as { url: string | null }
+                        return [coverId, payload.url ?? ''] as const
+                    } catch {
+                        return [coverId, ''] as const
+                    }
+                })
+            )
+
+            if (!cancelled) {
+                setCoverUrls(Object.fromEntries(entries.filter(([, value]) => value)))
+            }
+        }
+
+        void loadCoverUrls()
+        return () => { cancelled = true }
+    }, [modules, keycloak.token])
 
     if (loading) {
         return (
@@ -177,7 +210,7 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
                             className="rounded-xl cursor-pointer"
                         >
                             <CourseCard
-                                item={moduleToCardItem(mod, keycloak.token)}
+                                item={moduleToCardItem(mod, mod.cover_image ? coverUrls[mod.cover_image] : undefined)}
                                 cols={cols}
                                 basePath="/content-manager/modules"
                                 paramKey="moduleId"

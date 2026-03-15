@@ -37,8 +37,10 @@ export interface ContentFileItem {
         filename:     string
         content_type: string
         size:         number
+        storage?:     'garage' | null
+        object_key?:  string | null
+        etag?:        string | null
         file_url?:    string | null
-        data_base64?: string | null
     } | null
 }
 
@@ -84,12 +86,14 @@ function humanSize(bytes: number): string {
 }
 
 /** Build a URL we can hand to <img> / <video> / etc. */
-function resolveUrl(item: ContentFileItem, apiBase: string): string {
-    if (item.file?.data_base64 && item.file.content_type)
-        return `data:${item.file.content_type};base64,${item.file.data_base64}`
+function resolveUrl(item: ContentFileItem): string {
     if (item.file?.file_url) return item.file.file_url
-    // Fall back to the protected file endpoint — caller must add auth header themselves
-    return `${apiBase}/content/${encodeURIComponent(item.content_piece_id)}/file`
+    return ''
+}
+
+function resolvePreviewUrl(item: ContentFileItem): string | null {
+    if (item.file?.file_url) return item.file.file_url
+    return null
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -234,21 +238,22 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
     // ── Select a file ────────────────────────────────────────────────────────
 
     const handleSelect = async (item: ContentFileItem) => {
-        if (item.file?.data_base64 || item.file?.file_url) {
-            onSelect(resolveUrl(item, API_BASE), item)
+        if (item.file?.file_url) {
+            onSelect(resolveUrl(item), item)
             return
         }
         setSelecting(item.content_piece_id)
         try {
             const res = await fetch(
-                `${API_BASE}/content/${encodeURIComponent(item.content_piece_id)}/file`,
+                `${API_BASE}/content/${encodeURIComponent(item.content_piece_id)}/file-url`,
                 { headers: { Authorization: token ? `Bearer ${token}` : '' } }
             )
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
-            const blob = await res.blob()
-            onSelect(URL.createObjectURL(blob), item)
+            const payload = await res.json() as { url: string | null }
+            if (!payload.url) throw new Error('Missing file URL')
+            onSelect(payload.url, item)
         } catch {
-            onSelect(resolveUrl(item, API_BASE), item)
+            onSelect('', item)
         } finally {
             setSelecting(null)
         }
@@ -370,14 +375,15 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                         <div className="divide-y divide-slate-50">
                             {visibleItems.map(item => {
                                 const isSelecting = selecting === item.content_piece_id
+                                const previewUrl = resolvePreviewUrl(item)
                                 return (
                                     <div key={item.id}
                                         className="flex items-center gap-3 px-4 py-3 hover:bg-[#7C3AED]/10/50 transition-colors">
                                         {item.file ? fileIcon(item.file.content_type) : <FileText className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />}
 
-                                        {item.file?.content_type.startsWith('image/') && item.file.data_base64 && (
+                                        {item.file?.content_type.startsWith('image/') && previewUrl && (
                                             <img
-                                                src={`data:${item.file.content_type};base64,${item.file.data_base64}`}
+                                                src={previewUrl}
                                                 alt=""
                                                 className="w-10 h-10 rounded object-cover border border-border flex-shrink-0"
                                             />
@@ -608,4 +614,3 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
         </div>
     )
 }
-
