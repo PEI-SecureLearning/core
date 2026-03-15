@@ -3,37 +3,32 @@ import { useState, useRef, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import {
   LayoutDashboard,
-  Megaphone,
   FileText,
-  Users,
-  BarChart3,
   Settings,
   AlertCircle,
   CircleQuestionMark,
   PanelLeftClose,
   PanelLeftOpen,
-  Building2,
-  ScrollText,
-  ShieldCheck,
   BookOpen,
   Blocks,
   FileStack,
-  Send,
-  User,
-  Package,
   ChevronDown,
   GraduationCap,
   Fish,
-  FolderCog,
 } from "lucide-react";
+import {
+  adminDashboardLink,
+  adminLinks,
+  getUserNavigationGroups,
+  userDashboardLink,
+  userStandaloneLinks,
+} from "@/lib/navigation";
 
 interface SidebarLinkProps {
   href: string;
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  roles?: string[];
   exact?: boolean;
-  feature?: string;
 }
 
 interface SidebarGroupProps {
@@ -42,65 +37,6 @@ interface SidebarGroupProps {
   links: SidebarLinkProps[];
   isCollapsed: boolean;
 }
-
-const adminLinks: SidebarLinkProps[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN"], exact: true },
-  { href: "/admin/tenants", label: "Tenants", icon: Building2, roles: ["ADMIN"] },
-  { href: "/admin/logs", label: "Logs", icon: ScrollText, roles: ["ADMIN"] },
-  { href: "/admin/settings", label: "Settings", icon: Settings, roles: ["ADMIN"] },
-];
-
-const userDashboard: SidebarLinkProps = {
-  href: "/dashboard",
-  label: "Dashboard",
-  icon: LayoutDashboard,
-  exact: true,
-};
-
-const userStandaloneLinks: SidebarLinkProps[] = [
-  
-  {
-    href: "/statistics",
-    label: "Statistics",
-    icon: BarChart3,
-  },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
-
-const userGroups = (realmFeatures: Record<string, boolean>, userRoles: string[]) => {
-  const hasRole = (role: string) => userRoles.includes(role);
-  const hasFeature = (f: string) => !!realmFeatures[f];
-  const groups: Omit<SidebarGroupProps, "isCollapsed">[] = [];
-
-  const phishingLinks: SidebarLinkProps[] = [];
-  if (hasRole("ORG_MANAGER") && hasFeature("phishing")) {
-    phishingLinks.push(
-      { href: "/campaigns", label: "Campaigns", icon: Megaphone },
-      { href: "/sending-profiles", label: "Sending Profiles", icon: Send },
-      { href: "/templates", label: "Templates", icon: FileText },
-      { href: "/phishing-kits", label: "Phishing Kits", icon: Package },
-    );
-  }
-  if (phishingLinks.length) groups.push({ label: "Phishing", icon: Fish, links: phishingLinks });
-
-  const lmsLinks: SidebarLinkProps[] = [];
-  if (hasRole("DEFAULT_USER") && hasFeature("lms")) {
-    lmsLinks.push({ href: "/courses", label: "Courses", icon: BookOpen });
-  }
-  if (lmsLinks.length) groups.push({ label: "LMS", icon: GraduationCap, links: lmsLinks });
-
-  const mgmtLinks: SidebarLinkProps[] = [];
-  if (hasRole("ORG_MANAGER")) {
-    mgmtLinks.push(
-      { href: "/tenants-org-manager", label: "Users", icon: User },
-      { href: "/usergroups", label: "User Groups", icon: Users },
-      { href: "/compliance-org-manager", label: "Compliance", icon: ShieldCheck },
-    );
-  }
-  if (mgmtLinks.length) groups.push({ label: "Management", icon: FolderCog, links: mgmtLinks });
-
-  return groups;
-};
 
 const contentManagerDashboard: SidebarLinkProps = {
   href: "/content-manager",
@@ -268,7 +204,7 @@ export function Sidebar() {
 
   const userRoles = getUserRoles();
   const realmFeatures = getRealmFeatures();
-  const computedUserGroups = userGroups(realmFeatures, userRoles);
+  const computedUserGroups = getUserNavigationGroups(realmFeatures, userRoles);
 
   const reportHref = isAdminRoute ? "/admin/report" : isContentManagerRoute ? "/content-manager/report" : "/report";
   const helpHref = isAdminRoute ? "/admin/help" : isContentManagerRoute ? "/content-manager/help" : "/help";
@@ -296,6 +232,9 @@ export function Sidebar() {
       <nav className="flex-1 py-4 overflow-hidden">
         {isAdminRoute && (
           <ul className="space-y-1">
+            <li>
+              <SidebarLink {...adminDashboardLink} isCollapsed={!expanded} />
+            </li>
             {adminLinks.map((link) => (
               <li key={link.href}>
                 <SidebarLink {...link} isCollapsed={!expanded} />
@@ -323,7 +262,7 @@ export function Sidebar() {
         {isUserRoute && (
           <ul className="space-y-1">
             <li>
-              <SidebarLink {...userDashboard} isCollapsed={!expanded} />
+              <SidebarLink {...userDashboardLink} isCollapsed={!expanded} />
             </li>
             {computedUserGroups.map((group) => (
               <SidebarGroup key={group.label} {...group} sidebarCollapsed={isCollapsed} sidebarExpanded={expanded} />
