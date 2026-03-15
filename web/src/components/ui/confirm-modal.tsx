@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, type ReactNode } from 'react'
+import { useState, useCallback, useMemo, createContext, useContext, type ReactNode } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 
 interface ConfirmOptions {
@@ -17,17 +17,21 @@ const ConfirmContext = createContext<ConfirmContextType | null>(null)
 
 export function useConfirm() {
     const context = useContext(ConfirmContext)
-    if (!context) {
-        throw new Error('useConfirm must be used within a ConfirmProvider')
-    }
-    return context.confirm
+
+    return useCallback((options: ConfirmOptions) => {
+        if (!context) {
+            const accepted = globalThis.confirm(`${options.title}\n\n${options.message}`)
+            return Promise.resolve(accepted)
+        }
+        return context.confirm(options)
+    }, [context])
 }
 
 interface ConfirmState extends ConfirmOptions {
     resolve: (value: boolean) => void
 }
 
-export function ConfirmProvider({ children }: { children: ReactNode }) {
+export function ConfirmProvider({ children }: Readonly<{ children: ReactNode }>) {
     const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
 
     const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
@@ -67,9 +71,10 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     }
 
     const styles = getVariantStyles()
+    const contextValue = useMemo(() => ({ confirm }), [confirm])
 
     return (
-        <ConfirmContext.Provider value={{ confirm }}>
+        <ConfirmContext.Provider value={contextValue}>
             {children}
 
             {/* Modal Overlay */}

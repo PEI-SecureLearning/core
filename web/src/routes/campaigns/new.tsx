@@ -1,15 +1,27 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type ComponentType } from "react";
 import { useKeycloak } from "@react-keycloak/web";
+import {
+  BookOpen,
+  BookOpenCheck,
+  Calendar,
+  CalendarCheck2,
+  MailCheck,
+  Mail,
+  PackageCheck,
+  Package,
+  UserRoundCheck,
+  UserRound
+} from "lucide-react";
 import CampaignForms from "@/components/campaigns/new-campaign/CampaignForms";
-import EmailTemplatePicker from "@/components/campaigns/new-campaign/EmailTemplatePicker";
-import LandingPageTemplatePicker from "@/components/campaigns/new-campaign/LandingPageTemplatePicker";
-import TargetGroupSelector from "@/components/campaigns/new-campaign/TargetGroupSelector";
+import SendingProfilePicker from "@/components/campaigns/new-campaign/SendingProfilePicker";
+import PhishingKitPicker from "../../components/campaigns/new-campaign/PhishingKitPicker";
+import TargetGroupSelector from "../../components/campaigns/new-campaign/TargetGroupSelector";
 import CampaignScheduler from "@/components/campaigns/new-campaign/CampaignScheduler";
 import Stepper, { Step } from "@/components/ui/Stepper";
 import {
   CampaignProvider,
-  useCampaign,
+  useCampaign
 } from "@/components/campaigns/new-campaign/CampaignContext";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -18,9 +30,9 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 export const Route = createFileRoute("/campaigns/new")({
   validateSearch: z.object({
-    groupId: z.string().optional(),
+    groupId: z.string().optional()
   }),
-  component: RouteComponent,
+  component: RouteComponent
 });
 
 interface StepConfig {
@@ -37,26 +49,41 @@ function CampaignStepper() {
   const steps: StepConfig[] = [
     { name: "forms", label: "Basic Info", component: CampaignForms },
     {
-      name: "email-template",
-      label: "Email Template",
-      component: EmailTemplatePicker,
-    },
-    {
-      name: "page-template",
-      label: "Landing Page",
-      component: LandingPageTemplatePicker,
-    },
-    {
       name: "target-groups",
       label: "Target Groups",
-      component: TargetGroupSelector,
+      component: TargetGroupSelector
+    },
+    {
+      name: "phishing-kits",
+      label: "Phishing Kits",
+      component: PhishingKitPicker
+    },
+    {
+      name: "sending-profiles",
+      label: "Sending Profiles",
+      component: SendingProfilePicker
     },
     {
       name: "schedule",
       label: "Review",
-      component: CampaignScheduler,
-    },
+      component: CampaignScheduler
+    }
   ];
+
+  const stepIcons = [BookOpen, UserRound, Package, Mail, Calendar] as const;
+  const stepCompletedIcons = [
+    BookOpenCheck,
+    UserRoundCheck,
+    PackageCheck,
+    MailCheck,
+    CalendarCheck2
+  ] as const;
+  const sendingProfilesStepIndex =
+    steps.findIndex((step) => step.name === "sending-profiles") + 1;
+  const stepWarnings =
+    data.sending_profile_ids.length === 0 && sendingProfilesStepIndex > 0
+      ? [sendingProfilesStepIndex]
+      : [];
 
   // Validate each step before allowing to proceed
   const validateStep = (step: number): boolean => {
@@ -67,23 +94,19 @@ function CampaignStepper() {
           return false;
         }
         return true;
-      case 2: // Email Template
-        if (!data.email_template_id && !data.email_template) {
-          toast.error("Please select an email template.");
-          return false;
-        }
-        return true;
-      case 3: // Landing Page
-        if (!data.landing_page_template_id && !data.landing_page_template) {
-          toast.error("Please select a landing page template.");
-          return false;
-        }
-        return true;
-      case 4: // Target Groups
+      case 2: // Target Groups
         if (data.user_group_ids.length === 0) {
           toast.error("Please select at least one target group.");
           return false;
         }
+        return true;
+      case 3: // Phishing Kits
+        if (data.phishing_kit_ids.length === 0) {
+          toast.error("Please select at least one phishing kit.");
+          return false;
+        }
+        return true;
+      case 4: // Sending Profiles (not mandatory)
         return true;
       default:
         return true;
@@ -113,9 +136,9 @@ function CampaignStepper() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+          Authorization: keycloak.token ? `Bearer ${keycloak.token}` : ""
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -143,10 +166,12 @@ function CampaignStepper() {
       validateStep={validateStep}
       backButtonText="Previous"
       nextButtonText="Next"
-      stepLabels={steps.map((s) => s.label)}
+      stepIcons={stepIcons}
+      stepCompletedIcons={stepCompletedIcons}
+      stepWarnings={stepWarnings}
     >
-      {steps.map((s, i) => (
-        <Step key={i}>
+      {steps.map((s) => (
+        <Step key={s.name}>
           <s.component />
         </Step>
       ))}
@@ -159,7 +184,7 @@ function RouteComponent() {
   const initialGroupIds = groupId ? [groupId] : [];
 
   return (
-    <div className="size-full p-6 bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+    <div className="size-full p-6 bg-background ">
       <CampaignProvider initialGroupIds={initialGroupIds}>
         <CampaignStepper />
       </CampaignProvider>

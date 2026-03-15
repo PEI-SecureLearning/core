@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse, Response
 
 from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import CurrentRealm, SessionDep
-from src.models.sending_profile import SendingProfileCreate, SendingProfile
+from src.models import SendingProfile, SendingProfileCreate
 from src.services.sending_profile import SendingProfileService
 
 

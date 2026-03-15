@@ -4,12 +4,14 @@ from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
 # Import the models and service we're testing
-from src.models.sending_profile import (
+from src.models import (
+    CustomHeader,
+    CustomHeaderCreate,
     SendingProfile,
     SendingProfileCreate,
     SendingProfileDisplayInfo,
 )
-from src.models.custom_header import CustomHeader, CustomHeaderCreate
+
 from src.services.sending_profile import SendingProfileService
 
 # Fixtures

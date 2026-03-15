@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
 import { Route as TenantsIndexRouteImport } from './routes/tenants/index'
 import { Route as SendingProfilesIndexRouteImport } from './routes/sending-profiles/index'
+import { Route as PhishingKitsIndexRouteImport } from './routes/phishing-kits/index'
 import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as ContentManagerIndexRouteImport } from './routes/content-manager/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
@@ -32,6 +33,8 @@ import { Route as TenantsNewTenantRouteImport } from './routes/tenants/new-tenan
 import { Route as TenantsIdRouteImport } from './routes/tenants/$id'
 import { Route as SendingProfilesNewRouteImport } from './routes/sending-profiles/new'
 import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
+import { Route as PhishingKitsNewRouteImport } from './routes/phishing-kits/new'
+import { Route as PhishingKitsIdRouteImport } from './routes/phishing-kits/$id'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
 import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
 import { Route as ContentManagerSettingsRouteImport } from './routes/content-manager/settings'
@@ -124,6 +127,11 @@ const SendingProfilesIndexRoute = SendingProfilesIndexRouteImport.update({
   path: '/sending-profiles/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhishingKitsIndexRoute = PhishingKitsIndexRouteImport.update({
+  id: '/phishing-kits/',
+  path: '/phishing-kits/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesIndexRoute = CoursesIndexRouteImport.update({
   id: '/courses/',
   path: '/courses/',
@@ -172,6 +180,16 @@ const SendingProfilesNewRoute = SendingProfilesNewRouteImport.update({
 const SendingProfilesIdRoute = SendingProfilesIdRouteImport.update({
   id: '/sending-profiles/$id',
   path: '/sending-profiles/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhishingKitsNewRoute = PhishingKitsNewRouteImport.update({
+  id: '/phishing-kits/new',
+  path: '/phishing-kits/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhishingKitsIdRoute = PhishingKitsIdRouteImport.update({
+  id: '/phishing-kits/$id',
+  path: '/phishing-kits/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
@@ -338,6 +356,8 @@ export interface FileRoutesByFullPath {
   '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/phishing-kits/$id': typeof PhishingKitsIdRoute
+  '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/tenants/$id': typeof TenantsIdRoute
@@ -345,12 +365,13 @@ export interface FileRoutesByFullPath {
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/admin/': typeof AdminIndexRoute
-  '/campaigns': typeof CampaignsIndexRoute
-  '/content-manager': typeof ContentManagerIndexRoute
-  '/courses': typeof CoursesIndexRoute
-  '/sending-profiles': typeof SendingProfilesIndexRoute
-  '/tenants': typeof TenantsIndexRoute
-  '/usergroups': typeof UsergroupsIndexRoute
+  '/campaigns/': typeof CampaignsIndexRoute
+  '/content-manager/': typeof ContentManagerIndexRoute
+  '/courses/': typeof CoursesIndexRoute
+  '/phishing-kits/': typeof PhishingKitsIndexRoute
+  '/sending-profiles/': typeof SendingProfilesIndexRoute
+  '/tenants/': typeof TenantsIndexRoute
+  '/usergroups/': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
@@ -358,7 +379,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/courses/new': typeof ContentManagerCoursesNewRoute
   '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
   '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
-  '/admin/tenants': typeof AdminTenantsIndexRoute
+  '/admin/tenants/': typeof AdminTenantsIndexRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
@@ -387,6 +408,8 @@ export interface FileRoutesByTo {
   '/content-manager/report': typeof ContentManagerReportRoute
   '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
+  '/phishing-kits/$id': typeof PhishingKitsIdRoute
+  '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/tenants/$id': typeof TenantsIdRoute
@@ -397,6 +420,7 @@ export interface FileRoutesByTo {
   '/campaigns': typeof CampaignsIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
   '/courses': typeof CoursesIndexRoute
+  '/phishing-kits': typeof PhishingKitsIndexRoute
   '/sending-profiles': typeof SendingProfilesIndexRoute
   '/tenants': typeof TenantsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
@@ -439,6 +463,8 @@ export interface FileRoutesById {
   '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/phishing-kits/$id': typeof PhishingKitsIdRoute
+  '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/tenants/$id': typeof TenantsIdRoute
@@ -449,6 +475,7 @@ export interface FileRoutesById {
   '/campaigns/': typeof CampaignsIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
   '/courses/': typeof CoursesIndexRoute
+  '/phishing-kits/': typeof PhishingKitsIndexRoute
   '/sending-profiles/': typeof SendingProfilesIndexRoute
   '/tenants/': typeof TenantsIndexRoute
   '/usergroups/': typeof UsergroupsIndexRoute
@@ -492,6 +519,8 @@ export interface FileRouteTypes {
     | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
+    | '/phishing-kits/$id'
+    | '/phishing-kits/new'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
     | '/tenants/$id'
@@ -499,12 +528,13 @@ export interface FileRouteTypes {
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/admin/'
-    | '/campaigns'
-    | '/content-manager'
-    | '/courses'
-    | '/sending-profiles'
-    | '/tenants'
-    | '/usergroups'
+    | '/campaigns/'
+    | '/content-manager/'
+    | '/courses/'
+    | '/phishing-kits/'
+    | '/sending-profiles/'
+    | '/tenants/'
+    | '/usergroups/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/content-manager/content/$contentPieceId'
@@ -512,7 +542,7 @@ export interface FileRouteTypes {
     | '/content-manager/courses/new'
     | '/content-manager/modules/$moduleId'
     | '/content-manager/modules/new'
-    | '/admin/tenants'
+    | '/admin/tenants/'
     | '/courses/$courseId/'
     | '/courses/$courseId/modules/$moduleId'
   fileRoutesByTo: FileRoutesByTo
@@ -541,6 +571,8 @@ export interface FileRouteTypes {
     | '/content-manager/report'
     | '/content-manager/settings'
     | '/content-manager/templates'
+    | '/phishing-kits/$id'
+    | '/phishing-kits/new'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
     | '/tenants/$id'
@@ -551,6 +583,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/content-manager'
     | '/courses'
+    | '/phishing-kits'
     | '/sending-profiles'
     | '/tenants'
     | '/usergroups'
@@ -592,6 +625,8 @@ export interface FileRouteTypes {
     | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
+    | '/phishing-kits/$id'
+    | '/phishing-kits/new'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
     | '/tenants/$id'
@@ -602,6 +637,7 @@ export interface FileRouteTypes {
     | '/campaigns/'
     | '/content-manager/'
     | '/courses/'
+    | '/phishing-kits/'
     | '/sending-profiles/'
     | '/tenants/'
     | '/usergroups/'
@@ -639,6 +675,8 @@ export interface RootRouteChildren {
   ContentManagerSettingsRoute: typeof ContentManagerSettingsRoute
   ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
+  PhishingKitsIdRoute: typeof PhishingKitsIdRoute
+  PhishingKitsNewRoute: typeof PhishingKitsNewRoute
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
   SendingProfilesNewRoute: typeof SendingProfilesNewRoute
   TenantsIdRoute: typeof TenantsIdRoute
@@ -648,6 +686,7 @@ export interface RootRouteChildren {
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
+  PhishingKitsIndexRoute: typeof PhishingKitsIndexRoute
   SendingProfilesIndexRoute: typeof SendingProfilesIndexRoute
   TenantsIndexRoute: typeof TenantsIndexRoute
   UsergroupsIndexRoute: typeof UsergroupsIndexRoute
@@ -732,42 +771,49 @@ declare module '@tanstack/react-router' {
     '/usergroups/': {
       id: '/usergroups/'
       path: '/usergroups'
-      fullPath: '/usergroups'
+      fullPath: '/usergroups/'
       preLoaderRoute: typeof UsergroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tenants/': {
       id: '/tenants/'
       path: '/tenants'
-      fullPath: '/tenants'
+      fullPath: '/tenants/'
       preLoaderRoute: typeof TenantsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sending-profiles/': {
       id: '/sending-profiles/'
       path: '/sending-profiles'
-      fullPath: '/sending-profiles'
+      fullPath: '/sending-profiles/'
       preLoaderRoute: typeof SendingProfilesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phishing-kits/': {
+      id: '/phishing-kits/'
+      path: '/phishing-kits'
+      fullPath: '/phishing-kits/'
+      preLoaderRoute: typeof PhishingKitsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses/': {
       id: '/courses/'
       path: '/courses'
-      fullPath: '/courses'
+      fullPath: '/courses/'
       preLoaderRoute: typeof CoursesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content-manager/': {
       id: '/content-manager/'
       path: '/content-manager'
-      fullPath: '/content-manager'
+      fullPath: '/content-manager/'
       preLoaderRoute: typeof ContentManagerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
-      fullPath: '/campaigns'
+      fullPath: '/campaigns/'
       preLoaderRoute: typeof CampaignsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -818,6 +864,20 @@ declare module '@tanstack/react-router' {
       path: '/sending-profiles/$id'
       fullPath: '/sending-profiles/$id'
       preLoaderRoute: typeof SendingProfilesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phishing-kits/new': {
+      id: '/phishing-kits/new'
+      path: '/phishing-kits/new'
+      fullPath: '/phishing-kits/new'
+      preLoaderRoute: typeof PhishingKitsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phishing-kits/$id': {
+      id: '/phishing-kits/$id'
+      path: '/phishing-kits/$id'
+      fullPath: '/phishing-kits/$id'
+      preLoaderRoute: typeof PhishingKitsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses/$courseId': {
@@ -942,7 +1002,7 @@ declare module '@tanstack/react-router' {
     '/admin/tenants/': {
       id: '/admin/tenants/'
       path: '/tenants'
-      fullPath: '/admin/tenants'
+      fullPath: '/admin/tenants/'
       preLoaderRoute: typeof AdminTenantsIndexRouteImport
       parentRoute: typeof AdminRoute
     }
@@ -1081,6 +1141,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContentManagerSettingsRoute: ContentManagerSettingsRoute,
   ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
+  PhishingKitsIdRoute: PhishingKitsIdRoute,
+  PhishingKitsNewRoute: PhishingKitsNewRoute,
   SendingProfilesIdRoute: SendingProfilesIdRoute,
   SendingProfilesNewRoute: SendingProfilesNewRoute,
   TenantsIdRoute: TenantsIdRoute,
@@ -1090,6 +1152,7 @@ const rootRouteChildren: RootRouteChildren = {
   CampaignsIndexRoute: CampaignsIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,
   CoursesIndexRoute: CoursesIndexRoute,
+  PhishingKitsIndexRoute: PhishingKitsIndexRoute,
   SendingProfilesIndexRoute: SendingProfilesIndexRoute,
   TenantsIndexRoute: TenantsIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,

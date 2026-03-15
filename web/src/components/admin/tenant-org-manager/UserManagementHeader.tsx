@@ -1,5 +1,7 @@
-import { Search, List, LayoutGrid, Upload, Plus } from "lucide-react";
+import { Upload, Plus } from "lucide-react";
 import { RefObject } from "react";
+import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
+import SearchBar from "@/components/shared/SearchBar";
 
 interface UserManagementHeaderProps {
     searchQuery: string;
@@ -17,49 +19,36 @@ export function UserManagementHeader({
     setView,
     fileInputRef,
     onNewUser,
-}: UserManagementHeaderProps) {
+}: Readonly<UserManagementHeaderProps>) {
     return (
-        <div className="h-16 lg:h-20 w-full flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-4 border-b border-border flex-shrink-0">
-            <div className="flex-shrink-0">
-                <h1 className="font-bold text-base sm:text-lg lg:text-xl text-foreground">
+        <div className="w-full flex flex-col gap-6 px-4 sm:px-6 lg:px-8 pt-8 pb-4 shrink-0">
+            <div className="shrink-0">
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">
                     User Management
                 </h1>
+                <p className="text-muted-foreground text-sm mt-0.5">
+                    Manage users, roles, and organization access.
+                </p>
             </div>
 
-            <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
-                <div className="relative flex-1 max-w-xs lg:max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-                    <input
-                        type="text"
-                        placeholder="Search users..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 text-sm border border-border/60 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent"
-                    />
-                </div>
+            <div className="flex flex-row items-center gap-2 sm:gap-3">
+                <SearchBar
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    placeholder="Search users..."
+                    className="grow"
+                    iconClassName="text-primary"
+                    inputClassName="h-10 rounded-md border-border/60"
+                />
 
-                <div className="hidden sm:flex items-center bg-muted rounded-md p-1">
-                    <button
-                        onClick={() => setView("table")}
-                        className={`p-2 rounded-md transition-colors ${view === "table"
-                                ? "bg-background text-primary shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            } cursor-pointer`}
-                        aria-label="Table view"
-                    >
-                        <List className="h-4 w-4" />
-                    </button>
-                    <button
-                        onClick={() => setView("grid")}
-                        className={`p-2 rounded-md transition-colors ${view === "grid"
-                                ? "bg-background text-primary shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            } cursor-pointer`}
-                        aria-label="Grid view"
-                    >
-                        <LayoutGrid className="h-4 w-4" />
-                    </button>
-                </div>
+                <DisplayModeToggle
+                    value={view}
+                    onChange={setView}
+                    options={[
+                        { value: "table", ariaLabel: "Table view", icon: "table" },
+                        { value: "grid", ariaLabel: "Grid view", icon: "grid" },
+                    ]}
+                />
 
                 <button
                     onClick={() => fileInputRef.current?.click()}

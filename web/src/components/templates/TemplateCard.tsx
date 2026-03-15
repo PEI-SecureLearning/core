@@ -4,12 +4,12 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { Template } from "./types";
 
 interface Props {
-  template: Template;
-  excerpt: string;
-  onPreview: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  deleting: boolean;
+  readonly template: Template;
+  readonly excerpt: string;
+  readonly onPreview: () => void;
+  readonly onEdit: () => void;
+  readonly onDelete: () => void;
+  readonly deleting: boolean;
 }
 
 export function TemplateCard({ template, excerpt, onPreview, onEdit, onDelete, deleting }: Props) {

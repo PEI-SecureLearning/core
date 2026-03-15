@@ -10,7 +10,7 @@ from fastapi import HTTPException, status
 from sqlmodel import Session, select
 
 from src.models import ComplianceAcceptance, TenantComplianceQuiz
-from src.models.compliance_schemas import (
+from src.models import (
     Answer,
     ComplianceDocumentResponse,
     ComplianceStatusResponse,

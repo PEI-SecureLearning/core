@@ -1,11 +1,4 @@
-import {
-  Send,
-  Mail,
-  Trash2,
-  Edit,
-  ChevronRight,
-  Server,
-} from "lucide-react";
+import { Send, Mail, Trash2, Edit, ChevronRight, Server } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
@@ -16,7 +9,7 @@ interface TableProps {
 
 function TableRow({
   profile,
-  onDelete,
+  onDelete
 }: {
   readonly profile: SendingProfileDisplayInfo;
   readonly onDelete?: (id: number) => void;
@@ -70,12 +63,6 @@ function TableRow({
           >
             <Edit className="h-4 w-4" />
           </Link>
-          <Link
-            to={`/sending-profiles/${profile.id}` as any}
-            className="p-2 text-muted-foreground/70 hover:text-primary hover:bg-primary/10 rounded-md transition-all"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Link>
           <button
             onClick={() => onDelete?.(profile.id)}
             className="p-2 text-muted-foreground/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-all cursor-pointer"
@@ -90,7 +77,7 @@ function TableRow({
 
 export default function SendingProfilesTable({
   profiles = [],
-  onDelete,
+  onDelete
 }: TableProps) {
   return (
     <div className="bg-surface border border-border rounded-lg overflow-hidden">
@@ -128,7 +115,9 @@ export default function SendingProfilesTable({
       {profiles.length === 0 && (
         <div className="px-6 py-12 text-center">
           <Send className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3 pl-1" />
-          <p className="text-[14px] font-medium text-muted-foreground">No profiles found</p>
+          <p className="text-[14px] font-medium text-muted-foreground">
+            No profiles found
+          </p>
           <p className="text-[13px] text-muted-foreground/70 mt-1">
             Create your first sending profile
           </p>
@@ -137,5 +126,3 @@ export default function SendingProfilesTable({
     </div>
   );
 }
-
-

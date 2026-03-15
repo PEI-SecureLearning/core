@@ -7,7 +7,7 @@ export interface Campaign {
     end_date: string;
     time_between_sending: number;
     status: CampaignStatus;
-    sending_profile_id: string;
+    sending_profile_ids: string[];
     email_template_id: string;
     landing_page_template_id: string;
     tenant_id: string;
@@ -33,7 +33,7 @@ export const mockCampaigns: Campaign[] = [
         end_date: "2024-12-31",
         time_between_sending: 24,
         status: "active",
-        sending_profile_id: "sp-1",
+        sending_profile_ids: ["sp-1"],
         email_template_id: "et-1",
         landing_page_template_id: "lp-1",
         tenant_id: "tenant-1",
@@ -48,7 +48,7 @@ export const mockCampaigns: Campaign[] = [
         end_date: "2024-11-30",
         time_between_sending: 48,
         status: "completed",
-        sending_profile_id: "sp-2",
+        sending_profile_ids: ["sp-2"],
         email_template_id: "et-2",
         landing_page_template_id: "lp-2",
         tenant_id: "tenant-1",
@@ -63,7 +63,7 @@ export const mockCampaigns: Campaign[] = [
         end_date: "2025-01-15",
         time_between_sending: 72,
         status: "scheduled",
-        sending_profile_id: "sp-1",
+        sending_profile_ids: ["sp-1"],
         email_template_id: "et-3",
         landing_page_template_id: "lp-1",
         tenant_id: "tenant-1",
@@ -78,7 +78,7 @@ export const mockCampaigns: Campaign[] = [
         end_date: "2024-09-15",
         time_between_sending: 24,
         status: "paused",
-        sending_profile_id: "sp-3",
+        sending_profile_ids: ["sp-3"],
         email_template_id: "et-4",
         landing_page_template_id: "lp-3",
         tenant_id: "tenant-1",
@@ -93,7 +93,7 @@ export const mockCampaigns: Campaign[] = [
         end_date: "2024-08-31",
         time_between_sending: 48,
         status: "failed",
-        sending_profile_id: "sp-2",
+        sending_profile_ids: ["sp-2"],
         email_template_id: "et-5",
         landing_page_template_id: "lp-2",
         tenant_id: "tenant-1",

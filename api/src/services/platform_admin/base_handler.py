@@ -3,8 +3,8 @@ from sqlmodel import Session
 
 from src.services.keycloak_admin import get_keycloak_admin
 from src.services.compliance.token_helpers import decode_token_verified, get_realm_from_iss
-from src.models.realm import Realm
-from src.models.user import User
+from src.models import Realm, User
+
 
 
 class base_handler:

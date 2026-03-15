@@ -37,7 +37,8 @@ export default function EditSendingProfile() {
         form.setSmtpHost(data.smtp_host);
         form.setSmtpPort(data.smtp_port);
         form.setUsername(data.username);
-        form.setPassword(data.password || "");
+        // Never prefill SMTP password in edit mode.
+        form.setPassword("");
         if (data.custom_headers) form.setCustomHeaders(data.custom_headers);
       } catch {
         form.setStatus("Failed to load profile data.");
@@ -80,7 +81,7 @@ export default function EditSendingProfile() {
 
   // ── Delete ────────────────────────────────────────────────────────────────
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure? This action cannot be undone.")) return;
+    if (!globalThis.confirm("Are you sure? This action cannot be undone.")) return;
 
     try {
       form.setIsLoading(true);

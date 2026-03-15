@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Search, Filter, Shield, Trash2, Edit2 } from 'lucide-react'
+import { Filter, Shield, Trash2, Edit2 } from 'lucide-react'
+import SearchBar from '@/components/shared/SearchBar'
 
 interface User {
     id: string
@@ -45,13 +46,12 @@ export function UserList() {
             <div className="bg-background rounded-xl border border-border shadow-sm">
                 <div className="p-4 border-b border-border flex gap-4">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        <SearchBar
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={setSearchTerm}
+                            placeholder="Search users..."
+                            iconClassName="text-primary"
+                            inputClassName="h-10 rounded-lg border-border focus-visible:ring-blue-500"
                         />
                     </div>
                     <div className="relative">
@@ -83,7 +83,15 @@ export function UserList() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {filteredUsers.map((user) => (
+                            {filteredUsers.map((user) => {
+                                let roleBadgeClass = 'bg-muted text-foreground'
+                                if (user.role === 'Admin') {
+                                    roleBadgeClass = 'bg-primary/20 text-primary/80'
+                                } else if (user.role === 'Manager') {
+                                    roleBadgeClass = 'bg-blue-100 text-blue-800'
+                                }
+
+                                return (
                                 <tr key={user.id} className="hover:bg-surface-subtle transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -97,10 +105,7 @@ export function UserList() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'Admin' ? 'bg-primary/20 text-primary/80' :
-                                            user.role === 'Manager' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-muted text-foreground'
-                                            }`}>
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleBadgeClass}`}>
                                             {user.role}
                                         </span>
                                     </td>
@@ -125,7 +130,7 @@ export function UserList() {
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )})}
                         </tbody>
                     </table>
                 </div>
