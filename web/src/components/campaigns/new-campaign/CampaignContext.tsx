@@ -5,12 +5,9 @@ export interface CampaignData {
   name: string;
   description: string;
 
-  // Templates (can be existing ids or inline selections)
-  email_template_id: number | null;
-  landing_page_template_id: number | null;
-  email_template: TemplateSelection | null;
-  landing_page_template: TemplateSelection | null;
-  sending_profile_id: number | null;
+  // Templates and Profiles
+  phishing_kit_ids: number[];
+  sending_profile_ids: number[];
 
   // Target Groups
   user_group_ids: string[];
@@ -27,11 +24,8 @@ export interface CampaignCreatePayload {
   begin_date: string;
   end_date: string;
   sending_interval_seconds: number;
-  sending_profile_id: number;
-  email_template_id: number | null;
-  landing_page_template_id: number | null;
-  email_template: TemplateSelection | null;
-  landing_page_template: TemplateSelection | null;
+  sending_profile_ids: number[];
+  phishing_kit_ids: number[];
   user_group_ids: string[];
 }
 
@@ -62,16 +56,15 @@ function getDefaultDates() {
   };
 }
 
-const getInitialCampaignData = (initialGroupIds: string[] = []): CampaignData => {
+const getInitialCampaignData = (
+  initialGroupIds: string[] = [],
+): CampaignData => {
   const { begin_date, end_date } = getDefaultDates();
   return {
     name: "",
     description: "",
-    email_template_id: null,
-    landing_page_template_id: null,
-    email_template: null,
-    landing_page_template: null,
-    sending_profile_id: null,
+    phishing_kit_ids: [],
+    sending_profile_ids: [],
     user_group_ids: initialGroupIds,
     begin_date,
     end_date,
@@ -80,18 +73,18 @@ const getInitialCampaignData = (initialGroupIds: string[] = []): CampaignData =>
 };
 
 const CampaignContext = createContext<CampaignContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function CampaignProvider({
   children,
   initialGroupIds,
 }: {
-  children: ReactNode;
-  initialGroupIds?: string[];
+  readonly children: ReactNode;
+  readonly initialGroupIds?: string[];
 }) {
   const [data, setData] = useState<CampaignData>(
-    getInitialCampaignData(initialGroupIds)
+    getInitialCampaignData(initialGroupIds),
   );
 
   const updateData = (updates: Partial<CampaignData>) => {
@@ -105,16 +98,10 @@ export function CampaignProvider({
   const getValidationErrors = (): string[] => {
     const errors: string[] = [];
 
-    const hasEmailTemplate =
-      data.email_template_id !== null || data.email_template !== null;
-    const hasLandingTemplate =
-      data.landing_page_template_id !== null ||
-      data.landing_page_template !== null;
-
     if (!data.name.trim()) errors.push("Campaign name is required.");
-    if (!hasEmailTemplate) errors.push("Select an email template.");
-    if (!hasLandingTemplate) errors.push("Select a landing page template.");
-    // sending_profile_id optional; backend can create placeholder if missing
+    if (data.phishing_kit_ids.length === 0)
+      errors.push("Select at least one phishing kit.");
+    // sending_profile_ids is optional; the user is warned in the UI if empty.
     if (data.user_group_ids.length === 0)
       errors.push("Select at least one target group.");
     if (!data.begin_date) errors.push("Begin date/time is required.");
@@ -142,11 +129,8 @@ export function CampaignProvider({
       begin_date: data.begin_date!,
       end_date: data.end_date!,
       sending_interval_seconds: data.sending_interval_seconds,
-      sending_profile_id: data.sending_profile_id!,
-      email_template_id: data.email_template_id,
-      landing_page_template_id: data.landing_page_template_id,
-      email_template: data.email_template,
-      landing_page_template: data.landing_page_template,
+      sending_profile_ids: data.sending_profile_ids,
+      phishing_kit_ids: data.phishing_kit_ids,
       user_group_ids: data.user_group_ids,
     };
   };

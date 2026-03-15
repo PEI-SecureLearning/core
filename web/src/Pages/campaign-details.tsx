@@ -1,8 +1,4 @@
-import {
-  Link,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import {
@@ -13,7 +9,7 @@ import {
   Type,
   AlignLeft,
   Ban,
-  Clock,
+  Clock
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -47,8 +43,8 @@ export default function CampaignDetails() {
           `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${paramId}`,
           {
             headers: {
-              Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-            },
+              Authorization: keycloak.token ? `Bearer ${keycloak.token}` : ""
+            }
           }
         );
 
@@ -71,7 +67,7 @@ export default function CampaignDetails() {
           description: data.description || "",
           begin_date: begin,
           end_date: end,
-          status: data.status,
+          status: data.status
         });
       } catch (err: any) {
         setError(err.message);
@@ -98,14 +94,14 @@ export default function CampaignDetails() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
+            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : ""
           },
           body: JSON.stringify({
             name: formData.name,
             description: formData.description,
             begin_date: new Date(formData.begin_date).toISOString(),
-            end_date: new Date(formData.end_date).toISOString(),
-          }),
+            end_date: new Date(formData.end_date).toISOString()
+          })
         }
       );
 
@@ -136,7 +132,7 @@ export default function CampaignDetails() {
   const isEditable = formData?.status === "scheduled";
 
   return (
-    <div className="overflow-y-scroll p-8 space-y-8 font-[Inter,system-ui,sans-serif] min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30 animate-[fadeIn_0.5s_ease-out] ">
+    <div className="overflow-y-scroll p-8 space-y-8 font-[Inter,system-ui,sans-serif] min-h-screen bg-background animate-[fadeIn_0.5s_ease-out] ">
       <style>{`
             @keyframes fadeIn {
                 from { opacity: 0; transform: translateY(10px); }
@@ -166,10 +162,11 @@ export default function CampaignDetails() {
         </div>
         {formData?.status && (
           <div
-            className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-medium ${isEditable
-              ? "bg-amber-50 text-amber-700 border-amber-200"
-              : "bg-muted text-muted-foreground border-border"
-              }`}
+            className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-medium ${
+              isEditable
+                ? "bg-primary/10 text-primary border-primary/20"
+                : "bg-muted text-muted-foreground border-border"
+            }`}
           >
             {isEditable ? <Clock size={16} /> : <Ban size={16} />}
             Status:{" "}
@@ -180,8 +177,8 @@ export default function CampaignDetails() {
 
       {/* Warning Banner se não for editável */}
       {!isEditable && formData && (
-        <div className="bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-xl p-4 flex items-start md:items-center gap-3 text-amber-800 shadow-sm animate-pulse">
-          <Ban className="text-amber-600 mt-0.5 md:mt-0 flex-shrink-0" />
+        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start md:items-center gap-3 text-primary shadow-sm animate-pulse">
+          <Ban className="text-primary mt-0.5 md:mt-0 shrink-0" />
           <div>
             <p className="font-semibold text-sm">Edição Bloqueada</p>
             <p className="text-[13px] opacity-90">
@@ -195,15 +192,15 @@ export default function CampaignDetails() {
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-rose-50/80 backdrop-blur-sm border border-rose-200 rounded-xl p-4 flex items-center gap-3 text-rose-800 shadow-sm">
-          <AlertTriangle className="text-rose-600" />
+        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center gap-3 text-destructive shadow-sm">
+          <AlertTriangle className="text-destructive" />
           <p className="text-sm font-medium">{error}</p>
         </div>
       )}
 
       {/* Formulário Vidro */}
       <div className="max-w-4xl mx-auto ">
-        <div className="  bg-background/60 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-xl shadow-slate-200/40 p-6 md:p-8">
+        <div className="bg-card rounded-2xl border border-border p-6 md:p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6 ">
             {/* Nome */}
             <div className="space-y-2">
@@ -220,7 +217,7 @@ export default function CampaignDetails() {
                     prev ? { ...prev, name: e.target.value } : null
                   )
                 }
-                className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 font-medium text-foreground/90"
+                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 font-medium text-foreground"
                 placeholder="Ex: Campanha de Phishing Q1"
               />
             </div>
@@ -240,7 +237,7 @@ export default function CampaignDetails() {
                     prev ? { ...prev, description: e.target.value } : null
                   )
                 }
-                className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all resize-none disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 text-muted-foreground"
+                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 text-foreground"
                 placeholder="Escreve aí os detalhes da brincadeira..."
               />
             </div>
@@ -261,7 +258,7 @@ export default function CampaignDetails() {
                       prev ? { ...prev, begin_date: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground/90 font-medium"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground font-medium"
                 />
               </div>
 
@@ -279,7 +276,7 @@ export default function CampaignDetails() {
                       prev ? { ...prev, end_date: e.target.value } : null
                     )
                   }
-                  className="w-full px-4 py-3 bg-background/50 border border-border/80 rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-purple-400 outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground/90 font-medium"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground font-medium"
                 />
               </div>
             </div>
@@ -296,7 +293,7 @@ export default function CampaignDetails() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all font-medium shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-95 disabled:opacity-70 disabled:cursor-wait text-sm"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all font-medium active:scale-95 disabled:opacity-70 disabled:cursor-wait text-sm"
                 >
                   {saving ? (
                     "A gravar..."

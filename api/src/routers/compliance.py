@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 
 from src.core.security import Roles
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models.compliance_schemas import (
+from src.models import (
     AcceptRequest,
     ComplianceDocumentResponse,
     ComplianceStatusResponse,

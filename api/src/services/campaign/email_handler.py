@@ -3,8 +3,9 @@ import secrets
 
 from sqlmodel import Session
 
-from src.models.campaign import Campaign, CampaignStatus
-from src.models.email_sending import (
+from src.models import (
+    Campaign,
+    CampaignStatus,
     EmailSending,
     RabbitMQEmailMessage,
     SMTPConfig,
@@ -25,14 +26,20 @@ class EmailHandler:
         during creation). We resolve the template and sending profile per-email
         from the assigned kit.
         """
-        kit = email_sending.phishing_kit
-        profile = (kit and kit.sending_profile) or campaign.sending_profile
 
-        if not profile:
+        kit = email_sending.phishing_kit
+        kit_profiles = kit.sending_profiles
+        campaign_profiles = campaign.sending_profiles
+
+        available_profiles = kit_profiles or campaign_profiles
+
+        if not available_profiles:
             raise ValueError(f"No sending profile for email_sending {email_sending.id}")
 
+        profile = secrets.choice(available_profiles)
+
         template = kit.email_template
-        
+
         if not template:
             raise ValueError(f"No email template for email_sending {email_sending.id}")
 
@@ -68,14 +75,16 @@ class EmailHandler:
         Each user is assigned a randomly selected PhishingKit from the
         campaign's available kits.
         """
-        
+
         if campaign.status != CampaignStatus.RUNNING:
             raise ValueError("Campaign must be running to create email sendings")
-        
+
         kits = campaign.phishing_kits
-        
+
         if not kits:
-            raise ValueError("Campaign must have at least one phishing kit to create email sendings")
+            raise ValueError(
+                "Campaign must have at least one phishing kit to create email sendings"
+            )
 
         email_sendings = [
             EmailSending(
@@ -92,4 +101,3 @@ class EmailHandler:
         session.add_all(email_sendings)
         session.flush()
         return email_sendings
-

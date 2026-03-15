@@ -2,8 +2,8 @@ from datetime import datetime
 from fastapi import HTTPException
 from sqlmodel import Session, select, text
 
-from src.models.campaign import Campaign
-from src.models.email_sending import EmailSending, EmailSendingStatus
+from src.models import Campaign, EmailSending, EmailSendingStatus
+
 from src.services import templates as TemplateService
 
 

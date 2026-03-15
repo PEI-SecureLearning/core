@@ -1,4 +1,5 @@
-import { Search, LayoutList, LayoutGrid, Grid3x3, X } from 'lucide-react'
+import { LayoutList, LayoutGrid, Grid3x3, X } from 'lucide-react'
+import SearchBar from '@/components/shared/SearchBar'
 
 export type GridCols = 1 | 2 | 3
 
@@ -48,7 +49,7 @@ export default function UniversalFilters<T extends string>({
     onColsChange,
     resultCount,
     entityName = "item",
-}: FilterProps<T>) {
+}: Readonly<FilterProps<T>>) {
 
     const handleClear = () => onSearchChange('');
 
@@ -57,13 +58,12 @@ export default function UniversalFilters<T extends string>({
             <div className="flex flex-col lg:flex-row gap-3">
                 {/* Search input */}
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70" size={16} />
-                    <input
-                        type="text"
-                        placeholder={`Search ${entityName}s...`}
+                    <SearchBar
                         value={search}
-                        onChange={e => onSearchChange(e.target.value)}
-                        className="w-full pl-9 pr-10 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 bg-background transition-all"
+                        onChange={onSearchChange}
+                        placeholder={`Search ${entityName}s...`}
+                        iconClassName="text-primary"
+                        inputClassName="h-10 rounded-lg border-border bg-background text-sm pr-10"
                     />
                     {search && (
                         <button

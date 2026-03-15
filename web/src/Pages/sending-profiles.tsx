@@ -9,7 +9,7 @@ import ConfirmDeleteModal from "@/components/usergroups/ConfirmDeleteModal";
 
 import {
   fetchSendingProfiles,
-  deleteSendingProfile,
+  deleteSendingProfile
 } from "@/services/sendingProfilesApi";
 import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
@@ -33,7 +33,10 @@ export default function SendingProfilesPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchSendingProfiles(realm, keycloak.token || undefined);
+      const data = await fetchSendingProfiles(
+        realm,
+        keycloak.token || undefined
+      );
       setProfiles(data);
     } catch (err) {
       console.error("Failed to load profiles", err);
@@ -55,7 +58,11 @@ export default function SendingProfilesPage() {
     if (pendingDeleteId === null || !realm) return;
     setIsDeleting(true);
     try {
-      await deleteSendingProfile(realm, pendingDeleteId, keycloak.token || undefined);
+      await deleteSendingProfile(
+        realm,
+        pendingDeleteId,
+        keycloak.token || undefined
+      );
       setPendingDeleteId(null);
       loadData();
     } catch (err) {

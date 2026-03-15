@@ -1,6 +1,6 @@
 from sqlmodel import Session, select
 
-from src.models.user_group import UserGroup
+from src.models import UserGroup
 
 
 class groups_handler:

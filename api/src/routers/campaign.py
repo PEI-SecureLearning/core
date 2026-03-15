@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import CurrentRealm, SessionDep
-from src.models.campaign import CampaignCreate
+from src.models import CampaignCreate
 from src.services.campaign import CampaignService
 
 
