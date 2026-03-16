@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronRight, X } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronRight, X } from "lucide-react";
 
 interface AssignedTrainingProps {
   assigned?: number;
@@ -10,21 +10,21 @@ interface AssignedTrainingProps {
 const AssignedTraining: React.FC<AssignedTrainingProps> = ({
   assigned = 8,
   total = 12,
-  className = '',
+  className = ""
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const completionRate = Math.round((assigned / total) * 100);
 
   const courses = [
-    { name: 'Cybersecurity Basics', done: true, href: '#' },
-    { name: 'Phishing Awareness', done: true, href: '#' },
-    { name: 'Password Management', done: true, href: '#' },
-    { name: 'Social Engineering', done: true, href: '#' },
-    { name: 'Data Protection', done: true, href: '#' },
-    { name: 'Incident Response', done: false, href: '#' },
-    { name: 'Safe Browsing', done: false, href: '#' },
-    { name: 'Email Security', done: false, href: '#' },
+    { name: "Cybersecurity Basics", done: true, href: "#" },
+    { name: "Phishing Awareness", done: true, href: "#" },
+    { name: "Password Management", done: true, href: "#" },
+    { name: "Social Engineering", done: true, href: "#" },
+    { name: "Data Protection", done: true, href: "#" },
+    { name: "Incident Response", done: false, href: "#" },
+    { name: "Safe Browsing", done: false, href: "#" },
+    { name: "Email Security", done: false, href: "#" }
   ];
 
   return (
@@ -60,27 +60,35 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[15px] font-semibold text-foreground">Assigned Training</h3>
+          <h3 className="text-[15px] font-semibold text-foreground">
+            Assigned Training
+          </h3>
         </div>
 
         {/* Progress Display */}
         <div className="flex items-baseline gap-1 mb-1">
           <span
-            className="text-5xl font-bold text-primary transition-all duration-300"
+            className="text-4xl sm:text-5xl font-bold text-primary transition-all duration-300"
             style={{
-              textShadow: isHovered ? '0 0 20px rgba(139, 92, 246, 0.35)' : 'none',
-              transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-              display: 'inline-block',
-              transition: 'text-shadow 0.4s ease, transform 0.3s ease',
+              textShadow: isHovered
+                ? "0 0 20px rgba(139, 92, 246, 0.35)"
+                : "none",
+              transform: isHovered ? "scale(1.05)" : "scale(1)",
+              display: "inline-block",
+              transition: "text-shadow 0.4s ease, transform 0.3s ease"
             }}
           >
             {assigned}
           </span>
           <span className="text-xl text-muted-foreground/70 mx-0.5">/</span>
-          <span className="text-2xl font-semibold text-muted-foreground">{total}</span>
+          <span className="text-2xl font-semibold text-muted-foreground">
+            {total}
+          </span>
         </div>
 
-        <p className="text-[12px] text-muted-foreground mb-3 font-medium">courses completed</p>
+        <p className="text-[12px] text-muted-foreground mb-3 font-medium">
+          courses completed
+        </p>
 
         {/* Progress Bar */}
         <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden mb-1">
@@ -88,17 +96,23 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
             className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-purple-400 via-violet-400 to-purple-600 transition-all duration-700 ease-out"
             style={{
               width: `${completionRate}%`,
-              boxShadow: isHovered ? '0 0 12px rgba(139, 92, 246, 0.4), 0 0 6px rgba(139, 92, 246, 0.25)' : 'none',
-              backgroundSize: '200% auto',
-              animation: isHovered ? 'barShimmer 1.8s linear infinite' : 'none',
-              transition: 'box-shadow 0.4s ease',
+              boxShadow: isHovered
+                ? "0 0 12px rgba(139, 92, 246, 0.4), 0 0 6px rgba(139, 92, 246, 0.25)"
+                : "none",
+              backgroundSize: "200% auto",
+              animation: isHovered ? "barShimmer 1.8s linear infinite" : "none",
+              transition: "box-shadow 0.4s ease"
             }}
           />
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <span className="text-[11px] text-primary/90 font-semibold">{completionRate}% complete</span>
-          <span className="text-[11px] text-muted-foreground/70">{total - assigned} remaining</span>
+          <span className="text-[11px] text-primary/90 font-semibold">
+            {completionRate}% complete
+          </span>
+          <span className="text-[11px] text-muted-foreground/70">
+            {total - assigned} remaining
+          </span>
         </div>
 
         {/* Details Button */}
@@ -110,7 +124,10 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
             px-3 py-1.5 rounded-lg"
         >
           View details
-          <ChevronRight size={14} className="transition-transform duration-200 group-hover/btn:translate-x-0.5" />
+          <ChevronRight
+            size={14}
+            className="transition-transform duration-200 group-hover/btn:translate-x-0.5"
+          />
         </button>
       </div>
 
@@ -118,24 +135,33 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
       {showModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm"
-          style={{ animation: 'fadeIn 0.2s ease-out' }}
+          style={{ animation: "fadeIn 0.2s ease-out" }}
           onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
         >
           <div
             className="bg-background/95 backdrop-blur-2xl rounded-2xl shadow-2xl p-6 w-full max-w-md border border-white/60"
-            style={{ animation: 'slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+            style={{
+              animation: "slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
+            }}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h4 className="text-lg font-semibold text-foreground">Assigned Courses</h4>
-                <p className="text-[12px] text-muted-foreground">{assigned}/{total} completed</p>
+                <h4 className="text-lg font-semibold text-foreground">
+                  Assigned Courses
+                </h4>
+                <p className="text-[12px] text-muted-foreground">
+                  {assigned}/{total} completed
+                </p>
               </div>
               <button
                 onClick={() => setShowModal(false)}
                 className="p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer group/close"
               >
-                <X size={18} className="text-muted-foreground/70 group-hover/close:text-muted-foreground transition-colors group-hover/close:rotate-90 transition-transform duration-200" />
+                <X
+                  size={18}
+                  className="text-muted-foreground/70 group-hover/close:text-muted-foreground transition-colors group-hover/close:rotate-90 transition-transform duration-200"
+                />
               </button>
             </div>
 
@@ -157,18 +183,24 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
                     group/row"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${course.done ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${course.done ? "bg-emerald-500" : "bg-amber-400"}`}
+                    />
                     <span className="text-[14px] font-medium text-foreground/90 group-hover/row:text-primary transition-colors">
                       {course.name}
                     </span>
                   </div>
                   {course.done ? (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10">
-                      <span className="text-[11px] font-semibold text-emerald-600">Done</span>
+                      <span className="text-[11px] font-semibold text-emerald-600">
+                        Done
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10">
-                      <span className="text-[11px] font-semibold text-amber-600">Pending</span>
+                      <span className="text-[11px] font-semibold text-amber-600">
+                        Pending
+                      </span>
                     </div>
                   )}
                 </a>
