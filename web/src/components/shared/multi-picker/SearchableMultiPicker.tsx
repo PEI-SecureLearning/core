@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
-import { CircleQuestionMark, Loader2, Search } from "lucide-react";
+import { CircleQuestionMark, Loader2 } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import SearchBar from "@/components/shared/SearchBar";
 import {
   Popover,
   PopoverAnchor,
@@ -90,14 +90,11 @@ export default function SearchableMultiPicker<
     return matched.slice(0, maxSuggestions);
   }, [getSearchText, inputValue, maxSuggestions, unselectedItems]);
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.target.value);
-      setHighlightedIndex(-1);
-      setOpen(true);
-    },
-    []
-  );
+  const handleInputChange = useCallback((value: string) => {
+    setInputValue(value);
+    setHighlightedIndex(-1);
+    setOpen(true);
+  }, []);
 
   const handleToggleSelection = useCallback(
     (itemId: TId) => {
@@ -202,26 +199,26 @@ export default function SearchableMultiPicker<
           modal={false}
         >
           <PopoverAnchor asChild>
-            <div ref={anchorRef} className="w-full relative flex items-center">
-              <Input
+            <div ref={anchorRef} className="relative flex items-center ">
+              <SearchBar
                 value={inputValue}
                 onChange={handleInputChange}
-                onFocus={() => setOpen(true)}
-                onClick={() => setOpen(true)}
-                onBlur={() => setOpen(false)}
-                onKeyDown={handleKeyDown}
                 placeholder={searchPlaceholder}
-                className="pl-9 h-[46px] text-[14px] bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                role="combobox"
-                aria-expanded={open}
-                aria-autocomplete="list"
-              />
-              <Search
-                size={15}
-                className="absolute left-3 text-primary font-bold pointer-events-none"
+                className="flex-1 bg-background"
+                inputClassName="rounded-md h-[46px] text-[14px]  border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition"
+                iconClassName="left-3 h-[15px] w-[15px]"
+                inputProps={{
+                  onFocus: () => setOpen(true),
+                  onClick: () => setOpen(true),
+                  onBlur: () => setOpen(false),
+                  onKeyDown: handleKeyDown,
+                  autoComplete: "off",
+                  autoCorrect: "off",
+                  spellCheck: false,
+                  role: "combobox",
+                  "aria-expanded": open,
+                  "aria-autocomplete": "list"
+                }}
               />
             </div>
           </PopoverAnchor>
@@ -268,7 +265,7 @@ export default function SearchableMultiPicker<
             </h3>
           </div>
 
-          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-border bg-muted/30">
+          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-border bg-background">
             <div
               className={
                 selectedIds.length > 0
