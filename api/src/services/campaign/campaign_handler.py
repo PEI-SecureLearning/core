@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from src.models import (
     Campaign,
     CampaignCreate,
+    CampaignUpdate,
     CampaignStatus,
     EmailSendingStatus,
     MIN_INTERVAL_SECONDS,
@@ -107,7 +108,7 @@ class CampaignHandler:
     def update_campaign(
         self,
         id: int,
-        campaign_update: CampaignCreate,
+        campaign_update: CampaignUpdate,
         current_realm: str,
         session: Session,
     ) -> Campaign:

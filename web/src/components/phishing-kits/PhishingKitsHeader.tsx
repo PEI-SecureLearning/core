@@ -1,12 +1,15 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
+import RefreshButton from "@/components/shared/RefreshButton";
 import SearchBar from "@/components/shared/SearchBar";
 
 interface PhishingKitsHeaderProps {
   readonly viewMode: "grid" | "table";
   readonly setViewMode: (mode: "grid" | "table") => void;
   readonly onNewKit: () => void;
+  readonly refetch: () => void | Promise<unknown>;
+  readonly isFetching: boolean;
   readonly searchQuery: string;
   readonly setSearchQuery: (query: string) => void;
 }
@@ -15,8 +18,10 @@ export function PhishingKitsHeader({
   viewMode,
   setViewMode,
   onNewKit,
+  refetch,
+  isFetching,
   searchQuery,
-  setSearchQuery,
+  setSearchQuery
 }: PhishingKitsHeaderProps) {
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -49,12 +54,22 @@ export function PhishingKitsHeader({
             onChange={setViewMode}
             options={[
               { value: "table", ariaLabel: "Table view", icon: "table" },
-              { value: "grid", ariaLabel: "Grid view", icon: "grid" },
+              { value: "grid", ariaLabel: "Grid view", icon: "grid" }
             ]}
           />
 
-          <div className="flex items-center gap-2">
+          <RefreshButton
+            variant="outline"
+            size="icon"
+            onClick={() => void refetch()}
+            className="h-10 w-10 shrink-0 rounded-full border-slate-200/60 bg-white/70"
+            disabled={isFetching}
+            title="Refresh"
+            isRefreshing={isFetching}
+            label={null}
+          />
 
+          <div className="flex items-center gap-2">
             <Button
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 transition-colors h-10 px-4"
               onClick={onNewKit}

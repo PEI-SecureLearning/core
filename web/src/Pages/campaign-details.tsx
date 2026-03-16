@@ -1,25 +1,56 @@
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import {
-  ChevronLeft,
-  Save,
   AlertTriangle,
-  Calendar,
-  Type,
-  AlignLeft,
-  Ban,
-  Clock
+  CalendarDays,
+  ChevronLeft,
+  Clock3,
+  FileText,
+  Info,
+  Lock,
+  Save
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+import Stepper, { Step } from "@/components/ui/Stepper";
+import {
+  fetchOrgManagerCampaignDetail,
+  updateOrgManagerCampaign
+} from "@/services/campaignsApi";
+import type { CampaignDetail } from "@/services/campaignsApi";
 
 interface CampaignEditForm {
   name: string;
   description: string;
-  begin_date: string;
-  end_date: string;
-  status: string;
+  beginAt: string;
+  endAt: string;
+  intervalMinutes: number;
+}
+
+function getRealmFromToken(tokenParsed: unknown): string | null {
+  const iss = (tokenParsed as { iss?: string } | undefined)?.iss;
+  if (!iss) return null;
+  const parts = iss.split("/realms/");
+  return parts[1] ?? null;
+}
+
+function toLocalDateTimeInputValue(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (!Number.isFinite(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function toIsoOrNull(localDateTime: string): string | null {
+  const date = new Date(localDateTime);
+  if (!Number.isFinite(date.getTime())) return null;
+  return date.toISOString();
 }
 
 export default function CampaignDetails() {
@@ -29,286 +60,499 @@ export default function CampaignDetails() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
   const [formData, setFormData] = useState<CampaignEditForm | null>(null);
 
-  // Ir buscar a campanha à API
-  useEffect(() => {
-    const realm = (keycloak.tokenParsed as any)?.iss?.split("/realms/")[1];
-    if (!realm || !paramId) return;
+  const realm = useMemo(
+    () => getRealmFromToken(keycloak.tokenParsed),
+    [keycloak.tokenParsed]
+  );
 
-    const fetchCampaign = async () => {
-      try {
-        const res = await fetch(
-          `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${paramId}`,
-          {
-            headers: {
-              Authorization: keycloak.token ? `Bearer ${keycloak.token}` : ""
-            }
-          }
-        );
+  const isEditable = campaign?.status === "scheduled";
 
-        if (!res.ok) throw new Error("Não consegui apanhar a campanha, môço!");
+  const fetchCampaign = useCallback(async () => {
+    if (!realm || !paramId) {
+      setLoadError("Missing campaign context.");
+      setLoading(false);
+      return;
+    }
 
-        console.log(res);
-        const data = await res.json();
-        console.log("Campaign data:", data);
-
-        // Formata as datas para o input type="date" (YYYY-MM-DD)
-        const begin = data.begin_date
-          ? new Date(data.begin_date).toISOString().split("T")[0]
-          : "";
-        const end = data.end_date
-          ? new Date(data.end_date).toISOString().split("T")[0]
-          : "";
-
-        setFormData({
-          name: data.name,
-          description: data.description || "",
-          begin_date: begin,
-          end_date: end,
-          status: data.status
-        });
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCampaign();
-  }, [paramId, keycloak.token]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData) return;
-
-    const realm = (keycloak.tokenParsed as any)?.iss?.split("/realms/")[1];
-    setSaving(true);
+    setLoading(true);
+    setLoadError(null);
 
     try {
-      // ATENÇÃO: Precisas de criar este endpoint (PUT) no campaign.py!
-      const res = await fetch(
-        `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${paramId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : ""
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            description: formData.description,
-            begin_date: new Date(formData.begin_date).toISOString(),
-            end_date: new Date(formData.end_date).toISOString()
-          })
-        }
+      const detail = await fetchOrgManagerCampaignDetail(
+        realm,
+        paramId,
+        keycloak.token
       );
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Fogo, deu erro a gravar!");
+      setCampaign(detail);
+      setFormData({
+        name: detail.name,
+        description: detail.description ?? "",
+        beginAt: toLocalDateTimeInputValue(detail.begin_date),
+        endAt: toLocalDateTimeInputValue(detail.end_date),
+        intervalMinutes: Math.max(
+          1,
+          Math.floor((detail.sending_interval_seconds ?? 60) / 60)
+        )
+      });
+    } catch (error) {
+      setLoadError(
+        error instanceof Error ? error.message : "Failed to load campaign."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [keycloak.token, paramId, realm]);
+
+  useEffect(() => {
+    void fetchCampaign();
+  }, [fetchCampaign]);
+
+  const validateStep = useCallback(
+    (step: number): boolean => {
+      if (!formData) return false;
+
+      if (step === 1) {
+        if (!formData.name.trim()) {
+          setSubmitError("Campaign name is required.");
+          return false;
+        }
       }
 
-      // Se correr bem, volta pa casa
+      if (step === 2) {
+        const startIso = toIsoOrNull(formData.beginAt);
+        const endIso = toIsoOrNull(formData.endAt);
+
+        if (!startIso || !endIso) {
+          setSubmitError("Start and end date/time are required.");
+          return false;
+        }
+
+        if (new Date(endIso).getTime() <= new Date(startIso).getTime()) {
+          setSubmitError("End date/time must be after start date/time.");
+          return false;
+        }
+
+        if (formData.intervalMinutes < 1) {
+          setSubmitError("Send interval must be at least 1 minute.");
+          return false;
+        }
+      }
+
+      setSubmitError(null);
+      return true;
+    },
+    [formData]
+  );
+
+  const handleSave = useCallback(async (): Promise<boolean> => {
+    if (!realm || !paramId || !formData || !campaign || !isEditable) {
+      return false;
+    }
+
+    const beginIso = toIsoOrNull(formData.beginAt);
+    const endIso = toIsoOrNull(formData.endAt);
+
+    if (!beginIso || !endIso) {
+      setSubmitError("Start and end date/time are required.");
+      return false;
+    }
+
+    if (new Date(endIso).getTime() <= new Date(beginIso).getTime()) {
+      setSubmitError("End date/time must be after start date/time.");
+      return false;
+    }
+
+    setSaving(true);
+    setSubmitError(null);
+
+    try {
+      await updateOrgManagerCampaign(
+        realm,
+        paramId,
+        {
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          begin_date: beginIso,
+          end_date: endIso,
+          sending_interval_seconds: formData.intervalMinutes * 60,
+          user_group_ids: campaign.user_group_ids,
+          phishing_kit_ids: campaign.phishing_kit_ids,
+          sending_profile_ids: campaign.sending_profile_ids
+        },
+        keycloak.token
+      );
+
       navigate({ to: "/campaigns" });
-    } catch (err: any) {
-      setError(err.message);
+      return true;
+    } catch (error) {
+      let msg = "Failed to save campaign.";
+      if (error instanceof Error && error.message) {
+        msg = error.message;
+      }
+      setSubmitError(msg);
+      return false;
+    } finally {
       setSaving(false);
     }
-  };
+  }, [
+    campaign,
+    formData,
+    isEditable,
+    keycloak.token,
+    navigate,
+    paramId,
+    realm
+  ]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-surface-subtle text-muted-foreground">
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          <p>Aguenta aí que estou a carregar...</p>
+      <div className="flex h-full w-full items-center justify-center bg-background text-muted-foreground">
+        <div className="flex items-center gap-3 text-sm">
+          <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <span>Loading campaign...</span>
         </div>
       </div>
     );
+  }
 
-  // A Lógica Algarvia: Se não for "scheduled", ninguém mexe!
-  const isEditable = formData?.status === "scheduled";
+  if (!campaign || !formData) {
+    return (
+      <div className="h-full w-full bg-background p-8 space-y-6">
+        <Link
+          to="/campaigns"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft size={16} />
+          Back to campaigns
+        </Link>
+
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
+          {loadError || "Campaign data is unavailable."}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="overflow-y-scroll p-8 space-y-8 font-[Inter,system-ui,sans-serif] min-h-screen bg-background animate-[fadeIn_0.5s_ease-out] ">
-      <style>{`
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `}</style>
-
-      {/* Header com Navegação */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="h-full w-full bg-background p-6 md:p-8 space-y-6 overflow-auto">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2">
           <Link
             to="/campaigns"
-            className="p-2.5 rounded-xl bg-background/60 backdrop-blur-md text-muted-foreground hover:text-primary hover:bg-background transition-all shadow-sm hover:shadow-md border border-border/60"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={16} />
+            Back to campaigns
           </Link>
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              {isEditable ? "Editar Campanha" : "Detalhes da Campanha"}
-            </h1>
-            <p className="text-muted-foreground mt-1 text-[14px]">
-              {isEditable
-                ? "Podes mudar os dados aqui, mas despacha-te."
-                : "Só podes ver. Tira as mãos daí!"}
-            </p>
-          </div>
+
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+            Campaign Editor
+          </h1>
+
+          <p className="text-sm text-muted-foreground">
+            Edit campaign settings with a guided step-by-step flow.
+          </p>
         </div>
-        {formData?.status && (
-          <div
-            className={`px-4 py-2 rounded-xl border flex items-center gap-2 text-sm font-medium ${
-              isEditable
-                ? "bg-primary/10 text-primary border-primary/20"
-                : "bg-muted text-muted-foreground border-border"
-            }`}
+
+        <div
+          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium ${
+            isEditable
+              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
+              : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+          }`}
+        >
+          {isEditable ? <Clock3 size={15} /> : <Lock size={15} />}
+          Status: <span className="uppercase">{campaign.status}</span>
+        </div>
+      </div>
+
+      {loadError && (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm flex items-start gap-2">
+          <AlertTriangle size={16} className="mt-0.5" />
+          <span>{loadError}</span>
+        </div>
+      )}
+
+      {submitError && (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm flex items-start gap-2">
+          <AlertTriangle size={16} className="mt-0.5" />
+          <span>{submitError}</span>
+        </div>
+      )}
+
+      {isEditable ? (
+        <div className="h-[calc(100vh-14rem)] min-h-[620px]">
+          <Stepper
+            initialStep={1}
+            validateStep={validateStep}
+            onBeforeComplete={handleSave}
+            nextButtonText="Next"
+            backButtonText="Previous"
+            stepIcons={[FileText, CalendarDays, Save]}
+            stepCompletedIcons={[FileText, CalendarDays, Save]}
+            nextButtonProps={{ disabled: saving }}
+            backButtonProps={{ disabled: saving }}
           >
-            {isEditable ? <Clock size={16} /> : <Ban size={16} />}
-            Status:{" "}
-            <span className="uppercase tracking-wide">{formData.status}</span>
-          </div>
-        )}
-      </div>
+            <Step>
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Basic Information
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Update campaign title and description.
+                  </p>
+                </div>
 
-      {/* Warning Banner se não for editável */}
-      {!isEditable && formData && (
-        <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start md:items-center gap-3 text-primary shadow-sm animate-pulse">
-          <Ban className="text-primary mt-0.5 md:mt-0 shrink-0" />
-          <div>
-            <p className="font-semibold text-sm">Edição Bloqueada</p>
-            <p className="text-[13px] opacity-90">
-              Môço, esta campanha já não está agendada. O estado é{" "}
-              <strong>{formData.status}</strong>. Só podes editar campanhas que
-              ainda estejam em <em>Scheduled</em>.
-            </p>
-          </div>
-        </div>
-      )}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="campaign-name"
+                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                  >
+                    Campaign name
+                  </label>
+                  <input
+                    id="campaign-name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(event) =>
+                      setFormData((prev) =>
+                        prev ? { ...prev, name: event.target.value } : prev
+                      )
+                    }
+                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    placeholder="Enter campaign name"
+                  />
+                </div>
 
-      {/* Error Banner */}
-      {error && (
-        <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 flex items-center gap-3 text-destructive shadow-sm">
-          <AlertTriangle className="text-destructive" />
-          <p className="text-sm font-medium">{error}</p>
-        </div>
-      )}
-
-      {/* Formulário Vidro */}
-      <div className="max-w-4xl mx-auto ">
-        <div className="bg-card rounded-2xl border border-border p-6 md:p-8 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-6 ">
-            {/* Nome */}
-            <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
-                <Type size={14} className="text-primary/90" />
-                Nome da Campanha
-              </label>
-              <input
-                type="text"
-                disabled={!isEditable}
-                value={formData?.name || ""}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, name: e.target.value } : null
-                  )
-                }
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 font-medium text-foreground"
-                placeholder="Ex: Campanha de Phishing Q1"
-              />
-            </div>
-
-            {/* Descrição */}
-            <div className="space-y-2">
-              <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
-                <AlignLeft size={14} className="text-primary/90" />
-                Descrição
-              </label>
-              <textarea
-                disabled={!isEditable}
-                rows={4}
-                value={formData?.description || ""}
-                onChange={(e) =>
-                  setFormData((prev) =>
-                    prev ? { ...prev, description: e.target.value } : null
-                  )
-                }
-                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all resize-none disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed placeholder:text-muted-foreground/70 text-foreground"
-                placeholder="Escreve aí os detalhes da brincadeira..."
-              />
-            </div>
-
-            {/* Datas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
-                  <Calendar size={14} className="text-primary/90" />
-                  Data de Início
-                </label>
-                <input
-                  type="date"
-                  disabled={!isEditable}
-                  value={formData?.begin_date || ""}
-                  onChange={(e) =>
-                    setFormData((prev) =>
-                      prev ? { ...prev, begin_date: e.target.value } : null
-                    )
-                  }
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground font-medium"
-                />
+                <div className="space-y-2">
+                  <label
+                    htmlFor="campaign-description"
+                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id="campaign-description"
+                    value={formData.description}
+                    onChange={(event) =>
+                      setFormData((prev) =>
+                        prev
+                          ? { ...prev, description: event.target.value }
+                          : prev
+                      )
+                    }
+                    className="w-full min-h-36 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/30 focus:border-primary resize-y"
+                    placeholder="Optional campaign description"
+                  />
+                </div>
               </div>
+            </Step>
 
-              <div className="space-y-2">
-                <label className="text-[13px] font-semibold text-foreground/90 flex items-center gap-2 uppercase tracking-wide">
-                  <Calendar size={14} className="text-primary/90" />
-                  Data de Fim
-                </label>
-                <input
-                  type="date"
-                  disabled={!isEditable}
-                  value={formData?.end_date || ""}
-                  onChange={(e) =>
-                    setFormData((prev) =>
-                      prev ? { ...prev, end_date: e.target.value } : null
-                    )
-                  }
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all disabled:opacity-50 disabled:bg-surface-subtle disabled:cursor-not-allowed text-foreground font-medium"
-                />
+            <Step>
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Schedule
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Set delivery window and send cadence.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="campaign-begin-at"
+                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                    >
+                      Start date and time
+                    </label>
+                    <input
+                      id="campaign-begin-at"
+                      type="datetime-local"
+                      value={formData.beginAt}
+                      onChange={(event) =>
+                        setFormData((prev) =>
+                          prev ? { ...prev, beginAt: event.target.value } : prev
+                        )
+                      }
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="campaign-end-at"
+                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                    >
+                      End date and time
+                    </label>
+                    <input
+                      id="campaign-end-at"
+                      type="datetime-local"
+                      value={formData.endAt}
+                      onChange={(event) =>
+                        setFormData((prev) =>
+                          prev ? { ...prev, endAt: event.target.value } : prev
+                        )
+                      }
+                      className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-w-xs">
+                  <label
+                    htmlFor="campaign-interval"
+                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                  >
+                    Send interval (minutes)
+                  </label>
+                  <input
+                    id="campaign-interval"
+                    type="number"
+                    min={1}
+                    value={formData.intervalMinutes}
+                    onChange={(event) =>
+                      setFormData((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              intervalMinutes: Math.max(
+                                1,
+                                Number.parseInt(event.target.value, 10) || 1
+                              )
+                            }
+                          : prev
+                      )
+                    }
+                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                  />
+                </div>
               </div>
-            </div>
+            </Step>
 
-            {/* Footer Actions */}
-            <div className="pt-6 mt-6 border-t border-border/40 flex items-center justify-end gap-3">
-              <Link
-                to="/campaigns"
-                className="px-5 py-2.5 rounded-xl text-muted-foreground hover:bg-muted transition-colors font-medium text-sm"
-              >
-                Cancelar
-              </Link>
-              {isEditable && (
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all font-medium active:scale-95 disabled:opacity-70 disabled:cursor-wait text-sm"
-                >
-                  {saving ? (
-                    "A gravar..."
-                  ) : (
-                    <>
-                      {" "}
-                      <Save size={18} /> Gravar Alterações{" "}
-                    </>
+            <Step>
+              <div className="space-y-5">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Review and Save
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Confirm updates before applying changes.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Name</p>
+                    <p className="text-foreground font-medium mt-1">
+                      {formData.name || "-"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-muted-foreground">Description</p>
+                    <p className="text-foreground mt-1 whitespace-pre-wrap">
+                      {formData.description || "No description"}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-muted-foreground">Start</p>
+                      <p className="text-foreground mt-1">
+                        {formData.beginAt
+                          ? new Date(formData.beginAt).toLocaleString()
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">End</p>
+                      <p className="text-foreground mt-1">
+                        {formData.endAt
+                          ? new Date(formData.endAt).toLocaleString()
+                          : "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-muted-foreground">Send interval</p>
+                    <p className="text-foreground mt-1">
+                      Every {formData.intervalMinutes} minute(s)
+                    </p>
+                  </div>
+
+                  {!!campaign.phishing_kit_names?.length && (
+                    <div>
+                      <p className="text-muted-foreground">
+                        Linked phishing kits
+                      </p>
+                      <p className="text-foreground mt-1">
+                        {campaign.phishing_kit_names.join(", ")}
+                      </p>
+                    </div>
                   )}
-                </button>
-              )}
-            </div>
-          </form>
+
+                  {!!campaign.sending_profile_names?.length && (
+                    <div>
+                      <p className="text-muted-foreground">
+                        Linked sending profiles
+                      </p>
+                      <p className="text-foreground mt-1">
+                        {campaign.sending_profile_names.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {saving && (
+                  <p className="text-sm text-muted-foreground">
+                    Saving changes...
+                  </p>
+                )}
+              </div>
+            </Step>
+          </Stepper>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-700">
+            <Info size={16} className="mt-0.5" />
+            <div>
+              <p className="font-semibold">Editing is disabled</p>
+              <p className="text-sm mt-1">
+                Only campaigns with status <strong>scheduled</strong> can be
+                edited.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="text-muted-foreground">Campaign name</p>
+              <p className="text-foreground font-medium mt-1">
+                {campaign.name}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <p className="text-muted-foreground">Schedule</p>
+              <p className="text-foreground font-medium mt-1">
+                {new Date(campaign.begin_date).toLocaleString()} to{" "}
+                {new Date(campaign.end_date).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

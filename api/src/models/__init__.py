@@ -7,7 +7,7 @@ from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
 from .phishing_kit import PhishingKit, PhishingKitCreate, PhishingKitDisplayInfo, CampaignPhishingKitLink, PhishingKitSendingProfileLink
 from .sending_profile import SendingProfile, SendingProfileCreate, SendingProfileDisplayInfo, CampaignSendingProfileLink, CustomHeader, CustomHeaderCreate
-from .campaign import Campaign, CampaignCreate, CampaignStatus, CampaignDisplayInfo, CampaignDetailInfo, CampaignGlobalStats, MIN_INTERVAL_SECONDS
+from .campaign import Campaign, CampaignCreate, CampaignStatus, CampaignDisplayInfo, CampaignDetailInfo, CampaignGlobalStats, CampaignUpdate, MIN_INTERVAL_SECONDS
 from .email_sending import EmailSending, EmailSendingStatus, UserSendingInfo, RabbitMQEmailMessage, SMTPConfig
 from .compliance import (
     ComplianceAcceptance,
@@ -59,6 +59,7 @@ __all__ = [
     # Campaign
     "Campaign",
     "CampaignCreate",
+    "CampaignUpdate",
     "CampaignStatus",
     "CampaignDisplayInfo",
     "CampaignDetailInfo",

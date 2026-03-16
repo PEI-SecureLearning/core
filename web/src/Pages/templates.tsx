@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCcw, Plus, Eye, Layout } from "lucide-react";
+import { Plus, Eye, Layout } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
+import RefreshButton from "@/components/shared/RefreshButton";
 import SearchBar from "@/components/shared/SearchBar";
 import { TemplateFormModal } from "@/components/templates/TemplateFormModal";
 import { TemplatePreviewModal } from "@/components/templates/TemplatePreviewModal";
@@ -23,7 +24,7 @@ const templateMatchesQuery = (template: Template, query: string) => {
     template.name,
     template.subject,
     template.description,
-    template.category,
+    template.category
   ]
     .filter(Boolean)
     .join(" ")
@@ -33,30 +34,36 @@ const templateMatchesQuery = (template: Template, query: string) => {
 };
 
 export default function TemplatesPage() {
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<Template[]>({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery<
+    Template[]
+  >({
     queryKey: ["templates"],
     queryFn: () => apiClient.get<Template[]>("/templates"),
-    staleTime: 30_000,
+    staleTime: 30_000
   });
   const qc = useQueryClient();
 
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(initialTemplateForm);
-  const [activeTab, setActiveTab] = useState<(typeof templatePaths)[number]>("/templates/emails/");
+  const [activeTab, setActiveTab] =
+    useState<(typeof templatePaths)[number]>("/templates/emails/");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const templates = useMemo(() => data ?? [], [data]);
   const { keycloak } = useKeycloak();
   const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? [];
-  const isContentManager = userRoles.includes('CONTENT_MANAGER');
+  const isContentManager = userRoles.includes("CONTENT_MANAGER");
   const grouped = useMemo(() => {
-    return templates.reduce<Record<string, Template[]>>((acc, t) => {
-      if (!acc[t.path]) acc[t.path] = [];
-      acc[t.path].push(t);
-      return acc;
-    }, { "/templates/emails/": [], "/templates/pages/": [] });
+    return templates.reduce<Record<string, Template[]>>(
+      (acc, t) => {
+        if (!acc[t.path]) acc[t.path] = [];
+        acc[t.path].push(t);
+        return acc;
+      },
+      { "/templates/emails/": [], "/templates/pages/": [] }
+    );
   }, [templates]);
 
   const filteredGrouped = useMemo(() => {
@@ -66,8 +73,8 @@ export default function TemplatesPage() {
     return Object.fromEntries(
       Object.entries(grouped).map(([path, bucket]) => [
         path,
-        bucket.filter((template) => templateMatchesQuery(template, q)),
-      ]),
+        bucket.filter((template) => templateMatchesQuery(template, q))
+      ])
     ) as Record<string, Template[]>;
   }, [grouped, searchQuery]);
 
@@ -86,7 +93,9 @@ export default function TemplatesPage() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{template.name}</p>
+            <p className="text-sm font-medium text-foreground truncate">
+              {template.name}
+            </p>
             <p className="text-xs text-muted-foreground truncate">
               {template.subject || template.description || "No description"}
             </p>
@@ -114,11 +123,15 @@ export default function TemplatesPage() {
           className="relative border-2 rounded-lg bg-background overflow-hidden transition-all duration-200 text-left w-full hover:border-primary/50 hover:shadow-sm border-border"
         >
           <div className="border-b border-border/50 bg-muted/20 px-3 py-2.5">
-            <p className="text-sm font-medium text-foreground truncate pr-8">{template.name}</p>
+            <p className="text-sm font-medium text-foreground truncate pr-8">
+              {template.name}
+            </p>
           </div>
           <div className="p-3">
             {template.subject && template.subject !== template.name && (
-              <p className="text-xs text-primary/80 truncate">{template.subject}</p>
+              <p className="text-xs text-primary/80 truncate">
+                {template.subject}
+              </p>
             )}
             {template.description && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -161,7 +174,7 @@ export default function TemplatesPage() {
                 height: "200%",
                 transform: "scale(0.5)",
                 transformOrigin: "top left",
-                border: 0,
+                border: 0
               }}
             />
           ) : (
@@ -180,9 +193,13 @@ export default function TemplatesPage() {
           </button>
         </div>
         <div className="p-3">
-          <p className="text-sm font-medium text-foreground truncate">{template.name}</p>
+          <p className="text-sm font-medium text-foreground truncate">
+            {template.name}
+          </p>
           {template.subject && template.subject !== template.name && (
-            <p className="text-xs text-primary/80 truncate mt-0.5">{template.subject}</p>
+            <p className="text-xs text-primary/80 truncate mt-0.5">
+              {template.subject}
+            </p>
           )}
           {template.description && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
@@ -199,7 +216,7 @@ export default function TemplatesPage() {
 
   const previewTemplate = useMemo(
     () => templates.find((t) => t.id === previewId),
-    [previewId, templates],
+    [previewId, templates]
   );
 
   const createTemplate = useMutation({
@@ -210,13 +227,13 @@ export default function TemplatesPage() {
         subject: form.subject,
         category: form.category || null,
         description: form.description || null,
-        html: form.html,
+        html: form.html
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["templates"] });
       setForm(initialTemplateForm);
       setShowForm(false);
-    },
+    }
   });
 
   const openCreateModal = () => {
@@ -232,7 +249,9 @@ export default function TemplatesPage() {
     <div className="flex-1 overflow-y-auto px-8 pt-8 pb-8 space-y-6 bg-background">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Phishing templates</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            Phishing templates
+          </h1>
           <p className="text-muted-foreground mt-1 text-sm">
             Pull campaign-ready HTML straight from the template store.
           </p>
@@ -241,7 +260,9 @@ export default function TemplatesPage() {
           {isContentManager && (
             <Button
               className="inline-flex items-center gap-2 text-white border-0 transition-colors"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+              style={{
+                background: "linear-gradient(135deg, #7C3AED, #9333EA)"
+              }}
               onClick={openCreateModal}
             >
               <Plus size={16} />
@@ -271,8 +292,16 @@ export default function TemplatesPage() {
           {templates.length === 0 ? (
             <EmptyState />
           ) : (
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as (typeof templatePaths)[number])}>
-              <TabsList className="grid w-full grid-cols-2 border-b border-border rounded-none p-0" variant="line">
+            <Tabs
+              value={activeTab}
+              onValueChange={(value) =>
+                setActiveTab(value as (typeof templatePaths)[number])
+              }
+            >
+              <TabsList
+                className="grid w-full grid-cols-2 border-b border-border rounded-none p-0"
+                variant="line"
+              >
                 <TabsTrigger
                   value="/templates/emails/"
                   className="rounded-none data-[state=active]:text-primary data-[state=active]:after:bg-primary"
@@ -302,30 +331,31 @@ export default function TemplatesPage() {
                   onChange={setViewMode}
                   options={[
                     { value: "table", ariaLabel: "Table view", icon: "table" },
-                    { value: "grid", ariaLabel: "Grid view", icon: "grid" },
+                    { value: "grid", ariaLabel: "Grid view", icon: "grid" }
                   ]}
                 />
 
-                <Button
+                <RefreshButton
                   variant="outline"
                   size="icon"
-                  onClick={() => refetch()}
+                  onClick={() => void refetch()}
                   className="h-10 w-10 shrink-0 rounded-full border-slate-200/60 bg-white/70"
                   disabled={isFetching}
                   title="Refresh"
-                >
-                  <RefreshCcw
-                    size={16}
-                    className={cn("transition", isFetching && "animate-spin")}
-                  />
-                </Button>
+                  isRefreshing={isFetching}
+                  label={null}
+                />
               </div>
 
               {templatePaths.map((pathKey) => {
                 const bucket = filteredGrouped[pathKey] || [];
                 const isEmail = pathKey === "/templates/emails/";
                 return (
-                  <TabsContent key={pathKey} value={pathKey} className="mt-6 space-y-3">
+                  <TabsContent
+                    key={pathKey}
+                    value={pathKey}
+                    className="mt-6 space-y-3"
+                  >
                     {bucket.length === 0 ? (
                       <div className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                         {searchQuery.trim()
@@ -333,11 +363,17 @@ export default function TemplatesPage() {
                           : "No templates in this section yet."}
                       </div>
                     ) : (
-                      <div className={cn(
-                        "gap-4",
-                        viewMode === "grid" ? "grid md:grid-cols-2 xl:grid-cols-3" : "space-y-2",
-                      )}>
-                        {bucket.map((template) => renderTemplateCard(template, isEmail))}
+                      <div
+                        className={cn(
+                          "gap-4",
+                          viewMode === "grid"
+                            ? "grid md:grid-cols-2 xl:grid-cols-3"
+                            : "space-y-2"
+                        )}
+                      >
+                        {bucket.map((template) =>
+                          renderTemplateCard(template, isEmail)
+                        )}
                       </div>
                     )}
                   </TabsContent>
@@ -349,7 +385,10 @@ export default function TemplatesPage() {
       )}
 
       {previewTemplate && (
-        <TemplatePreviewModal template={previewTemplate} onClose={() => setPreviewId(null)} />
+        <TemplatePreviewModal
+          template={previewTemplate}
+          onClose={() => setPreviewId(null)}
+        />
       )}
     </div>
   );

@@ -2,13 +2,18 @@ import { Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
 import SearchBar from "@/components/shared/SearchBar";
+import RefreshButton from "../shared/RefreshButton";
 
 export default function SendingProfilesHeader({
   view,
-  setView
+  setView,
+  onRefresh,
+  isFetching
 }: Readonly<{
   view: "grid" | "table";
   setView: (v: "grid" | "table") => void;
+  onRefresh: () => void | Promise<unknown>;
+  isFetching: boolean;
 }>) {
   return (
     <div className="w-full flex flex-col gap-6 px-4 sm:px-6 lg:px-8 pt-8 pb-4 shrink-0">
@@ -39,6 +44,17 @@ export default function SendingProfilesHeader({
               { value: "table", ariaLabel: "Table view", icon: "table" },
               { value: "grid", ariaLabel: "Grid view", icon: "grid" }
             ]}
+          />
+
+          <RefreshButton
+            variant="outline"
+            size="icon"
+            onClick={() => void onRefresh()}
+            className="h-10 w-10 shrink-0 rounded-full border-slate-200/60 bg-white/70"
+            disabled={isFetching}
+            title="Refresh"
+            isRefreshing={isFetching}
+            label={null}
           />
 
           {/* Create Button */}
