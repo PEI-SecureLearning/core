@@ -1,3 +1,4 @@
+from datetime import datetime
 import math
 from fastapi import HTTPException
 from sqlmodel import Session, select
@@ -146,6 +147,7 @@ class CampaignHandler:
             campaign_update.sending_profile_ids,
         )
 
+        campaign.updated_at = datetime.now()
         session.commit()
         session.refresh(campaign)
 
