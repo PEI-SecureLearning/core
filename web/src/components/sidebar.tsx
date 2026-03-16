@@ -105,38 +105,28 @@ function SidebarGroup({
   icon: Icon,
   links,
   sidebarCollapsed,
-  sidebarExpanded
+  sidebarExpanded,
+  open,
+  onToggle
 }: Omit<SidebarGroupProps, "isCollapsed"> & {
   sidebarCollapsed: boolean;
   sidebarExpanded: boolean;
+  open: boolean;
+  onToggle: () => void;
 }) {
   const location = useLocation();
   const isAnyActive = links.some((l) => location.pathname.startsWith(l.href));
-  const [open, setOpen] = useState(true);
-  const userChoice = useRef<boolean | null>(null); // null = no explicit choice yet
-  const prevCollapsed = useRef(sidebarCollapsed);
-
-  // When the permanent collapsed state changes, sync open accordingly.
-  useEffect(() => {
-    if (prevCollapsed.current === sidebarCollapsed) return;
-    prevCollapsed.current = sidebarCollapsed;
-  }, [sidebarCollapsed]);
 
   // Children should also be toggleable in collapsed mode (icons-only view).
   const showChildren = open;
 
-  const handleToggle = () => {
-    const next = !open;
-    setOpen(next);
-    userChoice.current = next;
-  };
-
   return (
     <li>
       <button
-        onClick={handleToggle}
+        onClick={onToggle}
         title={sidebarExpanded ? undefined : label}
         className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
+          ${open ? "bg-muted/10" : ""}
           ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
       >
         <Icon className="h-4 w-4 shrink-0" />
@@ -148,15 +138,17 @@ function SidebarGroup({
         />
       </button>
 
-      <ul
-        className={`overflow-hidden transition-all duration-200 ease-in-out ${showChildren ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-200 ease-in-out ${showChildren ? "grid-rows-[1fr] opacity-100 bg-muted/40" : "grid-rows-[0fr] opacity-0"}`}
       >
-        {links.map((link) => (
-          <li key={link.href}>
-            <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
-          </li>
-        ))}
-      </ul>
+        <ul className="overflow-hidden">
+          {links.map((link) => (
+            <li key={link.href}>
+              <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
+            </li>
+          ))}
+        </ul>
+      </div>
     </li>
   );
 }
@@ -168,6 +160,7 @@ export function Sidebar() {
   // `isHovered`   = transient hover-expand while permanently collapsed.
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { keycloak } = useKeycloak();
   const location = useLocation();
@@ -216,6 +209,52 @@ export function Sidebar() {
   const userRoles = getUserRoles();
   const realmFeatures = getRealmFeatures();
   const computedUserGroups = getUserNavigationGroups(realmFeatures, userRoles);
+  const userGroupsSignature = computedUserGroups
+    .map(
+      (group) =>
+        `${group.label}:${group.links.map((link) => link.href).join(",")}`
+    )
+    .join("|");
+  const contentGroupsWithKeys = contentManagerGroups.map((group) => ({
+    ...group,
+    groupKey: `content:${group.label}`
+  }));
+  const userGroupsWithKeys = computedUserGroups.map((group) => ({
+    ...group,
+    groupKey: `user:${group.label}`
+  }));
+  const activeContentGroupKey = contentGroupsWithKeys.find((group) =>
+    group.links.some((link) => location.pathname.startsWith(link.href))
+  )?.groupKey;
+  const activeUserGroupKey = userGroupsWithKeys.find((group) =>
+    group.links.some((link) => location.pathname.startsWith(link.href))
+  )?.groupKey;
+
+  const toggleGroup = (groupKey: string) => {
+    setOpenGroupKey((prev) => (prev === groupKey ? null : groupKey));
+  };
+
+  // Keep only one expanded group and follow active route on navigation.
+  useEffect(() => {
+    if (isContentManagerRoute) {
+      setOpenGroupKey(activeContentGroupKey ?? null);
+      return;
+    }
+
+    if (isUserRoute) {
+      setOpenGroupKey(activeUserGroupKey ?? null);
+      return;
+    }
+
+    setOpenGroupKey(null);
+  }, [
+    isContentManagerRoute,
+    isUserRoute,
+    location.pathname,
+    activeContentGroupKey,
+    activeUserGroupKey,
+    userGroupsSignature
+  ]);
 
   let routePrefix = "";
   if (isAdminRoute) {
@@ -273,12 +312,14 @@ export function Sidebar() {
                 isCollapsed={!expanded}
               />
             </li>
-            {contentManagerGroups.map((group) => (
+            {contentGroupsWithKeys.map((group) => (
               <SidebarGroup
                 key={group.label}
                 {...group}
                 sidebarCollapsed={isCollapsed}
                 sidebarExpanded={expanded}
+                open={openGroupKey === group.groupKey}
+                onToggle={toggleGroup.bind(null, group.groupKey)}
               />
             ))}
             {contentManagerStandaloneLinks.map((link) => (
@@ -294,12 +335,14 @@ export function Sidebar() {
             <li>
               <SidebarLink {...userDashboardLink} isCollapsed={!expanded} />
             </li>
-            {computedUserGroups.map((group) => (
+            {userGroupsWithKeys.map((group) => (
               <SidebarGroup
                 key={group.label}
                 {...group}
                 sidebarCollapsed={isCollapsed}
                 sidebarExpanded={expanded}
+                open={openGroupKey === group.groupKey}
+                onToggle={toggleGroup.bind(null, group.groupKey)}
               />
             ))}
             {userStandaloneLinks.map((link) => (
