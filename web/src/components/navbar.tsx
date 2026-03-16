@@ -3,13 +3,16 @@ import { useKeycloak } from "@react-keycloak/web";
 import { useRouterState, Link } from "@tanstack/react-router";
 import "../css/navbar.css";
 
-
 export function Logo() {
   return (
-    <div className="flex items-center space-x-1 sm:space-x-2 -translate-x-4 -translate-y-1">
-      <img src="/Hatlogo.png" alt="Logo" className="h-17 w-17" />
+    <div className="flex items-center gap-2 space-x-1 sm:space-x-2 -translate-x-4 -translate-y-1">
+      <img
+        src="/Hatlogo.png"
+        alt="Logo"
+        className="size-14 ml-4 sm:ml-2 lg:ml-0"
+      />
 
-      <div className="flex flex-col">
+      <div className="hidden sm:flex flex-col">
         <span className="font-bold text-foreground text-sm sm:text-base lg:text-2xl z-10 translate-y-3 -translate-x-2">
           Secure
         </span>
@@ -20,8 +23,6 @@ export function Logo() {
     </div>
   );
 }
-
-
 
 export function Navbar() {
   const routerState = useRouterState();
@@ -34,12 +35,12 @@ export function Navbar() {
   const handleLogout = async () => {
     try {
       await keycloak.logout({
-        redirectUri: BASE_URL,
+        redirectUri: BASE_URL
       });
 
-      console.log('User has been successfully logged out and redirected.');
+      console.log("User has been successfully logged out and redirected.");
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -67,13 +68,13 @@ export function Navbar() {
             {/* Dynamic Breadcrumb */}
             {formattedParts.length > 0 && (
               <>
-                <ChevronRight className="hidden lg:block h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <ChevronRight className="hidden lg:block h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex items-center text-sm min-w-0">
                   {formattedParts.map((part, i) => {
                     const isLast = i === formattedParts.length - 1;
                     const path = breadcrumbPaths[i];
                     return (
-                      <div key={i} className="flex items-center min-w-0">
+                      <div key={part} className="flex items-center min-w-0">
                         {!isLast ? (
                           <Link
                             to={path}
@@ -82,10 +83,12 @@ export function Navbar() {
                             {part}
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground truncate">{part}</span>
+                          <span className="text-muted-foreground truncate">
+                            {part}
+                          </span>
                         )}
                         {!isLast && (
-                          <span className="text-muted-foreground mx-2 flex-shrink-0">
+                          <span className="text-muted-foreground mx-2 shrink-0">
                             /
                           </span>
                         )}
@@ -99,19 +102,26 @@ export function Navbar() {
 
           {/* User Profile & Logout */}
           <div className="flex items-center gap-2">
-            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-muted transition-colors flex-shrink-0 cursor-pointer">
+            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-muted transition-colors shrink-0 cursor-pointer">
               {/* User info */}
               <div className="flex flex-col items-end">
                 <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
-                  {keycloak.tokenParsed?.name || keycloak.tokenParsed?.preferred_username || 'User'}
+                  {keycloak.tokenParsed?.name ||
+                    keycloak.tokenParsed?.preferred_username ||
+                    "User"}
                 </span>
                 <span className="text-[10px] lg:text-xs text-muted-foreground">
-                  {keycloak.tokenParsed?.realm_access?.roles?.includes('admin') ? 'Admin' :
-                    keycloak.tokenParsed?.realm_access?.roles?.includes('org_manager') ? 'Manager' : 'User'}
+                  {keycloak.tokenParsed?.realm_access?.roles?.includes("admin")
+                    ? "Admin"
+                    : keycloak.tokenParsed?.realm_access?.roles?.includes(
+                          "org_manager"
+                        )
+                      ? "Manager"
+                      : "User"}
                 </span>
               </div>
               {/* Avatar */}
-              <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l bg-foreground flex items-center justify-center flex-shrink-0">
+              <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l bg-foreground flex items-center justify-center shrink-0">
                 <User className="h-3 w-3 sm:h-4 sm:w-4 text-background" />
               </div>
             </button>

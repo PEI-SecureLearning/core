@@ -46,18 +46,23 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <h3 className="text-[15px] font-semibold text-foreground tracking-tight">This Week</h3>
+          <h3 className="text-[15px] font-semibold text-foreground tracking-tight">
+            This Week
+          </h3>
         </div>
-        <span className="text-[11px] font-medium text-primary/90 bg-primary/10 border border-purple-100 px-2.5 py-1 rounded-full
-          group-hover:bg-primary/20 transition-colors duration-300">
+        <span
+          className="text-[11px] font-medium text-primary/90 bg-primary/10 border border-purple-100 px-2.5 py-1 rounded-full
+          group-hover:bg-primary/20 transition-colors duration-300"
+        >
           Active
         </span>
       </div>
 
       {/* Stats Display */}
-      <div className="flex items-center justify-center gap-0 bg-gradient-to-br from-purple-50/80 to-indigo-50/50 rounded-2xl
-        border border-purple-100/60 group-hover:border-primary/30/80 transition-all duration-300 overflow-hidden">
-
+      <div
+        className="flex items-center justify-center gap-0 bg-gradient-to-br from-purple-50/80 to-indigo-50/50 rounded-2xl
+        border border-purple-100/60 group-hover:border-primary/30/80 transition-all duration-300 overflow-hidden"
+      >
         {/* Hours */}
         <div
           className="flex-1 flex flex-col items-center py-5 px-4 cursor-default relative
@@ -65,25 +70,32 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           onMouseEnter={() => setHovered("hours")}
           onMouseLeave={() => setHovered(null)}
         >
-          <div className={`absolute inset-0 bg-primary/90/5 rounded-l-2xl transition-opacity duration-300 ${hovered === "hours" ? "opacity-100" : "opacity-0"}`} />
+          <div
+            className={`absolute inset-0 bg-primary/90/5 rounded-l-2xl transition-opacity duration-300 ${hovered === "hours" ? "opacity-100" : "opacity-0"}`}
+          />
 
           <div className="flex items-center gap-1.5 mb-1">
-            <span className={`text-[11px] font-medium uppercase tracking-wider transition-colors duration-300 ${hovered === "hours" ? "text-primary/90" : "text-muted-foreground/70"}`}>
+            <span
+              className={`text-[11px] font-medium uppercase tracking-wider transition-colors duration-300 ${hovered === "hours" ? "text-primary/90" : "text-muted-foreground/70"}`}
+            >
               Hours
             </span>
           </div>
 
           <span
-            className={`text-7xl font-bold leading-none transition-all duration-300 ${hovered === "hours"
-              ? "text-primary scale-110 stat-number-hover"
-              : "text-muted-foreground"
-              }`}
+            className={`text-5xl sm:text-7xl font-bold leading-none transition-all duration-300 ${
+              hovered === "hours"
+                ? "text-primary scale-110 stat-number-hover"
+                : "text-muted-foreground"
+            }`}
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
             {hours}
           </span>
 
-          <span className={`text-[12px] mt-1.5 font-medium transition-colors duration-300 ${hovered === "hours" ? "text-accent-secondary" : "text-muted-foreground/70"}`}>
+          <span
+            className={`text-[12px] mt-1.5 font-medium transition-colors duration-300 ${hovered === "hours" ? "text-accent-secondary" : "text-muted-foreground/70"}`}
+          >
             this week
           </span>
         </div>
@@ -100,25 +112,32 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           onMouseEnter={() => setHovered("modules")}
           onMouseLeave={() => setHovered(null)}
         >
-          <div className={`absolute inset-0 bg-indigo-500/5 rounded-r-2xl transition-opacity duration-300 ${hovered === "modules" ? "opacity-100" : "opacity-0"}`} />
+          <div
+            className={`absolute inset-0 bg-indigo-500/5 rounded-r-2xl transition-opacity duration-300 ${hovered === "modules" ? "opacity-100" : "opacity-0"}`}
+          />
 
           <div className="flex items-center gap-1.5 mb-1">
-            <span className={`text-[11px] font-medium uppercase tracking-wider transition-colors duration-300 ${hovered === "modules" ? "text-indigo-500" : "text-muted-foreground/70"}`}>
+            <span
+              className={`text-[11px] font-medium uppercase tracking-wider transition-colors duration-300 ${hovered === "modules" ? "text-indigo-500" : "text-muted-foreground/70"}`}
+            >
               Modules
             </span>
           </div>
 
           <span
-            className={`text-7xl font-bold leading-none transition-all duration-300 ${hovered === "modules"
-              ? "text-indigo-600 scale-110 stat-number-hover"
-              : "text-muted-foreground"
-              }`}
+            className={`text-5xl sm:text-7xl font-bold leading-none transition-all duration-300 ${
+              hovered === "modules"
+                ? "text-indigo-600 scale-110 stat-number-hover"
+                : "text-muted-foreground"
+            }`}
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
             {modules}
           </span>
 
-          <span className={`text-[12px] mt-1.5 font-medium transition-colors duration-300 ${hovered === "modules" ? "text-indigo-400" : "text-muted-foreground/70"}`}>
+          <span
+            className={`text-[12px] mt-1.5 font-medium transition-colors duration-300 ${hovered === "modules" ? "text-indigo-400" : "text-muted-foreground/70"}`}
+          >
             completed
           </span>
         </div>
@@ -132,7 +151,7 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
             transition-all duration-500"
           style={{
             backgroundSize: "200% auto",
-            animation: "shimmer 2.5s linear infinite",
+            animation: "shimmer 2.5s linear infinite"
           }}
         />
       </div>
