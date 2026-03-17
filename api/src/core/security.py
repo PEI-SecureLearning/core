@@ -71,6 +71,7 @@ class Roles:
                 access_token,
                 options={"verify_signature": False, "verify_aud": False},
             )
+            print(decoded)
         except Exception as e:
             logging.error(f"Failed to decode token: {e}")
             raise HTTPException(status_code=401, detail="Invalid token")
