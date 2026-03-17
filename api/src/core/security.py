@@ -12,7 +12,6 @@ from fastapi.security import OAuth2PasswordBearer
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
-KEYCLOAK_ISSUER_URL = os.getenv("KEYCLOAK_ISSUER_URL", AUTH_SERVER_URL)
 RESOURCE_SERVER_ID = "api"
 _JWKS_CLIENTS: dict[str, PyJWKClient] = {}
 
@@ -60,21 +59,9 @@ class Roles:
 
         return iss.split("/realms/")[-1].split("/")[0]
 
-    def _get_expected_issuer(self, realm_name: str) -> str:
-        if not KEYCLOAK_ISSUER_URL:
-            raise HTTPException(
-                status_code=500,
-                detail="Authentication server not configured",
-            )
-
-        if "/realms/" in KEYCLOAK_ISSUER_URL:
-            return KEYCLOAK_ISSUER_URL
-
-        return f"{KEYCLOAK_ISSUER_URL}/realms/{realm_name}"
-
     def _verify_token(self, access_token: str, realm_name: str) -> dict:
         jwks_client = self._get_jwks_client(realm_name)
-        issuer = self._get_expected_issuer(realm_name)
+        issuer = f"{AUTH_SERVER_URL}/realms/{realm_name}"
 
         try:
             signing_key = jwks_client.get_signing_key_from_jwt(access_token)
