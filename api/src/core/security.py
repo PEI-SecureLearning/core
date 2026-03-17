@@ -15,6 +15,7 @@ import httpx
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
+KEYCLOAK_ISSUER_URL = os.getenv("KEYCLOAK_ISSUER_URL", AUTH_SERVER_URL)
 RESOURCE_SERVER_ID = "api"
 
 
@@ -101,11 +102,11 @@ class Roles:
     async def check_keycloak_permission(self, access_token: str, permission: str, realm_name: str) -> bool:
         """Verify user permissions"""
 
-        if not AUTH_SERVER_URL:
-            logging.error("KEYCLOAK_INTERNAL_URL is not set")
+        if not KEYCLOAK_ISSUER_URL:
+            logging.error("KEYCLOAK_ISSUER_URL is not set")
             return False
 
-        url = f"{AUTH_SERVER_URL}/realms/{realm_name}/protocol/openid-connect/token"
+        url = f"{KEYCLOAK_ISSUER_URL}/realms/{realm_name}/protocol/openid-connect/token"
 
         headers = {
             "Authorization": f"Bearer {access_token}",
@@ -145,4 +146,3 @@ class Roles:
             raise HTTPException(status_code=401, detail="Invalid token: missing issuer")
         
         return iss.split("/realms/")[-1]
-
