@@ -63,6 +63,28 @@ services:
       timeout: 5s
       retries: 10
 
+  garage:
+    image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
+    container_name: garage
+    restart: unless-stopped
+    command: /garage server --single-node --default-bucket
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
+      GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_ACCESS_KEY_ID}
+      GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_SECRET_ACCESS_KEY}
+      GARAGE_DEFAULT_BUCKET: ${GARAGE_BUCKET_CONTENT}
+    ports:
+      - "3900:3900"
+      - "3901:3901"
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
+    healthcheck:
+      test: [ "CMD", "/garage", "-c", "/etc/garage.toml", "status" ]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
   rabbitmq:
     build:
       context: ../rabbitmq
@@ -195,6 +217,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      garage:
+        condition: service_healthy
       mongo:
         condition: service_healthy
       rabbitmq:
@@ -229,5 +253,6 @@ networks:
 
 volumes:
   db_data:
+  garage_data:
   rabbitmq_data:
   mongo_data:
