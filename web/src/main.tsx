@@ -107,9 +107,7 @@ if (!rootElement.innerHTML) {
   if (!hasValidRealm) {
     const root = ReactDOM.createRoot(rootElement)
     root.render(
-      <StrictMode>
-        <EmailEntry />
-      </StrictMode>
+      <EmailEntry />
     )
   } else {
     const root = ReactDOM.createRoot(rootElement)
