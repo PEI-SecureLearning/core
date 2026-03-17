@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Mail, Sparkles, Loader2 } from 'lucide-react';
-import {apiClient} from '../lib/api-client'
+import { apiClient } from '../lib/api-client'
 
 export const EmailEntry = () => {
     const [email, setEmail] = useState('');
