@@ -6,11 +6,11 @@ type PreviewPanelLogoProps = Readonly<{
 
 export function PreviewPanelLogo({ logoPreviewUrl }: PreviewPanelLogoProps) {
     return (
-        <div className="flex flex-col items-center py-4 border-b border-slate-100 bg-white/40">
+        <div className="flex flex-col items-center py-4 border-b border-border/40 bg-background/40">
             <div className={`
                 w-28 h-28 rounded-[2rem] flex items-center justify-center overflow-hidden
                 shadow-2xl shadow-purple-500/10 border-4 border-white transition-all duration-500
-                ${logoPreviewUrl ? 'bg-white' : 'bg-slate-50'}
+                ${logoPreviewUrl ? 'bg-background' : 'bg-surface-subtle'}
             `}>
                 {logoPreviewUrl ? (
                     <img
@@ -20,7 +20,7 @@ export function PreviewPanelLogo({ logoPreviewUrl }: PreviewPanelLogoProps) {
                     />
                 ) : (
                     <div className="flex flex-col items-center gap-2 opacity-20">
-                        <ImageIcon className="w-8 h-8 text-slate-400" />
+                        <ImageIcon className="w-8 h-8 text-muted-foreground/70" />
                     </div>
                 )}
             </div>

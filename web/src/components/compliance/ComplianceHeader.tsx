@@ -29,8 +29,8 @@ export default function ComplianceHeader({ doc, step }: ComplianceHeaderProps) {
                     <div key={s} className="flex items-center gap-1">
                         <div
                             className={`h-2.5 w-2.5 rounded-full ${step === s || STEPS.indexOf(step) > STEPS.indexOf(s)
-                                ? "bg-white"
-                                : "bg-white/40"
+                                ? "bg-background"
+                                : "bg-background/40"
                                 }`}
                         />
                         <span className="text-white/80 capitalize">{s}</span>

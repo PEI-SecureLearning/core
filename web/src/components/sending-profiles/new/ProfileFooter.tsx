@@ -33,7 +33,7 @@ function ProfileFooter({ onSubmit, isValid, isLoading, status }: Props) {
       <div className="flex gap-4 justify-end">
         <Link
           to="/sending-profiles"
-          className="liquid-glass-button-secondary px-6 py-2.5 text-sm"
+          className="px-6 py-2.5 rounded-lg text-sm font-medium border border-border bg-surface hover:bg-surface-subtle text-foreground transition-colors"
         >
           Cancel
         </Link>
@@ -41,7 +41,7 @@ function ProfileFooter({ onSubmit, isValid, isLoading, status }: Props) {
         <button
           onClick={onSubmit}
           disabled={!isValid || isLoading}
-          className="liquid-glass-button bg-purple-600 hover:bg-purple-700 flex items-center gap-2 px-6 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {buttonContent.icon}
           {buttonContent.text}

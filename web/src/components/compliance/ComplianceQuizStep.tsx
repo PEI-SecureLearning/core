@@ -35,14 +35,14 @@ export default function ComplianceQuizStep({
         <div className="space-y-4">
             {/* Quiz header */}
             <div className="flex items-center justify-between flex-wrap gap-3">
-                <div className="flex text-lg items-center gap-2 text-slate-700 font-semibold">
+                <div className="flex text-lg items-center gap-2 text-foreground/90 font-semibold">
                     <span>Score at least {quiz.required_score}%</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs md:text-sm">
-                    <span className="px-2 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                    <span className="px-2 py-1 rounded-full bg-primary/10 text-primary border border-purple-100">
                         {answeredCount}/{quiz.questions.length} answered
                     </span>
-                    <span className="px-2 py-1 rounded-full bg-gray-50 text-gray-700 border border-gray-200">
+                    <span className="px-2 py-1 rounded-full bg-surface-subtle text-foreground/90 border border-border">
                         Required: {quiz.required_score}%+
                     </span>
                     {remainingCooldown > 0 && (
@@ -65,21 +65,21 @@ export default function ComplianceQuizStep({
                         </div>
                         <div className="flex items-center gap-3">
                             <div
-                                className="w-12 h-12 rounded-full border border-orange-200 bg-white/80 flex items-center justify-center text-xs font-semibold text-orange-700"
+                                className="w-12 h-12 rounded-full border border-orange-200 bg-background/80 flex items-center justify-center text-xs font-semibold text-orange-700"
                                 style={{
                                     background: `conic-gradient(#fb923c ${cooldownProgress * 360}deg, #fde7d3 ${cooldownProgress * 360}deg 360deg)`,
                                 }}
                             >
                                 {remainingCooldown}s
                             </div>
-                            <div className="px-3 py-2 rounded-full bg-white/70 text-orange-800 border border-orange-200 text-xs font-semibold">
+                            <div className="px-3 py-2 rounded-full bg-background/70 text-orange-800 border border-orange-200 text-xs font-semibold">
                                 Try again in {remainingCooldown}s
                             </div>
                         </div>
                     </div>
                     {/* Feedback list */}
-                    <div className="rounded-lg border border-orange-100 bg-white p-3">
-                        <p className="font-semibold text-md text-slate-800 mb-2">What to review</p>
+                    <div className="rounded-lg border border-orange-100 bg-background p-3">
+                        <p className="font-semibold text-md text-foreground mb-2">What to review</p>
                         <ul className="list-disc pl-5 text-sm space-y-1">
                             {result.feedback.map((f) => (
                                 <li key={f.id} className={f.correct ? "text-green-800 font-medium" : "text-orange-800 font-medium"}>
@@ -91,14 +91,14 @@ export default function ComplianceQuizStep({
                     {/* Actions */}
                     <div className="flex items-center gap-3">
                         <button
-                            className="px-3 py-2 bg-white rounded-lg border border-purple-200 text-purple-700 hover:bg-purple-50 inline-flex items-center gap-2"
+                            className="px-3 py-2 bg-background rounded-lg border border-primary/30 text-primary hover:bg-primary/10 inline-flex items-center gap-2"
                             onClick={onReviewDoc}
                         >
                             <ArrowUpRight className="h-4 w-4" />
                             Review document
                         </button>
                         <button
-                            className="px-3 py-2 bg-white rounded-lg border border-purple-200 text-purple-700 hover:bg-purple-50 inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-3 py-2 bg-background rounded-lg border border-primary/30 text-primary hover:bg-primary/10 inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={async () => {
                                 clearPersistedFailure();
                                 const refreshed = await apiClient.get<QuizPayload>("/compliance/latest/quiz");
@@ -116,19 +116,19 @@ export default function ComplianceQuizStep({
                     {/* Question list */}
                     <div className="space-y-4">
                         {quiz.questions?.map((q, idx) => (
-                            <div key={q.id} className="rounded-b-lg border-t-2 border-purple-700 ring ring-gray-200 p-4 shadow-md bg-white">
-                                <p className="font-semibold text-gray-900 mb-3">
+                            <div key={q.id} className="rounded-b-lg border-t-2 border-purple-700 ring ring-gray-200 p-4 shadow-md bg-background">
+                                <p className="font-semibold text-foreground mb-3">
                                     {idx + 1}. {q.prompt}
                                 </p>
-                                <div className="space-y-2 bg-gray-50/50 rounded-lg">
+                                <div className="space-y-2 bg-surface-subtle/50 rounded-lg">
                                     {q.options.map((opt, optIdx) => {
                                         const selected = answers[q.id] === optIdx;
                                         return (
                                             <label
                                                 key={optIdx}
                                                 className={`flex items-start gap-3 rounded-lg border px-3 py-2 cursor-pointer transition ${selected
-                                                    ? "border-purple-500 bg-purple-50"
-                                                    : "border-transparent hover:bg-gray-100"
+                                                    ? "border-primary bg-primary/10"
+                                                    : "border-transparent hover:bg-muted"
                                                     }`}
                                             >
                                                 <input
@@ -140,7 +140,7 @@ export default function ComplianceQuizStep({
                                                     onChange={() => onAnswerChange(q.id, optIdx)}
                                                     disabled={remainingCooldown > 0}
                                                 />
-                                                <span className={`text-sm ${selected ? "text-purple-800" : "text-slate-700 font-medium"} `}>{opt}</span>
+                                                <span className={`text-sm ${selected ? "text-primary/80" : "text-foreground/90 font-medium"} `}>{opt}</span>
                                             </label>
                                         );
                                     })}
@@ -168,7 +168,7 @@ export default function ComplianceQuizStep({
                     {/* Submit row */}
                     <div className="flex items-center justify-between">
                         {remainingCooldown > 0 ? (
-                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <div className="flex items-center gap-2 text-sm text-foreground/90">
                                 <Timer className="h-4 w-4" />
                                 <span>Try again in {remainingCooldown}s</span>
                             </div>
@@ -176,7 +176,7 @@ export default function ComplianceQuizStep({
                             <div />
                         )}
                         <button
-                            className="px-7 py-2 bg-purple-700 font-semibold text-white rounded-lg hover:bg-purple-800 transition disabled:opacity-60 cursor-pointer"
+                            className="px-7 py-2 bg-primary font-semibold text-white rounded-lg hover:bg-primary/80 transition disabled:opacity-60 cursor-pointer"
                             onClick={onSubmit}
                             disabled={submitting || remainingCooldown > 0}
                         >

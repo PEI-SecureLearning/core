@@ -18,7 +18,7 @@ from bson.errors import InvalidId
 from fastapi import HTTPException, status
 
 from src.core.mongo import get_modules_collection
-from src.models.module import (
+from src.models import (
     ModuleCreate,
     ModuleOut,
     ModulePatch,

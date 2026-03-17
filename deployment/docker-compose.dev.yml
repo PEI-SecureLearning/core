@@ -50,6 +50,27 @@ services:
       timeout: 5s
       retries: 5
 
+  garage:
+    image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
+    container_name: garage
+    command: /garage server --single-node --default-bucket
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
+      GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_ACCESS_KEY_ID}
+      GARAGE_DEFAULT_SECRET_KEY: ${GARAGE_SECRET_ACCESS_KEY}
+      GARAGE_DEFAULT_BUCKET: ${GARAGE_BUCKET_CONTENT}
+    ports:
+      - "3900:3900"
+      - "3901:3901"
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
+    healthcheck:
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
   rabbitmq:
     build:
       context: ../rabbitmq
@@ -155,6 +176,17 @@ services:
       MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
       MONGODB_DB: securelearning
       MONGODB_COLLECTION_TEMPLATES: templates
+      FILE_STORAGE_BACKEND: ${FILE_STORAGE_BACKEND}
+      GARAGE_S3_ENDPOINT: ${GARAGE_S3_ENDPOINT}
+      GARAGE_S3_PUBLIC_ENDPOINT: ${GARAGE_S3_PUBLIC_ENDPOINT}
+      GARAGE_S3_REGION: ${GARAGE_S3_REGION}
+      GARAGE_ACCESS_KEY_ID: ${GARAGE_ACCESS_KEY_ID}
+      GARAGE_SECRET_ACCESS_KEY: ${GARAGE_SECRET_ACCESS_KEY}
+      GARAGE_FORCE_PATH_STYLE: ${GARAGE_FORCE_PATH_STYLE}
+      GARAGE_BUCKET_CONTENT: ${GARAGE_BUCKET_CONTENT}
+      GARAGE_BUCKET_LOGOS: ${GARAGE_BUCKET_LOGOS}
+      GARAGE_CONTENT_PREFIX: ${GARAGE_CONTENT_PREFIX}
+      GARAGE_LOGOS_PREFIX: ${GARAGE_LOGOS_PREFIX}
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
       RABBITMQ_HOST: rabbitmq
@@ -177,6 +209,8 @@ services:
       keycloak:
         condition: service_healthy
       mongo:
+        condition: service_healthy
+      garage:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -204,3 +238,4 @@ volumes:
   db_data:
   rabbitmq_data:
   mongo_data:
+  garage_data:

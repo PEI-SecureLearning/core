@@ -17,15 +17,21 @@ from src.routers import (
     templates,
     sending_profile,
     modules,
+    phishing_kit,
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
+from src.core.object_storage import ensure_bucket, garage_enabled
+from src.core.settings import settings
 from src.tasks import start_scheduler, shutdown_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    if garage_enabled():
+        await ensure_bucket(settings.GARAGE_BUCKET_CONTENT)
+        await ensure_bucket(settings.GARAGE_BUCKET_LOGOS)
     try:
         start_scheduler()
         yield
@@ -73,3 +79,4 @@ app.include_router(content.router, prefix="/api", tags=["content"])
 app.include_router(templates.router, prefix="/api", tags=["templates"])
 app.include_router(sending_profile.router, prefix="/api", tags=["sending-profiles"])
 app.include_router(modules.router, prefix="/api", tags=["modules"])
+app.include_router(phishing_kit.router, prefix="/api", tags=["phishing-kits"])

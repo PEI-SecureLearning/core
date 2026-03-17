@@ -3,7 +3,7 @@
 from fastapi import HTTPException, UploadFile
 from sqlmodel import Session
 
-from src.models.org_manager_schemas import (
+from src.models import (
     CompliancePolicyResponse,
     ComplianceQuizPayload,
     ComplianceQuizResponse,

@@ -1,205 +1,115 @@
-import { motion, type Variants } from "motion/react";
-import {
-    Building2,
-    Users,
-    Activity,
-    ArrowRight,
-    Shield,
-    Settings,
-    AlertCircle,
-    CheckCircle,
-    Info,
-    Loader2,
-} from "lucide-react";
+import { useKeycloak } from "@react-keycloak/web";
+import { motion } from "motion/react";
+import { Shield } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { apiClient } from "../../lib/api-client";
-
-interface LogEntry {
-    id: string;
-    timestamp: number;
-    level: "info" | "warning" | "error" | "success";
-    message: string;
-    source: string;
-}
-
-const levelDot: Record<LogEntry["level"], string> = {
-    error: "bg-red-500",
-    warning: "bg-yellow-400",
-    success: "bg-green-500",
-    info: "bg-blue-400",
-};
-
-const levelIcon = (level: LogEntry["level"]) => {
-    const cls = "w-3.5 h-3.5 flex-shrink-0";
-    switch (level) {
-        case "error": return <AlertCircle className={`${cls} text-red-500`} />;
-        case "warning": return <AlertCircle className={`${cls} text-yellow-500`} />;
-        case "success": return <CheckCircle className={`${cls} text-green-500`} />;
-        default: return <Info className={`${cls} text-blue-400`} />;
-    }
-};
-
-function relativeTime(ts: number): string {
-    const diff = Date.now() - ts;
-    const s = Math.floor(diff / 1000);
-    if (s < 60) return `${s}s ago`;
-    const m = Math.floor(s / 60);
-    if (m < 60) return `${m}m ago`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
-}
-
-function SystemLogsCard({ item }: { item: Variants }) {
-    const [logs, setLogs] = useState<LogEntry[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        apiClient
-            .get<{ logs: LogEntry[] }>("/logs?max_results=5")
-            .then((res) => setLogs((res.logs ?? []).slice(0, 5)))
-            .catch(() => setLogs([]))
-            .finally(() => setLoading(false));
-    }, []);
-
-    return (
-        <motion.div
-            variants={item}
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col"
-        >
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                        <Activity className="w-6 h-6 text-green-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">System Logs</h3>
-                </div>
-            </div>
-
-            <div className="flex-1 space-y-2 mb-4 min-h-[120px]">
-                {loading ? (
-                    <div className="flex items-center gap-2 text-gray-400 py-4 justify-center">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Loading…</span>
-                    </div>
-                ) : logs.length === 0 ? (
-                    <p className="text-sm text-gray-400 py-4 text-center">No recent events.</p>
-                ) : (
-                    logs.map((log) => (
-                        <div key={log.id} className="flex items-start gap-2 text-sm">
-                            <span
-                                className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${levelDot[log.level]}`}
-                            />
-                            <span className="flex-1 text-gray-700 truncate">{log.message}</span>
-                            <span className="text-xs text-gray-400 flex-shrink-0 flex items-center gap-1">
-                                {levelIcon(log.level)}
-                                {relativeTime(log.timestamp)}
-                            </span>
-                        </div>
-                    ))
-                )}
-            </div>
-
-            <Link
-                to="/admin/logs"
-                className="text-green-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all text-sm mt-auto"
-            >
-                View all logs <ArrowRight className="w-4 h-4" />
-            </Link>
-        </motion.div>
-    );
-}
+import { adminLinks, filterLinks } from "../../config/navLinks";
+import "../WelcomePage.css"; // Reusing the quick-card styles
 
 export function AdminDashboard() {
+    const { keycloak } = useKeycloak();
+    const userRoles = keycloak.tokenParsed?.realm_access?.roles || [];
+    const realmFeatures = (keycloak.tokenParsed as any)?.features || {};
+
+    const visibleCards = filterLinks(adminLinks, userRoles, realmFeatures).filter(
+        (link) => link.showOnWelcome !== false && !!link.description
+    );
+
+    const dashboardLinksKey = visibleCards.map((c) => c.href).join(",");
+
     const container = {
         hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
+        show: { opacity: 1, transition: { staggerChildren: 0.1 } },
     };
 
     const item = {
         hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0 }
+        show: { opacity: 1, y: 0 },
     };
 
     return (
-        <div className="min-h-full w-full bg-gray-50/50">
-            <div className="max-w-6xl mx-auto space-y-8 ">
-                {/* Header Section */}
+        <div className="min-h-full w-full bg-background/50 p-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                 >
                     <div>
-                        <div className="flex items-center gap-2 text-sm font-medium text-indigo-600 mb-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-primary mb-2">
                             <Shield className="w-4 h-4" />
                             <span>Platform Administration</span>
                         </div>
-                        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                        <h1 className="text-4xl font-bold text-foreground tracking-tight">
                             Admin Console
                         </h1>
-                        <p className="text-gray-500 mt-2 text-lg">
+                        <p className="text-muted-foreground mt-2 text-lg">
                             Manage tenants, users, and platform settings.
                         </p>
                     </div>
                 </motion.div>
 
-                {/* Action Cards Grid */}
+                {/* Cards Grid */}
                 <motion.div
+                    key={dashboardLinksKey}
                     variants={container}
                     initial="hidden"
                     animate="show"
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grid-flow-row-dense"
                 >
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-                            <Building2 className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Tenant Management</h3>
-                        <p className="text-gray-500 mb-4">Create and manage organizations, configure features and access controls.</p>
-                        <Link to="/admin/tenants" className="text-blue-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
-                            View Tenants <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </motion.div>
+                    {visibleCards.map((card, index) => {
+                        const isFeatured = (index + 1) % 4 === 0;
 
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center mb-4">
-                            <Users className="w-6 h-6 text-purple-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">User Administration</h3>
-                        <p className="text-gray-500 mb-4">Manage platform users, roles, and permissions across all tenants.</p>
-                        <Link to="/admin/users" className="text-purple-600 font-medium inline-flex items-center gap-1 hover:gap-2 transition-all">
-                            Manage Users <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </motion.div>
+                        return (
+                            <motion.div
+                                key={card.href}
+                                variants={item}
+                                className={`quick-card-container shadow-lg ${isFeatured ? "md:col-span-2 lg:col-span-2" : ""}`}
+                            >
+                                {/* Front face */}
+                                <div className={`quick-card-front ${isFeatured ? "bg-gradient-to-br from-card/80 to-accent/10" : "bg-card"}`}>
+                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${isFeatured ? "bg-primary text-primary-foreground" : "bg-accent/10 text-primary"
+                                        }`}>
+                                        <card.icon className="w-6 h-6" />
+                                    </div>
+                                    <div className={isFeatured ? "flex flex-col md:flex-row md:items-start justify-between gap-4 flex-1" : "flex-1"}>
+                                        <div className="max-w-md">
+                                            <h3 className={`font-semibold text-foreground mb-2 ${isFeatured ? "text-xl" : "text-lg"}`}>
+                                                {card.label}
+                                            </h3>
+                                            <p className="text-muted-foreground line-clamp-2">{card.description}</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <SystemLogsCard item={item} />
-
-                    <motion.div variants={item} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mb-4">
-                            <Settings className="w-6 h-6 text-indigo-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Platform Settings</h3>
-                        <p className="text-gray-500 mb-4">Configure global platform settings, integrations, and defaults.</p>
-                        <span className="text-gray-400 font-medium inline-flex items-center gap-1">
-                            Coming Soon
-                        </span>
-                    </motion.div>
-
-                    <motion.div variants={item} className=" bg-white-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow text-white">
-                        <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mb-4">
-                            <Building2 className="w-6 h-6 text-white" />
-                        </div>
-                        <h3 className="text-lg text-slate-700 font-semibold mb-2">Create New Tenant</h3>
-                        <p className="text-slate-500/80 mb-4">Set up a new organization with custom configuration and features.</p>
-
-                    </motion.div>
+                                {/* Hover overlay */}
+                                <div className="quick-card-overlay">
+                                    <div className="quick-card-overlay-icon -mb-3 translate-y-2">
+                                        <card.icon className="w-6 h-6" />
+                                    </div>
+                                    <p className="quick-card-overlay-title translate-y-2">{card.label}</p>
+                                    <p className="quick-card-overlay-desc translate-y-2">{card.description}</p>
+                                    <Link
+                                        to={card.href}
+                                        className="mt-4 flex justify-center gap-2 items-center mx-auto shadow-xl text-sm font-semibold bg-primary-foreground text-primary hover:bg-secondary transition-all duration-300 relative z-10 px-5 py-2.5 rounded-full group"
+                                    >
+                                        Explore
+                                        <svg
+                                            className="w-5 h-5 justify-end group-hover:rotate-90 ease-linear duration-300"
+                                            viewBox="0 0 16 19"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M7 18C7 18.5523 7.44772 19 8 19C8.55228 19 9 18.5523 9 18H7ZM8.70711 0.292893C8.31658 -0.0976311 7.68342 -0.0976311 7.29289 0.292893L0.928932 6.65685C0.538408 7.04738 0.538408 7.68054 0.928932 8.07107C1.31946 8.46159 1.95262 8.46159 2.34315 8.07107L8 2.41421L13.6569 8.07107C14.0474 8.46159 14.6805 8.46159 15.0711 8.07107C15.4616 7.68054 15.4616 7.04738 15.0711 6.65685L8.70711 0.292893ZM9 18L9 1H7L7 18H9Z"
+                                                className="fill-current"
+                                            ></path>
+                                        </svg>
+                                    </Link>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
                 </motion.div>
             </div>
         </div>

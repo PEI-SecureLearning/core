@@ -2,7 +2,7 @@
 
 from fastapi import HTTPException
 
-from src.models.org_manager_schemas import QuizQuestionPayload
+from src.models import QuizQuestionPayload
 from src.services.platform_admin import get_platform_admin_service
 
 

@@ -1,6 +1,6 @@
 import pika
 from src.core.settings import settings
-from src.models.email_sending import RabbitMQEmailMessage
+from src.models import RabbitMQEmailMessage
 
 
 class RabbitMQService:

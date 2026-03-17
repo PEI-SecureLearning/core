@@ -2,10 +2,11 @@ import { Navbar } from "@/components/navbar";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Sidebar } from "@/components/sidebar";
 import ComplianceFlow from "@/components/compliance";
+import { NotFound } from "@/components/NotFound";
 
 const RootLayout = () => {
   return (
-    <div className="h-screen bg-white">
+    <div className="h-screen bg-background text-foreground">
       <Navbar />
       <div className="h-[92%] flex flex-row">
         <Sidebar />
@@ -18,4 +19,4 @@ const RootLayout = () => {
   );
 };
 
-export const Route = createRootRoute({ component: RootLayout });
+export const Route = createRootRoute({ component: RootLayout, notFoundComponent: NotFound });

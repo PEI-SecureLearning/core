@@ -19,13 +19,9 @@ const gridClass: Record<GridCols, string> = {
 
 // ── Adapt Module → CardItem ────────────────────────────────────────────────────
 
-function moduleToCardItem(mod: Module, token?: string): CardItem {
+function moduleToCardItem(mod: Module, coverImageUrl?: string): CardItem {
     const sectionCount = mod.sections?.length ?? 0
     const diffColor = DIFFICULTY_COLORS[mod.difficulty ?? 'Easy'] ?? DIFFICULTY_COLORS['Easy']
-
-    const coverImageUrl = mod.cover_image
-        ? `${API_BASE}/content/${encodeURIComponent(mod.cover_image)}/file${token ? `?token=${encodeURIComponent(token)}` : ''}`
-        : undefined
 
     return {
         id: mod.id,
@@ -46,15 +42,15 @@ function moduleToCardItem(mod: Module, token?: string): CardItem {
 
 function ModuleCardSkeleton() {
     return (
-        <div className="flex flex-col bg-white rounded-2xl overflow-hidden border border-purple-500/10 animate-pulse">
-            <div className="h-48 w-full bg-slate-100" />
+        <div className="flex flex-col bg-surface rounded-2xl overflow-hidden border border-border animate-pulse">
+            <div className="h-48 w-full bg-surface-subtle" />
             <div className="p-5 flex flex-col gap-3">
-                <div className="h-4 bg-slate-100 rounded w-3/4" />
-                <div className="h-3 bg-slate-100 rounded w-full" />
-                <div className="h-3 bg-slate-100 rounded w-2/3" />
-                <div className="mt-auto pt-4 border-t border-slate-100 flex justify-between">
-                    <div className="h-3 bg-slate-100 rounded w-1/3" />
-                    <div className="h-3 bg-slate-100 rounded w-1/4" />
+                <div className="h-4 bg-surface-subtle rounded w-3/4" />
+                <div className="h-3 bg-surface-subtle rounded w-full" />
+                <div className="h-3 bg-surface-subtle rounded w-2/3" />
+                <div className="mt-auto pt-4 border-t border-border flex justify-between">
+                    <div className="h-3 bg-surface-subtle rounded w-1/3" />
+                    <div className="h-3 bg-surface-subtle rounded w-1/4" />
                 </div>
             </div>
         </div>
@@ -73,6 +69,7 @@ interface ModuleDisplayProps {
 export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResultCountChange }: ModuleDisplayProps) {
     const { keycloak } = useKeycloak()
     const [modules, setModules] = useState<Module[]>([])
+    const [coverUrls, setCoverUrls] = useState<Record<string, string>>({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -105,6 +102,42 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
         return () => { cancelled = true }
     }, [keycloak.token, debouncedSearch, sort])
 
+    useEffect(() => {
+        let cancelled = false
+        const coverIds = Array.from(new Set(modules.map((mod) => mod.cover_image).filter(Boolean))) as string[]
+
+        if (coverIds.length === 0) {
+            setCoverUrls({})
+            return
+        }
+
+        async function loadCoverUrls() {
+            const entries = await Promise.all(
+                coverIds.map(async (coverId) => {
+                    try {
+                        const res = await fetch(`${API_BASE}/content/${encodeURIComponent(coverId)}/file-url`, {
+                            headers: {
+                                Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '',
+                            },
+                        })
+                        if (!res.ok) return [coverId, ''] as const
+                        const payload = await res.json() as { url: string | null }
+                        return [coverId, payload.url ?? ''] as const
+                    } catch {
+                        return [coverId, ''] as const
+                    }
+                })
+            )
+
+            if (!cancelled) {
+                setCoverUrls(Object.fromEntries(entries.filter(([, value]) => value)))
+            }
+        }
+
+        void loadCoverUrls()
+        return () => { cancelled = true }
+    }, [modules, keycloak.token])
+
     if (loading) {
         return (
             <motion.div animate={{ opacity: 1 }} className="w-full h-full">
@@ -117,13 +150,13 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-64 gap-3 text-slate-400">
+            <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
                 <AlertCircle className="w-8 h-8 text-red-400" />
-                <p className="text-sm font-medium text-red-500">{error}</p>
+                <p className="text-sm font-medium text-red-400">{error}</p>
                 <button
                     type="button"
                     onClick={() => globalThis.location.reload()}
-                    className="text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                    className="text-xs text-[#A78BFA] hover:text-[#7C3AED] transition-colors"
                 >
                     Try again
                 </button>
@@ -134,17 +167,17 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
     if (modules.length === 0) {
         const isFiltered = debouncedSearch.trim() !== ''
         return (
-            <div className="flex flex-col items-center justify-center h-64 gap-3 text-slate-400">
-                <BookOpen className="w-10 h-10 text-slate-200" />
+            <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+                <BookOpen className="w-10 h-10 text-muted-foreground/30" />
                 {isFiltered ? (
                     <>
-                        <p className="text-sm font-medium">No modules match "{debouncedSearch}"</p>
-                        <p className="text-xs text-slate-400">Try a different search term.</p>
+                        <p className="text-sm font-medium text-foreground">No modules match "{debouncedSearch}"</p>
+                        <p className="text-xs text-muted-foreground">Try a different search term.</p>
                     </>
                 ) : (
                     <>
-                        <p className="text-sm font-medium">No modules yet</p>
-                        <p className="text-xs text-slate-400">Create your first module to get started.</p>
+                        <p className="text-sm font-medium text-foreground">No modules yet</p>
+                        <p className="text-xs text-muted-foreground">Create your first module to get started.</p>
                     </>
                 )}
             </div>
@@ -177,7 +210,7 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
                             className="rounded-xl cursor-pointer"
                         >
                             <CourseCard
-                                item={moduleToCardItem(mod, keycloak.token)}
+                                item={moduleToCardItem(mod, mod.cover_image ? coverUrls[mod.cover_image] : undefined)}
                                 cols={cols}
                                 basePath="/content-manager/modules"
                                 paramKey="moduleId"

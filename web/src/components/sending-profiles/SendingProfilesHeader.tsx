@@ -1,69 +1,56 @@
-import { Search, Grid3x3, TableProperties, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
+import SearchBar from "@/components/shared/SearchBar";
 
 export default function SendingProfilesHeader({
   view,
-  setView,
-}: {
+  setView
+}: Readonly<{
   view: "grid" | "table";
   setView: (v: "grid" | "table") => void;
-}) {
+}>) {
   return (
-    <div className="h-16 lg:h-20 w-full flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-4">
-      {/* Title */}
-      <div className="flex-shrink-0">
-        <h1 className="font-bold text-base sm:text-lg lg:text-xl text-gray-900">
+    <div className="w-full flex flex-col gap-6 px-4 sm:px-6 lg:px-8 pt-8 pb-4 shrink-0">
+      <div className="shrink-0">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
           Sending Profiles
         </h1>
+        <p className="text-muted-foreground text-sm mt-0.5">
+          Manage SMTP identities and delivery settings.
+        </p>
       </div>
 
-      {/* Right side - Search, View Toggle, Create Button */}
-      <div className="flex-1 flex items-center justify-end gap-2 sm:gap-3">
+      <div className="flex flex-row justify-between gap-2 sm:gap-3">
         {/* Search Bar */}
-        <div className="relative flex-1 max-w-xs lg:max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search profiles..."
-            className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
+        <SearchBar
+          placeholder="Search profiles..."
+          className="grow"
+          iconClassName="text-primary"
+          inputClassName="h-10 rounded-md border-border/60"
+        />
 
         {/* View Toggle */}
-        <div className="hidden sm:flex items-center bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setView("grid")}
-            className={`p-2 rounded-md transition-colors ${
-              view === "grid"
-                ? "bg-white text-purple-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-            aria-label="Grid view"
-          >
-            <Grid3x3 className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setView("table")}
-            className={`p-2 rounded-md transition-colors ${
-              view === "table"
-                ? "bg-white text-purple-600 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-            aria-label="Table view"
-          >
-            <TableProperties className="h-4 w-4" />
-          </button>
-        </div>
+        <div className="flex flex-row items-center justify-center gap-2 sm:gap-3">
+          <DisplayModeToggle
+            value={view}
+            onChange={setView}
+            options={[
+              { value: "table", ariaLabel: "Table view", icon: "table" },
+              { value: "grid", ariaLabel: "Grid view", icon: "grid" }
+            ]}
+          />
 
-        {/* Create Button */}
-        <Link
-          to="/sending-profiles/new"
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm whitespace-nowrap"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">New Profile</span>
-          <span className="sm:hidden">Create</span>
-        </Link>
+          {/* Create Button */}
+          <Link
+            to="/sending-profiles/new"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors font-medium text-sm whitespace-nowrap"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">New Profile</span>
+            <span className="sm:hidden">New</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

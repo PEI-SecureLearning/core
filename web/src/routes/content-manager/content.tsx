@@ -21,6 +21,7 @@ function RouteComponent() {
     const [sortBy, setSortBy] = useState("title");
     const [refreshKey, setRefreshKey] = useState(0);
     const [viewingContentId, setViewingContentId] = useState<string | null>(null);
+    const [startEditing, setStartEditing] = useState(false);
 
     const handleDeleteContent = async (contentPieceId: string) => {
         const confirmed = window.confirm("Delete this content piece?");
@@ -47,13 +48,20 @@ function RouteComponent() {
     };
 
     return (
-        <div className="w-full h-full py-4 px-6 bg-gray-50/50 flex flex-col relative">
+        <div className="w-full h-full py-4 px-6 bg-background flex flex-col relative">
             <ContentDisplay
                 searchQuery={searchQuery}
                 sortBy={sortBy}
                 refreshKey={refreshKey}
                 openNewModal={addFile}
-                onViewContent={(id) => setViewingContentId(id)}
+                onViewContent={(id) => {
+                    setStartEditing(false);
+                    setViewingContentId(id);
+                }}
+                onEditContent={(id) => {
+                    setStartEditing(true);
+                    setViewingContentId(id);
+                }}
                 onDeleteContent={handleDeleteContent}
                 onSearchChange={setSearchQuery}
                 onSortChange={setSortBy}
@@ -62,8 +70,12 @@ function RouteComponent() {
 
             <ViewContentModal
                 contentPieceId={viewingContentId}
-                onClose={() => setViewingContentId(null)}
-                onDeleted={() => setRefreshKey((prev) => prev + 1)}
+                startInEditMode={startEditing}
+                onClose={() => {
+                    setViewingContentId(null)
+                    setStartEditing(false)
+                }}
+                onUpdated={() => setRefreshKey((prev) => prev + 1)}
             />
         </div>
     )

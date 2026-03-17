@@ -59,23 +59,19 @@ export default function SendingProfileLayout({
   footer,
 }: Readonly<Props>) {
   return (
-    <div className="liquid-glass-container h-full w-full animate-fade-in relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="liquid-blob liquid-blob-1 bg-purple-400" />
-      <div className="liquid-blob liquid-blob-2 bg-indigo-400" />
-      <div className="liquid-blob liquid-blob-3 bg-cyan-400" />
-
+    <div className="h-full w-full flex flex-col bg-background animate-fade-in overflow-hidden">
       {/* Header */}
-      <div className="liquid-glass-header flex-shrink-0 border-b border-white/20 py-3 px-6 animate-slide-down">
-        <h3 className="text-xl font-semibold text-gray-800 tracking-tight">{title}</h3>
-        <h2 className="text-sm font-medium text-gray-600">{subtitle}</h2>
+      <div className="flex-shrink-0 border-b border-border py-3 px-6 bg-surface-subtle">
+        <h3 className="text-xl font-semibold text-foreground tracking-tight">{title}</h3>
+        <h2 className="text-sm font-medium text-muted-foreground">{subtitle}</h2>
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 min-h-0 overflow-hidden">
         {/* Left column: forms */}
-        <div className="h-full w-full lg:w-[65%] purple-scrollbar overflow-y-auto pr-2 space-y-5">
-          <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+
+        <div className="h-full w-full lg:w-[65%] overflow-y-auto pr-2 space-y-5">
+          <div>
             <ProfileBasicInfo
               name={name}
               setName={setName}
@@ -88,8 +84,9 @@ export default function SendingProfileLayout({
             />
           </div>
 
-          <div className="animate-slide-up" style={{ animationDelay: "0.15s" }}>
-            <ProfileSmtpConfig
+          <div className="flex gap-5">
+            <div className="w-1/2">
+              <ProfileSmtpConfig
               host={smtpHost}
               setHost={setSmtpHost}
               port={smtpPort}
@@ -102,22 +99,19 @@ export default function SendingProfileLayout({
               isTesting={isTesting}
               testStatus={testStatus}
             />
-          </div>
-
-          <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <CustomHeadersSection
+            </div>
+            <div className="w-1/2">
+             <CustomHeadersSection
               headers={customHeaders}
               onAddHeader={onAddHeader}
               onRemoveHeader={onRemoveHeader}
             />
+            </div>
           </div>
         </div>
 
         {/* Right column: preview */}
-        <div
-          className="h-full w-full lg:w-[35%] animate-slide-left overflow-hidden"
-          style={{ animationDelay: "0.1s" }}
-        >
+        <div className="h-full w-full lg:w-[35%] overflow-hidden">
           <ProfilePreview
             name={name}
             fromEmail={fromEmail}
@@ -129,10 +123,7 @@ export default function SendingProfileLayout({
       </div>
 
       {/* Footer slot */}
-      <div
-        className="liquid-glass-footer flex-shrink-0 border-t border-white/20 py-4 animate-slide-up"
-        style={{ animationDelay: "0.2s" }}
-      >
+      <div className="flex-shrink-0 border-t border-border py-4 bg-surface">
         {footer}
       </div>
     </div>

@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query, status
 
 from src.core.dependencies import CurrentRealm, OAuth2Scheme
-from src.models.module import (
+from src.models import (
     ModuleCreate,
     ModuleOut,
     ModulePatch,

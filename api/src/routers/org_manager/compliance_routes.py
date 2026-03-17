@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, UploadFile
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles, Resource, Scope
-from src.models.org_manager_schemas import (
+from src.models import (
     CompliancePolicyPayload,
     CompliancePolicyResponse,
     ComplianceQuizPayload,
@@ -23,9 +23,7 @@ router = APIRouter()
     response_model=CompliancePolicyResponse,
     dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
-def get_compliance_policy(
-    realm: str, session: SessionDep, token: OAuth2Scheme
-):
+def get_compliance_policy(realm: str, session: SessionDep, token: OAuth2Scheme):
     validate_realm_access(token, realm)
     return compliance_handler.get_compliance_policy(session, realm)
 
@@ -65,9 +63,7 @@ async def import_compliance_policy(
     response_model=ComplianceQuizResponse,
     dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
-def get_compliance_quiz(
-    realm: str, session: SessionDep, token: OAuth2Scheme
-):
+def get_compliance_quiz(realm: str, session: SessionDep, token: OAuth2Scheme):
     validate_realm_access(token, realm)
     return compliance_handler.get_compliance_quiz(session, realm)
 

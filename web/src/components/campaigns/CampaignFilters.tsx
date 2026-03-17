@@ -1,4 +1,5 @@
-import { Search, Filter } from "lucide-react";
+import { Filter } from "lucide-react";
+import SearchBar from "@/components/shared/SearchBar";
 
 interface CampaignFiltersProps {
     searchQuery: string;
@@ -12,25 +13,23 @@ export function CampaignFilters({
     onSearchChange,
     statusFilter,
     onStatusFilterChange,
-}: CampaignFiltersProps) {
+}: Readonly<CampaignFiltersProps>) {
     return (
         <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                    type="text"
-                    placeholder="Search campaigns..."
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                />
-            </div>
+            <SearchBar
+                value={searchQuery}
+                onChange={onSearchChange}
+                placeholder="Search campaigns..."
+                className="flex-1 max-w-md"
+                iconClassName="text-primary"
+                inputClassName="h-10 rounded-lg border-border/60"
+            />
             <div className="flex items-center gap-2">
-                <Filter size={20} className="text-gray-400" />
+                <Filter size={20} className="text-muted-foreground/70" />
                 <select
                     value={statusFilter}
                     onChange={(e) => onStatusFilterChange(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none bg-white"
+                    className="px-3 py-2 border border-border/60 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-transparent outline-none bg-background"
                 >
                     <option value="all">All Status</option>
                     <option value="active">Active</option>

@@ -7,8 +7,8 @@ from apscheduler.triggers.interval import IntervalTrigger
 from sqlmodel import Session, select
 
 from src.core.db import engine
-from src.models.campaign import Campaign, CampaignStatus
-from src.models.email_sending import EmailSending, EmailSendingStatus
+from src.models import Campaign, CampaignStatus, EmailSending, EmailSendingStatus
+
 from src.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)

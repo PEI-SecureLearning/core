@@ -4,12 +4,13 @@ import ssl
 import smtplib
 
 from sqlmodel import Session, select
-from src.models.custom_header import CustomHeader
-from src.models.sending_profile import (
+from src.models import (
+    CustomHeader,
     SendingProfile,
     SendingProfileCreate,
     SendingProfileDisplayInfo,
 )
+
 
 
 class SendingProfileService:

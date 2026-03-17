@@ -5,8 +5,8 @@ interface ServiceUnavailableProps {
 
 export const ServiceUnavailable = ({ error }: ServiceUnavailableProps) => {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-800 font-sans">
-            <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
+        <div className="min-h-screen flex items-center justify-center bg-muted text-foreground font-sans">
+            <div className="max-w-md w-full bg-background shadow-lg rounded-lg p-8 text-center">
                 <div className="mb-6">
                     <svg
                         className="w-16 h-16 mx-auto text-red-500"
@@ -23,8 +23,8 @@ export const ServiceUnavailable = ({ error }: ServiceUnavailableProps) => {
                         ></path>
                     </svg>
                 </div>
-                <h1 className="text-2xl font-bold mb-4 text-gray-900">Service Unavailable</h1>
-                <p className="text-gray-600 mb-4">
+                <h1 className="text-2xl font-bold mb-4 text-foreground">Service Unavailable</h1>
+                <p className="text-muted-foreground mb-4">
                     We are currently unable to connect to the authentication service.
                 </p>
                 {error && (

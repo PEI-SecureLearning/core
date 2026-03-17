@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { Loader2 } from "lucide-react";
 
-// TENS DE CRIAR ESTES COMPONENTES DEPOIS (Explico abaixo)
 import SendingProfilesHeader from "@/components/sending-profiles/SendingProfilesHeader";
 import SendingProfilesGrid from "@/components/sending-profiles/SendingProfilesGrid";
 import SendingProfilesTable from "@/components/sending-profiles/SendingProfilesTable";
+import ConfirmDeleteModal from "@/components/usergroups/ConfirmDeleteModal";
 
 import {
   fetchSendingProfiles,
-  deleteSendingProfile,
+  deleteSendingProfile
 } from "@/services/sendingProfilesApi";
 import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
@@ -18,8 +18,9 @@ export default function SendingProfilesPage() {
   const [view, setView] = useState<"grid" | "table">("grid");
   const [profiles, setProfiles] = useState<SendingProfileDisplayInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // --- 1. Sacar o Realm do Token (A tua lógica "marafada") ---
   const tokenRealm = useMemo(() => {
     const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
     if (!iss) return null;
@@ -29,76 +30,82 @@ export default function SendingProfilesPage() {
 
   const realm = tokenRealm || "";
 
-  // --- 2. Carregar a "Mercadoria" ---
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Aqui não precisas do Promise.all marado dos grupos,
-      // porque o perfil já traz tudo o que precisas. É mais leve!
       const data = await fetchSendingProfiles(
         realm,
         keycloak.token || undefined
       );
       setProfiles(data);
     } catch (err) {
-      console.error("Deu sarilho ao carregar os perfis", err);
+      console.error("Failed to load profiles", err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- 3. O "Arranco" Inicial ---
   useEffect(() => {
     if (realm) {
       loadData();
     }
   }, [realm]);
 
-  // --- 4. Função de Apagar ---
-  const handleDelete = async (id: number) => {
-    if (!realm) return;
-    const confirmed = window.confirm(
-      "Tens a certeza, mô? Vais apagar este perfil para sempre!"
-    );
-    if (!confirmed) return;
+  const pendingProfileName =
+    profiles.find((p) => p.id === pendingDeleteId)?.name ?? "this profile";
 
+  const handleDeleteConfirm = async () => {
+    if (pendingDeleteId === null || !realm) return;
+    setIsDeleting(true);
     try {
-      await deleteSendingProfile(realm, id, keycloak.token || undefined);
-      // Recarrega a lista para ficar tudo atualizado
+      await deleteSendingProfile(
+        realm,
+        pendingDeleteId,
+        keycloak.token || undefined
+      );
+      setPendingDeleteId(null);
       loadData();
     } catch (err) {
-      console.error("Não deu para apagar o perfil", err);
-      alert("Erro ao apagar. Vê lá se o servidor não está de folga.");
+      console.error("Failed to delete profile", err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <div className="h-full w-full bg-gray-50/50">
-      {/* Header */}
-      <div className="h-1/12 w-full border-b border-gray-200 flex items-center px-4 font-semibold text-lg bg-white">
-        <SendingProfilesHeader view={view} setView={setView} />
-      </div>
+    <div className="h-full w-full flex flex-col">
+      <SendingProfilesHeader view={view} setView={setView} />
 
-      {/* Content */}
-      <div className="h-11/12 w-full overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {view === "grid" ? (
           <SendingProfilesGrid
             profiles={profiles}
             isLoading={isLoading && !profiles.length}
-            onDelete={handleDelete}
+            onDelete={(id) => setPendingDeleteId(id)}
           />
         ) : (
-          <SendingProfilesTable profiles={profiles} onDelete={handleDelete} />
+          <SendingProfilesTable
+            profiles={profiles}
+            onDelete={(id) => setPendingDeleteId(id)}
+          />
         )}
 
-        {/* Loading State do Realm */}
         {!realm && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Loader2 className="h-4 w-4 animate-spin" />A descobrir em que Realm
-            estamos...
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Resolving realm from token...
           </div>
         )}
       </div>
+
+      {pendingDeleteId !== null && (
+        <ConfirmDeleteModal
+          groupName={pendingProfileName}
+          isLoading={isDeleting}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setPendingDeleteId(null)}
+        />
+      )}
     </div>
   );
 }

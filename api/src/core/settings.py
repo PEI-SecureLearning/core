@@ -24,9 +24,24 @@ class Settings(BaseSettings):
   MONGODB_COLLECTION_TEMPLATES: str = "templates"
   MONGODB_COLLECTION_TENANT_LOGOS: str = "tenant_logos"
   MONGODB_COLLECTION_CONTENT: str = "content_pieces"
+  MONGODB_COLLECTION_CONTENT_FOLDERS: str = "content_folders"
   MONGODB_COLLECTION_MODULES: str = "modules"
-  MONGODB_GRIDFS_BUCKET: str = "content_files"
   MONGODB_INLINE_FILE_MAX_BYTES: int = 8 * 1024 * 1024
+
+  # Garage object storage (S3-compatible)
+  FILE_STORAGE_BACKEND: str = "garage"
+  GARAGE_S3_ENDPOINT: str = ""
+  GARAGE_S3_PUBLIC_ENDPOINT: str = ""
+  GARAGE_S3_REGION: str = "garage"
+  GARAGE_ACCESS_KEY_ID: str = ""
+  GARAGE_SECRET_ACCESS_KEY: str = ""
+  GARAGE_EXPECTED_BUCKET_OWNER: str = ""
+  GARAGE_FORCE_PATH_STYLE: bool = True
+  GARAGE_BUCKET_CONTENT: str = "securelearning-content"
+  GARAGE_BUCKET_LOGOS: str = "securelearning-logos"
+  GARAGE_CONTENT_PREFIX: str = "content"
+  GARAGE_LOGOS_PREFIX: str = "logos"
+  GARAGE_PRESIGNED_URL_TTL_SECONDS: int = 900
 
   # RabbitMQ
   RABBITMQ_HOST: str

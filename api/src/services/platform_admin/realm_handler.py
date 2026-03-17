@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from src.models.realm import Realm, RealmCreate
-from src.models.user import User
+from src.models import Realm, RealmCreate, User
+
 from src.core.db import engine
 from src.services.compliance import ensure_tenant_policy, ensure_tenant_quiz
 

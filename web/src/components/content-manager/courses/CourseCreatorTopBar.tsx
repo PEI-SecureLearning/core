@@ -1,0 +1,65 @@
+import { ArrowLeft, Eye } from 'lucide-react'
+
+interface CourseCreatorTopBarProps {
+    readonly title: string
+    readonly onTitleChange: (title: string) => void
+    readonly onBack: () => void
+    readonly onPreview: () => void
+    readonly canPreview: boolean
+}
+
+export function CourseCreatorTopBar({
+    title,
+    onTitleChange,
+    onBack,
+    onPreview,
+    canPreview,
+}: CourseCreatorTopBarProps) {
+    return (
+        <div className="flex items-center justify-between px-6 py-3 bg-surface border-b border-border shadow-sm flex-shrink-0">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+                <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#A78BFA] transition-colors flex-shrink-0"
+                >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                </button>
+
+                <div className="h-5 w-px bg-border flex-shrink-0" />
+
+                <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => onTitleChange(e.target.value)}
+                    placeholder="Untitled Course"
+                    className="flex-1 text-lg font-bold text-foreground placeholder:text-muted-foreground/40 bg-transparent border-none outline-none focus:ring-0 min-w-0"
+                />
+            </div>
+
+            <div className="flex flex-row items-center gap-2">
+                <button
+                    type="button"
+                    onClick={onPreview}
+                    disabled={!canPreview}
+                    style={canPreview ? { background: 'linear-gradient(135deg, #7C3AED, #9333EA)' } : undefined}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${canPreview
+                        ? 'text-white shadow-md shadow-[#7C3AED]/25'
+                        : 'bg-surface-subtle text-muted-foreground cursor-not-allowed'
+                        }`}
+                >
+                    <Eye className="w-4 h-4" />
+                    Preview
+                </button>
+                <button
+                    type="button"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                    Publish
+                </button>
+
+            </div>
+        </div>
+    )
+}

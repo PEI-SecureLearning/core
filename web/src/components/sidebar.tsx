@@ -1,148 +1,29 @@
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { useState, useRef, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import { useLocation } from "@tanstack/react-router";
-import { isAppRoute } from "@/lib/app-path";
 import {
-  LayoutDashboard,
-  Megaphone,
-  FileText,
-  Users,
-  BarChart3,
-  Settings,
-  AlertCircle,
-  CircleQuestionMark,
   PanelLeftClose,
   PanelLeftOpen,
-  Building2,
-  ScrollText,
-  ShieldCheck,
-  BookOpen,
-  Blocks,
-  FileStack,
-  Send,
-  User
+  ChevronDown,
 } from "lucide-react";
-
+import {
+  adminLinks,
+  userLinks,
+  contentManagerLinks,
+  footerLinks,
+  filterLinks,
+  groupNavigationLinks,
+  type NavLinkDef,
+} from "@/config/navLinks";
 
 interface SidebarLinkProps {
   href: string;
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  roles?: string[];
   exact?: boolean;
-  feature?: string;
 }
 
-const adminLinks: SidebarLinkProps[] = [
-  {
-    href: "/admin",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    roles: ["ADMIN"],
-    exact: true,
-  },
-  {
-    href: "/admin/tenants",
-    label: "Tenants",
-    icon: Building2,
-    roles: ["ADMIN"],
-  },
-  { href: "/admin/logs", label: "Logs", icon: ScrollText, roles: ["ADMIN"] },
-  {
-    href: "/admin/settings",
-    label: "Settings",
-    icon: Settings,
-    roles: ["ADMIN"],
-  },
-];
-
-const userLinks: SidebarLinkProps[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  {
-    href: "/campaigns",
-    label: "Campaigns",
-    icon: Megaphone,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
-  },
-  {
-    href: "/sending-profiles",
-    label: "Sending Profiles",
-    icon: Send,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
-  },
-  {
-    href: "/templates",
-    label: "Templates",
-    icon: FileText,
-    roles: ["ORG_MANAGER"],
-    feature: "phishing",
-  },
-  {
-    href: "/compliance-org-manager",
-    label: "Compliance",
-    icon: ShieldCheck,
-    roles: ["ORG_MANAGER"],
-  },
-  {
-    href: "/tenants-org-manager",
-    label: "User Management",
-    icon: User,
-    roles: ["ORG_MANAGER"],
-
-  },
-  {
-    href: "/usergroups",
-    label: "User groups",
-    icon: Users,
-    roles: ["ORG_MANAGER"],
-  },
-  {
-    href: "/courses",
-    label: "Courses",
-    icon: BookOpen,
-    roles: ["DEFAULT_USER"],
-    feature: "lms",
-  },
-  { href: "/statistics", label: "Statistics", icon: BarChart3 },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
-
-const contentManagerLinks: SidebarLinkProps[] = [
-  {
-    href: "/content-manager",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    roles: ["CONTENT_MANAGER"],
-    exact: true,
-  },
-  {
-    href: "/content-manager/courses",
-    label: "Courses",
-    icon: BookOpen,
-    roles: ["CONTENT_MANAGER"],
-  },
-  {
-    href: "/content-manager/modules",
-    label: "Modules",
-    icon: Blocks,
-    roles: ["CONTENT_MANAGER"],
-  },
-  {
-    href: "/content-manager/content",
-    label: "Content",
-    icon: FileStack,
-    roles: ["CONTENT_MANAGER"],
-  },
-  {
-    href: "/content-manager/templates",
-    label: "Templates",
-    icon: FileText,
-    roles: ["CONTENT_MANAGER"],
-  },
-];
+// SidebarLink
 
 function SidebarLink({
   href,
@@ -150,129 +31,209 @@ function SidebarLink({
   icon: Icon,
   isCollapsed,
   exact,
-}: SidebarLinkProps & { isCollapsed: boolean }) {
+  indent = false
+}: SidebarLinkProps & { isCollapsed: boolean; indent?: boolean }) {
   return (
     <Link
       to={href}
       activeOptions={{ exact: !!exact }}
       activeProps={{
-        className: "text-purple-700 bg-purple-50 font-medium px-2",
+        className:
+          "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium"
       }}
-      inactiveProps={{
-        className: "text-gray-700 hover:bg-gray-100",
-      }}
-      className="flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 text-xs sm:text-sm rounded-md group"
+      inactiveProps={{ className: "text-muted-foreground hover:bg-muted" }}
+      className={`flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm ${indent && !isCollapsed ? "pl-6" : ""}`}
       title={isCollapsed ? label : undefined}
     >
-      <Icon className="h-4 w-4 flex-shrink-0 transition-transform duration-300" />
-      <span
-        className={`truncate transition-[opacity,width] duration-700 ease-in-out whitespace-nowrap ${isCollapsed
-          ? "opacity-0 w-0 overflow-hidden"
-          : "opacity-100 delay-100"
-          }`}
-      >
-        {label}
-      </span>
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="sidebar-label min-w-0 truncate">{label}</span>
     </Link>
   );
 }
 
+// SidebarGroup
+
+function SidebarGroup({
+  label,
+  icon: Icon,
+  links,
+  sidebarCollapsed,
+  sidebarExpanded
+}: {
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  links: NavLinkDef[];
+  sidebarCollapsed: boolean;
+  sidebarExpanded: boolean;
+}) {
+  const location = useLocation();
+  const isAnyActive = links.some((l) => location.pathname.startsWith(l.href));
+  const [open, setOpen] = useState(true);
+  const userChoice = useRef<boolean | null>(null);
+  const prevCollapsed = useRef(sidebarCollapsed);
+
+  useEffect(() => {
+    if (prevCollapsed.current === sidebarCollapsed) return;
+    prevCollapsed.current = sidebarCollapsed;
+  }, [sidebarCollapsed]);
+
+  const showChildren = open;
+
+  const handleToggle = () => {
+    const next = !open;
+    setOpen(next);
+    userChoice.current = next;
+  };
+
+  return (
+    <li>
+      <button
+        onClick={handleToggle}
+        title={sidebarExpanded ? undefined : label}
+        className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
+          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="sidebar-label flex-1 text-left whitespace-nowrap">
+          {label}
+        </span>
+        <ChevronDown
+          className={`sidebar-label h-3 w-3 shrink-0 transition-transform duration-200 ${showChildren ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <ul
+        className={`overflow-hidden transition-all duration-200 ease-in-out ${showChildren ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      >
+        {links.map((link) => (
+          <li key={link.href}>
+            <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+}
+
+// Sidebar
+
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { keycloak } = useKeycloak();
   const location = useLocation();
-  const shouldShowContent = !isCollapsed || isHovered;
-  const isAdminRoute = isAppRoute(location.pathname, "/admin");
-  const isContentManagerRoute = isAppRoute(location.pathname, "/content-manager");
 
-  const getUserRoles = () => {
-    if (!keycloak.tokenParsed) return [];
-    const realmAccess = keycloak.tokenParsed.realm_access;
-    return realmAccess ? realmAccess.roles : [];
+  const expanded = !isCollapsed || isHovered;
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const isContentManagerRoute = location.pathname.startsWith("/content-manager");
+
+  const handleMouseEnter = () => {
+    if (!isCollapsed) return;
+    hoverTimeout.current = setTimeout(() => setIsHovered(true), 300);
   };
 
-  const getRealmFeatures = () => {
-    if (!keycloak.tokenParsed) return [];
-    const features = keycloak.tokenParsed.features;
-    if (!features) return [];
-    return features;
+  const handleMouseLeave = () => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+      hoverTimeout.current = null;
+    }
+    setIsHovered(false);
   };
 
-  const userRoles = getUserRoles();
-  const realmFeatures = getRealmFeatures();
-
-  const getLinksToDisplay = () => {
-    if (isAdminRoute) return adminLinks;
-    if (isContentManagerRoute) return contentManagerLinks;
-    return userLinks.filter((link) => {
-      if (!link.roles) return true;
-
-      if (link.feature && !realmFeatures[link.feature]) {
-        return false;
-      }
-
-      return link.roles.some((role) => userRoles.includes(role));
-    });
+  const handleToggle = () => {
+    if (hoverTimeout.current) {
+      clearTimeout(hoverTimeout.current);
+      hoverTimeout.current = null;
+    }
+    setIsHovered(false);
+    setIsCollapsed((c) => !c);
   };
 
-  const linksToDisplay = getLinksToDisplay();
+  const userRoles = keycloak.tokenParsed?.realm_access?.roles || [];
+  const realmFeatures = (keycloak.tokenParsed as any)?.features || {};
+
+  // Select the appropriate source links
+  let sourceLinks = userLinks;
+  let routePrefix = "";
+
+  if (isAdminRoute) {
+    sourceLinks = adminLinks;
+    routePrefix = "/admin";
+  } else if (isContentManagerRoute) {
+    sourceLinks = contentManagerLinks;
+    routePrefix = "/content-manager";
+  }
+
+  // Filter and group
+  const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures);
+  const { dashboard, groups, standalone } = groupNavigationLinks(visibleLinks);
+
+  // Adjust footer links with route prefix if they aren't absolute
+  const activeFooterLinks = footerLinks.map(link => ({
+    ...link,
+    href: link.href.startsWith("/") && routePrefix ? `${routePrefix}${link.href}` : link.href
+  }));
 
   return (
     <aside
-      className={`h-full bg-gray-50 border-r border-gray-200 flex flex-col rounded-bl-xl transition-all duration-400 ease-in-out ${shouldShowContent ? "w-[13%] min-w-[120px] lg:min-w-[180px]" : "w-12"
-        }`}
-      onMouseEnter={() => {
-        if (isCollapsed) {
-          setIsHovered(true);
-        }
-      }}
-      onMouseLeave={() => {
-        if (isCollapsed) {
-          setIsHovered(false);
-        }
-      }}
+      data-collapsed={expanded ? "false" : "true"}
+      style={{ width: expanded ? "clamp(120px, 18%, 260px)" : "3rem" }}
+      className="h-full bg-sidebar border-r border-sidebar-border flex flex-col rounded-bl-xl overflow-hidden transition-[width] duration-300 ease-in-out"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Toggle Button */}
-      <div className="px-1 lg:px-3 py-1 flex justify-end border-b border-gray-200">
+      <div className="h-10 border-b border-sidebar-border shrink-0 flex items-center justify-end px-2">
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 hover:bg-gray-200 rounded-lg transition-all duration-300 text-gray-600"
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          onClick={handleToggle}
+          className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+          title="Toggle sidebar"
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4 transition-transform duration-300" />
+            <PanelLeftOpen className="h-4 w-4" />
           ) : (
-            <PanelLeftClose className="h-4 w-4 transition-transform duration-300" />
+            <PanelLeftClose className="h-4 w-4" />
           )}
         </button>
       </div>
 
-      {/* Navigation Menu */}
-      <nav className="flex-1 px-2 lg:px-1 py-4 overflow-hidden">
+      <nav className="flex-1 py-4 overflow-hidden">
         <ul className="space-y-1">
-          {linksToDisplay.map((link) => (
+          {dashboard && (
+            <li>
+              <SidebarLink {...dashboard} isCollapsed={!expanded} />
+            </li>
+          )}
+          
+          {groups.map((group) => (
+            <SidebarGroup
+              key={group.label}
+              {...group}
+              sidebarCollapsed={isCollapsed}
+              sidebarExpanded={expanded}
+            />
+          ))}
+
+          {standalone.map((link) => (
             <li key={link.href}>
-              <SidebarLink {...link} isCollapsed={!shouldShowContent} />
+              <SidebarLink {...link} isCollapsed={!expanded} />
             </li>
           ))}
         </ul>
       </nav>
 
-      {/* Footer - Report Problem */}
-      <div className="px-2 lg:px-1 py-1 border-t border-gray-200">
-        <SidebarLink
-          href="/report"
-          label="Report a problem"
-          icon={AlertCircle}
-          isCollapsed={!shouldShowContent}
-        />
-        <SidebarLink
-          href="/help"
-          label="Help"
-          icon={CircleQuestionMark}
-          isCollapsed={!shouldShowContent}
-        />
+      <div className="py-1 border-t border-sidebar-border">
+        <ul className="space-y-1">
+          {activeFooterLinks.map((link) => (
+            <li key={link.href}>
+              <SidebarLink
+                {...link}
+                isCollapsed={!expanded}
+              />
+            </li>
+          ))}
+        </ul>
       </div>
     </aside>
   );

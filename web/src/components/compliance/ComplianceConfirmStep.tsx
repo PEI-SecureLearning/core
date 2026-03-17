@@ -33,16 +33,16 @@ export default function ComplianceConfirmStep({
             <button
                 type="button"
                 onClick={() => onAttestChange(!attest)}
-                className={`w-full text-left rounded-lg p-4 flex items-start gap-4 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${attest
-                    ? 'border-purple-500 bg-purple-50/60 shadow-sm'
-                    : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/30'
+                className={`w-full text-left rounded-lg p-4 flex items-start gap-4 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${attest
+                    ? 'border-primary bg-primary/10/60 shadow-sm'
+                    : 'border-border bg-background hover:border-primary/50 hover:bg-primary/10/30'
                     }`}
             >
                 {/* Custom checkbox indicator */}
                 <span
                     className={`mt-0.5 flex-shrink-0 h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${attest
-                        ? 'bg-purple-600 border-purple-600'
-                        : 'bg-white border-gray-300'
+                        ? 'bg-primary border-primary'
+                        : 'bg-background border-border/60'
                         }`}
                 >
                     <svg
@@ -56,10 +56,10 @@ export default function ComplianceConfirmStep({
 
                 {/* Text */}
                 <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold leading-snug transition-colors duration-200 ${attest ? 'text-purple-900' : 'text-slate-800'}`}>
+                    <p className={`text-sm font-semibold leading-snug transition-colors duration-200 ${attest ? 'text-primary/80' : 'text-foreground'}`}>
                         I attest that I have read this policy
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                         I have read, understood, and will comply with this policy in its entirety.
                     </p>
                 </div>
@@ -68,7 +68,7 @@ export default function ComplianceConfirmStep({
             {/* Confirm button */}
             <div className="flex justify-end">
                 <button
-                    className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition disabled:opacity-60"
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition disabled:opacity-60"
                     onClick={onAccept}
                     disabled={!attest || submitting}
                 >

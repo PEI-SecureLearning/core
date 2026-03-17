@@ -32,3 +32,23 @@ export async function fetchCampaigns(_realm: string, token?: string) {
   if (!res.ok) throw new Error("Failed to fetch campaigns");
   return res.json() as Promise<Campaign[]>;
 }
+
+export async function fetchOrgManagerCampaigns(realm: string, token?: string) {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(
+    `${API_URL}/org-manager/${encodeURIComponent(realm)}/campaigns`,
+    { headers },
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Failed to fetch campaigns (${res.status})`);
+  }
+
+  const data = (await res.json()) as { campaigns?: Campaign[] } | Campaign[];
+  return Array.isArray(data) ? data : (data.campaigns ?? []);
+}

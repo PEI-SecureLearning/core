@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useRef, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import { markdownComponents } from "./markdownComponents";
 
@@ -7,116 +6,91 @@ type PolicyEditorProps = {
     policyDraft: string;
     policyUpdated: string;
     importingPolicy: boolean;
-    collapsed: boolean;
-    onToggleCollapse: () => void;
     onDraftChange: (value: string) => void;
     onImportFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onOpenPreview: () => void;
 };
 
 export default function PolicyEditor({
     policyDraft,
     policyUpdated,
     importingPolicy,
-    collapsed,
-    onToggleCollapse,
     onDraftChange,
     onImportFile,
-    onOpenPreview,
-}: PolicyEditorProps) {
+}: Readonly<PolicyEditorProps>) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const previewRef = useRef<HTMLDivElement | null>(null);
+    const syncingFrom = useRef<"editor" | "preview" | null>(null);
+
+    const syncScroll = useCallback((source: "editor" | "preview") => {
+        if (syncingFrom.current && syncingFrom.current !== source) return;
+        syncingFrom.current = source;
+
+        const editor = textareaRef.current;
+        const preview = previewRef.current;
+        if (!editor || !preview) { syncingFrom.current = null; return; }
+
+        const editorRatio = editor.scrollTop / (editor.scrollHeight - editor.clientHeight || 1);
+        const previewRatio = preview.scrollTop / (preview.scrollHeight - preview.clientHeight || 1);
+
+        if (source === "editor") {
+            preview.scrollTop = editorRatio * (preview.scrollHeight - preview.clientHeight);
+        } else {
+            editor.scrollTop = previewRatio * (editor.scrollHeight - editor.clientHeight);
+        }
+
+        requestAnimationFrame(() => { syncingFrom.current = null; });
+    }, []);
 
     return (
-        <section className={`flex flex-col overflow-hidden ${collapsed ? "shrink-0" : "flex-1 min-h-0"}`}>
-            <button
-                type="button"
-                className="flex items-center justify-between cursor-pointer select-none shrink-0 w-full text-left"
-                onClick={onToggleCollapse}
-            >
-                <div className="flex items-center gap-2">
-                    <motion.svg
-                        className="w-4 h-4 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        animate={{ rotate: collapsed ? 0 : 90 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </motion.svg>
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-900">Policy (Markdown)</h2>
-                        <p className="text-xs text-gray-500">Last updated: {policyUpdated}</p>
-                    </div>
+        <section className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between shrink-0 mb-4">
+                <div>
+                    <h2 className="text-lg font-semibold text-foreground">Policy (Markdown)</h2>
+                    <p className="text-xs text-muted-foreground">Last updated: {policyUpdated}</p>
                 </div>
-                <AnimatePresence>
-                    {!collapsed && (
-                        <motion.div
-                            className="flex items-center gap-2"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept=".md,.markdown,.pdf,application/pdf,text/markdown"
-                                className="hidden"
-                                onChange={onImportFile}
-                            />
-                            <button
-                                type="button"
-                                className="px-3 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 cursor-pointer disabled:opacity-60"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={importingPolicy}
-                            >
-                                {importingPolicy ? "Importing…" : "Import file"}
-                            </button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </button>
-
-            <AnimatePresence initial={false}>
-                {!collapsed && (
-                    <motion.div
-                        key="policy-content"
-                        className="flex-1 min-h-0 flex flex-col"
-                        initial={{ height: 0, opacity: 0, y: -20 }}
-                        animate={{ height: "auto", opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeInOut" } }}
-                        exit={{ height: 0, opacity: 0, y: -20, transition: { duration: 0.25, ease: "easeOut" } }}
-                        transition={{ duration: 0.25, ease: "easeInOut" }}
-                        style={{ overflow: "hidden" }}
+                <div className="flex items-center gap-2">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".md,.markdown,.pdf,application/pdf,text/markdown"
+                        className="hidden"
+                        onChange={onImportFile}
+                    />
+                    <button
+                        type="button"
+                        className="px-3 py-2 rounded-lg border border-border text-sm hover:bg-surface-subtle cursor-pointer disabled:opacity-60"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={importingPolicy}
                     >
-                        <div className="pt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
-                            <textarea
-                                value={policyDraft}
-                                onChange={(e) => onDraftChange(e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 p-3 text-sm font-mono resize-none h-full"
-                            />
-                            <div className="rounded-lg border border-gray-200 p-3 bg-white overflow-y-auto">
-                                <div className="flex justify-end pb-2">
-                                    <button
-                                        type="button"
-                                        className="text-xs text-purple-700 hover:text-purple-800 cursor-pointer"
-                                        onClick={onOpenPreview}
-                                    >
-                                        Open full preview
-                                    </button>
-                                </div>
-                                <ReactMarkdown
-                                    className="prose prose-sm max-w-none text-gray-800"
-                                    components={markdownComponents}
-                                >
-                                    {policyDraft}
-                                </ReactMarkdown>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        {importingPolicy ? "Importing…" : "Import file"}
+                    </button>
+                </div>
+            </div>
+
+            {/* Editor + Preview */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 min-h-0">
+                <textarea
+                    ref={textareaRef}
+                    value={policyDraft}
+                    onChange={(e) => onDraftChange(e.target.value)}
+                    onScroll={() => syncScroll("editor")}
+                    className="w-full rounded-lg border border-border p-3 text-sm font-mono resize-none h-full overflow-y-auto"
+                />
+                <div
+                    ref={previewRef}
+                    onScroll={() => syncScroll("preview")}
+                    className="rounded-lg border border-border p-3 bg-background overflow-y-auto"
+                >
+                    <ReactMarkdown
+                        className="prose prose-sm max-w-none text-foreground"
+                        components={markdownComponents}
+                    >
+                        {policyDraft}
+                    </ReactMarkdown>
+                </div>
+            </div>
         </section>
     );
 }

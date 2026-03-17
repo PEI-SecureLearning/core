@@ -56,7 +56,7 @@ export function TenantDetails() {
   const getFeatureIcon = (feature: string) => {
     if (feature === 'phishing') return <Shield size={16} className="text-orange-500" />
     if (feature === 'lms') return <BookOpen size={16} className="text-blue-500" />
-    return <Check size={16} className="text-purple-500" />
+    return <Check size={16} className="text-primary/90" />
   };
 
   const formatFeatureName = (feature: string): string => {
@@ -195,11 +195,11 @@ export function TenantDetails() {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8 max-w-7xl mx-auto"
     >
-      <div className="flex items-center gap-6 mb-10 pb-6 border-b border-slate-200/60">
-        <Link to="/admin/tenants" className="p-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-md transition-all shadow-sm group">
-          <ArrowLeft size={18} className="text-slate-600 transition-transform group-hover:-translate-x-1" />
+      <div className="flex items-center gap-6 mb-10 pb-6 border-b border-border/60">
+        <Link to="/admin/tenants" className="p-2 bg-background border border-border hover:bg-surface-subtle rounded-md transition-all shadow-sm group">
+          <ArrowLeft size={18} className="text-muted-foreground transition-transform group-hover:-translate-x-1" />
         </Link>
-        <div className="w-14 h-14 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-600 overflow-hidden shadow-sm">
+        <div className="w-14 h-14 rounded-md bg-background border border-border flex items-center justify-center text-muted-foreground overflow-hidden shadow-sm">
           {hasLogoError ? (
             <Building2 size={24} />
           ) : (
@@ -214,7 +214,7 @@ export function TenantDetails() {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-1">
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{info?.displayName || realmName}</h2>
+            <h2 className="text-2xl font-bold text-foreground tracking-tight">{info?.displayName || realmName}</h2>
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${info?.enabled === false
                 ? "bg-red-50 text-red-700 border-red-200"
@@ -225,14 +225,14 @@ export function TenantDetails() {
               {info?.enabled === false ? "Inactive" : "Active"}
             </span>
           </div>
-          <div className="flex items-center gap-4 text-slate-500 text-xs font-medium">
+          <div className="flex items-center gap-4 text-muted-foreground text-xs font-medium">
             <div className="flex items-center gap-1.5">
-              <Building2 size={12} className="text-purple-600" />
+              <Building2 size={12} className="text-primary" />
               <span>{info?.domain || realmName}</span>
             </div>
-            <span className="text-slate-300">|</span>
+            <span className="text-muted-foreground/50">|</span>
             <div className="flex items-center gap-1.5">
-              <Mail size={12} className="text-purple-600" />
+              <Mail size={12} className="text-primary" />
               <span>{info?.realm}</span>
             </div>
           </div>
@@ -240,8 +240,8 @@ export function TenantDetails() {
       </div>
 
       {loading && (
-        <div className="flex items-center gap-2 text-sm text-gray-600 bg-white p-3 rounded-md border border-slate-100 shadow-sm animate-pulse">
-          <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background p-3 rounded-md border border-border/40 shadow-sm animate-pulse">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
           Synchronizing realm data...
         </div>
       )}
@@ -255,31 +255,31 @@ export function TenantDetails() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-md border border-slate-200/60 shadow-sm p-6">
+          <div className="bg-background rounded-md border border-border/60 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-1.5 bg-purple-50 rounded-md">
-                <ShieldCheck className="w-4 h-4 text-purple-600" />
+              <div className="p-1.5 bg-primary/10 rounded-md">
+                <ShieldCheck className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Organization Overview</h3>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">Organization Overview</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-slate-50/50 p-4 rounded-md border border-slate-100">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Service Plan</div>
-                <div className="font-bold text-slate-800 flex items-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-purple-600" />
+              <div className="bg-surface-subtle/50 p-4 rounded-md border border-border/40">
+                <div className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">Service Plan</div>
+                <div className="font-bold text-foreground flex items-center gap-2 text-sm">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
                   Premium Enterprise
                 </div>
               </div>
-              <div className="bg-slate-50/50 p-4 rounded-md border border-slate-100">
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Creation Date</div>
-                <div className="font-bold text-slate-800 text-sm">{(info?.attributes as any)?.created || "March 08, 2026"}</div>
+              <div className="bg-surface-subtle/50 p-4 rounded-md border border-border/40">
+                <div className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest mb-1">Creation Date</div>
+                <div className="font-bold text-foreground text-sm">{(info?.attributes as any)?.created || "March 08, 2026"}</div>
               </div>
-              <div className="bg-slate-50/50 p-4 rounded-md border border-slate-100">
+              <div className="bg-surface-subtle/50 p-4 rounded-md border border-border/40">
                 <div className="flex justify-between items-end mb-2">
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Seats</div>
-                  <div className="text-xs font-bold text-slate-800">{usageCurrent} / {usageLimit}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">Global Seats</div>
+                  <div className="text-xs font-bold text-foreground">{usageCurrent} / {usageLimit}</div>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-muted/60 rounded-full h-1.5 overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${usageLimit ? (usageCurrent / usageLimit) * 100 : 0}%` }}
@@ -290,23 +290,23 @@ export function TenantDetails() {
             </div>
           </div>
 
-          <div className="bg-white rounded-md border border-slate-200/60 shadow-sm p-6 space-y-6">
+          <div className="bg-background rounded-md border border-border/60 shadow-sm p-6 space-y-6">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <div className="p-1.5 bg-purple-50 rounded-md">
-                  <UserPlus className="w-4 h-4 text-purple-600" />
+                <div className="p-1.5 bg-primary/10 rounded-md">
+                  <UserPlus className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Organization Managers</h3>
+                <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">Organization Managers</h3>
               </div>
             </div>
 
             <form onSubmit={handleAddManager} className="flex gap-3">
               <div className="flex-1 relative group">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 transition-colors" size={16} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 group-focus-within:text-primary/90 transition-colors" size={16} />
                 <input
                   type="email"
                   placeholder="Manager email address"
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500/20 focus:border-purple-500 transition-all font-medium text-sm"
+                  className="w-full pl-9 pr-3 py-2 bg-surface-subtle border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all font-medium text-sm"
                   value={orgManagerEmail}
                   onChange={(e) => setOrgManagerEmail(e.target.value)}
                   list="realm-user-emails"
@@ -314,7 +314,7 @@ export function TenantDetails() {
               </div>
               <button
                 type="submit"
-                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-all font-bold text-sm flex items-center gap-2 shadow-sm active:scale-95"
+                className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary transition-all font-bold text-sm flex items-center gap-2 shadow-sm active:scale-95"
               >
                 <UserPlus size={16} />
                 Assign Role
@@ -327,21 +327,21 @@ export function TenantDetails() {
                   <motion.div
                     key={manager.email || manager.name}
                     whileHover={{ scale: 1.005 }}
-                    className="flex items-center justify-between p-3 bg-white rounded-md border border-slate-100 shadow-sm hover:border-slate-200 transition-all"
+                    className="flex items-center justify-between p-3 bg-background rounded-md border border-border/40 shadow-sm hover:border-border transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-md bg-purple-50 flex items-center justify-center text-purple-600 font-bold text-base border border-purple-100">
+                      <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-base border border-purple-100">
                         {manager.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-bold text-slate-800 text-sm">{manager.name}</div>
-                        <div className="text-[10px] text-slate-500 font-medium">{manager.email || "—"}</div>
+                        <div className="font-bold text-foreground text-sm">{manager.name}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium">{manager.email || "—"}</div>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleDeleteManager(manager.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                      className="p-1.5 text-muted-foreground/70 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
                       title="Revoke manager role"
                     >
                       <Trash2 size={16} />
@@ -350,7 +350,7 @@ export function TenantDetails() {
                 ))}
               </div>
             ) : (
-              <div className="text-xs text-slate-400 font-medium italic py-6 border border-dashed border-slate-100 rounded-md text-center">
+              <div className="text-xs text-muted-foreground/70 font-medium italic py-6 border border-dashed border-border/40 rounded-md text-center">
                 No organization managers have been assigned.
               </div>
             )}
@@ -358,25 +358,25 @@ export function TenantDetails() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white rounded-md border border-slate-200/60 shadow-sm p-6">
+          <div className="bg-background rounded-md border border-border/60 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-1.5 bg-purple-50 rounded-md">
-                <HardDrive className="w-4 h-4 text-purple-600" />
+              <div className="p-1.5 bg-primary/10 rounded-md">
+                <HardDrive className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-tight">Access Control</h3>
+              <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">Access Control</h3>
             </div>
             <div className="space-y-2">
               {info?.features && Object.keys(info.features).length > 0 ? (
                 Object.entries(info.features).map(([feature, active]) => (
                   <div key={feature} className={`
                     flex items-center justify-between p-3 rounded-md border transition-all
-                    ${active ? 'bg-white border-slate-100 shadow-sm' : 'bg-slate-50 border-transparent opacity-50'}
+                    ${active ? 'bg-background border-border/40 shadow-sm' : 'bg-surface-subtle border-transparent opacity-50'}
                   `}>
                     <div className="flex items-center gap-3">
-                      <div className={`p-1 rounded-md ${active ? 'bg-purple-50 text-purple-600' : 'bg-slate-200 text-slate-400'}`}>
+                      <div className={`p-1 rounded-md ${active ? 'bg-primary/10 text-primary' : 'bg-muted/60 text-muted-foreground/70'}`}>
                         {getFeatureIcon(feature)}
                       </div>
-                      <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-slate-800' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-foreground' : 'text-muted-foreground/70'}`}>
                         {formatFeatureName(feature)}
                       </span>
                     </div>
@@ -385,12 +385,12 @@ export function TenantDetails() {
                         <Check size={12} className="text-white" />
                       </div>
                     ) : (
-                      <div className="w-5 h-5 bg-slate-200 rounded-full border border-white" />
+                      <div className="w-5 h-5 bg-muted/60 rounded-full border border-white" />
                     )}
                   </div>
                 ))
               ) : (
-                <div className="text-xs text-slate-400 font-medium italic text-center py-2">No active engines found</div>
+                <div className="text-xs text-muted-foreground/70 font-medium italic text-center py-2">No active engines found</div>
               )}
             </div>
           </div>

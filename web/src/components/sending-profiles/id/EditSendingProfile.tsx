@@ -37,7 +37,8 @@ export default function EditSendingProfile() {
         form.setSmtpHost(data.smtp_host);
         form.setSmtpPort(data.smtp_port);
         form.setUsername(data.username);
-        form.setPassword(data.password || "");
+        // Never prefill SMTP password in edit mode.
+        form.setPassword("");
         if (data.custom_headers) form.setCustomHeaders(data.custom_headers);
       } catch {
         form.setStatus("Failed to load profile data.");
@@ -80,7 +81,7 @@ export default function EditSendingProfile() {
 
   // ── Delete ────────────────────────────────────────────────────────────────
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure? This action cannot be undone.")) return;
+    if (!globalThis.confirm("Are you sure? This action cannot be undone.")) return;
 
     try {
       form.setIsLoading(true);
@@ -94,10 +95,10 @@ export default function EditSendingProfile() {
 
   if (isFetching) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-gray-50">
+      <div className="h-full w-full flex items-center justify-center bg-surface-subtle">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-500 mx-auto mb-2" />
-          <p className="text-gray-500">Loading profile data...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary/90 mx-auto mb-2" />
+          <p className="text-muted-foreground">Loading profile data...</p>
         </div>
       </div>
     );

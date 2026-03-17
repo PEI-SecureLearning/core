@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models.org_manager_schemas import UserCreateRequest
+from src.models import OrgUserCreate
 from src.core.security import Roles, Resource, Scope
 from src.services.org_manager import get_org_manager_service
 from src.services.org_manager.validation_handler import validate_realm_access
@@ -31,7 +31,7 @@ def list_users(realm: str, token: OAuth2Scheme):
 )
 def create_user(
     realm: str,
-    user: UserCreateRequest,
+    user: OrgUserCreate,
     session: SessionDep,
     token: OAuth2Scheme,
 ):
@@ -54,16 +54,16 @@ def create_user(
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
-def delete_user(
-    realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
-):
+def delete_user(realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme):
     """Delete a user from the realm using the user's token."""
     validate_realm_access(token, realm)
     org_manager_service.delete_user(realm, token, user_id, session)
     return None
 
 
-@router.post("/upload", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
+@router.post(
+    "/upload", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
+)
 def upload_user_csv(file: Annotated[UploadFile, File(...)]):
     """Upload CSV with user data; accessible to org managers (and admins via policy)."""
     reader = csv.DictReader(codecs.iterdecode(file.file, "utf-8"))
