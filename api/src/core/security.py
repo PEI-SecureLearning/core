@@ -1,15 +1,12 @@
 import logging
 import os
-import traceback
 from enum import StrEnum
+from typing import Annotated
 
 import jwt
 from jwt import PyJWKClient
-import requests
-from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, Request
-from typing import Annotated
-import httpx
+from fastapi.security import OAuth2PasswordBearer
 
 
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -17,26 +14,23 @@ oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
 KEYCLOAK_ISSUER_URL = os.getenv("KEYCLOAK_ISSUER_URL", AUTH_SERVER_URL)
 RESOURCE_SERVER_ID = "api"
-
+_JWKS_CLIENTS: dict[str, PyJWKClient] = {}
 
 
 class Resource(StrEnum):
-    """Keycloak UMA resource names used in permission checks."""
-    ADMIN           = "admin"
-    ORG_MANAGER     = "org_manager"
+    ADMIN = "admin"
+    ORG_MANAGER = "org_manager"
     CONTENT_MANAGER = "content-manager"
 
 
 class Scope(StrEnum):
-    """Keycloak UMA scope names used in permission checks."""
-    VIEW   = "view"
+    VIEW = "view"
     MANAGE = "manage"
 
 
 class Roles:
-
     """
-    Uses UMA (uma-ticket) to validate permissions in Keycloak.
+    Validates the JWT locally and checks roles from the token payload.
     """
 
     def __init__(self, resource: str | list[str], scope: str):
@@ -44,105 +38,115 @@ class Roles:
         self.scope = scope
 
     def _get_jwks_client(self, realm_name: str) -> PyJWKClient:
-        url = f"{AUTH_SERVER_URL}/realms/{realm_name}/protocol/openid-connect/certs"
-        return PyJWKClient(url)
-    
-
-    def _verify_token(self, access_token: str, realm_name: str) -> dict:
-        jwks_client = self._get_jwks_client(realm_name)
-        signing_key = jwks_client.get_signing_key_from_jwt(access_token)
-        
-        try:
-            jwt.decode(
-                access_token,
-                signing_key.key,
-                algorithms=["RS256"],
-                options={"verify_aud": False}, 
-            )
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="Token has expired")
-        except jwt.InvalidTokenError as e:
-            logging.error(f"Token verification failed: {e}")
-            raise HTTPException(status_code=401, detail="Invalid token")
-
-
-    async def __call__(self, request: Request, access_token: Annotated[str, Depends(oauth_2_scheme)]):
-        try:
-            decoded = jwt.decode(
-                access_token,
-                options={"verify_signature": False, "verify_aud": False},
-            )
-            print(decoded)
-        except Exception as e:
-            logging.error(f"Failed to decode token: {e}")
-            raise HTTPException(status_code=401, detail="Invalid token")
-
-        realm_name = self._extract_realm_name(decoded)
-
-        self._verify_token(access_token, realm_name)
-
-        authorized = False
-        last_permission = ""
-        for resource in self.resources:
-            permission = f"{resource}#{self.scope}"
-            last_permission = permission
-            if await self.check_keycloak_permission(access_token, permission, realm_name):
-                authorized = True
-                break
-
-        if not authorized:
+        if not AUTH_SERVER_URL:
             raise HTTPException(
-                status_code=403,
-                detail=f"Permission denied for '{' or '.join(self.resources)}#{self.scope}'" if len(self.resources) > 1 else f"Permission denied for '{last_permission}'",
+                status_code=500,
+                detail="Authentication server not configured",
             )
 
-        return {"authorized": True}
+        if realm_name in _JWKS_CLIENTS:
+            return _JWKS_CLIENTS[realm_name]
 
+        url = f"{AUTH_SERVER_URL}/realms/{realm_name}/protocol/openid-connect/certs"
+        jwks_client = PyJWKClient(url)
+        _JWKS_CLIENTS[realm_name] = jwks_client
+        return jwks_client
 
-    async def check_keycloak_permission(self, access_token: str, permission: str, realm_name: str) -> bool:
-        """Verify user permissions"""
-
-        if not KEYCLOAK_ISSUER_URL:
-            logging.error("KEYCLOAK_ISSUER_URL is not set")
-            return False
-
-        url = f"{KEYCLOAK_ISSUER_URL}/realms/{realm_name}/protocol/openid-connect/token"
-
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-
-        data = {
-            "grant_type": "urn:ietf:params:oauth:grant-type:uma-ticket",
-            "permission": permission,
-            "audience": RESOURCE_SERVER_ID,
-        }
-
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(url, headers=headers, data=data, timeout=10)
-
-            if response.status_code == 200:
-                payload = response.json()
-                return "access_token" in payload
-
-            if response.status_code in [400, 403]:
-                return False
-
-            logging.error(f"Keycloak error {response.status_code}: {response.text}")
-            raise HTTPException(status_code=response.status_code, detail="Authorization server error")
-
-        except httpx.RequestError as e:
-            logging.error(f"Authorization request error: {e}")
-            raise HTTPException(status_code=503, detail="Authorization server unavailable")
-
-        
     def _extract_realm_name(self, token_data: dict) -> str:
-
         iss = token_data.get("iss")
 
         if not iss or "/realms/" not in iss:
             raise HTTPException(status_code=401, detail="Invalid token: missing issuer")
-        
-        return iss.split("/realms/")[-1]
+
+        return iss.split("/realms/")[-1].split("/")[0]
+
+    def _get_expected_issuer(self, realm_name: str) -> str:
+        if not KEYCLOAK_ISSUER_URL:
+            raise HTTPException(
+                status_code=500,
+                detail="Authentication server not configured",
+            )
+
+        if "/realms/" in KEYCLOAK_ISSUER_URL:
+            return KEYCLOAK_ISSUER_URL
+
+        return f"{KEYCLOAK_ISSUER_URL}/realms/{realm_name}"
+
+    def _verify_token(self, access_token: str, realm_name: str) -> dict:
+        jwks_client = self._get_jwks_client(realm_name)
+        issuer = self._get_expected_issuer(realm_name)
+
+        try:
+            signing_key = jwks_client.get_signing_key_from_jwt(access_token)
+            return jwt.decode(
+                access_token,
+                signing_key.key,
+                algorithms=["RS256"],
+                issuer=issuer,
+                audience=RESOURCE_SERVER_ID,
+            )
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidAudienceError as e:
+            logging.error(f"Invalid audience: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidIssuerError as e:
+            logging.error(f"Invalid issuer: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except jwt.InvalidTokenError as e:
+            logging.error(f"Token verification failed: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except Exception as e:
+            logging.error(f"Unexpected token verification error: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+    def _get_required_roles(self) -> set[str]:
+        permission_map = {
+            (Resource.ADMIN.value, Scope.VIEW.value): {"admin"},
+            (Resource.ADMIN.value, Scope.MANAGE.value): {"admin"},
+            (Resource.ORG_MANAGER.value, Scope.VIEW.value): {"org_manager"},
+            (Resource.ORG_MANAGER.value, Scope.MANAGE.value): {"org_manager"},
+            (Resource.CONTENT_MANAGER.value, Scope.VIEW.value): {"content-manager"},
+            (Resource.CONTENT_MANAGER.value, Scope.MANAGE.value): {"content-manager"},
+        }
+
+        required_roles: set[str] = set()
+        for resource in self.resources:
+            required_roles.update(
+                {role.lower() for role in permission_map.get((resource, self.scope), set())}
+            )
+        return required_roles
+
+    def _extract_roles(self, payload: dict) -> set[str]:
+        realm_access = payload.get("realm_access") or {}
+        token_roles = realm_access.get("roles") or []
+        return {str(role).strip().lower() for role in token_roles if str(role).strip()}
+
+    async def __call__(
+        self,
+        request: Request,
+        access_token: Annotated[str, Depends(oauth_2_scheme)],
+    ):
+        try:
+            unverified_payload = jwt.decode(
+                access_token,
+                options={"verify_signature": False, "verify_aud": False},
+            )
+        except Exception as e:
+            logging.error(f"Failed to decode token: {e}")
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        realm_name = self._extract_realm_name(unverified_payload)
+        payload = self._verify_token(access_token, realm_name)
+
+        token_roles = self._extract_roles(payload)
+        required_roles = self._get_required_roles()
+
+        if required_roles.isdisjoint(token_roles):
+            permission_label = f"{' or '.join(self.resources)}#{self.scope}"
+            raise HTTPException(
+                status_code=403,
+                detail=f"Permission denied for '{permission_label}'",
+            )
+
+        return {"authorized": True}
