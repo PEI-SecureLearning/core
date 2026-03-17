@@ -132,7 +132,7 @@ services:
     build:
       context: ../keycloak
       dockerfile: Dockerfile
-    command: start-dev --import-realm --proxy-headers=xforwarded --http-relative-path=/kc
+    command: start --import-realm --proxy-headers=xforwarded --http-relative-path=/kc
     container_name: keycloak
     restart: unless-stopped
     environment:
