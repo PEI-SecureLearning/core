@@ -29,14 +29,14 @@ def create_user_in_realm(
     )
 
 
-@router.get("/realms/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))])
+@router.get("/realms/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
 def list_users_in_realm(session: SessionDep, realm: str, token: OAuth2Scheme):
     """List users inside the specified Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, realm)
     return realm_service.list_users_in_realm(session, realm)
 
 
-@router.get("/realms/{realm}/users/{user_id}", dependencies=[Depends(Roles(Resource.ADMIN, Scope.VIEW))])
+@router.get("/realms/{realm}/users/{user_id}", dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))])
 def get_user_in_realm(realm: str, user_id: str, token: OAuth2Scheme):
     realm_service.validate_realm_access(token, realm)
     return realm_service.get_user_in_realm(realm, user_id)
