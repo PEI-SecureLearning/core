@@ -71,12 +71,12 @@ class Roles:
                 access_token,
                 options={"verify_signature": False, "verify_aud": False},
             )
-            print(decoded)
         except Exception as e:
             logging.error(f"Failed to decode token: {e}")
             raise HTTPException(status_code=401, detail="Invalid token")
 
         realm_name = self._extract_realm_name(decoded)
+        client_id = decoded.get("azp")
 
         self._verify_token(access_token, realm_name)
 
@@ -85,7 +85,7 @@ class Roles:
         for resource in self.resources:
             permission = f"{resource}#{self.scope}"
             last_permission = permission
-            if await self.check_keycloak_permission(access_token, permission, realm_name):
+            if await self.check_keycloak_permission(access_token, permission, realm_name, client_id):
                 authorized = True
                 break
 
@@ -98,7 +98,13 @@ class Roles:
         return {"authorized": True}
 
 
-    async def check_keycloak_permission(self, access_token: str, permission: str, realm_name: str) -> bool:
+    async def check_keycloak_permission(
+        self,
+        access_token: str,
+        permission: str,
+        realm_name: str,
+        client_id: str | None = None,
+    ) -> bool:
         """Verify user permissions"""
 
         if not AUTH_SERVER_URL:
@@ -117,6 +123,8 @@ class Roles:
             "permission": permission,
             "audience": RESOURCE_SERVER_ID,
         }
+        if client_id:
+            data["client_id"] = client_id
 
         try:
             async with httpx.AsyncClient() as client:
@@ -126,7 +134,15 @@ class Roles:
                 payload = response.json()
                 return "access_token" in payload
 
-            if response.status_code in [400, 403]:
+            if response.status_code in [400, 401, 403]:
+                logging.warning(
+                    "Keycloak UMA denied permission=%s realm=%s client_id=%s status=%s body=%s",
+                    permission,
+                    realm_name,
+                    client_id,
+                    response.status_code,
+                    response.text,
+                )
                 return False
 
             logging.error(f"Keycloak error {response.status_code}: {response.text}")
@@ -145,4 +161,3 @@ class Roles:
             raise HTTPException(status_code=401, detail="Invalid token: missing issuer")
         
         return iss.split("/realms/")[-1]
-
