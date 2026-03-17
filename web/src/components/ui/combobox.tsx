@@ -15,7 +15,7 @@ import {
 
 const Combobox = ComboboxPrimitive.Root
 
-function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
+function ComboboxValue({ ...props }: React.ComponentProps<any>) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />
 }
 
@@ -23,7 +23,7 @@ function ComboboxTrigger({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Trigger.Props) {
+}: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
@@ -39,7 +39,7 @@ function ComboboxTrigger({
   )
 }
 
-function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
+function ComboboxClear({ className, ...props }: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Clear
       data-slot="combobox-clear"
@@ -59,7 +59,7 @@ function ComboboxInput({
   showTrigger = true,
   showClear = false,
   ...props
-}: ComboboxPrimitive.Input.Props & {
+}: React.ComponentProps<any> & {
   showTrigger?: boolean
   showClear?: boolean
 }) {
@@ -97,11 +97,13 @@ function ComboboxContent({
   alignOffset = 0,
   anchor,
   ...props
-}: ComboboxPrimitive.Popup.Props &
-  Pick<
-    ComboboxPrimitive.Positioner.Props,
-    "side" | "align" | "sideOffset" | "alignOffset" | "anchor"
-  >) {
+}: React.ComponentProps<any> & {
+  side?: string
+  sideOffset?: number
+  align?: string
+  alignOffset?: number
+  anchor?: unknown
+}) {
   return (
     <ComboboxPrimitive.Portal>
       <ComboboxPrimitive.Positioner
@@ -126,7 +128,7 @@ function ComboboxContent({
   )
 }
 
-function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
+function ComboboxList({ className, ...props }: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.List
       data-slot="combobox-list"
@@ -143,7 +145,7 @@ function ComboboxItem({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Item.Props) {
+}: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
@@ -166,7 +168,7 @@ function ComboboxItem({
   )
 }
 
-function ComboboxGroup({ className, ...props }: ComboboxPrimitive.Group.Props) {
+function ComboboxGroup({ className, ...props }: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Group
       data-slot="combobox-group"
@@ -179,7 +181,7 @@ function ComboboxGroup({ className, ...props }: ComboboxPrimitive.Group.Props) {
 function ComboboxLabel({
   className,
   ...props
-}: ComboboxPrimitive.GroupLabel.Props) {
+}: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.GroupLabel
       data-slot="combobox-label"
@@ -192,13 +194,13 @@ function ComboboxLabel({
   )
 }
 
-function ComboboxCollection({ ...props }: ComboboxPrimitive.Collection.Props) {
+function ComboboxCollection({ ...props }: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Collection data-slot="combobox-collection" {...props} />
   )
 }
 
-function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
+function ComboboxEmpty({ className, ...props }: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
@@ -214,7 +216,7 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
 function ComboboxSeparator({
   className,
   ...props
-}: ComboboxPrimitive.Separator.Props) {
+}: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Separator
       data-slot="combobox-separator"
@@ -227,8 +229,7 @@ function ComboboxSeparator({
 function ComboboxChips({
   className,
   ...props
-}: React.ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> &
-  ComboboxPrimitive.Chips.Props) {
+}: React.ComponentPropsWithRef<any>) {
   return (
     <ComboboxPrimitive.Chips
       data-slot="combobox-chips"
@@ -246,7 +247,7 @@ function ComboboxChip({
   children,
   showRemove = true,
   ...props
-}: ComboboxPrimitive.Chip.Props & {
+}: React.ComponentProps<any> & {
   showRemove?: boolean
 }) {
   return (
@@ -276,7 +277,7 @@ function ComboboxChipsInput({
   className,
   children,
   ...props
-}: ComboboxPrimitive.Input.Props) {
+}: React.ComponentProps<any>) {
   return (
     <ComboboxPrimitive.Input
       data-slot="combobox-chip-input"

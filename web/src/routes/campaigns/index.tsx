@@ -18,6 +18,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_API_URL as string;
+
 interface Campaign {
   id: string;
   name: string;

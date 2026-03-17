@@ -47,12 +47,6 @@ type CourseCardProps = {
     paramKey?: string
 }
 
-const difficultyColor: Record<Course['difficulty'], string> = {
-    Beginner: 'bg-emerald-100 text-emerald-700',
-    Intermediate: 'bg-amber-100 text-amber-700',
-    Advanced: 'bg-rose-100 text-rose-700',
-}
-
 // ─── shared progress badge helpers ───────────────────────────────────────────
 
 function ProgressBadge({ progress }: { progress: number }) {

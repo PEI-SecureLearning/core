@@ -3,13 +3,13 @@ import { motion, LayoutGroup, AnimatePresence } from 'motion/react'
 import { BookOpen, AlertCircle } from 'lucide-react'
 import { useKeycloak } from '@react-keycloak/web'
 import { fetchModules, type Module } from '@/services/modulesApi'
-import type { ModuleSortValue } from './ToolBarModules'
 import { useDebounce } from '@/lib/useDebounce'
 import { DIFFICULTY_COLORS } from './module-creation/constants'
 import type { GridCols } from '@/components/courses/UniversalFilters'
 import CourseCard, { type CardItem } from '@/components/courses/CourseCard'
 
 const API_BASE = import.meta.env.VITE_API_URL as string
+type ModuleSortValue = 'newest' | 'oldest' | 'title_asc' | 'title_desc'
 
 const gridClass: Record<GridCols, string> = {
     1: 'grid-cols-1',

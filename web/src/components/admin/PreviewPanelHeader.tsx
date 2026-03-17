@@ -1,5 +1,3 @@
-import { Eye } from 'lucide-react'
-
 export function PreviewPanelHeader() {
     return (
         <div className="bg-surface-subtle/50 p-6 border-b border-border/40 flex items-center justify-between">

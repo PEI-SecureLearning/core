@@ -4,7 +4,6 @@ import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
-import { apiClient } from '../lib/api-client'
 
 export function CreateTenantPage() {
     const navigate = useNavigate()

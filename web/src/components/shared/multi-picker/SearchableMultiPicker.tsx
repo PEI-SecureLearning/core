@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import type { FocusEvent } from "react";
 import { CircleQuestionMark, Loader2, Search } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -196,7 +197,7 @@ export default function SearchableMultiPicker<
 
         <Popover
           open={open}
-          onOpenChange={(nextOpen) => {
+          onOpenChange={(nextOpen: boolean) => {
             if (nextOpen) setOpen(true);
           }}
           modal={false}
@@ -229,8 +230,8 @@ export default function SearchableMultiPicker<
           <PopoverContent
             align="start"
             sideOffset={4}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onFocusOutside={(e) => e.preventDefault()}
+            onOpenAutoFocus={(e: Event) => e.preventDefault()}
+            onFocusOutside={(e: FocusEvent | Event) => e.preventDefault()}
             style={{ width: anchorWidth ?? "100%" }}
             className="p-0 shadow-lg border-border bg-popover"
           >
