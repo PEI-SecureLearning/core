@@ -1,6 +1,15 @@
-import { memo } from "react";
-import type { ReactElement } from "react";
-import { Server, Lock, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { memo, useState } from "react";
+import {
+  Lock,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Eye,
+  EyeOff
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import FormTooltip from "@/components/shared/FormTooltip";
 
 interface Props {
   readonly host: string;
@@ -11,160 +20,190 @@ interface Props {
   readonly setUsername: (v: string) => void;
   readonly password: string;
   readonly setPassword: (v: string) => void;
-  readonly onTest?: () => void;
   readonly isTesting?: boolean;
   readonly testStatus?: string | null;
+  readonly smtpConfigChanged?: boolean;
 }
 
-type ButtonState = 'success' | 'error' | 'default' | 'testing';
-
-interface ButtonStateConfig {
-  className: string;
-  title: string;
-  icon?: ReactElement;
-}
-
-const BUTTON_BASE_CLASSES = "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all disabled:cursor-not-allowed";
-const BORDER_BASE = "border-2 bg-background";
-
-const BUTTON_STATES: Record<ButtonState, ButtonStateConfig> = {
-  success: {
-    className: `${BORDER_BASE} border-green-500 text-green-600`,
-    title: "Test passed",
-    icon: <CheckCircle className="h-4 w-4" />,
-  },
-  error: {
-    className: `${BORDER_BASE} border-red-500 text-red-500 hover:bg-red-500/10`,
-    title: "Test failed - click to retry",
-    icon: <XCircle className="h-4 w-4" />,
-  },
-  testing: {
-    className: `${BORDER_BASE} border-amber-500 text-amber-600`,
-    title: "Testing connection",
-    icon: <Loader2 className="h-4 w-4 animate-spin" />,
-  },
-  default: {
-    className: `${BORDER_BASE} border-amber-500 text-amber-600 hover:bg-amber-500/10 disabled:opacity-50`,
-    title: "Test SMTP connection",
-  },
-};
-
-const getButtonState = (
-  isTesting: boolean | undefined,
-  isError: boolean,
-  isSuccess: boolean
-): ButtonState => {
-  if (isTesting) return 'testing';
-  if (isSuccess) return 'success';
-  if (isError) return 'error';
-  return 'default';
-};
-
-const isErrorStatus = (status: string | null | undefined): boolean => {
-  if (!status) return false;
-  const lowerStatus = status.toLowerCase();
-  return lowerStatus.includes("failed") || 
-         lowerStatus.includes("error") || 
-         lowerStatus.includes("invalid");
-};
-
-const isSuccessStatus = (status: string | null | undefined, isError: boolean): boolean => {
-  if (!status || isError) return false;
-  const lowerStatus = status.toLowerCase();
-  return lowerStatus.includes("success") || lowerStatus.includes("valid");
-};
-
-function ProfileSmtpConfig({ 
-  host, setHost, 
-  port, setPort, 
-  username, setUsername, 
-  password, setPassword,
-  onTest,
-  isTesting,
+function ProfileSmtpConfig({
+  host,
+  setHost,
+  port,
+  setPort,
+  username,
+  setUsername,
+  password,
+  setPassword,
+  isTesting = false,
   testStatus,
+  smtpConfigChanged = true
 }: Props) {
-  const isValid = host && port && username && password;
-  const isError = isErrorStatus(testStatus);
-  const isSuccess = isSuccessStatus(testStatus, isError);
-  
-  const buttonState = getButtonState(isTesting, isError, isSuccess);
-  const config = BUTTON_STATES[buttonState];
-  const buttonTitle = isSuccess && testStatus ? testStatus : config.title;
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isHostValid = host.trim().length > 0;
+  const isPortValid = Number.isFinite(port) && port > 0;
+  const isUsernameValid = username.trim().length > 0;
+  const isPasswordRequired = smtpConfigChanged;
+  const isPasswordValid = !isPasswordRequired || password.trim().length > 0;
+
+  const isTestFailed =
+    !!testStatus && /(failed|error|invalid)/i.test(testStatus);
+  const isTestSuccess =
+    !!testStatus && !isTestFailed && /(success|valid|passed)/i.test(testStatus);
 
   return (
     <div className="bg-surface border border-border rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between gap-4">
         <h4 className="text-foreground font-semibold flex items-center gap-2">
-          <Server className="h-5 w-5 text-primary/90" />
           SMTP Server Details
         </h4>
-        
-        {onTest && (
-          <button
-            onClick={onTest}
-            disabled={!isValid || isTesting || isSuccess}
-            className={`${BUTTON_BASE_CLASSES} ${config.className}`}
-            title={buttonTitle}
+        {isTesting && (
+          <div className="flex items-center gap-2 text-sm text-primary">
+            <Loader2 className="size-5 animate-spin" />
+          </div>
+        )}
+        {isTestSuccess && (
+          <FormTooltip side="left" content={["SMTP configuration is valid"]}>
+            <div className="flex items-center gap-2 text-sm text-primary">
+              <CheckCircle2 className="size-5" />
+            </div>
+          </FormTooltip>
+        )}
+        {isTestFailed && (
+          <FormTooltip
+            side="left"
+            content={[testStatus || "Test failed"]}
+            variant="error"
           >
-            {buttonState === 'testing' ? (
-              <>
-                {config.icon}
-                Testing...
-              </>
-            ) : (
-              <>
-                Test
-                {config.icon}
-              </>
-            )}
-          </button>
+            <div className="flex items-center gap-2 text-sm text-red-600 ">
+              <XCircle className="size-5" />
+            </div>
+          </FormTooltip>
         )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-foreground/90 mb-1">Host *</label>
-          <input
+          <Label
+            htmlFor="smtp-host"
+            className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
+          >
+            Host{" "}
+            <span
+              className={isHostValid ? "text-muted-foreground" : "text-red-600"}
+            >
+              *
+            </span>
+            <FormTooltip
+              side="right"
+              content={["SMTP server host used to send simulation emails."]}
+            />
+          </Label>
+          <Input
+            id="smtp-host"
             type="text"
             value={host}
             onChange={(e) => setHost(e.target.value)}
             placeholder="smtp.provider.com"
-            className="w-full px-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            className="w-full h-10 rounded-md bg-surface-subtle border-border text-foreground placeholder:text-muted-foreground/60"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground/90 mb-1">Port *</label>
-          <input
+          <Label
+            htmlFor="smtp-port"
+            className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
+          >
+            Port{" "}
+            <span
+              className={isPortValid ? "text-muted-foreground" : "text-red-600"}
+            >
+              *
+            </span>
+            <FormTooltip
+              side="right"
+              content={["SMTP port provided by your mail provider."]}
+            />
+          </Label>
+          <Input
+            id="smtp-port"
             type="number"
             value={port}
             onChange={(e) => setPort(Number(e.target.value))}
-            className="w-full px-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            className="w-full h-10 rounded-md bg-surface-subtle border-border text-foreground placeholder:text-muted-foreground/60"
           />
         </div>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-foreground/90 mb-1">Email *</label>
-          <input
+          <Label
+            htmlFor="smtp-username"
+            className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
+          >
+            Username{" "}
+            <span
+              className={
+                isUsernameValid ? "text-muted-foreground" : "text-red-600"
+              }
+            >
+              *
+            </span>
+            <FormTooltip
+              side="right"
+              content={["Username used to authenticate with the SMTP server."]}
+            />
+          </Label>
+          <Input
+            id="smtp-username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            className="w-full h-10 rounded-md bg-surface-subtle border-border text-foreground placeholder:text-muted-foreground/60"
             autoComplete="off"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground/90 mb-1">Password *</label>
+          <Label
+            htmlFor="smtp-password"
+            className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
+          >
+            Password
+            {isPasswordRequired && (
+              <span
+                className={
+                  isPasswordValid ? "text-muted-foreground" : "text-red-600"
+                }
+              >
+                *
+              </span>
+            )}
+            <FormTooltip
+              side="right"
+              content={["Password used to authenticate with the SMTP server."]}
+            />
+          </Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-accent-secondary" />
-            <input
-              type="password"
+            <Input
+              id="smtp-password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="w-full h-10 pl-10 pr-10 rounded-md bg-surface-subtle border-border text-foreground placeholder:text-muted-foreground/60"
               autoComplete="new-password"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>

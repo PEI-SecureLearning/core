@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import Stepper, { Step } from "@/components/ui/Stepper";
+import FormTooltip from "@/components/shared/FormTooltip";
 import {
   fetchOrgManagerCampaignDetail,
   updateOrgManagerCampaign
@@ -311,12 +312,20 @@ export default function CampaignDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <label
-                    htmlFor="campaign-name"
-                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                  >
-                    Campaign name
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <label
+                      htmlFor="campaign-name"
+                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                    >
+                      Campaign name
+                    </label>
+                    <FormTooltip
+                      side="right"
+                      content={[
+                        "This name is shown to admins in campaign lists and reports."
+                      ]}
+                    />
+                  </div>
                   <input
                     id="campaign-name"
                     type="text"
@@ -332,12 +341,20 @@ export default function CampaignDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <label
-                    htmlFor="campaign-description"
-                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                  >
-                    Description
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <label
+                      htmlFor="campaign-description"
+                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                    >
+                      Description
+                    </label>
+                    <FormTooltip
+                      side="right"
+                      content={[
+                        "Optional internal notes for campaign context and objectives."
+                      ]}
+                    />
+                  </div>
                   <textarea
                     id="campaign-description"
                     value={formData.description}
@@ -368,12 +385,20 @@ export default function CampaignDetails() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label
-                      htmlFor="campaign-begin-at"
-                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                    >
-                      Start date and time
-                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <label
+                        htmlFor="campaign-begin-at"
+                        className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                      >
+                        Start date and time
+                      </label>
+                      <FormTooltip
+                        side="right"
+                        content={[
+                          "First allowed send timestamp for this campaign window."
+                        ]}
+                      />
+                    </div>
                     <input
                       id="campaign-begin-at"
                       type="datetime-local"
@@ -388,12 +413,20 @@ export default function CampaignDetails() {
                   </div>
 
                   <div className="space-y-2">
-                    <label
-                      htmlFor="campaign-end-at"
-                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                    >
-                      End date and time
-                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <label
+                        htmlFor="campaign-end-at"
+                        className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                      >
+                        End date and time
+                      </label>
+                      <FormTooltip
+                        side="right"
+                        content={[
+                          "Last allowed send timestamp. It must be after the start time."
+                        ]}
+                      />
+                    </div>
                     <input
                       id="campaign-end-at"
                       type="datetime-local"
@@ -409,12 +442,20 @@ export default function CampaignDetails() {
                 </div>
 
                 <div className="space-y-2 max-w-xs">
-                  <label
-                    htmlFor="campaign-interval"
-                    className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
-                  >
-                    Send interval (minutes)
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <label
+                      htmlFor="campaign-interval"
+                      className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+                    >
+                      Send interval (minutes)
+                    </label>
+                    <FormTooltip
+                      side="right"
+                      content={[
+                        "Minimum delay between sends to consecutive targets."
+                      ]}
+                    />
+                  </div>
                   <input
                     id="campaign-interval"
                     type="number"

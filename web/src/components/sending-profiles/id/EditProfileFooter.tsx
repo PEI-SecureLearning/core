@@ -19,19 +19,28 @@ interface ButtonContent {
 
 const getButtonContent = (isLoading: boolean | undefined): ButtonContent => {
   if (isLoading) {
-    return { icon: <Loader2 className="h-4 w-4 animate-spin" />, text: "Updating..." };
+    return {
+      icon: <Loader2 className="h-4 w-4 animate-spin" />,
+      text: "Updating..."
+    };
   }
   return { icon: <Save className="h-4 w-4" />, text: "Save Changes" };
 };
 
-function EditProfileFooter({ onSave, onDelete, isValid, isLoading, status }: Readonly<Props>) {
+function EditProfileFooter({
+  onSave,
+  onDelete,
+  isValid,
+  isLoading,
+  status
+}: Readonly<Props>) {
   const buttonContent = getButtonContent(isLoading);
 
   return (
     <div className="flex flex-col gap-3 px-6 relative z-10">
       {status && <StatusMessage status={status} />}
 
-      <div className="flex gap-4 justify-between items-center">
+      <div className="flex gap-4 justify-between items-center flex-wrap">
         <button
           onClick={onDelete}
           disabled={isLoading}

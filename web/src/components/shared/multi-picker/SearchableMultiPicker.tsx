@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { CircleQuestionMark, Loader2 } from "lucide-react";
 
+import FormTooltip, {
+  type FormTooltipSide
+} from "@/components/shared/FormTooltip";
 import SearchBar from "@/components/shared/SearchBar";
 import {
   Popover,
@@ -8,12 +11,6 @@ import {
   PopoverContent
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
 
 type PickerItemId = string | number;
 
@@ -37,6 +34,7 @@ interface SearchableMultiPickerProps<
   readonly label: string;
   readonly labelIcon: ReactNode;
   readonly tooltipLines?: readonly string[];
+  readonly tooltipSide?: FormTooltipSide;
   readonly selectedTitle: string;
   readonly searchPlaceholder: string;
   readonly loading: boolean;
@@ -60,6 +58,7 @@ export default function SearchableMultiPicker<
   label,
   labelIcon,
   tooltipLines,
+  tooltipSide = "right",
   selectedTitle,
   searchPlaceholder,
   loading,
@@ -171,23 +170,7 @@ export default function SearchableMultiPicker<
           {labelIcon}
           {label}
           {tooltipLines && tooltipLines.length > 0 && (
-            <TooltipProvider>
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <CircleQuestionMark size={14} className="text-primary" />
-                </TooltipTrigger>
-                <TooltipContent
-                  side="right"
-                  className="bg-popover border-border text-popover-foreground"
-                >
-                  <div className="text-[12px] font-medium space-y-1 max-w-[300px]">
-                    {tooltipLines.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <FormTooltip side={tooltipSide} content={tooltipLines} />
           )}
         </label>
 

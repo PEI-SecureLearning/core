@@ -9,7 +9,7 @@ function CampaignForms() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="campaign-name"
-          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase"
+          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5"
         >
           Campaign Name <span className="text-destructive">*</span>
         </label>
@@ -27,7 +27,7 @@ function CampaignForms() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="campaign-description"
-          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase"
+          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5"
         >
           Description
         </label>
