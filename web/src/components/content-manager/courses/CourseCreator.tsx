@@ -6,7 +6,7 @@ import { Image as ImageIcon, X } from 'lucide-react'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { useKeycloak } from '@react-keycloak/web'
 import { toast } from 'sonner'
-import { createCourse, type CourseDifficulty } from '@/services/coursesApi'
+import { createCourse, updateCourse, type CourseDifficulty, type Course } from '@/services/coursesApi'
 import { type Module } from '@/services/modulesApi'
 import { CourseCreatorTopBar } from './CourseCreatorTopBar'
 import { AvailableModuleList } from './AvailableModuleList'
@@ -23,28 +23,52 @@ const DIFFICULTY_ACTIVE: Record<CourseDifficulty, string> = {
 }
 const DIFFICULTY_IDLE = 'bg-surface-subtle text-muted-foreground border-border hover:border-[#7C3AED]/40'
 
+const API_BASE = import.meta.env.VITE_API_URL as string
+
 interface CourseCreatorProps {
     readonly onBack: () => void
     readonly onPublished?: () => void
+    readonly initialCourse?: Course
+    readonly initialModules?: Module[]
+    readonly isEditing?: boolean
 }
 
-export function CourseCreator({ onBack, onPublished }: CourseCreatorProps) {
+export function CourseCreator({ onBack, onPublished, initialCourse, initialModules, isEditing }: CourseCreatorProps) {
     const { keycloak } = useKeycloak()
 
     // Core state
-    const [courseTitle,      setCourseTitle]      = useState('')
-    const [description,      setDescription]      = useState('')
-    const [category,         setCategory]         = useState('')
-    const [difficulty,       setDifficulty]       = useState<CourseDifficulty>('Easy')
-    const [expectedTime,     setExpectedTime]     = useState('')
-    const [coverImageId,     setCoverImageId]     = useState<string | null>(null)
+    const [courseTitle,      setCourseTitle]      = useState(initialCourse?.title ?? '')
+    const [description,      setDescription]      = useState(initialCourse?.description ?? '')
+    const [category,         setCategory]         = useState(initialCourse?.category ?? '')
+    const [difficulty,       setDifficulty]       = useState<CourseDifficulty>(initialCourse?.difficulty ?? 'Easy')
+    const [coverImageId,     setCoverImageId]     = useState<string | null>(initialCourse?.cover_image ?? null)
     const [coverImageUrl,    setCoverImageUrl]    = useState<string | null>(null)
-    const [selectedModules,  setSelectedModules]  = useState<Module[]>([])
+    const [selectedModules,  setSelectedModules]  = useState<Module[]>(initialModules ?? [])
     const [isSaving,         setIsSaving]         = useState(false)
     const [showFilePicker,   setShowFilePicker]   = useState(false)
     const [activeModule,     setActiveModule]     = useState<Module | null>(null)
 
     const selectedIds = selectedModules.map((m) => m.id)
+
+    // Calculate expected time dynamically
+    const totalMinutes = selectedModules.reduce((acc, mod) => acc + (parseInt(mod.estimated_time || '0', 10) || 0), 0)
+    const expectedTime = totalMinutes >= 60 ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` : `${totalMinutes}m`
+
+    // Load initial cover image URL if editing
+    import('react').then(({ useEffect }) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        useEffect(() => {
+            if (!initialCourse?.cover_image || coverImageUrl) return
+            let cancelled = false
+            fetch(`${API_BASE}/content/${encodeURIComponent(initialCourse.cover_image)}/file-url`, {
+                headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '' },
+            })
+                .then(r => r.json() as Promise<{ url: string | null }>)
+                .then(d => { if (!cancelled && d.url) setCoverImageUrl(d.url) })
+                .catch(() => undefined)
+            return () => { cancelled = true }
+        }, [initialCourse?.cover_image, coverImageUrl, keycloak.token])
+    }).catch(() => undefined)
 
     const handleDragStart = useCallback((event: DragStartEvent) => {
         const mod = event.active.data.current?.module as Module | undefined
@@ -92,25 +116,30 @@ export function CourseCreator({ onBack, onPublished }: CourseCreatorProps) {
         if (!courseTitle.trim()) { toast.error('Title is required.'); return }
         if (!description.trim()) { toast.error('Description is required.'); return }
         if (!category.trim())    { toast.error('Category is required.'); return }
-        if (!expectedTime.trim()) { toast.error('Expected time is required.'); return }
         if (selectedModules.length === 0) { toast.error('Add at least one module.'); return }
 
         setIsSaving(true)
         try {
-            await createCourse({
+            const payload = {
                 title:         courseTitle.trim(),
                 description:   description.trim(),
                 category:      category.trim(),
                 difficulty,
-                expected_time: expectedTime.trim(),
+                expected_time: expectedTime,
                 cover_image:   coverImageId,
                 modules:       selectedModules.map((m) => m.id),
-            }, keycloak.token)
-            toast.success('Course published!')
+            }
+            if (isEditing && initialCourse) {
+                await updateCourse(initialCourse.id, payload, keycloak.token)
+                toast.success('Course updated!')
+            } else {
+                await createCourse(payload, keycloak.token)
+                toast.success('Course published!')
+            }
             onPublished?.()
             onBack()
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Failed to publish course.')
+            toast.error(err instanceof Error ? err.message : 'Failed to save course.')
         } finally {
             setIsSaving(false)
         }
@@ -181,15 +210,13 @@ export function CourseCreator({ onBack, onPublished }: CourseCreatorProps) {
                                 </div>
                             </div>
 
-                            {/* Expected time */}
+                            {/* Expected time (Read Only) */}
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Expected Time</label>
-                                <input
-                                    value={expectedTime}
-                                    onChange={(e) => setExpectedTime(e.target.value)}
-                                    placeholder="e.g. 2h 30m"
-                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30"
-                                />
+                                <div className="w-full rounded-lg border border-border bg-surface-subtle px-3 py-2 text-sm text-foreground flex items-center justify-between">
+                                    <span>{expectedTime}</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Auto-calculated</span>
+                                </div>
                             </div>
 
                             {/* Cover image */}

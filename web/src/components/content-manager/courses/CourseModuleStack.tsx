@@ -2,8 +2,12 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Blocks, Clock, GripVertical, Layers, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useKeycloak } from '@react-keycloak/web'
 import { DIFFICULTY_COLORS } from '../modules/module-creation/constants'
 import type { Module } from '@/services/modulesApi'
+
+const API_BASE = import.meta.env.VITE_API_URL as string
 
 interface CourseModuleStackProps {
     readonly modules: Module[]
@@ -14,10 +18,12 @@ function SortableModuleCard({
     module,
     index,
     onRemove,
+    coverUrl
 }: {
     readonly module: Module
     readonly index: number
     readonly onRemove: () => void
+    readonly coverUrl?: string
 }) {
     const {
         attributes,
@@ -43,9 +49,13 @@ function SortableModuleCard({
                     <GripVertical className="w-4 h-4" />
                 </div>
 
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center flex-shrink-0">
-                    <Blocks className="w-4 h-4 text-white/70" />
-                </div>
+                {coverUrl ? (
+                    <img src={coverUrl} alt={module.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                ) : (
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center flex-shrink-0">
+                        <Blocks className="w-4 h-4 text-white/70" />
+                    </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{module.title || 'Untitled'}</p>
@@ -81,7 +91,35 @@ function SortableModuleCard({
 }
 
 export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps) {
+    const { keycloak } = useKeycloak()
     const { setNodeRef, isOver } = useDroppable({ id: 'course-stack' })
+    const [coverUrls, setCoverUrls] = useState<Record<string, string>>({})
+
+    useEffect(() => {
+        let cancelled = false
+        const coverIds = Array.from(new Set(modules.map(m => m.cover_image).filter(Boolean))) as string[]
+        if (coverIds.length === 0) {
+            setCoverUrls({})
+            return
+        }
+        const headers = { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '' }
+        Promise.all(
+            coverIds.map(async (id) => {
+                try {
+                    const res = await fetch(`${API_BASE}/content/${encodeURIComponent(id)}/file-url`, { headers })
+                    if (!res.ok) return [id, ''] as const
+                    const data = await res.json() as { url: string | null }
+                    return [id, data.url ?? ''] as const
+                } catch {
+                    return [id, ''] as const
+                }
+            })
+        ).then(entries => {
+            if (!cancelled) setCoverUrls(Object.fromEntries(entries.filter(([, v]) => v)))
+        }).catch(() => undefined)
+        return () => { cancelled = true }
+    }, [modules, keycloak.token])
+
     const sortableIds = modules.map((_, i) => `stack-${i}`)
     const moduleSuffix = modules.length === 1 ? '' : 's'
     const moduleCountLabel = modules.length === 0
@@ -114,6 +152,7 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
                                     module={mod}
                                     index={i}
                                     onRemove={() => onRemove(i)}
+                                    coverUrl={mod.cover_image ? coverUrls[mod.cover_image] : undefined}
                                 />
                             ))}
                         </div>

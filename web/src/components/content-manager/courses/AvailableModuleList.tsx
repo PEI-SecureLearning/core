@@ -10,7 +10,15 @@ interface AvailableModuleListProps {
     readonly selectedIds: string[]
 }
 
-function DraggableModule({ module, isDimmed }: { readonly module: Module; readonly isDimmed: boolean }) {
+function DraggableModule({
+    module,
+    isDimmed,
+    coverUrl
+}: {
+    readonly module: Module
+    readonly isDimmed: boolean
+    readonly coverUrl?: string
+}) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `library-${module.id}`,
         data: { module },
@@ -31,9 +39,13 @@ function DraggableModule({ module, isDimmed }: { readonly module: Module; readon
                     : 'border-border hover:border-[#7C3AED]/40 hover:shadow-md hover:shadow-[#7C3AED]/10'
                     }`}
             >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center flex-shrink-0">
-                    <Blocks className="w-5 h-5 text-white/70" />
-                </div>
+                {coverUrl ? (
+                    <img src={coverUrl} alt={module.title} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                ) : (
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center flex-shrink-0">
+                        <Blocks className="w-5 h-5 text-white/70" />
+                    </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{module.title || 'Untitled'}</p>
@@ -65,6 +77,9 @@ export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
     const [search, setSearch] = useState('')
     const [modules, setModules] = useState<Module[]>([])
     const [loading, setLoading] = useState(true)
+    const [coverUrls, setCoverUrls] = useState<Record<string, string>>({})
+
+    const API_BASE = import.meta.env.VITE_API_URL as string
 
     useEffect(() => {
         let cancelled = false
@@ -75,6 +90,31 @@ export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
             .finally(() => { if (!cancelled) setLoading(false) })
         return () => { cancelled = true }
     }, [keycloak.token])
+
+    useEffect(() => {
+        let cancelled = false
+        const coverIds = Array.from(new Set(modules.map(m => m.cover_image).filter(Boolean))) as string[]
+        if (coverIds.length === 0) {
+            setCoverUrls({})
+            return
+        }
+        const headers = { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '' }
+        Promise.all(
+            coverIds.map(async (id) => {
+                try {
+                    const res = await fetch(`${API_BASE}/content/${encodeURIComponent(id)}/file-url`, { headers })
+                    if (!res.ok) return [id, ''] as const
+                    const data = await res.json() as { url: string | null }
+                    return [id, data.url ?? ''] as const
+                } catch {
+                    return [id, ''] as const
+                }
+            })
+        ).then(entries => {
+            if (!cancelled) setCoverUrls(Object.fromEntries(entries.filter(([, v]) => v)))
+        }).catch(() => undefined)
+        return () => { cancelled = true }
+    }, [modules, keycloak.token, API_BASE])
 
     const filtered = modules.filter((m) =>
         (m.title ?? '').toLowerCase().includes(search.toLowerCase()) ||
@@ -114,6 +154,7 @@ export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
                             key={mod.id}
                             module={mod}
                             isDimmed={selectedIds.includes(mod.id)}
+                            coverUrl={mod.cover_image ? coverUrls[mod.cover_image] : undefined}
                         />
                     ))
                 )}
