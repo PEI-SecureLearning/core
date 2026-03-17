@@ -51,6 +51,14 @@ from .module import (
     ModuleOut,
     PaginatedModules,
 )
+from .course import (
+    CourseDifficulty,
+    CourseCreate,
+    CourseUpdate,
+    CoursePatch,
+    CourseOut,
+    PaginatedCourses,
+)
 
 
 __all__ = [
@@ -139,4 +147,11 @@ __all__ = [
     "ModulePatch",
     "ModuleOut",
     "PaginatedModules",
+    # Course
+    "CourseDifficulty",
+    "CourseCreate",
+    "CourseUpdate",
+    "CoursePatch",
+    "CourseOut",
+    "PaginatedCourses",
 ]

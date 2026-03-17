@@ -1,19 +1,22 @@
 import { useDraggable } from '@dnd-kit/core'
-import { Search } from 'lucide-react'
-import { useState } from 'react'
-import type { PlaceholderModule } from '../modules/module-creation/placeholderModules'
-import { PLACEHOLDER_MODULES } from '../modules/module-creation/placeholderModules'
-import { CourseModuleCard } from './CourseModuleCard'
+import { Search, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useKeycloak } from '@react-keycloak/web'
+import { fetchModules, type Module } from '@/services/modulesApi'
+import { DIFFICULTY_COLORS } from '../modules/module-creation/constants'
+import { Clock, Blocks } from 'lucide-react'
 
 interface AvailableModuleListProps {
     readonly selectedIds: string[]
 }
 
-function DraggableModule({ module, isDimmed }: { readonly module: PlaceholderModule; readonly isDimmed: boolean }) {
+function DraggableModule({ module, isDimmed }: { readonly module: Module; readonly isDimmed: boolean }) {
     const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
         id: `library-${module.id}`,
         data: { module },
     })
+
+    const difficultyColor = DIFFICULTY_COLORS[module.difficulty ?? 'Easy'] ?? DIFFICULTY_COLORS['Easy']
 
     return (
         <div
@@ -22,17 +25,60 @@ function DraggableModule({ module, isDimmed }: { readonly module: PlaceholderMod
             {...attributes}
             className={`cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-30' : ''}`}
         >
-            <CourseModuleCard module={module} variant="library" isDimmed={isDimmed} />
+            <div
+                className={`flex items-center gap-3 p-3 rounded-xl border bg-surface transition-all ${isDimmed
+                    ? 'opacity-40 border-border'
+                    : 'border-border hover:border-[#7C3AED]/40 hover:shadow-md hover:shadow-[#7C3AED]/10'
+                    }`}
+            >
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center flex-shrink-0">
+                    <Blocks className="w-5 h-5 text-white/70" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{module.title || 'Untitled'}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        {module.category && (
+                            <span className="text-[10px] font-medium text-[#A78BFA] bg-[#7C3AED]/15 px-1.5 py-0.5 rounded">
+                                {module.category}
+                            </span>
+                        )}
+                        {module.difficulty && (
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${difficultyColor}`}>
+                                {module.difficulty}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground flex-shrink-0">
+                    <Clock className="w-3 h-3" />
+                    {module.estimated_time ? `${module.estimated_time}m` : '—'}
+                </span>
+            </div>
         </div>
     )
 }
 
 export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
+    const { keycloak } = useKeycloak()
     const [search, setSearch] = useState('')
+    const [modules, setModules] = useState<Module[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const filtered = PLACEHOLDER_MODULES.filter((m) =>
-        m.title.toLowerCase().includes(search.toLowerCase()) ||
-        m.category.toLowerCase().includes(search.toLowerCase())
+    useEffect(() => {
+        let cancelled = false
+        setLoading(true)
+        fetchModules({ token: keycloak.token, limit: 100 })
+            .then((data) => { if (!cancelled) setModules(data.items) })
+            .catch(() => undefined)
+            .finally(() => { if (!cancelled) setLoading(false) })
+        return () => { cancelled = true }
+    }, [keycloak.token])
+
+    const filtered = modules.filter((m) =>
+        (m.title ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (m.category ?? '').toLowerCase().includes(search.toLowerCase())
     )
 
     return (
@@ -54,7 +100,11 @@ export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col gap-2">
-                {filtered.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center py-8">
+                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                ) : filtered.length === 0 ? (
                     <p className="text-sm text-muted-foreground italic text-center py-8">
                         No modules found
                     </p>

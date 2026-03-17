@@ -1,4 +1,4 @@
-import { ArrowLeft, Eye } from 'lucide-react'
+import { ArrowLeft, Eye, Loader2 } from 'lucide-react'
 
 interface CourseCreatorTopBarProps {
     readonly title: string
@@ -6,6 +6,8 @@ interface CourseCreatorTopBarProps {
     readonly onBack: () => void
     readonly onPreview: () => void
     readonly canPreview: boolean
+    readonly onPublish: () => void
+    readonly isSaving?: boolean
 }
 
 export function CourseCreatorTopBar({
@@ -14,6 +16,8 @@ export function CourseCreatorTopBar({
     onBack,
     onPreview,
     canPreview,
+    onPublish,
+    isSaving = false,
 }: CourseCreatorTopBarProps) {
     return (
         <div className="flex items-center justify-between px-6 py-3 bg-surface border-b border-border shadow-sm flex-shrink-0">
@@ -54,9 +58,13 @@ export function CourseCreatorTopBar({
                 </button>
                 <button
                     type="button"
-                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={onPublish}
+                    disabled={isSaving}
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                    Publish
+                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    {isSaving ? 'Publishing...' : 'Publish'}
                 </button>
 
             </div>
