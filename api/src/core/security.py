@@ -12,6 +12,7 @@ from fastapi.security import OAuth2PasswordBearer
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
+KEYCLOAK_ISSUER_URL = os.getenv("KEYCLOAK_ISSUER_URL", AUTH_SERVER_URL)
 RESOURCE_SERVER_ID = "api"
 _JWKS_CLIENTS: dict[str, PyJWKClient] = {}
 
@@ -61,7 +62,7 @@ class Roles:
 
     def _verify_token(self, access_token: str, realm_name: str) -> dict:
         jwks_client = self._get_jwks_client(realm_name)
-        issuer = f"{AUTH_SERVER_URL}/realms/{realm_name}"
+        issuer = f"{KEYCLOAK_ISSUER_URL}/realms/{realm_name}"
 
         try:
             signing_key = jwks_client.get_signing_key_from_jwt(access_token)
