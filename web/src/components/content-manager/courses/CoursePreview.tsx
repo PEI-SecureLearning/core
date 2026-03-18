@@ -19,7 +19,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
     if (block.kind === 'text') {
         return (
             <div
-                className="text-[15px] leading-7 text-foreground [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-[#A78BFA] [&_a]:underline [&_code]:bg-surface-subtle [&_code]:text-[#A78BFA] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-[#0C0A0F] [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground [&_li]:leading-7 [&_blockquote]:border-[#7C3AED]/40 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-[#7C3AED]/10 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground [&_th]:border-border [&_td]:text-foreground [&_td]:border-border"
+                className="text-[15px] leading-7 text-foreground [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-accent-secondary [&_a]:underline [&_code]:bg-surface-subtle [&_code]:text-accent-secondary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-[#0C0A0F] [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground [&_li]:leading-7 [&_blockquote]:border-primary/40 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-primary/10 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground [&_th]:border-border [&_td]:text-foreground [&_td]:border-border"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(block.content || '') }}
             />
         )
@@ -37,7 +37,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
             if (block.mediaType === 'audio') return <audio src={block.url} controls className="w-full px-4 py-3"><track kind="captions" /></audio>
             return (
                 <a href={block.url} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-[#A78BFA] font-medium hover:text-[#7C3AED] transition-colors">
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-accent-secondary font-medium hover:text-primary transition-colors">
                     <FileText className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">{block.url}</span>
                 </a>
@@ -70,7 +70,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
 
         const choiceBtnClass = (c: Choice) => {
             const isSelected = answered === c.id
-            if (!isSelected) return 'bg-surface border-border text-foreground hover:bg-[#7C3AED]/10 hover:border-[#7C3AED]/30'
+            if (!isSelected) return 'bg-surface border-border text-foreground hover:bg-primary/10 hover:border-primary/30'
             if (c.isCorrect) return 'bg-green-50 border-green-400 text-green-800'
             return 'bg-red-50 border-red-400 text-red-800'
         }
@@ -85,8 +85,8 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
         return (
             <div className="border border-border rounded-xl overflow-hidden bg-surface shadow-sm">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-subtle border-b border-border">
-                    <ListChecks className="w-3.5 h-3.5 text-[#A78BFA] flex-shrink-0" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#A78BFA]">{typeLabel}</span>
+                    <ListChecks className="w-3.5 h-3.5 text-accent-secondary flex-shrink-0" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-accent-secondary">{typeLabel}</span>
                     <span className="ml-auto text-[10px] text-muted-foreground">Q{qIndex}</span>
                 </div>
                 <div className="px-5 py-4">
@@ -96,9 +96,9 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
                     {q.type === 'short_answer' ? (
                         <div className="flex gap-2">
                             <input type="text" placeholder="Your answer…"
-                                className="flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40" />
+                                className="flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40" />
                             <button type="button"
-                                style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }} className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors">
+                                className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg transition-colors hover:bg-primary/90">
                                 Check
                             </button>
                         </div>
@@ -150,11 +150,11 @@ function PreviewSection({ modIdx, sec, secIdx, baseQIndex, collapsedSections, on
                 onClick={() => onToggle(sectionKey)}
                 className="w-full flex items-center gap-3 px-6 py-4 bg-surface hover:bg-surface-subtle transition-colors text-left group"
             >
-                <span className="w-7 h-7 rounded-lg bg-[#7C3AED] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground flex-shrink-0">
                     {secIdx + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                    <p className="text-base font-bold text-foreground group-hover:text-[#A78BFA] transition-colors truncate">
+                    <p className="text-base font-bold text-foreground group-hover:text-accent-secondary transition-colors truncate">
                         {sec.title || `Task ${secIdx + 1}`}
                     </p>
                     {qCount > 0 && (
@@ -166,7 +166,7 @@ function PreviewSection({ modIdx, sec, secIdx, baseQIndex, collapsedSections, on
                 <motion.div
                     animate={{ rotate: isCollapsed ? -90 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="text-muted-foreground group-hover:text-[#A78BFA] flex-shrink-0"
+                    className="text-muted-foreground group-hover:text-accent-secondary flex-shrink-0"
                 >
                     <ChevronDown className="w-5 h-5" />
                 </motion.div>
@@ -234,14 +234,14 @@ function PreviewModule({ mod, modIdx, collapsedModules, collapsedSections, onTog
             <button
                 type="button"
                 onClick={() => onToggleModule(moduleKey)}
-                className="w-full flex items-center gap-4 px-6 py-4 bg-surface border-b-2 border-[#7C3AED]/60 ring-1 ring-border shadow-lg hover:bg-surface-subtle transition-colors text-left group mb-3"
+                className="w-full flex items-center gap-4 px-6 py-4 bg-surface border-b-2 border-primary/60 ring-1 ring-border shadow-lg hover:bg-surface-subtle transition-colors text-left group mb-3"
             >
                 <img
                     src={mod.image || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60'}
                     className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                    <p className="text-lg font-bold text-foreground group-hover:text-[#A78BFA] transition-colors">
+                    <p className="text-lg font-bold text-foreground group-hover:text-accent-secondary transition-colors">
                         Module {modIdx + 1}: {mod.title}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
@@ -262,7 +262,7 @@ function PreviewModule({ mod, modIdx, collapsedModules, collapsedSections, onTog
                 <motion.div
                     animate={{ rotate: isCollapsed ? -90 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="text-muted-foreground group-hover:text-[#A78BFA] flex-shrink-0"
+                    className="text-muted-foreground group-hover:text-accent-secondary flex-shrink-0"
                 >
                     <ChevronDown className="w-5 h-5" />
                 </motion.div>
@@ -337,8 +337,8 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
             {/* Top bar */}
             <div className="flex items-center justify-between px-6 py-3 bg-surface border-b border-border shadow-sm flex-shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-[#7C3AED] flex items-center justify-center flex-shrink-0">
-                        <BookOpen className="w-3.5 h-3.5 text-white" />
+                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                        <BookOpen className="w-3.5 h-3.5 text-primary-foreground" />
                     </div>
                     <span className="text-sm font-bold text-foreground truncate">
                         {title || <span className="italic text-muted-foreground">Untitled Course</span>}
@@ -351,7 +351,7 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
                 <div className="flex items-center gap-2 flex-shrink-0">
                     <span className="text-[11px] text-muted-foreground hidden sm:block italic">Course Preview</span>
                     <button type="button" onClick={onClose}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-subtle hover:bg-[#7C3AED]/10 text-muted-foreground hover:text-foreground text-xs font-semibold transition-colors">
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-subtle hover:bg-primary/10 text-muted-foreground hover:text-foreground text-xs font-semibold transition-colors">
                         <X className="w-3.5 h-3.5" />
                         Close
                     </button>
@@ -372,13 +372,13 @@ export function CoursePreview({ title, modules, onClose }: CoursePreviewProps) {
                                 key={`toc-${mod.id}`}
                                 type="button"
                                 onClick={() => scrollToModule(`mod-preview-${modIdx}`)}
-                                className="w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-surface-subtle transition-colors group border-l-2 border-transparent hover:border-[#7C3AED]/40"
+                                className="w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-surface-subtle transition-colors group border-l-2 border-transparent hover:border-primary/40"
                             >
-                                <span className="mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-[#7C3AED] text-white">
+                                <span className="mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-primary text-primary-foreground">
                                     {modIdx + 1}
                                 </span>
                                 <div className="min-w-0">
-                                    <p className="text-xs font-semibold text-foreground group-hover:text-[#A78BFA] truncate transition-colors">
+                                    <p className="text-xs font-semibold text-foreground group-hover:text-accent-secondary truncate transition-colors">
                                         {mod.title}
                                     </p>
                                     <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">

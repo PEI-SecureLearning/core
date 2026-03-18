@@ -15,9 +15,9 @@ import { RichContentBlockEditor } from '../blocks/RichContentBlockEditor'
 import { QuestionBlockEditor } from '../blocks/QuestionBlockEditor'
 import { SectionTitleEditor } from './SectionTitleEditor'
 import { SectionRuleIcons } from './SectionRuleIcons'
-import { THEMES, type AccentColor } from './themes'
+import { type AccentColor, ThemeProvider, useModuleTheme } from '../theme-context'
 
-export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = false, isSelected, onSelect, publishAttempted, accentColor = 'purple', getToken }: {
+export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = false, isSelected, onSelect, publishAttempted, accentColor = 'primary', getToken }: {
     readonly section: Section
     readonly index: number
     readonly onUpdate: (patch: Partial<Section>) => void
@@ -27,6 +27,34 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
     readonly onSelect?: () => void
     readonly publishAttempted?: boolean
     readonly accentColor?: AccentColor
+    readonly getToken?: () => string | undefined
+}) {
+    return (
+        <ThemeProvider accent={accentColor}>
+            <SectionCardInner
+                section={section}
+                index={index}
+                onUpdate={onUpdate}
+                onRemove={onRemove}
+                autoFocus={autoFocus}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                publishAttempted={publishAttempted}
+                getToken={getToken}
+            />
+        </ThemeProvider>
+    )
+}
+
+function SectionCardInner({ section, index, onUpdate, onRemove, autoFocus, isSelected, onSelect, publishAttempted, getToken }: {
+    readonly section: Section
+    readonly index: number
+    readonly onUpdate: (patch: Partial<Section>) => void
+    readonly onRemove: () => void
+    readonly autoFocus?: boolean
+    readonly isSelected?: boolean
+    readonly onSelect?: () => void
+    readonly publishAttempted?: boolean
     readonly getToken?: () => string | undefined
 }) {
     const {
@@ -65,7 +93,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                 syncTitleWidth()
             }, 0)
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const startEdit = () => {
@@ -100,6 +128,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                     onUpdate={(patch: Partial<RichContentBlock>) => patchBlock(block.id, { ...block, ...patch })}
                     onRemove={() => removeBlock(block.id)}
                     getToken={getToken}
+                    publishAttempted={publishAttempted}
                 />
             )
         }
@@ -126,7 +155,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
     }
 
     const titleMissing = !section.title.trim()
-    const theme = THEMES[accentColor]
+    const { theme } = useModuleTheme()
 
     let cardBorder = `${theme.border} ${theme.borderHover}`
     if (isSelected) cardBorder = theme.borderActive
@@ -136,14 +165,14 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex flex-col bg-surface rounded-2xl overflow-hidden shadow-sm transition-all ${cardBorder}`}
+            onClick={onSelect}
+            className={`flex flex-col bg-surface rounded-2xl overflow-hidden shadow-sm transition-all cursor-pointer ${cardBorder}`}
         >
             {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
             <div
-                onClick={onSelect}
-                onDoubleClick={e => { e.stopPropagation(); onUpdate({ collapsed: !section.collapsed }) }}
+                onDoubleClick={() => onUpdate({ collapsed: !section.collapsed })}
                 aria-label={`Select section ${index + 1}`}
-                className="flex items-center gap-2 px-4 py-3 bg-surface-subtle border-b border-border relative cursor-pointer w-full text-left"
+                className="flex items-center gap-2 px-4 py-3 bg-surface-subtle border-b border-border relative w-full text-left"
             >
                 <span
                     className={`cursor-grab active:cursor-grabbing text-muted-foreground/50 ${theme.grip} transition-colors flex-shrink-0 touch-none relative z-10 ${isDragging ? theme.grip.replace('hover:', '') : ''}`}
@@ -175,7 +204,6 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                     sizerRef={titleSizerRef}
                     syncWidth={syncTitleWidth}
                     onStartEdit={startEdit}
-                    theme={theme}
                 />
 
                 <div className="flex-1" />
@@ -192,7 +220,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
 
                 <button
                     type="button"
-                    onClick={e => { e.stopPropagation(); onUpdate({ collapsed: !section.collapsed }) }}
+                    onClick={() => onUpdate({ collapsed: !section.collapsed })}
                     className={`text-muted-foreground ${theme.chevron} transition-colors flex-shrink-0 relative z-10`}
                 >
                     <motion.div animate={{ rotate: section.collapsed ? -90 : 0 }} transition={{ duration: 0.2 }}>
@@ -221,7 +249,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                             {section.blocks.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-surface-subtle rounded-lg border-2 border-dashed border-border">
                                     <p className="text-sm font-medium text-muted-foreground mb-4">This section is empty</p>
-                                    <AddBlockMenu onAdd={addBlock} accent={accentColor} />
+                                    <AddBlockMenu onAdd={addBlock} />
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-3">
@@ -239,7 +267,7 @@ export function SectionCard({ section, index, onUpdate, onRemove, autoFocus = fa
                             )}
                             {section.blocks.length > 0 && (
                                 <div className="pt-1 pl-6">
-                                    <AddBlockMenu onAdd={addBlock} accent={accentColor} />
+                                    <AddBlockMenu onAdd={addBlock} />
                                 </div>
                             )}
                         </div>
