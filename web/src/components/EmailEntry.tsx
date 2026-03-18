@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, Mail, Sparkles, Loader2 } from "lucide-react";
+import { ArrowRight, Mail, Loader2 } from "lucide-react";
 import { apiClient } from "../lib/api-client";
 
 export const EmailEntry = () => {
@@ -26,7 +26,7 @@ export const EmailEntry = () => {
 
       if (realm) {
         localStorage.setItem("user_realm", realm);
-        window.location.reload();
+        globalThis.location.reload();
       } else {
         setError("No organization found for this email.");
       }
@@ -50,7 +50,7 @@ export const EmailEntry = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-linear-to-r from-white via-gray-200 to-gray-400">
             Sign in to your <br /> Workspace.
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground/70 max-w-2xl mx-auto mb-10">

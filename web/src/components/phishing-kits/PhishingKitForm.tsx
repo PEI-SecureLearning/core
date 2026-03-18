@@ -150,14 +150,14 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
   }
 
   return (
-    <div className="size-full flex flex-col p-6">
+    <div className="size-full flex flex-col">
       <div className="flex-1 min-h-0 ">
         <Stepper
           stepIcons={stepIcons}
           stepCompletedIcons={stepCompletedIcons}
           validateStep={validateStep}
           onBeforeComplete={handleComplete}
-          onFinalStepCompleted={() => {}}
+          onFinalStepCompleted={() => { }}
           nextButtonText="Continue"
           backButtonText="Back"
         >
