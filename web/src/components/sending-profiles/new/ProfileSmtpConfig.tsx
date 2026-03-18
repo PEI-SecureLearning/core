@@ -183,27 +183,26 @@ function ProfileSmtpConfig({
             />
           </Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-accent-secondary" />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/80 hover:text-primary transition-colors"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="size-4" />
+              ) : (
+                <Eye className="size-4" />
+              )}
+            </button>
             <Input
               id="smtp-password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-10 pl-10 pr-10 rounded-md bg-surface-subtle border-border text-foreground placeholder:text-muted-foreground/60"
+              className="w-full h-10 pl-9 rounded-md bg-surface-subtle border-border text-foreground placeholder:text-muted-foreground/60"
               autoComplete="new-password"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
           </div>
         </div>
       </div>
