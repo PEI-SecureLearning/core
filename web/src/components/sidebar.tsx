@@ -1,28 +1,16 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
+import { PanelLeftClose, PanelLeftOpen, ChevronDown } from "lucide-react";
 import {
-  LayoutDashboard,
-  FileText,
-  Settings,
-  AlertCircle,
-  CircleQuestionMark,
-  PanelLeftClose,
-  PanelLeftOpen,
-  BookOpen,
-  Blocks,
-  FileStack,
-  ChevronDown,
-  GraduationCap,
-  Fish
-} from "lucide-react";
-import {
-  adminDashboardLink,
   adminLinks,
-  getUserNavigationGroups,
-  userDashboardLink,
-  userStandaloneLinks
-} from "@/lib/navigation";
+  userLinks,
+  contentManagerLinks,
+  footerLinks,
+  filterLinks,
+  groupNavigationLinks,
+  type NavLinkDef,
+} from "@/config/navLinks";
 
 interface SidebarLinkProps {
   href: string;
@@ -34,41 +22,11 @@ interface SidebarLinkProps {
 interface SidebarGroupProps {
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  links: SidebarLinkProps[];
-  isCollapsed: boolean;
+  links: NavLinkDef[];
+  sidebarExpanded: boolean;
+  open: boolean;
+  onToggle: () => void;
 }
-
-const contentManagerDashboard: SidebarLinkProps = {
-  href: "/content-manager",
-  label: "Dashboard",
-  icon: LayoutDashboard,
-  exact: true
-};
-
-const contentManagerGroups: SidebarGroupProps[] = [
-  {
-    label: "LMS",
-    icon: GraduationCap,
-    isCollapsed: false,
-    links: [
-      { href: "/content-manager/courses", label: "Courses", icon: BookOpen },
-      { href: "/content-manager/modules", label: "Modules", icon: Blocks },
-      { href: "/content-manager/content", label: "Content", icon: FileStack }
-    ]
-  },
-  {
-    label: "Phishing",
-    icon: Fish,
-    isCollapsed: false,
-    links: [
-      { href: "/content-manager/templates", label: "Templates", icon: FileText }
-    ]
-  }
-];
-
-const contentManagerStandaloneLinks: SidebarLinkProps[] = [
-  { href: "/content-manager/settings", label: "Settings", icon: Settings }
-];
 
 // SidebarLink
 
@@ -104,25 +62,18 @@ function SidebarGroup({
   label,
   icon: Icon,
   links,
-  sidebarCollapsed,
   sidebarExpanded,
   open,
   onToggle
-}: Omit<SidebarGroupProps, "isCollapsed"> & {
-  sidebarCollapsed: boolean;
-  sidebarExpanded: boolean;
-  open: boolean;
-  onToggle: () => void;
-}) {
+}: Readonly<SidebarGroupProps>) {
   const location = useLocation();
   const isAnyActive = links.some((l) => location.pathname.startsWith(l.href));
-
-  // Children should also be toggleable in collapsed mode (icons-only view).
-  const showChildren = open;
+  const showChildren = open && sidebarExpanded;
 
   return (
     <li>
       <button
+        type="button"
         onClick={onToggle}
         title={sidebarExpanded ? undefined : label}
         className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
@@ -144,7 +95,7 @@ function SidebarGroup({
         <ul className="overflow-hidden">
           {links.map((link) => (
             <li key={link.href}>
-              <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
+              <SidebarLink {...link} isCollapsed={!sidebarExpanded} indent />
             </li>
           ))}
         </ul>
@@ -156,8 +107,6 @@ function SidebarGroup({
 // Sidebar
 
 export function Sidebar() {
-  // `isCollapsed` = the permanent/default state toggled by the button.
-  // `isHovered`   = transient hover-expand while permanently collapsed.
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
@@ -165,13 +114,10 @@ export function Sidebar() {
   const { keycloak } = useKeycloak();
   const location = useLocation();
 
-  // The sidebar shows its full content when permanently open OR when hovered.
   const expanded = !isCollapsed || isHovered;
 
   const isAdminRoute = location.pathname.startsWith("/admin");
-  const isContentManagerRoute =
-    location.pathname.startsWith("/content-manager");
-  const isUserRoute = !isAdminRoute && !isContentManagerRoute;
+  const isContentManagerRoute = location.pathname.startsWith("/content-manager");
 
   const handleMouseEnter = () => {
     if (!isCollapsed) return;
@@ -195,76 +141,46 @@ export function Sidebar() {
     setIsCollapsed((c) => !c);
   };
 
-  const getUserRoles = (): string[] => {
-    if (!keycloak.tokenParsed) return [];
-    const realmAccess = keycloak.tokenParsed.realm_access;
-    return realmAccess ? realmAccess.roles : [];
-  };
+  const userRoles = keycloak.tokenParsed?.realm_access?.roles || [];
+  const realmFeatures = (keycloak.tokenParsed as any)?.features || {};
 
-  const getRealmFeatures = (): Record<string, boolean> => {
-    if (!keycloak.tokenParsed) return {};
-    return (keycloak.tokenParsed.features as Record<string, boolean>) ?? {};
-  };
-
-  const userRoles = getUserRoles();
-  const realmFeatures = getRealmFeatures();
-  const computedUserGroups = getUserNavigationGroups(realmFeatures, userRoles);
-  const userGroupsSignature = computedUserGroups
-    .map(
-      (group) =>
-        `${group.label}:${group.links.map((link) => link.href).join(",")}`
-    )
-    .join("|");
-  const contentGroupsWithKeys = contentManagerGroups.map((group) => ({
-    ...group,
-    groupKey: `content:${group.label}`
-  }));
-  const userGroupsWithKeys = computedUserGroups.map((group) => ({
-    ...group,
-    groupKey: `user:${group.label}`
-  }));
-  const activeContentGroupKey = contentGroupsWithKeys.find((group) =>
-    group.links.some((link) => location.pathname.startsWith(link.href))
-  )?.groupKey;
-  const activeUserGroupKey = userGroupsWithKeys.find((group) =>
-    group.links.some((link) => location.pathname.startsWith(link.href))
-  )?.groupKey;
-
-  const toggleGroup = (groupKey: string) => {
-    setOpenGroupKey((prev) => (prev === groupKey ? null : groupKey));
-  };
-
-  // Keep only one expanded group and follow active route on navigation.
-  useEffect(() => {
-    if (isContentManagerRoute) {
-      setOpenGroupKey(activeContentGroupKey ?? null);
-      return;
-    }
-
-    if (isUserRoute) {
-      setOpenGroupKey(activeUserGroupKey ?? null);
-      return;
-    }
-
-    setOpenGroupKey(null);
-  }, [
-    isContentManagerRoute,
-    isUserRoute,
-    location.pathname,
-    activeContentGroupKey,
-    activeUserGroupKey,
-    userGroupsSignature
-  ]);
-
+  // Select the appropriate source links
+  let sourceLinks = userLinks;
   let routePrefix = "";
+
   if (isAdminRoute) {
+    sourceLinks = adminLinks;
     routePrefix = "/admin";
   } else if (isContentManagerRoute) {
+    sourceLinks = contentManagerLinks;
     routePrefix = "/content-manager";
   }
 
-  const reportHref = `${routePrefix}/report`;
-  const helpHref = `${routePrefix}/help`;
+  // Filter and group
+  const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures);
+  const { dashboard, groups, standalone } = groupNavigationLinks(visibleLinks);
+
+  const currentActiveGroupLabel =
+    groups.find((group) =>
+      group.links.some((link) => location.pathname.startsWith(link.href))
+    )?.label ?? null;
+
+  useEffect(() => {
+    if (openGroupKey && groups.some((group) => group.label === openGroupKey)) {
+      return;
+    }
+
+    setOpenGroupKey(currentActiveGroupLabel ?? groups[0]?.label ?? null);
+  }, [currentActiveGroupLabel, groups, openGroupKey]);
+
+  // Adjust footer links with route prefix if they aren't absolute
+  const activeFooterLinks = footerLinks.map((link) => ({
+    ...link,
+    href:
+      link.href.startsWith("/") && routePrefix
+        ? `${routePrefix}${link.href}`
+        : link.href
+  }));
 
   return (
     <aside
@@ -274,7 +190,6 @@ export function Sidebar() {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Toggle button — right-aligned, toggles the permanent state */}
       <div className="h-10 border-b border-sidebar-border shrink-0 flex items-center justify-end px-2">
         <button
           onClick={handleToggle}
@@ -289,90 +204,46 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 py-4 overflow-hidden">
-        {isAdminRoute && (
-          <ul className="space-y-1">
+        <ul className="space-y-1">
+          {dashboard && (
             <li>
-              <SidebarLink {...adminDashboardLink} isCollapsed={!expanded} />
+              <SidebarLink {...dashboard} isCollapsed={!expanded} />
             </li>
-            {adminLinks.map((link) => (
-              <li key={link.href}>
-                <SidebarLink {...link} isCollapsed={!expanded} />
-              </li>
-            ))}
-          </ul>
-        )}
+          )}
 
-        {isContentManagerRoute && (
-          <ul className="space-y-1">
-            <li>
+          {groups.map((group) => (
+            <SidebarGroup
+              key={group.label}
+              {...group}
+              sidebarExpanded={expanded}
+              open={openGroupKey === group.label}
+              onToggle={() =>
+                setOpenGroupKey((prev) =>
+                  prev === group.label ? null : group.label
+                )
+              }
+            />
+          ))}
+
+          {standalone.map((link) => (
+            <li key={link.href}>
+              <SidebarLink {...link} isCollapsed={!expanded} />
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <div className="py-1 border-t border-sidebar-border">
+        <ul className="space-y-1">
+          {activeFooterLinks.map((link) => (
+            <li key={link.href}>
               <SidebarLink
-                {...contentManagerDashboard}
+                {...link}
                 isCollapsed={!expanded}
               />
             </li>
-            {contentGroupsWithKeys.map((group) => (
-              <SidebarGroup
-                key={group.label}
-                {...group}
-                sidebarCollapsed={isCollapsed}
-                sidebarExpanded={expanded}
-                open={openGroupKey === group.groupKey}
-                onToggle={toggleGroup.bind(null, group.groupKey)}
-              />
-            ))}
-            {contentManagerStandaloneLinks.map((link) => (
-              <li key={link.href}>
-                <SidebarLink {...link} isCollapsed={!expanded} />
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {isUserRoute && (
-          <ul className="space-y-1">
-            <li>
-              <SidebarLink {...userDashboardLink} isCollapsed={!expanded} />
-            </li>
-            {userGroupsWithKeys.map((group) => (
-              <SidebarGroup
-                key={group.label}
-                {...group}
-                sidebarCollapsed={isCollapsed}
-                sidebarExpanded={expanded}
-                open={openGroupKey === group.groupKey}
-                onToggle={toggleGroup.bind(null, group.groupKey)}
-              />
-            ))}
-            {userStandaloneLinks.map((link) => (
-              <li key={link.href}>
-                <SidebarLink {...link} isCollapsed={!expanded} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </nav>
-
-      {/* Footer */}
-      <div className="py-1 border-t border-sidebar-border">
-        <ul className="space-y-1">
-          <li>
-            <SidebarLink
-              href={reportHref}
-              label="Report a problem"
-              icon={AlertCircle}
-              isCollapsed={!expanded}
-            />
-          </li>
-          <li>
-            <SidebarLink
-              href={helpHref}
-              label="Help"
-              icon={CircleQuestionMark}
-              isCollapsed={!expanded}
-            />
-          </li>
+          ))}
         </ul>
       </div>
     </aside>
