@@ -76,13 +76,14 @@ export function BulkImportModal({
                 continue;
             }
             try {
-                const res = await fetch(`${API_BASE}/org-manager/users`, {
+                const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`, {
                     method: "POST",
                     headers: {
                         Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
+                        realm,
                         username: u.username,
                         name: u.name,
                         email: u.email,
