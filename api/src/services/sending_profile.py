@@ -15,6 +15,13 @@ from src.models import (
 
 class SendingProfileService:
 
+    def _hydrate_profile_headers(
+        self, profile: Optional[SendingProfile]
+    ) -> Optional[SendingProfile]:
+        if profile is not None:
+            _ = profile.custom_headers
+        return profile
+
     def _test_sending_profile_configuration(self, profile: SendingProfileCreate) -> Tuple[bool, str]:
         """
         Tests the SMTP configuration by attempting to connect and authenticate with the provided settings.
@@ -60,6 +67,9 @@ class SendingProfileService:
         session.commit()
         session.refresh(profile)
 
+        if profile.id is None:
+            raise ValueError("Failed to create sending profile")
+
         for header_data in profile_data.custom_headers:
             header = CustomHeader(
                 name=header_data.name, value=header_data.value, profile_id=profile.id
@@ -69,10 +79,13 @@ class SendingProfileService:
         session.commit()
         session.refresh(profile)
 
+        return self._hydrate_profile_headers(profile)
+
     def get_sending_profile(
         self, profile_id: int, session: Session
     ) -> Optional[SendingProfile]:
-        return session.get(SendingProfile, profile_id)
+        profile = session.get(SendingProfile, profile_id)
+        return self._hydrate_profile_headers(profile)
 
     def get_sending_profiles_by_realm(
         self, realm_name: str, session: Session
@@ -103,6 +116,9 @@ class SendingProfileService:
         for key, value in profile_data.model_dump(exclude={"custom_headers"}).items():
             setattr(profile, key, value)
 
+        if profile.id is None:
+            raise ValueError("Invalid sending profile id")
+
         profile.custom_headers = [
             CustomHeader(name=h.name, value=h.value, profile_id=profile.id)
             for h in profile_data.custom_headers
@@ -112,4 +128,4 @@ class SendingProfileService:
         session.commit()
         session.refresh(profile)
 
-        return profile
+        return self._hydrate_profile_headers(profile)

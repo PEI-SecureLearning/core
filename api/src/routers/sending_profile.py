@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
-from fastapi.responses import RedirectResponse, Response
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 
 from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import CurrentRealm, SessionDep
-from src.models import SendingProfile, SendingProfileCreate
+from src.models import SendingProfileCreate, SendingProfileDisplayInfo, SendingProfileRead
 from src.services.sending_profile import SendingProfileService
 
 
@@ -21,19 +21,18 @@ def test_sending_profile_configuration(
 
 
 @router.post(
-    "/sending-profiles", description="Create a new sending profile", status_code=201, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
+    "/sending-profiles", description="Create a new sending profile", status_code=201, response_model=SendingProfileRead, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
 )
 def create_sending_profile(
     profile_data: SendingProfileCreate,
     current_realm: CurrentRealm,
     session: SessionDep,
 ):
-    service.create_sending_profile(profile_data, current_realm, session)
-    return {"message": "Sending profile created successfully"}
+    return service.create_sending_profile(profile_data, current_realm, session)
 
 
 @router.get(
-    "/sending-profiles", description="Fetch all sending profiles", status_code=200, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))]
+    "/sending-profiles", description="Fetch all sending profiles", status_code=200, response_model=list[SendingProfileDisplayInfo], dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))]
 )
 def get_sending_profiles(
     current_realm: CurrentRealm,
@@ -55,7 +54,7 @@ def delete_sending_profile(
 
 
 @router.put(
-    "/sending-profiles/{id}", description="Update a sending profile", status_code=200, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
+    "/sending-profiles/{id}", description="Update a sending profile", status_code=200, response_model=SendingProfileRead, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
 )
 def update_sending_profile(
     id: int,
@@ -64,12 +63,12 @@ def update_sending_profile(
 ):
     updated_profile = service.update_sending_profile(id, profile_data, session)
     if not updated_profile:
-        return {"message": "Sending profile not found"}
-    return {"message": "Sending profile updated successfully"}
+        raise HTTPException(status_code=404, detail="Sending profile not found")
+    return updated_profile
 
 
 @router.get(
-    "/sending-profiles/{id}", description="Fetch sending profile by ID", status_code=200, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))]
+    "/sending-profiles/{id}", description="Fetch sending profile by ID", status_code=200, response_model=SendingProfileRead, dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))]
 )
 def get_sending_profile_by_id(
     id: int,
@@ -77,5 +76,5 @@ def get_sending_profile_by_id(
 ):
     profile = service.get_sending_profile(id, session)
     if not profile:
-        return {"message": "Sending profile not found"}
+        raise HTTPException(status_code=404, detail="Sending profile not found")
     return profile

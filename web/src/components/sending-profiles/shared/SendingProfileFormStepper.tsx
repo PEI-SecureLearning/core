@@ -13,7 +13,6 @@ import { toast } from "sonner";
 import ProfileBasicInfo from "@/components/sending-profiles/new/ProfileBasicInfo";
 import ProfileSmtpConfig from "@/components/sending-profiles/new/ProfileSmtpConfig";
 import CustomHeadersSection from "../new/CustomHeadersSection";
-import ProfilePreview from "@/components/sending-profiles/new/ProfilePreview";
 import SendingProfileStepSection from "@/components/sending-profiles/shared/SendingProfileStepSection";
 import SendingProfileSummary from "@/components/sending-profiles/shared/SendingProfileSummary";
 import Stepper, { Step } from "@/components/ui/Stepper";
@@ -143,32 +142,7 @@ export default function SendingProfileFormStepper({
     );
   };
 
-  const isSuccessStatus = (
-    value: string | null | undefined,
-    isError: boolean
-  ): boolean => {
-    if (!value || isError) return false;
-    const lower = value.toLowerCase();
-    return lower.includes("success") || lower.includes("valid");
-  };
-
   const testFailed = testStatus && isErrorStatus(testStatus);
-  const testSuccessful =
-    testStatus && isSuccessStatus(testStatus, testFailed || false);
-
-  let testResultColor = "text-amber-600";
-  if (testSuccessful) {
-    testResultColor = "text-green-600";
-  } else if (testFailed) {
-    testResultColor = "text-red-600";
-  }
-
-  let testResultText = "Not tested yet";
-  if (isTesting) {
-    testResultText = "Testing...";
-  } else if (testStatus) {
-    testResultText = testStatus;
-  }
 
   const steps = [
     {
@@ -245,52 +219,41 @@ export default function SendingProfileFormStepper({
     {
       id: "final-preview",
       content: (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 h-full">
-          <SendingProfileStepSection
-            stepNumber={4}
-            title="Final Preview + Summary"
-            description={
-              <>
-                Review the profile details, then click Complete to{" "}
-                {mode === "create" ? "create" : "save"} it.
-              </>
-            }
-          >
-            {status && <StatusMessage status={status} />}
 
-            {testFailed && (
-              <div className="border border-red-200 bg-red-50 rounded-lg p-4 flex gap-3">
-                <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-red-900">
-                    SMTP Test Failed
-                  </p>
-                  <p className="text-sm text-red-700">{testStatus}</p>
-                </div>
+        <SendingProfileStepSection
+          stepNumber={4}
+          title="Final Summary"
+          description={
+            <>
+              Review the profile details, then click Complete to{" "}
+              {mode === "create" ? "create" : "save"} it.
+            </>
+          }
+        >
+          {status && <StatusMessage status={status} />}
+
+          {testFailed && (
+            <div className="border border-red-200 bg-red-50 rounded-lg p-4 flex gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-red-900">
+                  SMTP Test Failed
+                </p>
+                <p className="text-sm text-red-700">{testStatus}</p>
               </div>
-            )}
+            </div>
+          )}
 
-            <SendingProfileSummary
-              name={name}
-              fromEmail={fromEmail}
-              smtpHost={smtpHost}
-              smtpPort={smtpPort}
-              customHeadersCount={customHeaders.length}
-              testResultText={testResultText}
-              testResultColor={testResultColor}
-            />
-          </SendingProfileStepSection>
-
-          <div className="min-h-[420px] h-full">
-            <ProfilePreview
-              name={name}
-              fromEmail={fromEmail}
-              smtpHost={smtpHost}
-              smtpPort={smtpPort}
-              headerCount={customHeaders.length}
-            />
-          </div>
-        </div>
+          <SendingProfileSummary
+            name={name}
+            fname={fromFname}
+            lname={fromLname}
+            fromEmail={fromEmail}
+            smtpHost={smtpHost}
+            smtpPort={smtpPort}
+            customHeaders={customHeaders}
+          />
+        </SendingProfileStepSection>
       )
     }
   ];

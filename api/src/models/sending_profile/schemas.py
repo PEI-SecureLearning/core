@@ -27,3 +27,23 @@ class SendingProfileDisplayInfo(SQLModel):
     from_email: str
     smtp_host: Final[str]
     smtp_port: Final[int]
+
+
+class CustomHeaderRead(SQLModel):
+    id: int
+    name: str
+    value: str
+
+
+class SendingProfileRead(SQLModel):
+    id: int
+    name: str
+    smtp_host: str
+    smtp_port: int
+    username: str
+    password: str
+    from_fname: str
+    from_lname: str
+    from_email: str
+    realm_name: str | None = None
+    custom_headers: list[CustomHeaderRead] = []
