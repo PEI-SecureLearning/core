@@ -22,12 +22,21 @@ export async function testSendingProfileConfiguration(
     body: JSON.stringify(data),
   });
 
-  const message = await res.text();
-
   if (!res.ok) {
+    const contentType = res.headers.get("content-type") ?? "";
+
+    if (contentType.includes("application/json")) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(
+        errorData.detail || "Failed to test profile configuration"
+      );
+    }
+
+    const message = await res.text().catch(() => "");
     throw new Error(message || "Failed to test profile configuration");
   }
 
+  const message = await res.text();
   return { success: true, message };
 }
 

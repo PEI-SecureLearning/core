@@ -184,7 +184,7 @@ function RouteComponent() {
   const initialGroupIds = groupId ? [groupId] : [];
 
   return (
-    <div className="size-full p-6 bg-background ">
+    <div className="size-full bg-background ">
       <CampaignProvider initialGroupIds={initialGroupIds}>
         <CampaignStepper />
       </CampaignProvider>

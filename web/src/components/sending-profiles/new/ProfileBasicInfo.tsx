@@ -4,6 +4,7 @@ import { Mail } from "lucide-react";
 import FormTooltip from "@/components/shared/FormTooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 
 interface Props {
   name: string;
@@ -29,6 +30,8 @@ function ProfileBasicInfo({
   setFromEmail
 }: Readonly<Props>) {
   const isEmailInvalid = !!fromEmail && !EMAIL_PATTERN.test(fromEmail.trim());
+  const isNameValid = name.trim().length > 0;
+
 
   return (
     <div className="bg-surface border border-border rounded-lg py-6 px-6">
@@ -38,7 +41,7 @@ function ProfileBasicInfo({
             htmlFor="profile-name"
             className="block text-sm font-medium text-foreground/90 mb-1"
           >
-            Profile Name *
+            Profile Name <RequiredAsterisk isValid={isNameValid} />
           </Label>
           <Input
             id="profile-name"
@@ -55,7 +58,7 @@ function ProfileBasicInfo({
             htmlFor="sender-email"
             className="flex items-center gap-1.5 text-sm font-medium text-foreground/90 mb-1"
           >
-            Sender Email Address *
+            Sender Email Address <RequiredAsterisk isValid={!isEmailInvalid} />
             <FormTooltip
               side="right"
               content={[

@@ -70,8 +70,19 @@ export function CreateTenantPage() {
         setIsLoading(true)
         try {
             const normalizedDomain = domain.trim().toLowerCase()
+            const normalizedAdminEmail = adminEmail.trim().toLowerCase()
+            const isAdminEmailFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedAdminEmail)
+            const adminEmailDomain = isAdminEmailFormatValid ? normalizedAdminEmail.split('@')[1] : ''
             if (!normalizedDomain) {
                 toast.error('Domain is required.')
+                return
+            }
+            if (!normalizedAdminEmail || !isAdminEmailFormatValid) {
+                toast.error('Please provide a valid admin email.')
+                return
+            }
+            if (adminEmailDomain !== normalizedDomain) {
+                toast.error(`Admin email domain must match organization domain (${normalizedDomain}).`)
                 return
             }
 
@@ -96,7 +107,7 @@ export function CreateTenantPage() {
                 {
                     name: realmName,
                     domain: normalizedDomain,
-                    adminEmail,
+                    adminEmail: normalizedAdminEmail,
                     features
                 }
             )

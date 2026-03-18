@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, User, Mail, AtSign, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useKeycloak } from "@react-keycloak/web";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 import type { Group, CreateUserField } from "./types";
 
 interface NewUserModalProps {
@@ -13,7 +14,7 @@ interface NewUserModalProps {
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
-export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserModalProps) {
+export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly<NewUserModalProps>) {
     const { keycloak } = useKeycloak();
     const [newUserName, setNewUserName] = useState("");
     const [newUserEmail, setNewUserEmail] = useState("");
@@ -154,7 +155,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                 <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                     <div>
                         <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">
-                            Full Name <span className="text-rose-400">*</span>
+                            Full Name <RequiredAsterisk isValid={!!newUserName.trim()} />
                         </label>
                         <div className="relative">
                             <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
@@ -183,7 +184,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
 
                     <div>
                         <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">
-                            Email <span className="text-rose-400">*</span>
+                            Email <RequiredAsterisk isValid={!!newUserEmail.trim()} />
                         </label>
                         <div className="relative">
                             <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
@@ -211,10 +212,13 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
 
                     <div>
-                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">Username</label>
+                        <label htmlFor="new-user-username" className="block text-[12px] font-medium text-muted-foreground mb-1.5">
+                            Username <RequiredAsterisk isValid={!!newUserUsername.trim()} />
+                        </label>
                         <div className="relative">
                             <AtSign size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
                             <input
+                                id="new-user-username"
                                 ref={usernameInputRef}
                                 type="text"
                                 value={newUserUsername}
@@ -240,7 +244,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
 
                     <div>
                         <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">
-                            Role <span className="text-rose-400">*</span>
+                            Role <RequiredAsterisk isValid={!!newUserRole} />
                         </label>
                         <div className="space-y-2">
                             {roleOptions.map((option) => (
@@ -270,8 +274,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                     </div>
 
                     <div>
-                        <label className="block text-[12px] font-medium text-muted-foreground mb-1.5">Group (Optional)</label>
+                        <label htmlFor="new-user-group" className="block text-[12px] font-medium text-muted-foreground mb-1.5">Group (Optional)</label>
                         <select
+                            id="new-user-group"
                             ref={groupSelectRef}
                             value={newUserGroupId}
                             onChange={(e) => {

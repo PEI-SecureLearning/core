@@ -1,6 +1,5 @@
 import { memo, useState } from "react";
 import {
-  Lock,
   Loader2,
   CheckCircle2,
   XCircle,
@@ -10,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import FormTooltip from "@/components/shared/FormTooltip";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 
 interface Props {
   readonly host: string;
@@ -88,12 +88,7 @@ function ProfileSmtpConfig({
             htmlFor="smtp-host"
             className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
           >
-            Host{" "}
-            <span
-              className={isHostValid ? "text-muted-foreground" : "text-red-600"}
-            >
-              *
-            </span>
+            Host <RequiredAsterisk isValid={isHostValid} />
             <FormTooltip
               side="right"
               content={["SMTP server host used to send simulation emails."]}
@@ -113,12 +108,7 @@ function ProfileSmtpConfig({
             htmlFor="smtp-port"
             className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
           >
-            Port{" "}
-            <span
-              className={isPortValid ? "text-muted-foreground" : "text-red-600"}
-            >
-              *
-            </span>
+            Port <RequiredAsterisk isValid={isPortValid} />
             <FormTooltip
               side="right"
               content={["SMTP port provided by your mail provider."]}
@@ -140,14 +130,7 @@ function ProfileSmtpConfig({
             htmlFor="smtp-username"
             className="text-sm font-medium text-foreground/90 mb-1 flex items-center gap-1.5"
           >
-            Username{" "}
-            <span
-              className={
-                isUsernameValid ? "text-muted-foreground" : "text-red-600"
-              }
-            >
-              *
-            </span>
+            Username <RequiredAsterisk isValid={isUsernameValid} />
             <FormTooltip
               side="right"
               content={["Username used to authenticate with the SMTP server."]}
@@ -169,13 +152,7 @@ function ProfileSmtpConfig({
           >
             Password
             {isPasswordRequired && (
-              <span
-                className={
-                  isPasswordValid ? "text-muted-foreground" : "text-red-600"
-                }
-              >
-                *
-              </span>
+              <RequiredAsterisk isValid={isPasswordValid} />
             )}
             <FormTooltip
               side="right"

@@ -8,13 +8,7 @@ from src.models import (
     SendingProfileDisplayInfo,
     SendingProfileRead,
 )
-from src.services.sending_profile import (
-    SendingProfileService,
-    SendingProfileError,
-    SendingProfileNotFoundError,
-    SendingProfileValidationError,
-    SendingProfileOperationError,
-)
+from src.services.sending_profile import SendingProfileService
 
 
 router = APIRouter()
@@ -22,12 +16,12 @@ router = APIRouter()
 service = SendingProfileService()
 
 
-def _to_http_exception(error: SendingProfileError) -> HTTPException:
-    if isinstance(error, SendingProfileNotFoundError):
+def _to_http_exception(error: Exception) -> HTTPException:
+    if isinstance(error, LookupError):
         return HTTPException(status_code=404, detail=str(error))
-    if isinstance(error, SendingProfileValidationError):
+    if isinstance(error, ValueError):
         return HTTPException(status_code=400, detail=str(error))
-    if isinstance(error, SendingProfileOperationError):
+    if isinstance(error, RuntimeError):
         return HTTPException(status_code=500, detail=str(error))
     return HTTPException(status_code=500, detail="Unexpected sending profile error")
 
@@ -41,7 +35,7 @@ def test_sending_profile_configuration(profile_data: SendingProfileCreate):
     try:
         message = service.test_sending_profile_configuration(profile_data)
         return Response(content=message, status_code=200)
-    except SendingProfileError as e:
+    except (LookupError, ValueError, RuntimeError) as e:
         raise _to_http_exception(e)
 
 
@@ -59,7 +53,7 @@ def create_sending_profile(
 ):
     try:
         return service.create_sending_profile(profile_data, current_realm, session)
-    except SendingProfileError as e:
+    except (LookupError, ValueError, RuntimeError) as e:
         raise _to_http_exception(e)
 
 
@@ -77,7 +71,7 @@ def get_sending_profiles(
     try:
         profiles = service.get_sending_profiles_by_realm(current_realm, session)
         return profiles
-    except SendingProfileError as e:
+    except (LookupError, ValueError, RuntimeError) as e:
         raise _to_http_exception(e)
 
 
@@ -94,7 +88,7 @@ def delete_sending_profile(
     try:
         service.delete_sending_profile(id, session)
         return {"message": "Sending profile deleted successfully"}
-    except SendingProfileError as e:
+    except (LookupError, ValueError, RuntimeError) as e:
         raise _to_http_exception(e)
 
 
@@ -113,7 +107,7 @@ def update_sending_profile(
     try:
         updated_profile = service.update_sending_profile(id, profile_data, session)
         return updated_profile
-    except SendingProfileError as e:
+    except (LookupError, ValueError, RuntimeError) as e:
         raise _to_http_exception(e)
 
 
@@ -131,6 +125,6 @@ def get_sending_profile_by_id(
 ):
     try:
         profile = service.get_sending_profile(id, session)
-    except SendingProfileError as e:
+    except (LookupError, ValueError, RuntimeError) as e:
         raise _to_http_exception(e)
     return profile

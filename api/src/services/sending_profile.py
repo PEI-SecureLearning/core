@@ -1,5 +1,3 @@
-from typing import Optional
-
 import ssl
 import smtplib
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,22 +9,6 @@ from src.models import (
     SendingProfileCreate,
     SendingProfileDisplayInfo,
 )
-
-
-class SendingProfileError(Exception):
-    """Base exception for sending profile domain/service errors."""
-
-
-class SendingProfileNotFoundError(SendingProfileError):
-    """Raised when a requested sending profile does not exist."""
-
-
-class SendingProfileValidationError(SendingProfileError):
-    """Raised when provided data/configuration is invalid."""
-
-
-class SendingProfileOperationError(SendingProfileError):
-    """Raised when an operation fails due to infrastructure/runtime issues."""
 
 
 PROFILE_NOT_FOUND_MESSAGE = "Sending profile not found"
@@ -43,8 +25,8 @@ class SendingProfileService:
         Tests the SMTP configuration by attempting to connect and authenticate with the provided settings.
 
         Returns a success message when valid.
-        Raises SendingProfileValidationError for user-fixable SMTP issues.
-        Raises SendingProfileOperationError for unexpected runtime failures.
+        Raises ValueError for user-fixable SMTP issues.
+        Raises RuntimeError for unexpected runtime failures.
         """
 
         try:
@@ -68,32 +50,36 @@ class SendingProfileService:
             return "SMTP configuration is valid"
 
         except smtplib.SMTPAuthenticationError:
-            raise SendingProfileValidationError("Invalid credentials")
+            raise ValueError("Invalid credentials")
         except smtplib.SMTPConnectError:
-            raise SendingProfileValidationError("Could not connect to the SMTP server")
+            raise ValueError("Could not connect to the SMTP server")
         except smtplib.SMTPServerDisconnected:
-            raise SendingProfileValidationError("Server disconnected unexpectedly")
+            raise ValueError("Server disconnected unexpectedly")
         except TimeoutError:
-            raise SendingProfileValidationError("Connection timed out")
+            raise ValueError("Connection timed out")
         except Exception as e:
-            raise SendingProfileOperationError(str(e))
+            raise RuntimeError(str(e))
 
     def create_sending_profile(
         self, profile_data: SendingProfileCreate, current_realm: str, session: Session
     ):
         try:
-            profile = SendingProfile(**profile_data.model_dump(exclude={"custom_headers"}))
+            profile = SendingProfile(
+                **profile_data.model_dump(exclude={"custom_headers"})
+            )
             profile.realm_name = current_realm
             session.add(profile)
             session.commit()
             session.refresh(profile)
 
             if profile.id is None:
-                raise SendingProfileOperationError("Failed to create sending profile")
+                raise RuntimeError("Failed to create sending profile")
 
             for header_data in profile_data.custom_headers:
                 header = CustomHeader(
-                    name=header_data.name, value=header_data.value, profile_id=profile.id
+                    name=header_data.name,
+                    value=header_data.value,
+                    profile_id=profile.id,
                 )
                 session.add(header)
 
@@ -101,19 +87,17 @@ class SendingProfileService:
             session.refresh(profile)
 
             return self._hydrate_profile_headers(profile)
-        except SendingProfileError:
+        except (ValueError, LookupError, RuntimeError):
             session.rollback()
             raise
         except SQLAlchemyError as e:
             session.rollback()
-            raise SendingProfileOperationError("Failed to create sending profile") from e
+            raise RuntimeError("Failed to create sending profile") from e
 
-    def get_sending_profile(
-        self, profile_id: int, session: Session
-    ) -> SendingProfile:
+    def get_sending_profile(self, profile_id: int, session: Session) -> SendingProfile:
         profile = session.get(SendingProfile, profile_id)
         if not profile:
-            raise SendingProfileNotFoundError(PROFILE_NOT_FOUND_MESSAGE)
+            raise LookupError(PROFILE_NOT_FOUND_MESSAGE)
         return self._hydrate_profile_headers(profile)
 
     def get_sending_profiles_by_realm(
@@ -124,22 +108,23 @@ class SendingProfileService:
                 select(SendingProfile).where(SendingProfile.realm_name == realm_name)
             ).all()
             return [
-                SendingProfileDisplayInfo.model_validate(profile) for profile in profiles
+                SendingProfileDisplayInfo.model_validate(profile)
+                for profile in profiles
             ]
         except SQLAlchemyError as e:
-            raise SendingProfileOperationError("Failed to fetch sending profiles") from e
+            raise RuntimeError("Failed to fetch sending profiles") from e
 
     def delete_sending_profile(self, profile_id: int, session: Session) -> None:
         profile = session.get(SendingProfile, profile_id)
         if not profile:
-            raise SendingProfileNotFoundError(PROFILE_NOT_FOUND_MESSAGE)
+            raise LookupError(PROFILE_NOT_FOUND_MESSAGE)
 
         try:
             session.delete(profile)
             session.commit()
         except SQLAlchemyError as e:
             session.rollback()
-            raise SendingProfileOperationError("Failed to delete sending profile") from e
+            raise RuntimeError("Failed to delete sending profile") from e
 
     def update_sending_profile(
         self,
@@ -149,14 +134,16 @@ class SendingProfileService:
     ) -> SendingProfile:
         profile = session.get(SendingProfile, profile_id)
         if not profile:
-            raise SendingProfileNotFoundError(PROFILE_NOT_FOUND_MESSAGE)
+            raise LookupError(PROFILE_NOT_FOUND_MESSAGE)
 
         try:
-            for key, value in profile_data.model_dump(exclude={"custom_headers"}).items():
+            for key, value in profile_data.model_dump(
+                exclude={"custom_headers"}
+            ).items():
                 setattr(profile, key, value)
 
             if profile.id is None:
-                raise SendingProfileOperationError("Invalid sending profile id")
+                raise RuntimeError("Invalid sending profile id")
 
             profile.custom_headers = [
                 CustomHeader(name=h.name, value=h.value, profile_id=profile.id)
@@ -168,9 +155,9 @@ class SendingProfileService:
             session.refresh(profile)
 
             return self._hydrate_profile_headers(profile)
-        except SendingProfileError:
+        except (ValueError, LookupError, RuntimeError):
             session.rollback()
             raise
         except SQLAlchemyError as e:
             session.rollback()
-            raise SendingProfileOperationError("Failed to update sending profile") from e
+            raise RuntimeError("Failed to update sending profile") from e

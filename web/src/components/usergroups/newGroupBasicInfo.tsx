@@ -1,4 +1,5 @@
 import { memo } from "react";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 
 interface BasicInfoSectionProps {
     groupName: string;
@@ -13,14 +14,17 @@ function BasicInfo({
     description,
     onGroupNameChange,
     onDescriptionChange,
-}: BasicInfoSectionProps) {
+}: Readonly<BasicInfoSectionProps>) {
+
+    const isGroupNameValid = groupName.trim().length > 0;
+
     return (
         <div className="bg-surface border border-border rounded-lg h-full w-full p-6">
             <div className="w-full items-center justify-center flex flex-col">
                 {/* Group Name Input */}
                 <div className="w-full">
                     <label htmlFor="groupName" className="block text-sm font-semibold text-foreground/90 mb-2 tracking-wide">
-                        Group Name <span className="text-primary/90">*</span>
+                        Group Name <RequiredAsterisk isValid={isGroupNameValid} />
                     </label>
                     <input
                         type="text"

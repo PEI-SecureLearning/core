@@ -1,7 +1,9 @@
 import { useCampaign } from "./CampaignContext";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 
 function CampaignForms() {
   const { data, updateData } = useCampaign();
+  const isNameValid = data.name.trim().length > 0;
 
   return (
     <div className="size-full space-y-6 p-2">
@@ -11,7 +13,7 @@ function CampaignForms() {
           htmlFor="campaign-name"
           className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5"
         >
-          Campaign Name <span className="text-destructive">*</span>
+          Campaign Name <RequiredAsterisk isValid={isNameValid} />
         </label>
         <input
           id="campaign-name"
