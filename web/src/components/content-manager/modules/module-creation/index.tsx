@@ -8,8 +8,9 @@ import { DetailsSidebar } from './sidebar/DetailsSidebar'
 import { SectionsEditor } from './SectionsEditor'
 import { ModulePreview } from './preview/ModulePreview'
 import { StorageModal } from './StorageModal'
+import { ValidationModal } from './ValidationModal'
 import { uid } from './constants'
-import { buildPayload } from './utils'
+import { calcCompletion, getMissingFields, buildPayload } from './utils'
 import { ConfirmProvider } from '@/components/ui/confirm-modal'
 import { SaveStatus, type SaveStatusState } from './SaveStatus'
 import { LeaveConfirm } from './LeaveConfirm'
@@ -51,6 +52,8 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
     const [storageModalOpen, setStorageModalOpen] = useState(false)
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
     const [isDirty, setIsDirty] = useState(false)
+    const [showValidation, setShowValidation] = useState(false)
+    const [publishAttempted, setPublishAttempted] = useState(false)
 
     const patch: (patch: Partial<ModuleFormData>, silent?: boolean) => void = useCallback((p, silent = false) => {
         setData(d => ({ ...d, ...p }))
@@ -105,6 +108,14 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
     }, [data, moduleId, getToken])
 
     const handleSaveAndLeave = useCallback(async () => {
+        const pct = calcCompletion(data)
+        if (pct < 100) {
+            setPublishAttempted(true)
+            setShowValidation(true)
+            setLeaveDialogOpen(false)
+            return
+        }
+
         setActionStatus('loading')
         try {
             await saveInternal()
@@ -116,7 +127,7 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
         } finally {
             setActionStatus('idle')
         }
-    }, [saveInternal, onBack, moduleId])
+    }, [saveInternal, onBack, moduleId, data])
 
     const handleDiscardAndLeave = useCallback(() => {
         setLeaveDialogOpen(false)
@@ -125,6 +136,13 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
 
     /** Save the module (create or update). */
     const handleSave = useCallback(async () => {
+        const pct = calcCompletion(data)
+        if (pct < 100) {
+            setPublishAttempted(true)
+            setShowValidation(true)
+            return
+        }
+
         setActionStatus('loading')
         try {
             await saveInternal()
@@ -134,7 +152,7 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
         } finally {
             setActionStatus('idle')
         }
-    }, [moduleId, saveInternal])
+    }, [moduleId, saveInternal, data])
 
     const togglePreview = useCallback(() => setPreviewOpen(prev => !prev), [])
 
@@ -249,10 +267,16 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
                 <DetailsSidebar
                     data={data}
                     onChange={patch}
+                    publishAttempted={publishAttempted}
                     getToken={getToken}
                 />
                 <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <SectionsEditor data={data} onChange={patch} getToken={getToken} />
+                    <SectionsEditor
+                        data={data}
+                        onChange={patch}
+                        publishAttempted={publishAttempted}
+                        getToken={getToken}
+                    />
                 </div>
             </div>
 
@@ -260,6 +284,12 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
             {previewOpen && (
                 <ModulePreview data={data} onClose={togglePreview} />
             )}
+
+            <ValidationModal
+                isOpen={showValidation}
+                onClose={() => setShowValidation(false)}
+                missingFields={getMissingFields(data)}
+            />
 
             <StorageModal
                 isOpen={storageModalOpen}
