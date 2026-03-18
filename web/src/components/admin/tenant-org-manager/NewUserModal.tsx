@@ -74,7 +74,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
 
         try {
             const res = await fetch(
-                `${API_BASE}/realms/users`,
+                `${API_BASE}/org-manager/users`,
                 {
                     method: "POST",
                     headers: {
@@ -82,7 +82,6 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        realm,
                         username: newUserUsername || newUserEmail.split("@")[0],
                         name: newUserName,
                         email: newUserEmail,

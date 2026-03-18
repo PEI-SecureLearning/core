@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
-from src.core.dependencies import SessionDep, OAuth2Scheme
+from src.core.dependencies import CurrentRealm, SessionDep, OAuth2Scheme
 from src.models import OrgUserCreate
 from src.core.security import Roles, Resource, Scope
 from src.services.org_manager import get_org_manager_service
@@ -24,6 +24,28 @@ def list_users(realm: str, token: OAuth2Scheme):
     """List users in the realm using the user's token."""
     validate_realm_access(token, realm)
     return org_manager_service.list_users(realm, token)
+
+
+@router.post(
+    "/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
+)
+def create_user_in_own_realm(
+    user: OrgUserCreate,
+    session: SessionDep,
+    token: OAuth2Scheme,
+    current_realm: CurrentRealm,
+):
+    """Create a user in the org manager's own realm."""
+    return org_manager_service.create_user(
+        session,
+        realm=current_realm,
+        token=token,
+        username=user.username,
+        name=user.name,
+        email=user.email,
+        role=user.role,
+        group_id=user.group_id,
+    )
 
 
 @router.post(
