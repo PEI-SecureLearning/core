@@ -12,11 +12,6 @@ from typing import Annotated, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 
-class ModuleStatus(StrEnum):
-    DRAFT     = "draft"
-    PUBLISHED = "published"
-    ARCHIVED  = "archived"
-
 
 class Difficulty(StrEnum):
     EASY   = "Easy"

@@ -35,9 +35,9 @@ function CourseDetail() {
 
   const overallProgress = course.modules.length
     ? Math.round(
-        course.modules.reduce((sum, m) => sum + m.completion, 0) /
-          course.modules.length
-      )
+      course.modules.reduce((sum, m) => sum + m.completion, 0) /
+      course.modules.length
+    )
     : 0;
 
   const [headerVisible, setHeaderVisible] = useState(true);
@@ -63,11 +63,10 @@ function CourseDetail() {
     >
       {/* Sticky header: breadcrumb + course hero */}
       <div
-        className={`sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border/40 px-6 pt-4 pb-4 space-y-3 transition-all duration-300 ease-in-out ${
-          headerVisible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 -translate-y-full pointer-events-none"
-        }`}
+        className={`sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border/40 px-6 pt-4 pb-4 space-y-3 transition-all duration-300 ease-in-out ${headerVisible
+          ? "opacity-100 translate-y-0"
+          : "opacity-0 -translate-y-full pointer-events-none"
+          }`}
       >
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1 text-sm text-muted-foreground">

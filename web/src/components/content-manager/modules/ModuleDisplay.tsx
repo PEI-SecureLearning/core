@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, LayoutGroup, AnimatePresence } from 'motion/react'
 import { BookOpen, AlertCircle } from 'lucide-react'
 import { useKeycloak } from '@react-keycloak/web'
-import { fetchModules, type Module } from '@/services/modulesApi'
-import type { ModuleSortValue } from './ToolBarModules'
+import { fetchModules, deleteModule, type Module } from '@/services/modulesApi'
 import { useDebounce } from '@/lib/useDebounce'
-import { DIFFICULTY_COLORS } from './module-creation/constants'
 import type { GridCols } from '@/components/courses/UniversalFilters'
-import CourseCard, { type CardItem } from '@/components/courses/CourseCard'
+import { cn } from '@/lib/utils'
+import { ModuleCard } from '@/components/modules/ModuleCard'
+import { toast } from 'sonner'
+import { useNavigate } from '@tanstack/react-router'
+
+export type ModuleSortValue = 'newest' | 'oldest' | 'title_asc' | 'title_desc'
 
 const API_BASE = import.meta.env.VITE_API_URL as string
 
@@ -17,34 +20,20 @@ const gridClass: Record<GridCols, string> = {
     3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
 }
 
-// ── Adapt Module → CardItem ────────────────────────────────────────────────────
-
-function moduleToCardItem(mod: Module, coverImageUrl?: string): CardItem {
-    const sectionCount = mod.sections?.length ?? 0
-    const diffColor = DIFFICULTY_COLORS[mod.difficulty ?? 'Easy'] ?? DIFFICULTY_COLORS['Easy']
-
-    return {
-        id: mod.id,
-        title: mod.title || 'Untitled',
-        description: mod.description || 'No description',
-        category: mod.category,
-        duration: mod.estimated_time ? `${mod.estimated_time} min` : undefined,
-        unitCount: sectionCount,
-        unitLabel: sectionCount === 1 ? 'Section' : 'Sections',
-        coverImageUrl,
-        difficultyBadge: mod.difficulty ?? undefined,
-        difficultyBadgeClass: diffColor,
-        statusBadge: mod.status !== 'published' ? mod.status : undefined,
-    }
-}
-
 // ── Skeleton card ──────────────────────────────────────────────────────────────
 
-function ModuleCardSkeleton() {
+function ModuleCardSkeleton({ layout = 'grid' }: { layout?: 'grid' | 'list' }) {
+    const isList = layout === 'list'
     return (
-        <div className="flex flex-col bg-surface rounded-2xl overflow-hidden border border-border animate-pulse">
-            <div className="h-48 w-full bg-surface-subtle" />
-            <div className="p-5 flex flex-col gap-3">
+        <div className={cn(
+            "flex bg-surface rounded-2xl overflow-hidden border border-border animate-pulse",
+            isList ? "flex-row h-44" : "flex-col"
+        )}>
+            <div className={cn(
+                "bg-surface-subtle",
+                isList ? "w-72 h-full" : "h-48 w-full"
+            )} />
+            <div className="p-5 flex flex-col flex-1 gap-3">
                 <div className="h-4 bg-surface-subtle rounded w-3/4" />
                 <div className="h-3 bg-surface-subtle rounded w-full" />
                 <div className="h-3 bg-surface-subtle rounded w-2/3" />
@@ -68,6 +57,7 @@ interface ModuleDisplayProps {
 
 export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResultCountChange }: ModuleDisplayProps) {
     const { keycloak } = useKeycloak()
+    const navigate = useNavigate()
     const [modules, setModules] = useState<Module[]>([])
     const [coverUrls, setCoverUrls] = useState<Record<string, string>>({})
     const [loading, setLoading] = useState(true)
@@ -138,11 +128,21 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
         return () => { cancelled = true }
     }, [modules, keycloak.token])
 
+    const handleDelete = useCallback(async (id: string) => {
+        try {
+            await deleteModule(id, keycloak.token)
+            setModules(prev => prev.filter(m => m.id !== id))
+            toast.success('Module deleted successfully')
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Failed to delete module')
+        }
+    }, [keycloak.token])
+
     if (loading) {
         return (
             <motion.div animate={{ opacity: 1 }} className="w-full h-full">
-                <div className={`grid ${gridClass[cols]} gap-8`}>
-                    {Array.from({ length: 6 }, (_, i) => <ModuleCardSkeleton key={`sk-${i}`} />)}
+                <div className={cn("grid gap-8", gridClass[cols], cols === 1 && "gap-4")}>
+                    {Array.from({ length: 6 }, (_, i) => <ModuleCardSkeleton key={`sk-${i}`} layout={cols === 1 ? 'list' : 'grid'} />)}
                 </div>
             </motion.div>
         )
@@ -151,12 +151,12 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
-                <AlertCircle className="w-8 h-8 text-red-400" />
-                <p className="text-sm font-medium text-red-400">{error}</p>
+                <AlertCircle className="w-8 h-8 text-red-100" />
+                <p className="text-sm font-medium text-red-100">{error}</p>
                 <button
                     type="button"
                     onClick={() => globalThis.location.reload()}
-                    className="text-xs text-[#A78BFA] hover:text-[#7C3AED] transition-colors"
+                    className="text-xs text-accent-secondary hover:text-primary transition-colors"
                 >
                     Try again
                 </button>
@@ -186,7 +186,7 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
 
     return (
         <LayoutGroup>
-            <motion.div layout className={`grid ${gridClass[cols]} gap-8`}>
+            <motion.div layout className={cn("grid gap-8", gridClass[cols], cols === 1 && "gap-4")}>
                 <AnimatePresence mode="popLayout">
                     {modules.map(mod => (
                         <motion.div
@@ -195,25 +195,24 @@ export function ModuleDisplay({ search = '', sort = 'newest', cols = 3, onResult
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            whileHover={{
-                                y: -4,
-                                scale: 1.02,
-                                boxShadow: '0 12px 28px -6px rgba(147, 51, 234, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.06)',
-                            }}
                             transition={{
                                 layout: { type: 'spring', stiffness: 300, damping: 30 },
                                 opacity: { duration: 0.2 },
-                                scale: { duration: 0.2 },
-                                y: { type: 'spring', stiffness: 400, damping: 25 },
-                                boxShadow: { duration: 0.25 },
+                                scale: { duration: 0.15 },
                             }}
-                            className="rounded-xl cursor-pointer"
                         >
-                            <CourseCard
-                                item={moduleToCardItem(mod, mod.cover_image ? coverUrls[mod.cover_image] : undefined)}
-                                cols={cols}
-                                basePath="/content-manager/modules"
-                                paramKey="moduleId"
+                            <ModuleCard
+                                title={mod.title}
+                                category={mod.category}
+                                description={mod.description}
+                                coverImage={mod.cover_image ? coverUrls[mod.cover_image] : undefined}
+                                estimatedTime={mod.estimated_time ? `${mod.estimated_time} min` : undefined}
+                                difficulty={mod.difficulty}
+                                onClick={() => navigate({ to: '/content-manager/modules/$moduleId', params: { moduleId: mod.id } } as any)}
+                                onEdit={() => navigate({ to: '/content-manager/modules/$moduleId', params: { moduleId: mod.id } } as any)}
+                                onPreview={() => navigate({ to: '/content-manager/modules/$moduleId', params: { moduleId: mod.id }, search: { preview: true } } as any)}
+                                onDelete={() => handleDelete(mod.id)}
+                                layout={cols === 1 ? 'list' : 'grid'}
                             />
                         </motion.div>
                     ))}
