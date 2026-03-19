@@ -39,22 +39,22 @@ export function Toolbar({
     return (
         <div className="flex flex-col md:flex-row gap-4 mb-4 items-center justify-between" >
             <div className="relative w-full md:w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78BFA]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-accent-secondary" />
                 <input
                     type="text"
                     placeholder={searchPlaceholder}
                     value={searchValue}
                     onChange={(e) => onSearchChange?.(e.target.value)}
-                    className="w-full bg-surface border border-border rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground"
+                    className="w-full bg-surface border border-border rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                 />
             </div>
 
             <div className="relative flex flex-row space-x-4">
-                <SortAsc className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A78BFA] pointer-events-none" />
+                <SortAsc className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-accent-secondary pointer-events-none" />
                 <select
                     value={sortValue}
                     onChange={(e) => onSortChange?.(e.target.value)}
-                    className="bg-surface border border-border rounded-lg py-2 pl-10 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 cursor-pointer text-muted-foreground"
+                    className="bg-surface border border-border rounded-lg py-2 pl-10 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer text-muted-foreground"
                 >
                     <option value="title">Sort by Name</option>
                     <option value="id">Newest First</option>
@@ -62,8 +62,7 @@ export function Toolbar({
                 <button
                     type="button"
                     onClick={handleAddClick}
-                    className="flex items-center gap-1.5 text-white border-0 rounded-lg py-2 px-4 text-sm font-semibold transition-all shadow-md shadow-[#7C3AED]/25 hover:shadow-[#7C3AED]/40 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40"
-                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+                    className="flex items-center gap-1.5 text-primary-foreground bg-primary border-0 rounded-lg py-2 px-4 text-sm font-semibold transition-all shadow-md shadow-primary/25 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                     <span className="inline-flex items-center gap-1.5">
                         <Plus className="w-4 h-4" />

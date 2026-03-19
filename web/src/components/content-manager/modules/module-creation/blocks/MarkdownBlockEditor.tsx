@@ -87,12 +87,11 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
     return (
         <div
             aria-label="Text block"
-            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${
-                showWarning ? 'border-amber-400' : 'border-border'
-            }`}
+            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-amber-400' : 'border-border'
+                }`}
         >
             <div className="flex items-center gap-1 px-3 py-1.5 bg-surface-subtle border-b border-border">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-blue-50 text-blue-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-muted-foreground/10 text-muted-foreground">
                     Text
                 </span>
                 {mode === 'edit' && (
@@ -101,37 +100,42 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                         {MD_INLINE_ACTIONS.map(({ label, insert, title, labelClass }) => (
                             <button key={label} type="button" title={title}
                                 onClick={() => onUpdate(block.content + insert)}
-                                className="px-2 py-0.5 text-[11px] font-medium rounded bg-surface hover:bg-blue-50 hover:text-blue-700 border border-border transition-colors text-foreground">
+                                className="px-2 py-0.5 text-[11px] font-medium rounded bg-surface hover:bg-surface-subtle border border-border transition-colors text-foreground">
                                 <span className={labelClass}>{label}</span>
                             </button>
                         ))}
-                        <MdDropdown label="List"   options={MD_LIST_OPTIONS}   onInsert={s => onUpdate(block.content + s)} />
+                        <MdDropdown label="List" options={MD_LIST_OPTIONS} onInsert={s => onUpdate(block.content + s)} />
                         <MdDropdown label="Insert" options={MD_INSERT_OPTIONS} onInsert={s => onUpdate(block.content + s)} />
                     </div>
                 )}
-                <div className="ml-auto flex items-center gap-1">
+                <div className="ml-auto flex items-center gap-1.5">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                         {mode === 'edit' && (
-                            <span className="text-[10px] text-muted-foreground">{block.content.length} chars</span>
+                            <span className="text-[10px] text-muted-foreground/60">{block.content.length} chars</span>
                         )}
                     </div>
-                    <div className="flex rounded-md border border-border overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
+                    <div className="flex rounded-full border border-border/60 p-1 bg-surface shadow-sm gap-0.5 ml-2">
                         <button type="button" onClick={() => setMode('edit')}
-                            className={`flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                                mode === 'edit' ? 'bg-blue-500 text-white' : 'bg-surface text-muted-foreground hover:text-blue-600'
-                            }`}>
-                            <Edit3 className="w-2.5 h-2.5" /> Edit
+                            title="Edit"
+                            className={`flex items-center justify-center w-7 h-7 rounded-full transition-all ${mode === 'edit'
+                                ? 'bg-[#7C3AED] text-white shadow-sm'
+                                : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'
+                                }`}>
+                            <Edit3 className="w-3.5 h-3.5" />
                         </button>
                         <button type="button" onClick={() => setMode('preview')}
-                            className={`flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                                mode === 'preview' ? 'bg-blue-500 text-white' : 'bg-surface text-muted-foreground hover:text-blue-600'
-                            }`}>
-                            <Eye className="w-2.5 h-2.5" /> Preview
+                            title="Preview"
+                            className={`flex items-center justify-center w-7 h-7 rounded-full transition-all ${mode === 'preview'
+                                ? 'bg-[#7C3AED] text-white shadow-sm'
+                                : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'
+                                }`}>
+                            <Eye className="w-3.5 h-3.5" />
                         </button>
                     </div>
                     <button type="button" onClick={onRemove}
-                        className="ml-1 text-muted-foreground/50 hover:text-red-400 transition-colors">
-                        <X className="w-3.5 h-3.5" />
+                        title="Remove block"
+                        className="ml-0.5 p-1 text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
             </div>

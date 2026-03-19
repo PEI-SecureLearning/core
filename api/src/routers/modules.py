@@ -7,7 +7,6 @@ from src.models import (
     ModuleCreate,
     ModuleOut,
     ModulePatch,
-    ModuleStatus,
     ModuleUpdate,
     PaginatedModules,
 )
@@ -40,7 +39,6 @@ def _get_sub(token: str) -> str:
 )
 async def list_modules(
     realm:         CurrentRealm,
-    status_filter: Annotated[ModuleStatus | None, Query(alias="status")] = None,
     search:        Annotated[str | None, Query(description="Case-insensitive substring filter on title or category")] = None,
     sort:          Annotated[str | None, Query(description="Sort order: title_asc | title_desc | newest | oldest")] = None,
     page:          Annotated[int, Query(ge=1)] = 1,
@@ -48,7 +46,6 @@ async def list_modules(
 ) -> PaginatedModules:
     return await module_service.list_modules(
         realm=realm,
-        status_filter=status_filter,
         search=search,
         sort=sort,
         page=page,
@@ -76,7 +73,7 @@ async def get_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
     status_code=status.HTTP_201_CREATED,
     summary="Create a module",
     description=(
-        "Creates a new module in **draft** status. "
+        "Creates a new module. "
         "The caller's realm and Keycloak `sub` are attached automatically."
     ),
 )
@@ -134,29 +131,11 @@ async def patch_module(
     )
 
 
-@router.post(
-    "/modules/{module_id}/publish",
-    summary="Publish a module",
-    description="Transitions the module from `draft` to `published`.",
-)
-async def publish_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
-    return await module_service.publish_module(module_id=module_id, realm=realm)
-
-
-@router.post(
-    "/modules/{module_id}/archive",
-    summary="Archive a module",
-    description="Transitions the module to `archived` status.",
-)
-async def archive_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
-    return await module_service.archive_module(module_id=module_id, realm=realm)
-
-
 @router.delete(
     "/modules/{module_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a module",
-    description="Hard-deletes a draft or archived module. Published modules must be archived first.",
+    description="Hard-deletes a module.",
 )
 async def delete_module(module_id: str, realm: CurrentRealm) -> None:
     await module_service.delete_module(module_id=module_id, realm=realm)
