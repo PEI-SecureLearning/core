@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 
-import SendingProfileFormStepper from "@/components/sending-profiles/shared/SendingProfileFormStepper";
+import SendingProfileFormContainer from "@/components/sending-profiles/shared/SendingProfileFormContainer";
 import { useSendingProfileForm } from "@/components/sending-profiles/shared/useSendingProfileForm";
 import {
   fetchSendingProfileById,
@@ -101,37 +101,10 @@ export default function EditSendingProfile() {
   }
 
   return (
-    <SendingProfileFormStepper
-      name={form.name}
-      setName={form.setName}
-      fromFname={form.fromFname}
-      setFromFname={form.setFromFname}
-      fromLname={form.fromLname}
-      setFromLname={form.setFromLname}
-      fromEmail={form.fromEmail}
-      setFromEmail={form.setFromEmail}
-      smtpHost={form.smtpHost}
-      setSmtpHost={form.setSmtpHost}
-      smtpPort={form.smtpPort}
-      setSmtpPort={form.setSmtpPort}
-      username={form.username}
-      setUsername={form.setUsername}
-      password={form.password}
-      setPassword={form.setPassword}
-      customHeaders={form.customHeaders}
-      onAddHeader={form.addHeader}
-      onRemoveHeader={form.removeHeader}
-      onTest={form.handleTest}
-      isTesting={form.isTesting}
-      testStatus={form.testStatus}
-      isLoading={form.isLoading}
-      status={form.status}
-      setStatus={form.setStatus}
+    <SendingProfileFormContainer
+      form={form}
       mode="edit"
       onSubmit={handleSave}
-      testPassed={form.testPassed}
-      hasChangesSinceLastTest={form.hasChangesSinceLastTest}
-      smtpConfigChanged={form.smtpConfigChanged}
     />
   );
 }

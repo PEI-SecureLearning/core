@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 
-import SendingProfileFormStepper from "@/components/sending-profiles/shared/SendingProfileFormStepper";
+import SendingProfileFormContainer from "@/components/sending-profiles/shared/SendingProfileFormContainer";
 import { useSendingProfileForm } from "@/components/sending-profiles/shared/useSendingProfileForm";
 import { createSendingProfile } from "@/services/sendingProfilesApi";
 
@@ -39,38 +39,10 @@ export default function NewSendingProfile() {
   };
 
   return (
-    <SendingProfileFormStepper
-      name={form.name}
-      setName={form.setName}
-      fromFname={form.fromFname}
-      setFromFname={form.setFromFname}
-      fromLname={form.fromLname}
-      setFromLname={form.setFromLname}
-      fromEmail={form.fromEmail}
-      setFromEmail={form.setFromEmail}
-      smtpHost={form.smtpHost}
-      setSmtpHost={form.setSmtpHost}
-      smtpPort={form.smtpPort}
-      setSmtpPort={form.setSmtpPort}
-      username={form.username}
-      setUsername={form.setUsername}
-      password={form.password}
-      setPassword={form.setPassword}
-      customHeaders={form.customHeaders}
-      onAddHeader={form.addHeader}
-      onRemoveHeader={form.removeHeader}
-      onTest={form.handleTest}
-      isTesting={form.isTesting}
-      testStatus={form.testStatus}
-      isLoading={form.isLoading}
-      status={form.status}
-      setStatus={form.setStatus}
+    <SendingProfileFormContainer
+      form={form}
       mode="create"
       onSubmit={handleSubmit}
-      testPassed={form.testPassed}
-      hasChangesSinceLastTest={form.hasChangesSinceLastTest}
-      isFullyValid={form.isFullyValid}
-      smtpConfigChanged={true}
     />
   );
 }
