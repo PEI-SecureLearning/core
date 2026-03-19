@@ -47,7 +47,7 @@ export const TimelineRow = memo(function TimelineRow({
     <div className="flex h-16 group hover:bg-surface-subtle transition-colors">
       {/* Coluna Fixa: Informação da Campanha */}
       <div
-        className="flex-shrink-0 p-3 border-r border-border/40 flex flex-col justify-center gap-1.5 bg-background/50 backdrop-blur-sm z-10 sticky left-0"
+        className="shrink-0 p-3 border-r border-border/40 flex flex-col justify-center gap-1.5 bg-background/50 backdrop-blur-sm z-10 sticky left-0"
         style={{ width: campaignColumnWidth }}
       >
         <div

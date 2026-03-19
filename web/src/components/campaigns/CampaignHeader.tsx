@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 interface CampaignHeaderProps {
-    title?: string;
-    subtitle?: string;
+    readonly title?: string;
+    readonly subtitle?: string;
 }
 
 export function CampaignHeader({
