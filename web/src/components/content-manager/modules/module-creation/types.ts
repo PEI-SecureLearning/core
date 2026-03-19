@@ -2,77 +2,77 @@
    Module Creation — shared types
 ───────────────────────────────────────────────────────── */
 
-export type QuestionType  = 'multiple_choice' | 'true_false' | 'short_answer'
-export type BlockType     = 'text' | 'question' | 'rich_content'
+export type QuestionType = 'multiple_choice' | 'true_false' | 'short_answer'
+export type BlockType = 'text' | 'question' | 'rich_content'
 export type RichMediaType = 'image' | 'video' | 'audio' | 'file'
-export type Difficulty    = 'Easy' | 'Medium' | 'Hard'
-export type ModuleStatus  = 'draft' | 'published' | 'archived'
+export type Difficulty = 'Easy' | 'Medium' | 'Hard'
+export type ModuleStatus = 'published' | 'archived'
 
 export interface Choice {
-    id:        string
-    text:      string
+    id: string
+    text: string
     isCorrect: boolean
 }
 
 export interface Question {
-    id:      string
-    type:    QuestionType
-    text:    string
+    id: string
+    type: QuestionType
+    text: string
     choices: Choice[]
-    answer:  string
+    answer: string
 }
 
 // A block is one piece of content inside a section
 export interface TextBlock {
-    id:      string
-    kind:    'text'
+    id: string
+    kind: 'text'
     content: string
 }
 export interface RichContentBlock {
-    id:        string
-    kind:      'rich_content'
+    id: string
+    kind: 'rich_content'
     mediaType: RichMediaType
-    url:       string   // preview URL — display only, never sent to backend
+    url: string   // preview URL — display only, never sent to backend
     contentId: string   // content_piece_id — sent to backend
-    caption:   string
+    caption: string
 }
 export interface QuestionBlock {
-    id:       string
-    kind:     'question'
+    id: string
+    kind: 'question'
     question: Question
 }
 export type Block = TextBlock | RichContentBlock | QuestionBlock
 
 export interface Section {
-    id:                     string
-    title:                  string
-    collapsed:              boolean   // UI-only, not persisted to DB
-    blocks:                 Block[]
+    id: string
+    title: string
+    collapsed: boolean   // UI-only, not persisted to DB
+    blocks: Block[]
     requireCorrectAnswers?: boolean
-    isOptional?:            boolean
-    minTimeSpent?:          number
+    isOptional?: boolean
+    minTimeSpent?: number
 }
 
 export interface ModuleFormData {
-    title:             string
-    category:          string
-    description:       string
-    coverImage:        string   // preview URL (object URL or data URL) — display only
-    coverImageId:      string   // content_piece_id of the chosen library file
-    estimatedTime:     string
-    difficulty:        Difficulty
-    sections:          Section[]
-    hasRefreshModule:   boolean
-    refreshSections:   Section[]
+    title: string
+    category: string
+    description: string
+    coverImage: string   // preview URL (object URL or data URL) — display only
+    coverImageId: string   // content_piece_id of the chosen library file
+    estimatedTime: string
+    difficulty: Difficulty
+    sections: Section[]
+    hasRefreshModule: boolean
+    refreshSections: Section[]
 }
 
 // ── What the backend returns after create/update ──────────
 export interface SavedModule extends ModuleFormData {
-    id:          string           // MongoDB ObjectId as string
-    status:      ModuleStatus
-    version:     number           // for optimistic concurrency
-    realm?:      string
-    createdBy?:  string
-    createdAt:   string
-    updatedAt:   string
+    id: string           // MongoDB ObjectId as string
+    status: ModuleStatus
+    version: number           // for optimistic concurrency
+    realm?: string
+    createdBy?: string
+    createdAt: string
+    updatedAt: string
 }

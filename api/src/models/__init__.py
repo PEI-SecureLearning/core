@@ -34,7 +34,6 @@ from .org_manager import (
     ComplianceQuizResponse,
 )
 from .module import (
-    ModuleStatus,
     Difficulty,
     QuestionType,
     RichMediaType,
@@ -126,7 +125,6 @@ __all__ = [
     "CompliancePolicyResponse",
     "ComplianceQuizResponse",
     # Learning Module
-    "ModuleStatus",
     "Difficulty",
     "QuestionType",
     "RichMediaType",

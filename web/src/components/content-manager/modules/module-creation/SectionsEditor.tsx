@@ -25,12 +25,13 @@ import { emptySection } from './constants'
 import { BlockDragPreview } from './blocks'
 import { SectionCard, SectionDragPreview, ViewTabToggle } from './sections'
 import { SectionSettingsSidebar } from './sidebar/SectionSettingsSidebar'
+import { ThemeProvider } from './theme-context'
 
 export { SectionCard } from './sections/SectionCard'
 
 export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
     readonly data: ModuleFormData
-    readonly onChange: (patch: Partial<ModuleFormData>) => void
+    readonly onChange: (patch: Partial<ModuleFormData>, silent?: boolean) => void
     readonly publishAttempted?: boolean
     readonly getToken?: () => string | undefined
 }) {
@@ -280,7 +281,7 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                 <div className="flex flex-col min-h-0 flex-1 overflow-hidden">
 
                     {/* Header */}
-                    <div className="flex items-center gap-3 px-5 py-2.5 border-b border-border bg-surface">
+                    <div className="flex items-center gap-3 px-5 py-2 border-b border-border bg-surface">
                         <span className="font-semibold uppercase tracking-wide text-xs text-muted-foreground">Sections</span>
                         <div className="flex-1" />
                         <ViewTabToggle
@@ -292,12 +293,12 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                         <div className="w-px h-4 bg-border shrink-0" />
                         {view === 'module' ? (
                             <button type="button" onClick={addSection}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25">
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25">
                                 <Plus className="w-3.5 h-3.5" /> Add Section
                             </button>
                         ) : (
                             <button type="button" onClick={addRefreshSection}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
                                 <Plus className="w-3.5 h-3.5" /> Add Section
                             </button>
                         )}
@@ -334,7 +335,7 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                                             <p className="text-sm font-medium">No sections yet</p>
                                             <p className="text-xs text-muted-foreground/50">Add a section to start building your module</p>
                                             <button type="button" onClick={addSection}
-                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25">
+                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25">
                                                 <Plus className="w-4 h-4" /> Add First Section
                                             </button>
                                         </motion.div>
@@ -386,11 +387,22 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                 />
             </div>
 
-            <DragOverlay dropAnimation={null}>
+            <DragOverlay dropAnimation={null} style={{ pointerEvents: 'none' }} modifiers={[
+                ({ transform, activeNodeRect, activatorEvent }) => {
+                    if (!activeNodeRect || !activatorEvent) return transform
+                    // Try to center the preview on the cursor based on activator event and current transform
+                    // This is a heuristic since we don't have live pointer coordinates in the modifier arg
+                    return transform
+                }
+            ]}>
                 {activeSection && (
-                    <SectionDragPreview section={activeSection} index={activeSectionIndex} accentColor={view === 'refresh' ? 'teal' : 'purple'} />
+                    <SectionDragPreview section={activeSection} index={activeSectionIndex} accentColor={view === 'refresh' ? 'teal' : 'primary'} />
                 )}
-                {activeBlock && <BlockDragPreview block={activeBlock} />}
+                {activeBlock && (
+                    <ThemeProvider accent={view === 'refresh' ? 'teal' : 'primary'}>
+                        <BlockDragPreview block={activeBlock} />
+                    </ThemeProvider>
+                )}
             </DragOverlay>
         </DndContext>
     )

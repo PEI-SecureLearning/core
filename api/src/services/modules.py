@@ -22,7 +22,6 @@ from src.models import (
     ModuleCreate,
     ModuleOut,
     ModulePatch,
-    ModuleStatus,
     ModuleUpdate,
     PaginatedModules,
 )
@@ -58,7 +57,6 @@ def _build_mongo_doc(payload: ModuleCreate, realm: str, created_by: str) -> dict
     now = _now()
     data = payload.model_dump()
     data.update(
-        status=ModuleStatus.DRAFT,
         version=1,
         realm=realm,
         created_by=created_by,
@@ -79,7 +77,6 @@ _DEFAULT_SORT = "newest"
 
 async def list_modules(
     realm: str,
-    status_filter: ModuleStatus | None = None,
     search: str | None = None,
     sort: str | None = None,
     page: int = 1,
@@ -90,8 +87,6 @@ async def list_modules(
     skip  = (page - 1) * limit
 
     query: dict[str, Any] = {"realm": realm}
-    if status_filter is not None:
-        query["status"] = status_filter
     if search:
         # Case-insensitive substring match on title or category
         query["$or"] = [
@@ -182,79 +177,13 @@ async def patch_module(module_id: str, payload: ModulePatch, realm: str) -> Modu
     return _doc_to_out(updated)  # type: ignore[arg-type]
 
 
-async def publish_module(module_id: str, realm: str) -> ModuleOut:
-    """Transition a module from draft → published.
-
-    Validates that all required fields are filled before allowing the transition.
-    This is the enforcement point for fields that are optional on create (draft-first).
-    """
-    oid = _to_object_id(module_id)
-    col = get_modules_collection()
-
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-    if existing.get("status") == ModuleStatus.ARCHIVED:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Archived modules cannot be published directly. Un-archive first.",
-        )
-
-    # ── Readiness checks (draft-first: required fields validated here, not on create) ──
-    missing: list[str] = []
-    if not existing.get("title", "").strip():
-        missing.append("title")
-    if not existing.get("category", "").strip():
-        missing.append("category")
-    if not existing.get("estimated_time", "").strip():
-        missing.append("estimated_time")
-    if not existing.get("difficulty"):
-        missing.append("difficulty")
-    if not existing.get("sections"):
-        missing.append("sections (at least one required)")
-    if missing:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"message": "Module is not ready to publish", "missing_fields": missing},
-        )
-
-    await col.update_one(
-        {"_id": oid},
-        {"$set": {"status": ModuleStatus.PUBLISHED, "updated_at": _now()}},
-    )
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
-
-
-async def archive_module(module_id: str, realm: str) -> ModuleOut:
-    """Transition a module to archived status."""
-    oid = _to_object_id(module_id)
-    col = get_modules_collection()
-
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-
-    await col.update_one(
-        {"_id": oid},
-        {"$set": {"status": ModuleStatus.ARCHIVED, "updated_at": _now()}},
-    )
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
-
-
 async def delete_module(module_id: str, realm: str) -> None:
-    """Hard-delete a module document.  Only drafts and archived modules may be deleted."""
+    """Hard-delete a module document."""
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
     existing = await col.find_one({"_id": oid, "realm": realm})
     if existing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-    if existing.get("status") == ModuleStatus.PUBLISHED:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Published modules cannot be deleted. Archive them first.",
-        )
 
     await col.delete_one({"_id": oid})

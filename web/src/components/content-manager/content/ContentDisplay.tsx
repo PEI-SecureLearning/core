@@ -217,7 +217,7 @@ export function ContentDisplay({
                     <button
                         type="button"
                         onClick={() => setSelectedFolderId(folder.folder_id)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-sm ${isSelected ? 'bg-[#7C3AED]/15 text-[#A78BFA]' : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'}`}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-sm ${isSelected ? 'bg-primary/15 text-accent-secondary' : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'}`}
                         style={{ paddingLeft: `${8 + level * 14}px` }}
                     >
                         {hasChildren ? (
@@ -232,7 +232,7 @@ export function ContentDisplay({
                         ) : (
                             <span className="w-3" />
                         )}
-                        {isExpanded ? <FolderOpen className="w-4 h-4 text-[#A78BFA]" /> : <Folder className="w-4 h-4 text-[#A78BFA]" />}
+                        {isExpanded ? <FolderOpen className="w-4 h-4 text-accent-secondary" /> : <Folder className="w-4 h-4 text-accent-secondary" />}
                         <span className="truncate">{folder.name}</span>
                     </button>
                     {isExpanded && (
@@ -240,7 +240,7 @@ export function ContentDisplay({
                             {hasChildren && renderTree(folder.folder_id, level + 1)}
                             {creatingFolderIn === folder.folder_id && (
                                 <div className="flex items-center gap-1.5 py-1" style={{ paddingLeft: `${8 + (level + 1) * 14}px` }}>
-                                    <Folder className="w-4 h-4 text-[#A78BFA] shrink-0" />
+                                    <Folder className="w-4 h-4 text-accent-secondary shrink-0" />
                                     <input
                                         autoFocus
                                         value={newFolderName}
@@ -251,7 +251,7 @@ export function ContentDisplay({
                                         }}
                                         onBlur={() => { void confirmCreateFolder(); }}
                                         placeholder="folder name"
-                                        className="flex-1 min-w-0 rounded border border-[#7C3AED]/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#7C3AED] bg-surface"
+                                        className="flex-1 min-w-0 rounded border border-primary/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary bg-surface"
                                     />
                                     <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { void confirmCreateFolder(); }} className="p-0.5 rounded text-emerald-500 hover:bg-emerald-500/10" title="Confirm">
                                         <Check className="w-3.5 h-3.5" />
@@ -273,16 +273,16 @@ export function ContentDisplay({
             <aside className="w-72 min-w-72 bg-surface rounded-b-xl rounded-t-sm border border-border p-3 overflow-y-auto shadow-md">
                 <div className="flex items-center justify-between mb-2 border-b-2 border-border">
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Folders</p>
-                    <button type="button" onClick={startCreatingFolder} title="Create folder" className="p-1 rounded-md text-muted-foreground hover:text-[#A78BFA] hover:bg-[#7C3AED]/10 transition-colors">
+                    <button type="button" onClick={startCreatingFolder} title="Create folder" className="p-1 rounded-md text-muted-foreground hover:text-accent-secondary hover:bg-primary/10 transition-colors">
                         <FolderPlus className="w-4 h-4" />
                     </button>
                 </div>
                 <button
                     type="button"
                     onClick={() => setSelectedFolderId(ROOT_FOLDER_ID)}
-                    className={`mb-1 w-full flex items-center gap-2 rounded px-2 py-1.5 text-left text-sm ${selectedFolderId === ROOT_FOLDER_ID ? 'bg-[#7C3AED]/15 text-[#A78BFA]' : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'}`}
+                    className={`mb-1 w-full flex items-center gap-2 rounded px-2 py-1.5 text-left text-sm ${selectedFolderId === ROOT_FOLDER_ID ? 'bg-primary/15 text-accent-secondary' : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'}`}
                 >
-                    <FolderOpen className="w-4 h-4 text-[#A78BFA]" />
+                    <FolderOpen className="w-4 h-4 text-accent-secondary" />
                     <span className="truncate">content</span>
                 </button>
                 {creatingFolderIn === ROOT_FOLDER_ID && (
@@ -327,7 +327,7 @@ export function ContentDisplay({
                             placeholder="Search current folder…"
                             value={searchQuery}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            className="w-full bg-surface border border-border rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground"
+                            className="w-full bg-surface border border-border rounded-lg py-1.5 pl-8 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                         />
                     </div>
 
@@ -339,7 +339,7 @@ export function ContentDisplay({
                         </select>
                     </div>
 
-                    <button type="button" onClick={() => setShowNewModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] text-white text-sm font-semibold shadow-sm hover:shadow-md hover:from-[#6D28D9] hover:to-[#5B21B6] transition-all duration-200 active:scale-[0.97]">
+                    <button type="button" onClick={() => setShowNewModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 transition-all duration-200 active:scale-[0.97]">
                         <Plus className="w-3.5 h-3.5" />
                         File
                     </button>
@@ -349,7 +349,7 @@ export function ContentDisplay({
                     {visibleFolders.map((folder) => (
                         <button key={folder.folder_id} type="button" onClick={() => setSelectedFolderId(folder.folder_id)} className="w-full px-4 py-3 flex items-center justify-between gap-4 hover:bg-surface-subtle text-left transition-colors">
                             <div className="min-w-0 flex items-center gap-3">
-                                <Folder className="w-4 h-4 text-[#A78BFA] shrink-0" />
+                                <Folder className="w-4 h-4 text-accent-secondary shrink-0" />
                                 <div className="min-w-0">
                                     <p className="text-sm font-medium text-foreground truncate">{folder.name}</p>
                                     <p className="text-xs text-muted-foreground truncate">{folder.path}</p>
@@ -366,8 +366,8 @@ export function ContentDisplay({
                                 <p className="text-xs text-muted-foreground truncate">{item.path}</p>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
-                                <span className="text-xs px-2 py-1 rounded-full bg-[#7C3AED]/15 text-[#A78BFA] uppercase">{item.content_format}</span>
-                                <button onClick={() => onViewContent(item.content_piece_id)} aria-label="Open content" title="Open" className="p-1 rounded text-[#A78BFA] hover:text-[#C4B5FD] hover:bg-[#7C3AED]/10">
+                                <span className="text-xs px-2 py-1 rounded-full bg-primary/15 text-accent-secondary uppercase">{item.content_format}</span>
+                                <button onClick={() => onViewContent(item.content_piece_id)} aria-label="Open content" title="Open" className="p-1 rounded text-accent-secondary hover:text-accent-secondary/80 hover:bg-primary/10">
                                     <Eye className="w-4 h-4" />
                                 </button>
                                 <button onClick={() => onEditContent(item.content_piece_id)} aria-label="Edit content" title="Edit" className="p-1 rounded text-sky-400 hover:text-sky-300 hover:bg-sky-500/10">

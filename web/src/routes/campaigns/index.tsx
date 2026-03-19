@@ -138,11 +138,10 @@ function Dropdown({ value, onChange, options }: GlassDropdownProps) {
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${
-                value === option.value
+              className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${value === option.value
                   ? "text-accent-secondary bg-accent/10"
                   : "text-foreground hover:bg-surface-subtle"
-              }`}
+                }`}
             >
               {option.label}
             </button>
@@ -281,9 +280,8 @@ function CampaignsPage() {
         <Link
           to="/campaigns/new"
           className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-[14px]
-                     text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
-                     shadow-lg shadow-[#7C3AED]/25 hover:shadow-[#7C3AED]/40"
-          style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+                     text-primary-foreground transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
+                     shadow-lg shadow-primary/25 hover:shadow-primary/40 bg-primary hover:bg-primary/90"
         >
           <Plus size={18} strokeWidth={2.5} />
           New Campaign
@@ -304,7 +302,7 @@ function CampaignsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-3 rounded-xl text-[14px] outline-none transition-all duration-200
                        bg-surface border border-border text-foreground placeholder:text-muted-foreground
-                       focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/60"
+                       focus:ring-2 focus:ring-primary/30 focus:border-primary/60"
           />
         </div>
         <Dropdown
@@ -339,10 +337,8 @@ function CampaignsPage() {
       {/* ── Stat cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
         {/* Total */}
-        <div
-          className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
-                        hover:border-[#A78BFA]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10"
-        >
+        <div className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
+                        hover:border-accent-secondary/30 hover:shadow-lg hover:shadow-primary/10">
           <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
             Total Campaigns
           </p>
@@ -365,21 +361,10 @@ function CampaignsPage() {
         </div>
 
         {/* Sent */}
-        <div
-          className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
-                        hover:border-[#A78BFA]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10"
-        >
-          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
-            Total Sent
-          </p>
-          <p
-            className="text-3xl font-semibold mt-1.5"
-            style={{
-              background: "linear-gradient(135deg, #A78BFA, #9333EA)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent"
-            }}
-          >
+        <div className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
+                        hover:border-accent-secondary/30 hover:shadow-lg hover:shadow-primary/10">
+          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Total Sent</p>
+          <p className="text-3xl font-semibold mt-1.5 text-accent-secondary">
             {totalEmailsSent.toLocaleString()}
           </p>
         </div>
@@ -396,12 +381,14 @@ function CampaignsPage() {
             {avgClickRate}%
           </p>
         </div>
-      </div>
+
+      </div >
 
       {/* ── Table ──────────────────────────────────────────────────────── */}
-      <div className="bg-surface border border-border rounded-2xl flex flex-col overflow-hidden">
+      < div className="bg-surface border border-border rounded-2xl flex flex-col overflow-hidden" >
+
         {/* Fixed header */}
-        <div className="bg-surface-subtle border-b border-border shrink-0">
+        < div className="bg-surface-subtle border-b border-border flex-shrink-0" >
           <table className="w-full">
             <thead>
               <tr>
@@ -417,11 +404,7 @@ function CampaignsPage() {
                   <th
                     key={h}
                     className="text-left px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
-                    style={{
-                      width: ["22%", "12%", "20%", "12%", "12%", "12%", "10%"][
-                        i
-                      ]
-                    }}
+                    style={{ width: ["22%", "12%", "20%", "12%", "12%", "12%", "10%"][i] }}
                   >
                     {h}
                   </th>
@@ -429,10 +412,10 @@ function CampaignsPage() {
               </tr>
             </thead>
           </table>
-        </div>
+        </div >
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto max-h-[55vh]">
+        < div className="flex-1 overflow-y-auto max-h-[55vh]" >
           <table className="w-full">
             <tbody className="divide-y divide-border">
               {filteredCampaigns.map((campaign) => {
@@ -441,16 +424,16 @@ function CampaignsPage() {
                 const clickRate =
                   campaign.stats.sent > 0
                     ? (
-                        (campaign.stats.clicked / campaign.stats.sent) *
-                        100
-                      ).toFixed(1)
+                      (campaign.stats.clicked / campaign.stats.sent) *
+                      100
+                    ).toFixed(1)
                     : "0";
                 const openRate =
                   campaign.stats.sent > 0
                     ? (
-                        (campaign.stats.opened / campaign.stats.sent) *
-                        100
-                      ).toFixed(1)
+                      (campaign.stats.opened / campaign.stats.sent) *
+                      100
+                    ).toFixed(1)
                     : "0";
 
                 return (
@@ -557,8 +540,8 @@ function CampaignsPage() {
                               try {
                                 const realm = (
                                   keycloak.tokenParsed as
-                                    | { iss?: string }
-                                    | undefined
+                                  | { iss?: string }
+                                  | undefined
                                 )?.iss?.split("/realms/")[1];
                                 if (!realm) {
                                   alert("Could not resolve realm from token.");
@@ -578,7 +561,7 @@ function CampaignsPage() {
                                 if (!res.ok)
                                   throw new Error(
                                     (await res.text()) ||
-                                      `Failed (${res.status})`
+                                    `Failed (${res.status})`
                                   );
                                 setCampaigns((prev) =>
                                   prev.filter((c) => c.id !== campaign.id)
@@ -603,127 +586,84 @@ function CampaignsPage() {
             </tbody>
           </table>
 
-          {filteredCampaigns.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground text-[15px]">
-                No campaigns found
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+          {
+            filteredCampaigns.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground text-[15px]">No campaigns found</p>
+              </div>
+            )
+          }
+        </div >
+      </div >
 
       {/* ── Detail modal ───────────────────────────────────────────────── */}
-      {selectedCampaign && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full h-full max-w-5xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground tracking-wide">
-                  Campaign Details
-                </p>
-                <h2 className="text-lg font-semibold text-foreground">
-                  {selectedCampaign.name}
-                </h2>
-              </div>
-              <button
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setSelectedCampaign(null)}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-sm text-foreground">
-              <p>
-                <span className="font-medium text-muted-foreground">
-                  Description:
-                </span>{" "}
-                {selectedCampaign.description || "No description"}
-              </p>
-              <p>
-                <span className="font-medium text-muted-foreground">
-                  Start:
-                </span>{" "}
-                {new Date(selectedCampaign.begin_date).toLocaleString()}
-              </p>
-              <p>
-                <span className="font-medium text-muted-foreground">End:</span>{" "}
-                {new Date(selectedCampaign.end_date).toLocaleString()}
-              </p>
-              <p>
-                <span className="font-medium text-muted-foreground">
-                  Status:
-                </span>{" "}
-                {statusConfig[selectedCampaign.status].label}
-              </p>
-
-              <div className="grid grid-cols-3 gap-3">
-                {(["sent", "opened", "clicked"] as const).map((k) => (
-                  <div
-                    key={k}
-                    className="bg-surface-subtle rounded-xl p-3 border border-border"
-                  >
-                    <p className="text-[11px] uppercase text-muted-foreground">
-                      {k}
-                    </p>
-                    <p className="text-base font-semibold text-foreground mt-0.5">
-                      {selectedCampaign.stats[k]}
-                    </p>
-                  </div>
-                ))}
+      {
+        selectedCampaign && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full h-full max-w-5xl flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground tracking-wide">Campaign Details</p>
+                  <h2 className="text-lg font-semibold text-foreground">{selectedCampaign.name}</h2>
+                </div>
+                <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => setSelectedCampaign(null)}>
+                  ✕
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  { label: "Email Template", data: emailTemplate },
-                  { label: "Landing Page", data: landingTemplate }
-                ].map(({ label, data }) => (
-                  <div
-                    key={label}
-                    className="bg-surface-subtle rounded-xl p-4 border border-border"
-                  >
-                    <p className="text-xs uppercase text-muted-foreground mb-2">
-                      {label}
-                    </p>
-                    {detailLoading ? (
-                      <p className="text-muted-foreground text-sm">Loading…</p>
-                    ) : detailError ? (
-                      <p className="text-red-400 text-sm">{detailError}</p>
-                    ) : data ? (
-                      <div className="space-y-2">
-                        <p className="font-semibold text-foreground">
-                          {data.name}
-                        </p>
-                        {data.html && (
-                          <div className="border border-border rounded-lg p-2 bg-background max-h-48 overflow-auto">
-                            <div
-                              dangerouslySetInnerHTML={{ __html: data.html }}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-sm">
-                        Not available
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 text-sm text-foreground">
+                <p><span className="font-medium text-muted-foreground">Description:</span> {selectedCampaign.description || "No description"}</p>
+                <p><span className="font-medium text-muted-foreground">Start:</span> {new Date(selectedCampaign.begin_date).toLocaleString()}</p>
+                <p><span className="font-medium text-muted-foreground">End:</span> {new Date(selectedCampaign.end_date).toLocaleString()}</p>
+                <p><span className="font-medium text-muted-foreground">Status:</span> {statusConfig[selectedCampaign.status].label}</p>
 
-            <div className="px-5 py-4 border-t border-border flex justify-end">
-              <button
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-[#7C3AED] hover:bg-[#9333EA] transition-colors"
-                onClick={() => setSelectedCampaign(null)}
-              >
-                Close
-              </button>
+                <div className="grid grid-cols-3 gap-3">
+                  {(["sent", "opened", "clicked"] as const).map((k) => (
+                    <div key={k} className="bg-surface-subtle rounded-xl p-3 border border-border">
+                      <p className="text-[11px] uppercase text-muted-foreground">{k}</p>
+                      <p className="text-base font-semibold text-foreground mt-0.5">{selectedCampaign.stats[k]}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[{ label: "Email Template", data: emailTemplate }, { label: "Landing Page", data: landingTemplate }].map(({ label, data }) => (
+                    <div key={label} className="bg-surface-subtle rounded-xl p-4 border border-border">
+                      <p className="text-xs uppercase text-muted-foreground mb-2">{label}</p>
+                      {detailLoading ? (
+                        <p className="text-muted-foreground text-sm">Loading…</p>
+                      ) : detailError ? (
+                        <p className="text-red-400 text-sm">{detailError}</p>
+                      ) : data ? (
+                        <div className="space-y-2">
+                          <p className="font-semibold text-foreground">{data.name}</p>
+                          {data.html && (
+                            <div className="border border-border rounded-lg p-2 bg-background max-h-48 overflow-auto">
+                              <div dangerouslySetInnerHTML={{ __html: data.html }} />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">Not available</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-5 py-4 border-t border-border flex justify-end">
+                <button
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  onClick={() => setSelectedCampaign(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+    </div >
   );
 }

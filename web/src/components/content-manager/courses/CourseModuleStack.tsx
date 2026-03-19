@@ -69,12 +69,12 @@ export function CourseModuleStack({ modules, onRemove }: CourseModuleStackProps)
 
             <div
                 ref={setNodeRef}
-                className={`flex-1 overflow-y-auto px-4 pb-4 transition-colors duration-200 ${isOver ? 'bg-[#7C3AED]/5' : ''
+                className={`flex-1 overflow-y-auto px-4 pb-4 transition-colors duration-200 ${isOver ? 'bg-primary/5' : ''
                     }`}
             >
                 {modules.length === 0 ? (
                     <div className={`flex flex-col items-center justify-center h-full gap-3 border-2 border-dashed rounded-xl transition-colors duration-200 ${isOver
-                        ? 'border-[#7C3AED]/60 bg-[#7C3AED]/5'
+                        ? 'border-primary/60 bg-primary/5'
                         : 'border-border'
                         }`}>
                         <Layers className="w-10 h-10 text-muted-foreground/20" />
