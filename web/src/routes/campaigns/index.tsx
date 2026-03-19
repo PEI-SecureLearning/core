@@ -139,8 +139,8 @@ function Dropdown({ value, onChange, options }: GlassDropdownProps) {
                 setIsOpen(false);
               }}
               className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${value === option.value
-                  ? "text-accent-secondary bg-accent/10"
-                  : "text-foreground hover:bg-surface-subtle"
+                ? "text-accent-secondary bg-accent/10"
+                : "text-foreground hover:bg-surface-subtle"
                 }`}
             >
               {option.label}
@@ -388,7 +388,7 @@ function CampaignsPage() {
       < div className="bg-surface border border-border rounded-2xl flex flex-col overflow-hidden" >
 
         {/* Fixed header */}
-        < div className="bg-surface-subtle border-b border-border flex-shrink-0" >
+        < div className="bg-surface-subtle border-b border-border shrink-0" >
           <table className="w-full">
             <thead>
               <tr>
