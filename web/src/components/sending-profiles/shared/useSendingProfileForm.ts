@@ -2,13 +2,12 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { toast } from "sonner";
 
+import { isValidEmail } from "@/lib/emailValidation";
 import { testSendingProfileConfiguration } from "@/services/sendingProfilesApi";
 import type {
   CustomHeader,
   SendingProfileCreate
 } from "@/types/sendingProfile";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ---------------------------------------------------------------------------
 // Hook: useSendingProfileForm
@@ -120,7 +119,7 @@ export function useSendingProfileForm() {
       toast.error("Please fill in all required fields before testing.");
       return false;
     }
-    if (!fromEmail || !EMAIL_PATTERN.test(fromEmail.trim())) {
+    if (!fromEmail || !isValidEmail(fromEmail)) {
       toast.error("Please provide a valid sender email before testing SMTP.");
       return false;
     }
@@ -180,7 +179,7 @@ export function useSendingProfileForm() {
   const isBasicValid =
     !!name &&
     !!fromEmail &&
-    EMAIL_PATTERN.test(fromEmail.trim()) &&
+    isValidEmail(fromEmail) &&
     !!smtpHost &&
     !!username;
 

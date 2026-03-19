@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import RequiredAsterisk from '@/components/shared/RequiredAsterisk'
+import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
 
 interface TenantFormOrganizationProps {
     realmName: string
@@ -19,8 +20,8 @@ export function TenantFormOrganization({
 
     const normalizedDomain = domain.trim().toLowerCase().replace(/^@/, '').replace(/^\*\./, '')
     const normalizedEmail = adminEmail.trim().toLowerCase()
-    const isAdminEmailFormatValid = !!normalizedEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)
-    const adminEmailDomain = isAdminEmailFormatValid ? normalizedEmail.split('@')[1] : ''
+    const isAdminEmailFormatValid = !!normalizedEmail && isValidEmail(normalizedEmail)
+    const adminEmailDomain = getEmailDomain(normalizedEmail) ?? ''
     const isAdminEmailDomainMatching =
         !normalizedDomain || !adminEmailDomain || adminEmailDomain === normalizedDomain
     const isAdminEmailValid = isAdminEmailFormatValid && isAdminEmailDomainMatching

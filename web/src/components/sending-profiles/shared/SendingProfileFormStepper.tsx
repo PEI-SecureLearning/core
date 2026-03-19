@@ -16,10 +16,9 @@ import CustomHeadersSection from "../new/CustomHeadersSection";
 import SendingProfileStepSection from "@/components/sending-profiles/shared/SendingProfileStepSection";
 import SendingProfileSummary from "@/components/sending-profiles/shared/SendingProfileSummary";
 import Stepper, { Step } from "@/components/ui/Stepper";
+import { isValidEmail } from "@/lib/emailValidation";
 import { StatusMessage } from "@/components/sending-profiles/shared/statusMessage";
 import type { CustomHeader } from "@/types/sendingProfile";
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface SendingProfileFormStepperProps {
   name: string;
@@ -93,7 +92,7 @@ export default function SendingProfileFormStepper({
           toast.error("Please fill in profile name and sender email.");
           return false;
         }
-        if (!EMAIL_PATTERN.test(fromEmail.trim())) {
+        if (!isValidEmail(fromEmail)) {
           toast.error("Please provide a valid sender email address.");
           return false;
         }

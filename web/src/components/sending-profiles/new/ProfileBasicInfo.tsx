@@ -4,6 +4,7 @@ import { Mail } from "lucide-react";
 import FormTooltip from "@/components/shared/FormTooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { isValidEmail } from "@/lib/emailValidation";
 import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 
 interface Props {
@@ -17,8 +18,6 @@ interface Props {
   setFromEmail: (v: string) => void;
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function ProfileBasicInfo({
   name,
   setName,
@@ -29,7 +28,7 @@ function ProfileBasicInfo({
   fromEmail,
   setFromEmail
 }: Readonly<Props>) {
-  const isEmailInvalid = !!fromEmail && !EMAIL_PATTERN.test(fromEmail.trim());
+  const isEmailInvalid = !!fromEmail && !isValidEmail(fromEmail);
   const isNameValid = name.trim().length > 0;
 
 

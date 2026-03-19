@@ -3,6 +3,7 @@ import { useKeycloak } from '@react-keycloak/web'
 import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
+import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
 import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
 
@@ -71,8 +72,8 @@ export function CreateTenantPage() {
         try {
             const normalizedDomain = domain.trim().toLowerCase()
             const normalizedAdminEmail = adminEmail.trim().toLowerCase()
-            const isAdminEmailFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedAdminEmail)
-            const adminEmailDomain = isAdminEmailFormatValid ? normalizedAdminEmail.split('@')[1] : ''
+            const isAdminEmailFormatValid = isValidEmail(normalizedAdminEmail)
+            const adminEmailDomain = getEmailDomain(normalizedAdminEmail) ?? ''
             if (!normalizedDomain) {
                 toast.error('Domain is required.')
                 return
