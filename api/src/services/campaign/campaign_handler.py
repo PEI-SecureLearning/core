@@ -1,3 +1,4 @@
+from datetime import datetime
 import math
 from fastapi import HTTPException
 from sqlmodel import Session, select
@@ -5,6 +6,7 @@ from sqlmodel import Session, select
 from src.models import (
     Campaign,
     CampaignCreate,
+    CampaignUpdate,
     CampaignStatus,
     EmailSendingStatus,
     MIN_INTERVAL_SECONDS,
@@ -107,7 +109,7 @@ class CampaignHandler:
     def update_campaign(
         self,
         id: int,
-        campaign_update: CampaignCreate,
+        campaign_update: CampaignUpdate,
         current_realm: str,
         session: Session,
     ) -> Campaign:
@@ -145,6 +147,7 @@ class CampaignHandler:
             campaign_update.sending_profile_ids,
         )
 
+        campaign.updated_at = datetime.now()
         session.commit()
         session.refresh(campaign)
 

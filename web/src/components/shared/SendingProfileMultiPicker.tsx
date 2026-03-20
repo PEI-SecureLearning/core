@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { Send } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 
+import type { FormTooltipSide } from "@/components/shared/FormTooltip";
 import SearchableMultiPicker from "@/components/shared/multi-picker/SearchableMultiPicker";
 import useAsyncMultiPickerItems from "@/components/shared/multi-picker/useAsyncMultiPickerItems";
 import SelectedSendingProfileCard from "@/components/shared/sending-profile-picker/SelectedSendingProfileCard";
@@ -14,6 +15,7 @@ interface SendingProfileMultiPickerProps {
   readonly selectedProfileIds: number[];
   readonly onSelectedProfileIdsChange: (ids: number[]) => void;
   readonly tooltipLines: readonly string[];
+  readonly tooltipSide?: FormTooltipSide;
   readonly maxSuggestions?: number;
 }
 
@@ -21,21 +23,25 @@ export default function SendingProfileMultiPicker({
   selectedProfileIds,
   onSelectedProfileIdsChange,
   tooltipLines,
-  maxSuggestions = 5,
+  tooltipSide = "right",
+  maxSuggestions = 5
 }: Readonly<SendingProfileMultiPickerProps>) {
   const { keycloak } = useKeycloak();
 
   const loadSendingProfiles = useCallback(
     () => fetchSendingProfiles("", keycloak.token || undefined),
-    [keycloak.token],
+    [keycloak.token]
   );
 
-  const { items: profiles, loading, error } =
-    useAsyncMultiPickerItems<SendingProfileDisplayInfo>({
-      loader: loadSendingProfiles,
-      deps: [loadSendingProfiles],
-      fallbackErrorMessage: "Unable to load sending profiles",
-    });
+  const {
+    items: profiles,
+    loading,
+    error
+  } = useAsyncMultiPickerItems<SendingProfileDisplayInfo>({
+    loader: loadSendingProfiles,
+    deps: [loadSendingProfiles],
+    fallbackErrorMessage: "Unable to load sending profiles"
+  });
 
   return (
     <SearchableMultiPicker
@@ -43,7 +49,13 @@ export default function SendingProfileMultiPicker({
       selectedIds={selectedProfileIds}
       onSelectedIdsChange={onSelectedProfileIdsChange}
       getSearchText={(profile) => `${profile.name} ${profile.from_email}`}
-      renderSuggestionItem={(profile, highlighted, onSelect, bindRef, onHighlight) => (
+      renderSuggestionItem={(
+        profile,
+        highlighted,
+        onSelect,
+        bindRef,
+        onHighlight
+      ) => (
         <SendingProfileSuggestionItem
           key={profile.id}
           profile={profile}
@@ -64,6 +76,7 @@ export default function SendingProfileMultiPicker({
       label="Sending Profiles"
       labelIcon={<Send size={12} />}
       tooltipLines={tooltipLines}
+      tooltipSide={tooltipSide}
       selectedTitle="Selected Profiles"
       searchPlaceholder="Search profiles by name or email..."
       loading={loading}

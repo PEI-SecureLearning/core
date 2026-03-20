@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
+import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
 import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
 
@@ -51,8 +52,19 @@ export function CreateTenantPage() {
         setIsLoading(true)
         try {
             const normalizedDomain = domain.trim().toLowerCase()
+            const normalizedAdminEmail = adminEmail.trim().toLowerCase()
+            const isAdminEmailFormatValid = isValidEmail(normalizedAdminEmail)
+            const adminEmailDomain = getEmailDomain(normalizedAdminEmail) ?? ''
             if (!normalizedDomain) {
                 toast.error('Domain is required.')
+                return
+            }
+            if (!normalizedAdminEmail || !isAdminEmailFormatValid) {
+                toast.error('Please provide a valid admin email.')
+                return
+            }
+            if (adminEmailDomain !== normalizedDomain) {
+                toast.error(`Admin email domain must match organization domain (${normalizedDomain}).`)
                 return
             }
 
@@ -77,7 +89,7 @@ export function CreateTenantPage() {
                 {
                     name: realmName,
                     domain: normalizedDomain,
-                    adminEmail,
+                    adminEmail: normalizedAdminEmail,
                     features
                 }
             )

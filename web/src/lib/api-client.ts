@@ -1,25 +1,28 @@
-import keycloak from '../keycloak';
+import keycloak from "../keycloak";
 
 export class HttpError extends Error {
   status: number;
   data: any;
   constructor(status: number, message: string, data?: any) {
     super(message);
-    this.name = 'HttpError';
+    this.name = "HttpError";
     this.status = status;
     this.data = data;
   }
 }
 
 class ApiClient {
-  private baseUrl: string;
+  private readonly baseUrl: string;
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    init: RequestInit = {}
+  ): Promise<T> {
     const headers: Record<string, string> = {
-      ...(init.headers as Record<string, string>),
+      ...(init.headers as Record<string, string>)
     };
 
     if (keycloak.authenticated && keycloak.token) {
@@ -28,7 +31,7 @@ class ApiClient {
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...init,
-      headers,
+      headers
     });
 
     if (!response.ok) {
@@ -40,7 +43,7 @@ class ApiClient {
       }
       throw new HttpError(
         response.status,
-        `${init.method || 'GET'} ${endpoint} failed: ${response.statusText}`,
+        `${init.method || "GET"} ${endpoint} failed: ${response.statusText}`,
         data
       );
     }
@@ -58,30 +61,30 @@ class ApiClient {
 
   async post<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     });
   }
 
   async put<T>(endpoint: string, data: unknown): Promise<T> {
     return this.request<T>(endpoint, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     });
   }
 
   async delete<T>(endpoint: string): Promise<T | void> {
     return this.request<T>(endpoint, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Content-Type': 'application/json',
-      },
+        "Content-Type": "application/json"
+      }
     });
   }
 }

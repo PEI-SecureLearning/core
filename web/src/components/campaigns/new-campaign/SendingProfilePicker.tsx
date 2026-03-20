@@ -10,9 +10,10 @@ export default function SendingProfilePicker() {
       onSelectedProfileIdsChange={(ids) =>
         updateData({ sending_profile_ids: ids })
       }
+      tooltipSide="right"
       tooltipLines={[
         "Used as a fallback if the phishing kit's profile fails.",
-        "Recommended for guaranteed email delivery.",
+        "Recommended for guaranteed email delivery."
       ]}
     />
   );

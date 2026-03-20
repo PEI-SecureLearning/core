@@ -11,6 +11,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Loader2,
   type LucideIcon
 } from "lucide-react";
 
@@ -20,7 +21,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   onStepChange?: (step: number) => void;
   onFinalStepCompleted?: () => void;
   onBeforeComplete?: () => Promise<boolean> | boolean;
-  validateStep?: (step: number) => boolean;
+  validateStep?: (step: number) => boolean | Promise<boolean>;
   stepContainerClassName?: string;
   contentClassName?: string;
   footerClassName?: string;
@@ -61,6 +62,7 @@ export default function Stepper({
 }: Readonly<StepperProps>) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [direction, setDirection] = useState<number>(0);
+  const [isValidating, setIsValidating] = useState(false);
   const stepsArray = Children.toArray(children);
   const totalSteps = stepsArray.length;
   const isCompleted = currentStep > totalSteps;
@@ -82,11 +84,16 @@ export default function Stepper({
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isLastStep) {
-      // Validate current step before advancing
-      if (validateStep && !validateStep(currentStep)) {
-        return;
+      if (validateStep) {
+        setIsValidating(true);
+        try {
+          const isValid = await validateStep(currentStep);
+          if (!isValid) return;
+        } finally {
+          setIsValidating(false);
+        }
       }
       setDirection(1);
       updateStep(currentStep + 1);
@@ -94,11 +101,10 @@ export default function Stepper({
   };
 
   const handleComplete = async () => {
-    // If there's a beforeComplete callback, wait for it
     if (onBeforeComplete) {
       const canComplete = await onBeforeComplete();
       if (!canComplete) {
-        return; // Stay on current step
+        return;
       }
     }
     setDirection(1);
@@ -113,7 +119,7 @@ export default function Stepper({
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div className="size-full rounded-2xl flex flex-col justify-start align-middle overflow-hidden bg-card  shadow-sm">
+      <div className="size-full flex flex-col justify-start align-middle overflow-hidden bg-card shadow-sm">
         {/* Step Indicators */}
         <div
           className={`${stepContainerClassName} w-full border-b border-border px-8 py-6 bg-surface`}
@@ -123,24 +129,12 @@ export default function Stepper({
               const stepNumber = index + 1;
               const isNotLastStep = index < totalSteps - 1;
 
-              // Handler that validates all steps before jumping
+              // Only allow backward navigation via indicators
               const handleStepClick = (clicked: number) => {
-                // Allow going back without validation
                 if (clicked < currentStep) {
                   setDirection(-1);
                   updateStep(clicked);
-                  return;
                 }
-                // For jumping forward, validate all steps in between
-                if (validateStep) {
-                  for (let step = currentStep; step < clicked; step++) {
-                    if (!validateStep(step)) {
-                      return; // Stop at first invalid step
-                    }
-                  }
-                }
-                setDirection(1);
-                updateStep(clicked);
               };
 
               return (
@@ -203,11 +197,21 @@ export default function Stepper({
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium text-primary-foreground bg-primary transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] hover:bg-primary/90"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-medium text-primary-foreground bg-primary transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
                 {...nextButtonProps}
+                disabled={Boolean(nextButtonProps?.disabled) || isValidating}
               >
-                {isLastStep ? "Complete" : nextButtonText}
-                {!isLastStep && <ChevronRight size={16} />}
+                {isValidating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Validating...
+                  </>
+                ) : (
+                  <>
+                    {isLastStep ? "Complete" : nextButtonText}
+                    {!isLastStep && <ChevronRight size={16} />}
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -340,7 +344,6 @@ function StepIndicator({
   } else if (currentStep < step) {
     status = "inactive";
   } else if (isWarning) {
-    // Keep "warning" visually identical to inactive while preventing completed visuals.
     status = "warning";
   }
 
@@ -412,18 +415,10 @@ function StepIndicator({
     >
       <motion.div
         variants={{
-          inactive: {
-            scale: 1
-          },
-          warning: {
-            scale: 1
-          },
-          active: {
-            scale: 1
-          },
-          complete: {
-            scale: 1
-          }
+          inactive: { scale: 1 },
+          warning: { scale: 1 },
+          active: { scale: 1 },
+          complete: { scale: 1 }
         }}
         transition={{ duration: 0.2 }}
         className={`flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[14px] border-2 ${indicatorClassName}`}

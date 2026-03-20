@@ -562,6 +562,26 @@ test('button renders with text', () => {
 })
 ```
 
+### Lighthouse (Local)
+
+Run repeatable Lighthouse audits locally:
+
+```bash
+npm run lighthouse:test
+```
+
+Run audits for a specific route (useful for sidebar-heavy screens):
+
+```bash
+LH_URLS=http://127.0.0.1:4173/campaigns npm run lighthouse:test
+```
+
+Reports are stored in:
+
+```bash
+.lighthouseci/
+```
+
 ## 🎓 Learning Path
 
 ### Beginner
