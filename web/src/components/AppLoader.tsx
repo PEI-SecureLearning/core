@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { appAssetUrl } from '@/lib/app-path'
 
 /**
  * Full-screen branded loading screen.
@@ -66,7 +67,7 @@ export function AppLoader({
             <div className="relative flex flex-col items-center gap-6">
                 <div className="flex items-center gap-2 select-none">
                     <img
-                        src="/Hatlogo.png"
+                        src={appAssetUrl("Hatlogo.png")}
                         alt="SecureLearning"
                         className="h-20 w-20 drop-shadow-sm"
                         style={{ animation: 'sl-pulse 2.4s ease-in-out infinite' }}

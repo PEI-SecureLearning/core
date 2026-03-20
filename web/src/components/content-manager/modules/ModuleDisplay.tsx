@@ -13,6 +13,7 @@ import { useNavigate } from '@tanstack/react-router'
 export type ModuleSortValue = 'newest' | 'oldest' | 'title_asc' | 'title_desc'
 
 const API_BASE = import.meta.env.VITE_API_URL as string
+type ModuleSortValue = 'newest' | 'oldest' | 'title_asc' | 'title_desc'
 
 const gridClass: Record<GridCols, string> = {
     1: 'grid-cols-1',

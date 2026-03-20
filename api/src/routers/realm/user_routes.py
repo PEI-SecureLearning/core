@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 
 from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models import RealmUserCreate
+from src.models import OrgUserCreate, RealmUserCreate
 from src.services.platform_admin import get_platform_admin_service
 
 realm_service = get_platform_admin_service()
@@ -29,14 +29,38 @@ def create_user_in_realm(
     )
 
 
-@router.get("/realms/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))])
+@router.post(
+    "/realms/{realm}/users",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
+)
+def create_user_in_own_realm(
+    session: SessionDep,
+    realm: str,
+    user: OrgUserCreate,
+    token: OAuth2Scheme,
+):
+    """Create a new user inside the caller's Keycloak realm/tenant."""
+    realm_service.validate_realm_access(token, realm)
+    return realm_service.create_user_in_realm(
+        session,
+        realm=realm,
+        username=user.username,
+        name=user.name,
+        email=user.email,
+        role=user.role,
+        group_id=user.group_id,
+    )
+
+
+@router.get("/realms/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
 def list_users_in_realm(session: SessionDep, realm: str, token: OAuth2Scheme):
     """List users inside the specified Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, realm)
     return realm_service.list_users_in_realm(session, realm)
 
 
-@router.get("/realms/{realm}/users/{user_id}", dependencies=[Depends(Roles(Resource.ADMIN, Scope.VIEW))])
+@router.get("/realms/{realm}/users/{user_id}", dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))])
 def get_user_in_realm(realm: str, user_id: str, token: OAuth2Scheme):
     realm_service.validate_realm_access(token, realm)
     return realm_service.get_user_in_realm(realm, user_id)

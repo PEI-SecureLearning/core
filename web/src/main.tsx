@@ -8,6 +8,7 @@ import { routeTree } from './routeTree.gen'
 import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
+import { appBasePath, isAppRoute } from './lib/app-path'
 
 const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
 
@@ -19,7 +20,10 @@ const initOptions: Keycloak.KeycloakInitOptions = {
 };
 
 // Create a new router instance
-const router = createRouter({ routeTree })
+const router = createRouter({
+  routeTree,
+  basepath: appBasePath,
+})
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -100,7 +104,9 @@ const App = () => {
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const isAdminRoute = window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/content-manager");
+  const path = window.location.pathname || '/'
+  const isAdminRoute =
+    isAppRoute(path, "/admin") || isAppRoute(path, "/content-manager");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import { apiClient } from "../../lib/api-client";
+import { isAppRoute } from "../../lib/app-path";
 
 import type {
     ComplianceDoc,
@@ -106,7 +107,7 @@ export default function ComplianceFlow() {
 
     const isAdminContext =
         typeof window !== "undefined" &&
-        (location.pathname.startsWith("/admin") ||
+        (isAppRoute(location.pathname, "/admin") ||
             keycloak.tokenParsed?.iss?.includes("/realms/master") ||
             realmRoles.has("admin"));
     const isOrgManager = realmRoles.has("org_manager");

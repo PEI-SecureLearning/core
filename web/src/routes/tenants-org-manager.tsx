@@ -44,7 +44,7 @@ function UsersManagement() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/users`,
+        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`,
         {
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -65,7 +65,7 @@ function UsersManagement() {
   const fetchGroups = async (targetRealm: string) => {
     try {
       const res = await fetch(
-        `${API_BASE}/org-manager/${encodeURIComponent(targetRealm)}/groups`,
+        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`,
         {
           headers: {
             Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -96,7 +96,7 @@ function UsersManagement() {
     setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
       const res = await fetch(
-        `${API_BASE}/org-manager/${encodeURIComponent(realm)}/users/${encodeURIComponent(id)}`,
+        `${API_BASE}/realms/admin/${encodeURIComponent(realm)}/users/${encodeURIComponent(id)}`,
         {
           method: "DELETE",
           headers: {

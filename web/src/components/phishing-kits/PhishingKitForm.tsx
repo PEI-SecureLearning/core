@@ -52,7 +52,6 @@ export default function PhishingKitForm({
 function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
   const navigate = useNavigate();
   const { data, getValidationErrors, isValid } = usePhishingKit();
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const stepIcons = [BookOpen, Mail, File, Send] as const;
   const stepCompletedIcons = [
@@ -121,7 +120,7 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save phishing kit";
-      setSubmitError(message);
+      toast.error(message);
       return false;
     }
   };

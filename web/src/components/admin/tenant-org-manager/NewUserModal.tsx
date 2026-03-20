@@ -74,7 +74,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: NewUserM
 
         try {
             const res = await fetch(
-                `${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`,
+                `${API_BASE}/realms/${encodeURIComponent(realm)}/users`,
                 {
                     method: "POST",
                     headers: {
