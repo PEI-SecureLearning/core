@@ -240,8 +240,7 @@ export default function TemplatesPage() {
         <div className="flex items-center gap-3">
           {isContentManager && (
             <Button
-              className="inline-flex items-center gap-2 text-white border-0 transition-colors"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+              className="inline-flex items-center gap-2 text-white border-0 transition-colors bg-primary hover:bg-primary/90"
               onClick={openCreateModal}
             >
               <Plus size={16} />
