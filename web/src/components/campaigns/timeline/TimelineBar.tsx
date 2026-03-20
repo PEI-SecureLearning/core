@@ -52,7 +52,7 @@ export const TimelineBar = memo(function TimelineBar({
       </span>
       <Settings2
         size={14}
-        className="text-white/70 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1"
+        className="text-white/70 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1"
       />
     </div>
   );

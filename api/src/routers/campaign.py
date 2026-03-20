@@ -53,3 +53,18 @@ def get_campaign_by_id(id: int, current_realm: CurrentRealm, session: SessionDep
 def cancel_campaign(id: int, current_realm: CurrentRealm, session: SessionDep):
     campaign = service.cancel_campaign(id, current_realm, session)
     return {"message": f"Campaign '{campaign.name}' has been canceled"}
+
+@router.put(
+    "/campaigns/{id}",
+    description="Update a campaign. Only for SCHEDULED campaigns.",
+    status_code=200,
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
+)
+def update_campaign(
+    id: int,
+    campaign_update: CampaignCreate,
+    current_realm: CurrentRealm,
+    session: SessionDep,
+):
+    campaign = service.update_campaign(id, campaign_update, current_realm, session)
+    return {"message": f"Campaign '{campaign.name}' has been updated"}

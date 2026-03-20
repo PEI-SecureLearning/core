@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ReactKeycloakProvider } from '@react-keycloak/web'
@@ -10,7 +10,7 @@ import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
 import { appBasePath, isAppRoute } from './lib/app-path'
 
-const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
+const isSecureContext = globalThis.isSecureContext || globalThis.location.hostname === 'localhost';
 
 const initOptions: Keycloak.KeycloakInitOptions = {
   onLoad: "login-required",
@@ -33,7 +33,6 @@ declare module '@tanstack/react-router' {
 }
 
 // Render the app
-import { useState, useEffect } from 'react'
 import { ServiceUnavailable } from './components/ServiceUnavailable'
 import ErrorBoundary from './components/ErrorBoundary'
 import { AppLoader } from './components/AppLoader'
@@ -104,7 +103,7 @@ const App = () => {
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const path = window.location.pathname || '/'
+  const path = globalThis.location.pathname || '/'
   const isAdminRoute =
     isAppRoute(path, "/admin") || isAppRoute(path, "/content-manager");
   const userRealm = localStorage.getItem('user_realm');

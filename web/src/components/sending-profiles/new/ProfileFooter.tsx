@@ -18,12 +18,20 @@ interface ButtonContent {
 
 const getButtonContent = (isLoading: boolean | undefined): ButtonContent => {
   if (isLoading) {
-    return { icon: <Loader2 className="h-4 w-4 animate-spin" />, text: "Saving..." };
+    return {
+      icon: <Loader2 className="h-4 w-4 animate-spin" />,
+      text: "Saving..."
+    };
   }
   return { icon: <Save className="h-4 w-4" />, text: "Create Profile" };
 };
 
-function ProfileFooter({ onSubmit, isValid, isLoading, status }: Props) {
+function ProfileFooter({
+  onSubmit,
+  isValid,
+  isLoading,
+  status
+}: Readonly<Props>) {
   const buttonContent = getButtonContent(isLoading);
 
   return (

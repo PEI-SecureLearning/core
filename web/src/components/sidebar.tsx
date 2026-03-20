@@ -1,11 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import {
-  PanelLeftClose,
-  PanelLeftOpen,
-  ChevronDown,
-} from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, ChevronDown } from "lucide-react";
 import {
   adminLinks,
   userLinks,
@@ -21,6 +17,15 @@ interface SidebarLinkProps {
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   exact?: boolean;
+}
+
+interface SidebarGroupProps {
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  links: NavLinkDef[];
+  sidebarExpanded: boolean;
+  open: boolean;
+  onToggle: () => void;
 }
 
 // SidebarLink
@@ -57,40 +62,22 @@ function SidebarGroup({
   label,
   icon: Icon,
   links,
-  sidebarCollapsed,
-  sidebarExpanded
-}: {
-  label: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  links: NavLinkDef[];
-  sidebarCollapsed: boolean;
-  sidebarExpanded: boolean;
-}) {
+  sidebarExpanded,
+  open,
+  onToggle
+}: Readonly<SidebarGroupProps>) {
   const location = useLocation();
   const isAnyActive = links.some((l) => location.pathname.startsWith(l.href));
-  const [open, setOpen] = useState(true);
-  const userChoice = useRef<boolean | null>(null);
-  const prevCollapsed = useRef(sidebarCollapsed);
-
-  useEffect(() => {
-    if (prevCollapsed.current === sidebarCollapsed) return;
-    prevCollapsed.current = sidebarCollapsed;
-  }, [sidebarCollapsed]);
-
-  const showChildren = open;
-
-  const handleToggle = () => {
-    const next = !open;
-    setOpen(next);
-    userChoice.current = next;
-  };
+  const showChildren = open && sidebarExpanded;
 
   return (
     <li>
       <button
-        onClick={handleToggle}
+        type="button"
+        onClick={onToggle}
         title={sidebarExpanded ? undefined : label}
         className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
+          ${open ? "bg-muted/10" : ""}
           ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
       >
         <Icon className="h-4 w-4 shrink-0" />
@@ -102,15 +89,17 @@ function SidebarGroup({
         />
       </button>
 
-      <ul
-        className={`overflow-hidden transition-all duration-200 ease-in-out ${showChildren ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-200 ease-in-out ${showChildren ? "grid-rows-[1fr] opacity-100 bg-muted/40" : "grid-rows-[0fr] opacity-0"}`}
       >
-        {links.map((link) => (
-          <li key={link.href}>
-            <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
-          </li>
-        ))}
-      </ul>
+        <ul className="overflow-hidden">
+          {links.map((link) => (
+            <li key={link.href}>
+              <SidebarLink {...link} isCollapsed={!sidebarExpanded} indent />
+            </li>
+          ))}
+        </ul>
+      </div>
     </li>
   );
 }
@@ -120,6 +109,7 @@ function SidebarGroup({
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { keycloak } = useKeycloak();
   const location = useLocation();
@@ -170,10 +160,26 @@ export function Sidebar() {
   const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures);
   const { dashboard, groups, standalone } = groupNavigationLinks(visibleLinks);
 
+  const currentActiveGroupLabel =
+    groups.find((group) =>
+      group.links.some((link) => location.pathname.startsWith(link.href))
+    )?.label ?? null;
+
+  useEffect(() => {
+    if (openGroupKey && groups.some((group) => group.label === openGroupKey)) {
+      return;
+    }
+
+    setOpenGroupKey(currentActiveGroupLabel ?? groups[0]?.label ?? null);
+  }, [currentActiveGroupLabel, groups, openGroupKey]);
+
   // Adjust footer links with route prefix if they aren't absolute
-  const activeFooterLinks = footerLinks.map(link => ({
+  const activeFooterLinks = footerLinks.map((link) => ({
     ...link,
-    href: link.href.startsWith("/") && routePrefix ? `${routePrefix}${link.href}` : link.href
+    href:
+      link.href.startsWith("/") && routePrefix
+        ? `${routePrefix}${link.href}`
+        : link.href
   }));
 
   return (
@@ -205,13 +211,18 @@ export function Sidebar() {
               <SidebarLink {...dashboard} isCollapsed={!expanded} />
             </li>
           )}
-          
+
           {groups.map((group) => (
             <SidebarGroup
               key={group.label}
               {...group}
-              sidebarCollapsed={isCollapsed}
               sidebarExpanded={expanded}
+              open={openGroupKey === group.label}
+              onToggle={() =>
+                setOpenGroupKey((prev) =>
+                  prev === group.label ? null : group.label
+                )
+              }
             />
           ))}
 

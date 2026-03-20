@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode
+} from "react";
 
 export interface CampaignData {
   // Basic Info (from CampaignForms)
@@ -52,15 +59,17 @@ function getDefaultDates() {
   const endDate = new Date(now.getTime() + 5 * 60 * 1000); // +5 minutes
   return {
     begin_date: startDate.toISOString(),
-    end_date: endDate.toISOString(),
+    end_date: endDate.toISOString()
   };
 }
 
 const getInitialCampaignData = (
   initialGroupIds: string[] = [],
+  initialData?: Partial<CampaignData>
 ): CampaignData => {
   const { begin_date, end_date } = getDefaultDates();
-  return {
+
+  const createDefaults: CampaignData = {
     name: "",
     description: "",
     phishing_kit_ids: [],
@@ -68,7 +77,24 @@ const getInitialCampaignData = (
     user_group_ids: initialGroupIds,
     begin_date,
     end_date,
-    sending_interval_seconds: 60, // default 1 minute
+    sending_interval_seconds: 60 // default 1 minute
+  };
+
+  return {
+    ...createDefaults,
+    ...initialData,
+    name: initialData?.name ?? createDefaults.name,
+    description: initialData?.description ?? createDefaults.description,
+    phishing_kit_ids:
+      initialData?.phishing_kit_ids ?? createDefaults.phishing_kit_ids,
+    sending_profile_ids:
+      initialData?.sending_profile_ids ?? createDefaults.sending_profile_ids,
+    user_group_ids: initialData?.user_group_ids ?? createDefaults.user_group_ids,
+    begin_date: initialData?.begin_date ?? createDefaults.begin_date,
+    end_date: initialData?.end_date ?? createDefaults.end_date,
+    sending_interval_seconds:
+      initialData?.sending_interval_seconds ??
+      createDefaults.sending_interval_seconds
   };
 };
 
@@ -79,23 +105,31 @@ const CampaignContext = createContext<CampaignContextType | undefined>(
 export function CampaignProvider({
   children,
   initialGroupIds,
+  initialData
 }: {
   readonly children: ReactNode;
   readonly initialGroupIds?: string[];
+  readonly initialData?: Partial<CampaignData>;
 }) {
   const [data, setData] = useState<CampaignData>(
-    getInitialCampaignData(initialGroupIds),
+    getInitialCampaignData(initialGroupIds, initialData)
   );
 
-  const updateData = (updates: Partial<CampaignData>) => {
-    setData((prev) => ({ ...prev, ...updates }));
-  };
+  const updateData = useCallback((updates: Partial<CampaignData>) => {
+    setData((prev) => {
+      const next = { ...prev, ...updates };
+      const hasChanges = (Object.keys(updates) as Array<keyof CampaignData>).some(
+        (key) => prev[key] !== next[key]
+      );
+      return hasChanges ? next : prev;
+    });
+  }, []);
 
-  const resetData = () => {
-    setData(getInitialCampaignData(initialGroupIds));
-  };
+  const resetData = useCallback(() => {
+    setData(getInitialCampaignData(initialGroupIds, initialData));
+  }, [initialData, initialGroupIds]);
 
-  const getValidationErrors = (): string[] => {
+  const getValidationErrors = useCallback((): string[] => {
     const errors: string[] = [];
 
     if (!data.name.trim()) errors.push("Campaign name is required.");
@@ -116,11 +150,13 @@ export function CampaignProvider({
     }
 
     return errors;
-  };
+  }, [data]);
 
-  const isValid = (): boolean => getValidationErrors().length === 0;
+  const isValid = useCallback((): boolean => getValidationErrors().length === 0, [
+    getValidationErrors
+  ]);
 
-  const getPayload = (): CampaignCreatePayload | null => {
+  const getPayload = useCallback((): CampaignCreatePayload | null => {
     if (!isValid()) return null;
 
     return {
@@ -131,21 +167,24 @@ export function CampaignProvider({
       sending_interval_seconds: data.sending_interval_seconds,
       sending_profile_ids: data.sending_profile_ids,
       phishing_kit_ids: data.phishing_kit_ids,
-      user_group_ids: data.user_group_ids,
+      user_group_ids: data.user_group_ids
     };
-  };
+  }, [data, isValid]);
+
+  const contextValue = useMemo(
+    () => ({
+      data,
+      updateData,
+      resetData,
+      getValidationErrors,
+      isValid,
+      getPayload
+    }),
+    [data, getPayload, getValidationErrors, isValid, resetData, updateData]
+  );
 
   return (
-    <CampaignContext.Provider
-      value={{
-        data,
-        updateData,
-        resetData,
-        getValidationErrors,
-        isValid,
-        getPayload,
-      }}
-    >
+    <CampaignContext.Provider value={contextValue}>
       {children}
     </CampaignContext.Provider>
   );

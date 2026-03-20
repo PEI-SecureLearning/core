@@ -24,3 +24,8 @@
 
 - edit pages for sending profiles and kits:
   - [x] fill in information properly on the forms
+
+- sending profile creation + editing page:
+  - [x] remove test button
+  - [ ] change custom header display
+  - [ ] change preview and summary

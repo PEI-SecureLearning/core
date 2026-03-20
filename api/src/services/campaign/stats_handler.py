@@ -259,6 +259,9 @@ class StatsHandler:
             sending_interval_seconds=campaign.sending_interval_seconds,
             status=campaign.status,
             realm_name=campaign.realm_name,
+            user_group_ids=[group.id for group in campaign.user_groups],
+            phishing_kit_ids=[kit.id for kit in campaign.phishing_kits],
+            sending_profile_ids=[profile.id for profile in campaign.sending_profiles],
             sending_profile_names=[p.name for p in campaign.sending_profiles],
             phishing_kit_names=[
                 kit.name for kit in campaign.phishing_kits

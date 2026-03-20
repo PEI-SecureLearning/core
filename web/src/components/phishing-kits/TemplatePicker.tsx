@@ -6,17 +6,11 @@ import {
   Eye,
   Check,
   Loader2,
-  AlertCircle,
-  CircleQuestionMark
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
+import FormTooltip from "@/components/shared/FormTooltip";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
 import SearchBar from "@/components/shared/SearchBar";
 import { cn } from "@/lib/utils";
@@ -328,29 +322,7 @@ export default function TemplatePicker({
           <DefaultIcon size={12} />
           {sectionLabel}
         </span>
-        <TooltipProvider>
-          <Tooltip delayDuration={200}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="text-primary hover:text-primary/80 transition-colors"
-                aria-label={`More information about ${sectionLabel.toLowerCase()}`}
-              >
-                <CircleQuestionMark size={14} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="right"
-              className="bg-popover border-border text-popover-foreground"
-            >
-              <div className="text-[12px] font-medium space-y-1 max-w-[300px]">
-                {sectionTooltipLines.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <FormTooltip side="right" content={sectionTooltipLines} />
       </div>
 
       {/* Toolbar */}

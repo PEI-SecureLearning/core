@@ -1,5 +1,5 @@
 from .table import SendingProfile, CampaignSendingProfileLink, CustomHeader
-from .schemas import SendingProfileCreate, SendingProfileDisplayInfo, CustomHeaderCreate
+from .schemas import SendingProfileCreate, SendingProfileDisplayInfo, SendingProfileRead, CustomHeaderCreate, CustomHeaderRead
 
 __all__ = [
     "SendingProfile",
@@ -7,5 +7,7 @@ __all__ = [
     "CustomHeader",
     "SendingProfileCreate",
     "SendingProfileDisplayInfo",
+    "SendingProfileRead",
     "CustomHeaderCreate",
+    "CustomHeaderRead",
 ]

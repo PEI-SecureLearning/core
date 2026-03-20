@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import RequiredAsterisk from '@/components/shared/RequiredAsterisk'
 
 interface TenantFormUsersProps {
     userCount: string
@@ -11,11 +12,11 @@ interface TenantFormUsersProps {
 export function TenantFormUsers({
     userCount, setUserCount,
     bundle, setBundle
-}: TenantFormUsersProps) {
+}: Readonly<TenantFormUsersProps>) {
     return (
         <div className="grid grid-cols-2 gap-6">
             <div className="h-20">
-                <Label htmlFor="users" className="text-foreground/90 block mb-2">Number of users<span className="text-red-500">*</span></Label>
+                <Label htmlFor="users" className="text-foreground/90 block mb-2">Number of users <RequiredAsterisk isValid={!!userCount} /></Label>
                 <Input
                     id="users"
                     type="number"

@@ -46,24 +46,40 @@ interface Props {
 export default function SendingProfileLayout({
   title,
   subtitle,
-  name, setName,
-  fromFname, setFromFname,
-  fromLname, setFromLname,
-  fromEmail, setFromEmail,
-  smtpHost, setSmtpHost,
-  smtpPort, setSmtpPort,
-  username, setUsername,
-  password, setPassword,
-  onTest, isTesting, testStatus,
-  customHeaders, onAddHeader, onRemoveHeader,
-  footer,
+  name,
+  setName,
+  fromFname,
+  setFromFname,
+  fromLname,
+  setFromLname,
+  fromEmail,
+  setFromEmail,
+  smtpHost,
+  setSmtpHost,
+  smtpPort,
+  setSmtpPort,
+  username,
+  setUsername,
+  password,
+  setPassword,
+  onTest,
+  isTesting,
+  testStatus,
+  customHeaders,
+  onAddHeader,
+  onRemoveHeader,
+  footer
 }: Readonly<Props>) {
   return (
     <div className="h-full w-full flex flex-col bg-background animate-fade-in overflow-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border py-3 px-6 bg-surface-subtle">
-        <h3 className="text-xl font-semibold text-foreground tracking-tight">{title}</h3>
-        <h2 className="text-sm font-medium text-muted-foreground">{subtitle}</h2>
+      <div className="shrink-0 border-b border-border py-3 px-6 bg-surface-subtle">
+        <h3 className="text-xl font-semibold text-foreground tracking-tight">
+          {title}
+        </h3>
+        <h2 className="text-sm font-medium text-muted-foreground">
+          {subtitle}
+        </h2>
       </div>
 
       {/* Main content */}
@@ -87,25 +103,25 @@ export default function SendingProfileLayout({
           <div className="flex gap-5">
             <div className="w-1/2">
               <ProfileSmtpConfig
-              host={smtpHost}
-              setHost={setSmtpHost}
-              port={smtpPort}
-              setPort={setSmtpPort}
-              username={username}
-              setUsername={setUsername}
-              password={password}
-              setPassword={setPassword}
-              onTest={onTest}
-              isTesting={isTesting}
-              testStatus={testStatus}
-            />
+                host={smtpHost}
+                setHost={setSmtpHost}
+                port={smtpPort}
+                setPort={setSmtpPort}
+                username={username}
+                setUsername={setUsername}
+                password={password}
+                setPassword={setPassword}
+                onTest={onTest}
+                isTesting={isTesting}
+                testStatus={testStatus}
+              />
             </div>
             <div className="w-1/2">
-             <CustomHeadersSection
-              headers={customHeaders}
-              onAddHeader={onAddHeader}
-              onRemoveHeader={onRemoveHeader}
-            />
+              <CustomHeadersSection
+                headers={customHeaders}
+                onAddHeader={onAddHeader}
+                onRemoveHeader={onRemoveHeader}
+              />
             </div>
           </div>
         </div>
@@ -123,7 +139,7 @@ export default function SendingProfileLayout({
       </div>
 
       {/* Footer slot */}
-      <div className="flex-shrink-0 border-t border-border py-4 bg-surface">
+      <div className="shrink-0 border-t border-border py-4 bg-surface">
         {footer}
       </div>
     </div>

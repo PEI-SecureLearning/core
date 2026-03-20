@@ -37,6 +37,7 @@ class Campaign(SQLModel, table=True):
     total_clicked: int = Field(default=0)
     total_phished: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
 
     # FKs
     realm_name: Optional[str] = Field(

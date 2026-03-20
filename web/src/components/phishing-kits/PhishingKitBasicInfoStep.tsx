@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import FormTooltip from "@/components/shared/FormTooltip";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 import { usePhishingKit } from "./PhishingKitContext";
 
 export default function PhishingKitBasicInfoStep() {
@@ -29,15 +31,23 @@ export default function PhishingKitBasicInfoStep() {
     setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
+  const isNameValid = data.name.trim().length > 0;
+
   return (
     <div className="h-full w-full flex flex-col gap-5 p-2">
       {/* Name */}
       <div className="flex flex-col gap-2">
         <label
           htmlFor="kit-name"
-          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase"
+          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5"
         >
-          Kit Name <span className="text-destructive">*</span>
+          Kit Name <RequiredAsterisk isValid={isNameValid} />
+          <FormTooltip
+            side="right"
+            content={[
+              "This name helps you identify the phishing kit in campaign setup and reporting."
+            ]}
+          />
         </label>
         <input
           id="kit-name"
@@ -53,9 +63,15 @@ export default function PhishingKitBasicInfoStep() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="kit-description"
-          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase"
+          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5"
         >
           Description
+          <FormTooltip
+            side="right"
+            content={[
+              "Optional details for internal documentation and collaboration."
+            ]}
+          />
         </label>
         <textarea
           id="kit-description"
@@ -71,9 +87,15 @@ export default function PhishingKitBasicInfoStep() {
       <div className="flex flex-col gap-2">
         <label
           htmlFor="kit-tags"
-          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase"
+          className="text-[12px] font-normal text-muted-foreground tracking-wide uppercase flex items-center gap-1.5"
         >
           Tags
+          <FormTooltip
+            side="right"
+            content={[
+              "Use tags to quickly filter and organize phishing kits by theme or scenario."
+            ]}
+          />
         </label>
 
         <div className="flex items-center gap-2">

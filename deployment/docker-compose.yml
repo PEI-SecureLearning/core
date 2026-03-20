@@ -36,9 +36,9 @@ services:
     expose:
       - "5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -58,7 +58,20 @@ services:
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: [ "CMD", "mongo", "--quiet", "-u", "${MONGO_ROOT_USER}", "-p", "${MONGO_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')" ]
+      test:
+        [
+          "CMD",
+          "mongo",
+          "--quiet",
+          "-u",
+          "${MONGO_ROOT_USER}",
+          "-p",
+          "${MONGO_ROOT_PASSWORD}",
+          "--authenticationDatabase",
+          "admin",
+          "--eval",
+          "db.adminCommand('ping')"
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -105,7 +118,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -208,7 +221,7 @@ services:
     expose:
       - "80"
     healthcheck:
-      test: [ "CMD", "wget", "-qO", "/dev/null", "http://localhost:80/health" ]
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:80/health"]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -238,7 +251,7 @@ services:
     expose:
       - "80"
     healthcheck:
-      test: [ "CMD", "wget", "-qO", "/dev/null", "http://localhost:80" ]
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:80"]
       interval: 15s
       timeout: 10s
       retries: 5

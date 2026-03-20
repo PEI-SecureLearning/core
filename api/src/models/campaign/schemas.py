@@ -16,6 +16,17 @@ class CampaignCreate(SQLModel):
     phishing_kit_ids: list[int] = []
     user_group_ids: list[str]
 
+
+class CampaignUpdate(SQLModel):
+    name: str
+    description: Optional[str] = None
+    begin_date: datetime
+    end_date: datetime
+    sending_interval_seconds: int = MIN_INTERVAL_SECONDS
+    sending_profile_ids: list[int] = []
+    phishing_kit_ids: list[int] = []
+    user_group_ids: list[str] = []
+
 class CampaignDisplayInfo(SQLModel):
     id: int
     name: str
@@ -40,6 +51,9 @@ class CampaignDetailInfo(SQLModel):
     realm_name: Optional[str] = None
 
     # Related entities
+    user_group_ids: list[str] = []
+    phishing_kit_ids: list[int] = []
+    sending_profile_ids: list[int] = []
     phishing_kit_names: list[str] = []
     creator_id: Optional[str] = None
     creator_email: Optional[str] = None
