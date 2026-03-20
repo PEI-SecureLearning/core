@@ -38,11 +38,6 @@ class user_handler:
         if location:
             user_id = location.rstrip("/").split("/")[-1]
 
-            user = User(keycloak_id=user_id, email=email, is_org_manager=(role or "").strip().upper() == "ORG_MANAGER")
-            session.add(user)
-            session.commit()
-            session.refresh(user)
-
         if group_id and user_id:
             try:
                 self.admin.add_user_to_group(realm, user_id, group_id)

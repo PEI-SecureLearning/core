@@ -377,13 +377,13 @@ export interface FileRoutesByFullPath {
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
   '/admin/': typeof AdminIndexRoute
-  '/campaigns/': typeof CampaignsIndexRoute
-  '/content-manager/': typeof ContentManagerIndexRoute
-  '/courses/': typeof CoursesIndexRoute
-  '/phishing-kits/': typeof PhishingKitsIndexRoute
-  '/sending-profiles/': typeof SendingProfilesIndexRoute
-  '/tenants/': typeof TenantsIndexRoute
-  '/usergroups/': typeof UsergroupsIndexRoute
+  '/campaigns': typeof CampaignsIndexRoute
+  '/content-manager': typeof ContentManagerIndexRoute
+  '/courses': typeof CoursesIndexRoute
+  '/phishing-kits': typeof PhishingKitsIndexRoute
+  '/sending-profiles': typeof SendingProfilesIndexRoute
+  '/tenants': typeof TenantsIndexRoute
+  '/usergroups': typeof UsergroupsIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/campaigns/$id/edit': typeof CampaignsIdEditRoute
@@ -392,8 +392,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/courses/new': typeof ContentManagerCoursesNewRoute
   '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
   '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
-  '/admin/tenants/': typeof AdminTenantsIndexRoute
-  '/campaigns/$id/': typeof CampaignsIdIndexRoute
+  '/admin/tenants': typeof AdminTenantsIndexRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
@@ -545,13 +544,13 @@ export interface FileRouteTypes {
     | '/usergroups/$id'
     | '/usergroups/new-group'
     | '/admin/'
-    | '/campaigns/'
-    | '/content-manager/'
-    | '/courses/'
-    | '/phishing-kits/'
-    | '/sending-profiles/'
-    | '/tenants/'
-    | '/usergroups/'
+    | '/campaigns'
+    | '/content-manager'
+    | '/courses'
+    | '/phishing-kits'
+    | '/sending-profiles'
+    | '/tenants'
+    | '/usergroups'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/campaigns/$id/edit'
@@ -560,8 +559,7 @@ export interface FileRouteTypes {
     | '/content-manager/courses/new'
     | '/content-manager/modules/$moduleId'
     | '/content-manager/modules/new'
-    | '/admin/tenants/'
-    | '/campaigns/$id/'
+    | '/admin/tenants'
     | '/courses/$courseId/'
     | '/courses/$courseId/modules/$moduleId'
   fileRoutesByTo: FileRoutesByTo
@@ -793,49 +791,49 @@ declare module '@tanstack/react-router' {
     '/usergroups/': {
       id: '/usergroups/'
       path: '/usergroups'
-      fullPath: '/usergroups/'
+      fullPath: '/usergroups'
       preLoaderRoute: typeof UsergroupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tenants/': {
       id: '/tenants/'
       path: '/tenants'
-      fullPath: '/tenants/'
+      fullPath: '/tenants'
       preLoaderRoute: typeof TenantsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sending-profiles/': {
       id: '/sending-profiles/'
       path: '/sending-profiles'
-      fullPath: '/sending-profiles/'
+      fullPath: '/sending-profiles'
       preLoaderRoute: typeof SendingProfilesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/phishing-kits/': {
       id: '/phishing-kits/'
       path: '/phishing-kits'
-      fullPath: '/phishing-kits/'
+      fullPath: '/phishing-kits'
       preLoaderRoute: typeof PhishingKitsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses/': {
       id: '/courses/'
       path: '/courses'
-      fullPath: '/courses/'
+      fullPath: '/courses'
       preLoaderRoute: typeof CoursesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/content-manager/': {
       id: '/content-manager/'
       path: '/content-manager'
-      fullPath: '/content-manager/'
+      fullPath: '/content-manager'
       preLoaderRoute: typeof ContentManagerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
-      fullPath: '/campaigns/'
+      fullPath: '/campaigns'
       preLoaderRoute: typeof CampaignsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -1031,7 +1029,7 @@ declare module '@tanstack/react-router' {
     '/admin/tenants/': {
       id: '/admin/tenants/'
       path: '/tenants'
-      fullPath: '/admin/tenants/'
+      fullPath: '/admin/tenants'
       preLoaderRoute: typeof AdminTenantsIndexRouteImport
       parentRoute: typeof AdminRoute
     }

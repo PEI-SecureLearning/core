@@ -289,16 +289,8 @@ export default function TemplatesPage() {
           {templates.length === 0 ? (
             <EmptyState />
           ) : (
-            <Tabs
-              value={activeTab}
-              onValueChange={(value) =>
-                setActiveTab(value as (typeof templatePaths)[number])
-              }
-            >
-              <TabsList
-                className="grid w-full grid-cols-2 border-b border-border rounded-none p-0"
-                variant="line"
-              >
+            <Tabs value={activeTab} onValueChange={(value: string) => setActiveTab(value as (typeof templatePaths)[number])}>
+              <TabsList className="grid w-full grid-cols-2 border-b border-border rounded-none p-0" variant="line">
                 <TabsTrigger
                   value="/templates/emails/"
                   className="rounded-none data-[state=active]:text-primary data-[state=active]:after:bg-primary"

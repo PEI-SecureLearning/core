@@ -38,7 +38,7 @@ export function BulkImportModal({
         const groupIdMap: Record<string, string> = {};
         const fetchGroupsIds = async () => {
             try {
-                const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/groups`, {
+                const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
                     headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
                 });
                 if (!res.ok) return;
@@ -54,7 +54,7 @@ export function BulkImportModal({
         for (const name of groupNames) {
             if (groupIdMap[name]) continue;
             try {
-                const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/groups`, {
+                const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
                     method: "POST",
                     headers: {
                         Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -76,7 +76,7 @@ export function BulkImportModal({
                 continue;
             }
             try {
-                const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`, {
+                const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/users`, {
                     method: "POST",
                     headers: {
                         Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -103,7 +103,7 @@ export function BulkImportModal({
 
         // Assign groups
         try {
-            const res = await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`, {
+            const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/users`, {
                 headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
             });
             if (res.ok) {
@@ -119,7 +119,7 @@ export function BulkImportModal({
                         const gid = groupIdMap[gName];
                         if (!gid) continue;
                         try {
-                            await fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/groups/${encodeURIComponent(gid)}/members/${encodeURIComponent(uid)}`, {
+                            await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(gid)}/members/${encodeURIComponent(uid)}`, {
                                 method: "POST",
                                 headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
                             });

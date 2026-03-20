@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useKeycloak } from '@react-keycloak/web'
 import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
@@ -8,7 +7,6 @@ import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
 
 export function CreateTenantPage() {
-    const { keycloak } = useKeycloak()
     const navigate = useNavigate()
     const [realmName, setRealmName] = useState('')
     const [domain, setDomain] = useState('')
@@ -43,24 +41,7 @@ export function CreateTenantPage() {
         setLogoPreviewUrl(previewUrl)
     }
 
-    const extractDetailText = (detail: unknown): string => {
-        if (typeof detail === 'string') return detail.trim()
-        if (!Array.isArray(detail) || detail.length === 0) return ''
-        const first = detail[0] as { msg?: unknown } | string
-        if (typeof first === 'string') return first
-        if (typeof first?.msg === 'string') return first.msg
-        return ''
-    }
-
-    const getStatusErrorMessage = (status?: number): string | null => {
-        if (status === 401) return 'Your session expired. Please log in again and retry.'
-        if (status === 403) return 'You do not have permission to create tenants.'
-        if (status === 400 || status === 422) return 'Some tenant details are invalid. Please review the form.'
-        if (status && status >= 500) return 'Server error while creating tenant. Please try again in a moment.'
-        return null
-    }
-
-    const getCreateTenantErrorMessage = (error: unknown): string => {
+    const getCreateTenantErrorMessage = (_error: unknown): string => {
         // The fetch-based client throws plain Error with message including statusText.
         // We can't reliably parse JSON body here, so return generic message.
         return 'Failed to create tenant. Please try again.'

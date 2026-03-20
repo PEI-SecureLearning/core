@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type ReactNode, type FocusEvent } from "react";
 import { CircleQuestionMark, Loader2 } from "lucide-react";
 
 import FormTooltip, {
@@ -83,8 +83,8 @@ export default function SearchableMultiPicker<
     const search = inputValue.toLowerCase().trim();
     const matched = search
       ? unselectedItems.filter((item) =>
-          getSearchText(item).toLowerCase().includes(search)
-        )
+        getSearchText(item).toLowerCase().includes(search)
+      )
       : unselectedItems;
     return matched.slice(0, maxSuggestions);
   }, [getSearchText, inputValue, maxSuggestions, unselectedItems]);
@@ -176,7 +176,7 @@ export default function SearchableMultiPicker<
 
         <Popover
           open={open}
-          onOpenChange={(nextOpen) => {
+          onOpenChange={(nextOpen: boolean) => {
             if (nextOpen) setOpen(true);
           }}
           modal={false}
@@ -209,8 +209,8 @@ export default function SearchableMultiPicker<
           <PopoverContent
             align="start"
             sideOffset={4}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onFocusOutside={(e) => e.preventDefault()}
+            onOpenAutoFocus={(e: Event) => e.preventDefault()}
+            onFocusOutside={(e: FocusEvent | Event) => e.preventDefault()}
             style={{ width: anchorWidth ?? "100%" }}
             className="p-0 shadow-lg border-border bg-popover"
           >
@@ -258,12 +258,12 @@ export default function SearchableMultiPicker<
             >
               {selectedIds.length > 0
                 ? selectedIds.map((id) => {
-                    const item = items.find((candidate) => candidate.id === id);
-                    if (!item) return null;
-                    return renderSelectedItem(item, () =>
-                      handleToggleSelection(id)
-                    );
-                  })
+                  const item = items.find((candidate) => candidate.id === id);
+                  if (!item) return null;
+                  return renderSelectedItem(item, () =>
+                    handleToggleSelection(id)
+                  );
+                })
                 : renderEmptySelected}
             </div>
           </ScrollArea>

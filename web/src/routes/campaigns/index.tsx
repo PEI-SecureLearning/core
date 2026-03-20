@@ -26,7 +26,7 @@ import {
   CalendarRange
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = import.meta.env.VITE_API_URL as string;
 
 interface Campaign {
   id: string;
@@ -523,7 +523,8 @@ function CampaignsPage() {
                           className="w-40 rounded-xl bg-surface border border-border shadow-xl z-50 py-1 p-0"
                         >
                           <Link
-                            to={`/campaigns/${campaign.id}` as any}
+                            to="/campaigns/$id"
+                            params={{ id: campaign.id }}
                             className="w-full text-left px-4 py-2 text-[13px] text-foreground hover:bg-surface-subtle block transition-colors"
                           >
                             View Details

@@ -101,7 +101,7 @@
       {
         "clientId": "api",
         "enabled": true,
-        "serviceAccountsEnabled": true,
+        "serviceAccountsEnabled": false,
         "authorizationServicesEnabled": true,
         "authorizationSettings": {
           "allowRemoteResourceManagement": true,

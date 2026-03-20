@@ -28,14 +28,14 @@ export function Navbar() {
   const routerState = useRouterState();
   const { keycloak } = useKeycloak();
   const currentPath = routerState.location.pathname;
-  const BASE_URL = import.meta.env.VITE_WEB_URL;
+  const baseUrl = import.meta.env.VITE_WEB_URL || globalThis.location.origin + "/app";
 
   const parts = currentPath.split("/").filter(Boolean);
 
   const handleLogout = async () => {
     try {
       await keycloak.logout({
-        redirectUri: BASE_URL
+        redirectUri: baseUrl
       });
 
       console.log("User has been successfully logged out and redirected.");
