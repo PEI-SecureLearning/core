@@ -96,13 +96,13 @@ The application uses a **multi-container architecture** with Docker Compose:
 cd deployment
 
 # Start all services
-docker compose --env-file .env.prod -f docker-compose.yml up -d --build
+docker compose -f docker-compose.yml up -d --build
 
 # View logs
-docker compose --env-file .env.prod -f docker-compose.yml logs -f
+docker compose -f docker-compose.yml logs -f
 
 # Stop all services
-docker compose --env-file .env.prod -f docker-compose.yml down
+docker compose -f docker-compose.yml down
 ```
 
 Access the application:
@@ -115,7 +115,7 @@ Access the application:
 ```bash
 # Start the development stack
 cd deployment
-docker compose --env-file .env.dev -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
 Access the development services:
@@ -153,7 +153,6 @@ The `nginx.conf` file configures:
 Routes API requests to the backend:
 ```
 /api/*       → backend (FastAPI)
-/openapi.json → backend
 /health      → backend
 ```
 
