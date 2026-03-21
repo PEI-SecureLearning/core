@@ -38,9 +38,11 @@ class realm_handler:
                 status_code=409,
                 detail=f"Domain '{normalized_domain}' is already in use.",
             )
-        if normalized_domain not in realm.adminEmail:
+        
+        admin_parts = realm.adminEmail.strip().lower().split('@')
+        if len(admin_parts) != 2 or admin_parts[1] != normalized_domain:
             raise HTTPException(
-                status_code=409,
+                status_code=400,
                 detail=f"Admin email must belong to the '{normalized_domain}' domain.",
             )
 
