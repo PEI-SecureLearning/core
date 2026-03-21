@@ -17,6 +17,7 @@ from src.models import (
     Realm,
     SendingProfile,
     User,
+    UserDTO,
     UserGroup,
 )
 
@@ -74,19 +75,17 @@ def mock_platform_admin_service():
         mock_service = MagicMock()
         mock_get.return_value = mock_service
         mock_service.list_group_members_in_realm.side_effect = (
-            lambda _realm, group_id: {
-                "members": (
-                    [
-                        {"id": "user-1", "email": USER_1_EMAIL},
-                        {"id": "user-2", "email": USER_2_EMAIL},
-                    ]
-                    if group_id == "group-1"
-                    else [
-                        {"id": "user-2", "email": USER_2_EMAIL},
-                        {"id": "user-3", "email": USER_3_EMAIL},
-                    ]
-                )
-            }
+            lambda _realm, group_id: (
+                [
+                    UserDTO(id="user-1", email=USER_1_EMAIL),
+                    UserDTO(id="user-2", email=USER_2_EMAIL),
+                ]
+                if group_id == "group-1"
+                else [
+                    UserDTO(id="user-2", email=USER_2_EMAIL),
+                    UserDTO(id="user-3", email=USER_3_EMAIL),
+                ]
+            )
         )
         yield mock_service
 

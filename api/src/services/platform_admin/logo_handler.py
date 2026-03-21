@@ -12,9 +12,13 @@ from src.core.object_storage import (
     put_bytes,
 )
 from src.core.settings import settings
+from src.services.platform_admin.base_handler import base_handler
 
 
-class logo_handler:
+class logo_handler(base_handler):
+
+    def __init__(self):
+        super().__init__()
 
     async def upsert_tenant_logo(
         self,
@@ -72,9 +76,15 @@ class logo_handler:
 
         if existing and existing.get("storage") == "garage":
             previous_key = existing.get("object_key")
-            if isinstance(previous_key, str) and previous_key and previous_key != object_key:
+            if (
+                isinstance(previous_key, str)
+                and previous_key
+                and previous_key != object_key
+            ):
                 try:
-                    await delete_object(bucket=settings.GARAGE_BUCKET_LOGOS, key=previous_key)
+                    await delete_object(
+                        bucket=settings.GARAGE_BUCKET_LOGOS, key=previous_key
+                    )
                 except ObjectStorageError:
                     pass
 
@@ -120,7 +130,9 @@ class logo_handler:
             if not isinstance(object_key, str) or not object_key:
                 raise HTTPException(status_code=404, detail="Tenant logo not found")
             try:
-                stored = await get_object(bucket=settings.GARAGE_BUCKET_LOGOS, key=object_key)
+                stored = await get_object(
+                    bucket=settings.GARAGE_BUCKET_LOGOS, key=object_key
+                )
             except ObjectStorageError as exc:
                 raise HTTPException(status_code=503, detail=str(exc)) from exc
             return stored.stream.read(), content_type
@@ -129,3 +141,13 @@ class logo_handler:
         if not data:
             raise HTTPException(status_code=404, detail="Tenant logo not found")
         return bytes(data), content_type
+
+
+_instance: logo_handler | None = None
+
+
+def get_logo_handler() -> logo_handler:
+    global _instance
+    if _instance is None:
+        _instance = logo_handler()
+    return _instance
