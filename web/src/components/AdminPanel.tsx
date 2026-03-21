@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
+import { isValidTenantDomain, normalizeTenantDomain } from '@/lib/tenantDomainValidation'
 import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
 
@@ -51,12 +52,16 @@ export function CreateTenantPage() {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const normalizedDomain = domain.trim().toLowerCase()
+            const normalizedDomain = normalizeTenantDomain(domain)
             const normalizedAdminEmail = adminEmail.trim().toLowerCase()
             const isAdminEmailFormatValid = isValidEmail(normalizedAdminEmail)
             const adminEmailDomain = getEmailDomain(normalizedAdminEmail) ?? ''
             if (!normalizedDomain) {
                 toast.error('Domain is required.')
+                return
+            }
+            if (!isValidTenantDomain(normalizedDomain)) {
+                toast.error('Please provide a valid domain name.')
                 return
             }
             if (!normalizedAdminEmail || !isAdminEmailFormatValid) {
