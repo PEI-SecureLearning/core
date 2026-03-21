@@ -2,13 +2,12 @@ import { useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, Image as ImageIcon, ListChecks, Plus } from 'lucide-react'
 import type { BlockType } from '../types'
-import { BLOCK_THEMES, type BlockAccent } from './themes'
+import { useModuleTheme } from '../theme-context'
 
-export function AddBlockMenu({ onAdd, accent = 'purple' }: {
+export function AddBlockMenu({ onAdd }: {
     readonly onAdd: (kind: BlockType) => void
-    readonly accent?: BlockAccent
 }) {
-    const theme = BLOCK_THEMES[accent]
+    const { theme } = useModuleTheme()
     const [open, setOpen] = useState(false)
     const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null)
     const btnRef = useRef<HTMLButtonElement>(null)
@@ -41,9 +40,9 @@ export function AddBlockMenu({ onAdd, accent = 'purple' }: {
     }, [onAdd])
 
     const options: { kind: BlockType; label: string; icon: React.ReactNode; desc: string }[] = [
-        { kind: 'text',         label: 'Text',     icon: <FileText   className="w-4 h-4" />, desc: 'Plain or Markdown text'                },
-        { kind: 'rich_content', label: 'Media',    icon: <ImageIcon  className="w-4 h-4" />, desc: 'Image, video, audio or file'           },
-        { kind: 'question',     label: 'Question', icon: <ListChecks className="w-4 h-4" />, desc: 'Multiple choice, T/F, or short answer' },
+        { kind: 'text', label: 'Text', icon: <FileText className="w-4 h-4" />, desc: 'Plain or Markdown text' },
+        { kind: 'rich_content', label: 'Media', icon: <ImageIcon className="w-4 h-4" />, desc: 'Image, video, audio or file' },
+        { kind: 'question', label: 'Question', icon: <ListChecks className="w-4 h-4" />, desc: 'Multiple choice, T/F, or short answer' },
     ]
 
     return (

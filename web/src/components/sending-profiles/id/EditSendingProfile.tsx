@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
-import SendingProfileLayout from "@/components/sending-profiles/shared/SendingProfileLayout";
-import EditProfileFooter from "@/components/sending-profiles/id/EditProfileFooter";
+import SendingProfileFormContainer from "@/components/sending-profiles/shared/SendingProfileFormContainer";
 import { useSendingProfileForm } from "@/components/sending-profiles/shared/useSendingProfileForm";
 import {
   fetchSendingProfileById,
-  updateSendingProfile,
-  deleteSendingProfile,
+  updateSendingProfile
 } from "@/services/sendingProfilesApi";
 
 export default function EditSendingProfile() {
@@ -28,7 +25,11 @@ export default function EditSendingProfile() {
     const load = async () => {
       try {
         setIsFetching(true);
-        const data = await fetchSendingProfileById(form.realm, profileId, form.keycloak.token);
+        const data = await fetchSendingProfileById(
+          form.realm,
+          profileId,
+          form.keycloak.token
+        );
 
         form.setName(data.name);
         form.setFromFname(data.from_fname);
@@ -39,6 +40,12 @@ export default function EditSendingProfile() {
         form.setUsername(data.username);
         // Never prefill SMTP password in edit mode.
         form.setPassword("");
+        // Store original SMTP config to detect if user changed it
+        form.setOriginalSmtpValues(
+          data.smtp_host,
+          data.smtp_port,
+          data.username
+        );
         if (data.custom_headers) form.setCustomHeaders(data.custom_headers);
       } catch {
         form.setStatus("Failed to load profile data.");
@@ -54,41 +61,30 @@ export default function EditSendingProfile() {
 
   // ── Save ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (form.password && !form.testPassed) {
-      toast.warning("Please test the configuration first before saving changes.");
-      return;
-    }
-
     if (!form.realm || !form.isBasicValid) {
       form.setStatus("Please fill in required fields.");
-      return;
+      return false;
     }
 
     form.setIsLoading(true);
     form.setStatus(null);
 
     try {
-      await updateSendingProfile(form.realm, profileId, form.buildPayload(), form.keycloak.token);
+      await updateSendingProfile(
+        form.realm,
+        profileId,
+        form.buildPayload(),
+        form.keycloak.token
+      );
       form.setStatus("Profile updated successfully!");
       setTimeout(() => navigate({ to: "/sending-profiles" }), 800);
+      return true;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Failed to update profile.";
+      const message =
+        err instanceof Error ? err.message : "Failed to update profile.";
       form.setStatus(message);
+      return false;
     } finally {
-      form.setIsLoading(false);
-    }
-  };
-
-  // ── Delete ────────────────────────────────────────────────────────────────
-  const handleDelete = async () => {
-    if (!globalThis.confirm("Are you sure? This action cannot be undone.")) return;
-
-    try {
-      form.setIsLoading(true);
-      await deleteSendingProfile(form.realm, profileId, form.keycloak.token);
-      navigate({ to: "/sending-profiles" });
-    } catch {
-      form.setStatus("Failed to delete profile.");
       form.setIsLoading(false);
     }
   };
@@ -105,32 +101,10 @@ export default function EditSendingProfile() {
   }
 
   return (
-    <SendingProfileLayout
-      title={`Edit Profile: ${form.name}`}
-      subtitle="Update identity and SMTP settings"
-      name={form.name} setName={form.setName}
-      fromFname={form.fromFname} setFromFname={form.setFromFname}
-      fromLname={form.fromLname} setFromLname={form.setFromLname}
-      fromEmail={form.fromEmail} setFromEmail={form.setFromEmail}
-      smtpHost={form.smtpHost} setSmtpHost={form.setSmtpHost}
-      smtpPort={form.smtpPort} setSmtpPort={form.setSmtpPort}
-      username={form.username} setUsername={form.setUsername}
-      password={form.password} setPassword={form.setPassword}
-      onTest={form.handleTest}
-      isTesting={form.isTesting}
-      testStatus={form.testStatus}
-      customHeaders={form.customHeaders}
-      onAddHeader={form.addHeader}
-      onRemoveHeader={form.removeHeader}
-      footer={
-        <EditProfileFooter
-          onSave={handleSave}
-          onDelete={handleDelete}
-          isValid={form.isBasicValid}
-          isLoading={form.isLoading}
-          status={form.status}
-        />
-      }
+    <SendingProfileFormContainer
+      form={form}
+      mode="edit"
+      onSubmit={handleSave}
     />
   );
 }

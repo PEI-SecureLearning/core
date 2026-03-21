@@ -25,7 +25,7 @@ export function CourseCreatorTopBar({
                 <button
                     type="button"
                     onClick={onBack}
-                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#A78BFA] transition-colors flex-shrink-0"
+                    className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-accent-secondary transition-colors flex-shrink-0"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Back
@@ -47,9 +47,8 @@ export function CourseCreatorTopBar({
                     type="button"
                     onClick={onPreview}
                     disabled={!canPreview}
-                    style={canPreview ? { background: 'linear-gradient(135deg, #7C3AED, #9333EA)' } : undefined}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${canPreview
-                        ? 'text-white shadow-md shadow-[#7C3AED]/25'
+                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:bg-primary/90'
                         : 'bg-surface-subtle text-muted-foreground cursor-not-allowed'
                         }`}
                 >

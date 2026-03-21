@@ -134,7 +134,7 @@ export function AvailableModuleList({ selectedIds }: AvailableModuleListProps) {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search modules..."
-                        className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
+                        className="w-full pl-9 pr-3 py-2 text-sm bg-surface border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
                     />
                 </div>
             </div>

@@ -1,19 +1,16 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
-import { CircleQuestionMark, Loader2, Search } from "lucide-react";
+import { useCallback, useMemo, useRef, useState, type ReactNode, type FocusEvent } from "react";
+import { CircleQuestionMark, Loader2 } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import FormTooltip, {
+  type FormTooltipSide
+} from "@/components/shared/FormTooltip";
+import SearchBar from "@/components/shared/SearchBar";
 import {
   Popover,
   PopoverAnchor,
   PopoverContent
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
 
 type PickerItemId = string | number;
 
@@ -37,6 +34,7 @@ interface SearchableMultiPickerProps<
   readonly label: string;
   readonly labelIcon: ReactNode;
   readonly tooltipLines?: readonly string[];
+  readonly tooltipSide?: FormTooltipSide;
   readonly selectedTitle: string;
   readonly searchPlaceholder: string;
   readonly loading: boolean;
@@ -60,6 +58,7 @@ export default function SearchableMultiPicker<
   label,
   labelIcon,
   tooltipLines,
+  tooltipSide = "right",
   selectedTitle,
   searchPlaceholder,
   loading,
@@ -84,20 +83,17 @@ export default function SearchableMultiPicker<
     const search = inputValue.toLowerCase().trim();
     const matched = search
       ? unselectedItems.filter((item) =>
-          getSearchText(item).toLowerCase().includes(search)
-        )
+        getSearchText(item).toLowerCase().includes(search)
+      )
       : unselectedItems;
     return matched.slice(0, maxSuggestions);
   }, [getSearchText, inputValue, maxSuggestions, unselectedItems]);
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputValue(e.target.value);
-      setHighlightedIndex(-1);
-      setOpen(true);
-    },
-    []
-  );
+  const handleInputChange = useCallback((value: string) => {
+    setInputValue(value);
+    setHighlightedIndex(-1);
+    setOpen(true);
+  }, []);
 
   const handleToggleSelection = useCallback(
     (itemId: TId) => {
@@ -174,54 +170,38 @@ export default function SearchableMultiPicker<
           {labelIcon}
           {label}
           {tooltipLines && tooltipLines.length > 0 && (
-            <TooltipProvider>
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <CircleQuestionMark size={14} className="text-primary" />
-                </TooltipTrigger>
-                <TooltipContent
-                  side="right"
-                  className="bg-popover border-border text-popover-foreground"
-                >
-                  <div className="text-[12px] font-medium space-y-1 max-w-[300px]">
-                    {tooltipLines.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <FormTooltip side={tooltipSide} content={tooltipLines} />
           )}
         </label>
 
         <Popover
           open={open}
-          onOpenChange={(nextOpen) => {
+          onOpenChange={(nextOpen: boolean) => {
             if (nextOpen) setOpen(true);
           }}
           modal={false}
         >
           <PopoverAnchor asChild>
-            <div ref={anchorRef} className="w-full relative flex items-center">
-              <Input
+            <div ref={anchorRef} className="relative flex items-center ">
+              <SearchBar
                 value={inputValue}
                 onChange={handleInputChange}
-                onFocus={() => setOpen(true)}
-                onClick={() => setOpen(true)}
-                onBlur={() => setOpen(false)}
-                onKeyDown={handleKeyDown}
                 placeholder={searchPlaceholder}
-                className="pl-9 h-[46px] text-[14px] bg-muted/50 border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                role="combobox"
-                aria-expanded={open}
-                aria-autocomplete="list"
-              />
-              <Search
-                size={15}
-                className="absolute left-3 text-primary font-bold pointer-events-none"
+                className="flex-1 bg-background"
+                inputClassName="rounded-md h-[46px] text-[14px]  border-border text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/25 focus-visible:border-primary transition"
+                iconClassName="left-3 h-[15px] w-[15px]"
+                inputProps={{
+                  onFocus: () => setOpen(true),
+                  onClick: () => setOpen(true),
+                  onBlur: () => setOpen(false),
+                  onKeyDown: handleKeyDown,
+                  autoComplete: "off",
+                  autoCorrect: "off",
+                  spellCheck: false,
+                  role: "combobox",
+                  "aria-expanded": open,
+                  "aria-autocomplete": "list"
+                }}
               />
             </div>
           </PopoverAnchor>
@@ -229,8 +209,8 @@ export default function SearchableMultiPicker<
           <PopoverContent
             align="start"
             sideOffset={4}
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onFocusOutside={(e) => e.preventDefault()}
+            onOpenAutoFocus={(e: Event) => e.preventDefault()}
+            onFocusOutside={(e: FocusEvent | Event) => e.preventDefault()}
             style={{ width: anchorWidth ?? "100%" }}
             className="p-0 shadow-lg border-border bg-popover"
           >
@@ -268,7 +248,7 @@ export default function SearchableMultiPicker<
             </h3>
           </div>
 
-          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-border bg-muted/30">
+          <ScrollArea className="w-full h-full rounded-xl border-2 border-dashed border-border bg-background">
             <div
               className={
                 selectedIds.length > 0
@@ -278,12 +258,12 @@ export default function SearchableMultiPicker<
             >
               {selectedIds.length > 0
                 ? selectedIds.map((id) => {
-                    const item = items.find((candidate) => candidate.id === id);
-                    if (!item) return null;
-                    return renderSelectedItem(item, () =>
-                      handleToggleSelection(id)
-                    );
-                  })
+                  const item = items.find((candidate) => candidate.id === id);
+                  if (!item) return null;
+                  return renderSelectedItem(item, () =>
+                    handleToggleSelection(id)
+                  );
+                })
                 : renderEmptySelected}
             </div>
           </ScrollArea>

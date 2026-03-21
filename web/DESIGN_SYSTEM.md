@@ -6,11 +6,11 @@
 
 ## 1. Themes
 
-Light / dark toggled by `.dark` on `<html>`. Uses the **View Transition API** clip-path wipe via `useThemeTransition`.
+Supports **Light**, **Dark**, **Deuteranopia**, and **Protanopia**. Toggled by adding the corresponding class (`.dark`, `.deuteranopia`, `.protanopia`) to `<html>`. Uses the **View Transition API** clip-path wipe via `useThemeTransition`.
 
 ```ts
 const setTheme = useThemeTransition()
-setTheme('dark') // 'light' | 'dark' | 'system'
+setTheme('dark') // 'light' | 'dark' | 'deuteranopia' | 'protanopia' | 'system'
 ```
 
 ---
@@ -122,6 +122,21 @@ grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4
 ---
 
 ## 6. Components
+
+### ThemeCard — `src/components/shared/ThemeCard.tsx`
+Used in the Appearance settings to display theme options. It accepts an `accentColor` prop to highlight the active state using the theme's own accent color.
+
+```tsx
+<ThemeCard
+    value="deuteranopia"
+    label="Deuteranopia"
+    description="Red-green color blindness"
+    icon={Eye}
+    accentColor="#1D6FE8"
+    isActive={currentTheme === 'deuteranopia'}
+    onSelect={setTheme}
+/>
+```
 
 ### UserAvatar — `src/components/shared/UserAvatar.tsx`
 ```tsx

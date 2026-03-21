@@ -1,6 +1,12 @@
+import { type ComponentPropsWithoutRef } from "react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+type NativeInputProps = Omit<
+  ComponentPropsWithoutRef<typeof Input>,
+  "value" | "onChange" | "placeholder" | "className" | "type"
+>;
 
 interface SearchBarProps {
   readonly value?: string;
@@ -10,6 +16,7 @@ interface SearchBarProps {
   readonly inputClassName?: string;
   readonly iconClassName?: string;
   readonly type?: "text" | "search";
+  readonly inputProps?: NativeInputProps;
 }
 
 export default function SearchBar({
@@ -19,7 +26,8 @@ export default function SearchBar({
   className,
   inputClassName,
   iconClassName,
-  type = "text"
+  type = "text",
+  inputProps
 }: Readonly<SearchBarProps>) {
   return (
     <div className={cn("relative rounded-md", className)}>
@@ -35,6 +43,7 @@ export default function SearchBar({
         onChange={(event) => onChange?.(event.target.value)}
         placeholder={placeholder}
         className={cn("w-full pl-10", inputClassName)}
+        {...inputProps}
       />
     </div>
   );

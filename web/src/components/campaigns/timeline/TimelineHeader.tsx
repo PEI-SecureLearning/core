@@ -21,7 +21,7 @@ export const TimelineHeader = memo(function TimelineHeader({
     <div className="flex border-b border-border/60 bg-background/40 backdrop-blur-md z-20 sticky top-0">
       {/* Campaign name column */}
       <div
-        className="flex-shrink-0 px-4 py-3 border-r border-border/40 bg-background/20"
+        className="shrink-0 px-4 py-3 border-r border-border/40 bg-background/20"
         style={{ width: campaignColumnWidth }}
       >
         <span className="text-[12px] font-bold text-muted-foreground/70 uppercase tracking-wider">

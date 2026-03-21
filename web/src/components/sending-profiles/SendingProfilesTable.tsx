@@ -1,4 +1,4 @@
-import { Send, Mail, Trash2, Edit, ChevronRight, Server } from "lucide-react";
+import { Send, Mail, Trash2, Edit, Server } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 

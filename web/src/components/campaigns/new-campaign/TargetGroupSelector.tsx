@@ -4,7 +4,7 @@ import { useKeycloak } from "@react-keycloak/web";
 
 import { useCampaign } from "./CampaignContext";
 import GroupSuggestionItem, {
-  type CampaignTargetGroup,
+  type CampaignTargetGroup
 } from "./group-picker/GroupSuggestionItem";
 import SelectedGroupCard from "./group-picker/SelectedGroupCard";
 import SelectedGroupsEmptyState from "./group-picker/SelectedGroupsEmptyState";
@@ -32,16 +32,19 @@ export default function TargetGroupSelector() {
       .map((group) => ({
         id: group.id!,
         name: group.name!,
-        path: group.path,
+        path: group.path
       }));
   }, [realm, keycloak.token]);
 
-  const { items: groups, loading, error } =
-    useAsyncMultiPickerItems<CampaignTargetGroup>({
-      loader: loadGroups,
-      deps: [loadGroups],
-      fallbackErrorMessage: "Failed to load groups",
-    });
+  const {
+    items: groups,
+    loading,
+    error
+  } = useAsyncMultiPickerItems<CampaignTargetGroup>({
+    loader: loadGroups,
+    deps: [loadGroups],
+    fallbackErrorMessage: "Failed to load groups"
+  });
 
   return (
     <SearchableMultiPicker
@@ -54,7 +57,7 @@ export default function TargetGroupSelector() {
         highlighted,
         onSelect,
         bindRef,
-        onHighlight,
+        onHighlight
       ) => (
         <GroupSuggestionItem
           key={group.id}
@@ -71,7 +74,11 @@ export default function TargetGroupSelector() {
       renderEmptySelected={<SelectedGroupsEmptyState />}
       label="Target Groups *"
       labelIcon={<Users size={12} />}
-      
+      tooltipLines={[
+        "Users from these groups will be included as campaign targets.",
+        "A target can belong to multiple selected groups."
+      ]}
+      tooltipSide="right"
       selectedTitle="Selected Groups"
       searchPlaceholder="Search groups..."
       loading={loading}

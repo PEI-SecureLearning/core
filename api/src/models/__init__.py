@@ -6,8 +6,8 @@ from .user import User
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
 from .phishing_kit import PhishingKit, PhishingKitCreate, PhishingKitDisplayInfo, CampaignPhishingKitLink, PhishingKitSendingProfileLink
-from .sending_profile import SendingProfile, SendingProfileCreate, SendingProfileDisplayInfo, CampaignSendingProfileLink, CustomHeader, CustomHeaderCreate
-from .campaign import Campaign, CampaignCreate, CampaignStatus, CampaignDisplayInfo, CampaignDetailInfo, CampaignGlobalStats, MIN_INTERVAL_SECONDS
+from .sending_profile import SendingProfile, SendingProfileCreate, SendingProfileDisplayInfo, SendingProfileRead, CampaignSendingProfileLink, CustomHeader, CustomHeaderCreate, CustomHeaderRead
+from .campaign import Campaign, CampaignCreate, CampaignStatus, CampaignDisplayInfo, CampaignDetailInfo, CampaignGlobalStats, CampaignUpdate, MIN_INTERVAL_SECONDS
 from .email_sending import EmailSending, EmailSendingStatus, UserSendingInfo, RabbitMQEmailMessage, SMTPConfig
 from .compliance import (
     ComplianceAcceptance,
@@ -35,7 +35,6 @@ from .org_manager import (
     CourseEnrollmentPayload,
 )
 from .module import (
-    ModuleStatus,
     Difficulty,
     QuestionType,
     RichMediaType,
@@ -69,6 +68,7 @@ __all__ = [
     # Campaign
     "Campaign",
     "CampaignCreate",
+    "CampaignUpdate",
     "CampaignStatus",
     "CampaignDisplayInfo",
     "CampaignDetailInfo",
@@ -93,6 +93,7 @@ __all__ = [
     # Custom Header
     "CustomHeader",
     "CustomHeaderCreate",
+    "CustomHeaderRead",
     # Landing Page Template
     "LandingPageTemplate",
     # Realm
@@ -107,6 +108,7 @@ __all__ = [
     "SendingProfile",
     "SendingProfileCreate",
     "SendingProfileDisplayInfo",
+    "SendingProfileRead",
     # User Group
     "UserGroup",
     # Compliance
@@ -134,7 +136,6 @@ __all__ = [
     "ComplianceQuizResponse",
     "CourseEnrollmentPayload",
     # Learning Module
-    "ModuleStatus",
     "Difficulty",
     "QuestionType",
     "RichMediaType",

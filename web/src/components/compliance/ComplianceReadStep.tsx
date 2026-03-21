@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { BookOpen } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { ComplianceDoc } from "./types";
 import ExpandButton from "./ExpandButton";

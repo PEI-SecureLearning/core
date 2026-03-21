@@ -25,16 +25,16 @@ export default function RiskTrendChart() {
     { month: "DEC", value: 96 }
   ];
 
-  const latestValue = data[data.length - 1].value;
-  const previousValue = data[data.length - 2].value;
-  const trend = latestValue - previousValue;
+  const latestValue = data.at(-1)?.value;
+  const previousValue = data.at(-2)?.value;
+  const trend = latestValue && previousValue ? latestValue - previousValue : 0;
 
   return (
     <div className="w-full bg-background/60 backdrop-blur-xl rounded-2xl border-2 border-border/40 shadow-lg shadow-slate-300/50 p-6 hover:shadow-xl transition-all duration-300">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-purple-500/25">
+          <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 shadow-lg shadow-purple-500/25">
             <TrendingUp size={20} className="text-white" />
           </div>
           <div className="min-w-0">

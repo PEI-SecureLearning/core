@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles, Resource, Scope
-from src.models import PhishingKitDisplayInfo
+from src.models import CampaignUpdate, PhishingKitDisplayInfo
 from src.services import templates as template_service
 from src.services.campaign import CampaignService
 from src.services.org_manager.validation_handler import validate_realm_access
@@ -42,6 +42,25 @@ async def get_realm_campaign_detail(
     return {
         "campaign": detail,
     }
+
+
+@router.put(
+    "/{realm}/campaigns/{campaign_id}",
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
+    responses={404: {"description": "Campaign not found"}},
+)
+def update_realm_campaign(
+    realm: str,
+    campaign_id: int,
+    campaign_update: CampaignUpdate,
+    session: SessionDep,
+    token: OAuth2Scheme,
+):
+    """Update a scheduled campaign for the specified realm."""
+    validate_realm_access(token, realm)
+    service = CampaignService()
+    campaign = service.update_campaign(campaign_id, campaign_update, realm, session)
+    return {"message": f"Campaign '{campaign.name}' has been updated"}
 
 
 @router.delete(

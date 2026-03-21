@@ -1,5 +1,5 @@
 import { Upload, Plus } from "lucide-react";
-import { RefObject } from "react";
+import type { RefObject } from "react";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
 import SearchBar from "@/components/shared/SearchBar";
 

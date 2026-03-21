@@ -1,7 +1,7 @@
 import type { Campaign } from "./types";
 
 interface CampaignStatsCardsProps {
-    campaigns: Campaign[];
+    readonly campaigns: Campaign[];
 }
 
 export function CampaignStatsCards({ campaigns }: CampaignStatsCardsProps) {

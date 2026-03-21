@@ -4,6 +4,7 @@ from .schemas import (
     CampaignDisplayInfo,
     CampaignDetailInfo,
     CampaignGlobalStats,
+    CampaignUpdate,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "CampaignDisplayInfo",
     "CampaignDetailInfo",
     "CampaignGlobalStats",
+    "CampaignUpdate",
 ]

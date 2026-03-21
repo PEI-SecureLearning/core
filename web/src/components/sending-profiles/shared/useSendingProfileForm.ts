@@ -2,8 +2,12 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { toast } from "sonner";
 
+import { isValidEmail } from "@/lib/emailValidation";
 import { testSendingProfileConfiguration } from "@/services/sendingProfilesApi";
-import type { CustomHeader, SendingProfileCreate } from "@/types/sendingProfile";
+import type {
+  CustomHeader,
+  SendingProfileCreate
+} from "@/types/sendingProfile";
 
 // ---------------------------------------------------------------------------
 // Hook: useSendingProfileForm
@@ -33,21 +37,39 @@ export function useSendingProfileForm() {
 
   const [customHeaders, setCustomHeaders] = useState<CustomHeader[]>([]);
 
+  // ── Track original SMTP values (for edit mode) ──────────────────────────
+  const [originalSmtpConfig, setOriginalSmtpConfig] = useState({
+    smtpHost: "",
+    smtpPort: 587,
+    username: "",
+    password: ""
+  });
+
   // ── Operation state ──────────────────────────────────────────────────────
   const [status, setStatus] = useState<string | null>(null);
   const [testStatus, setTestStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testPassed, setTestPassed] = useState(false);
+  const [lastTestedConfigSignature, setLastTestedConfigSignature] = useState<
+    string | null
+  >(null);
+
+  const currentTestConfigSignature = useMemo(
+    () => `${smtpHost}|${smtpPort}|${username}|${password}|${fromEmail.trim()}`,
+    [smtpHost, smtpPort, username, password, fromEmail]
+  );
 
   // ── Auto-reset test when SMTP credentials change ─────────────────────────
   useEffect(() => {
-    if (testPassed) {
+    if (
+      lastTestedConfigSignature !== null &&
+      lastTestedConfigSignature !== currentTestConfigSignature
+    ) {
       setTestPassed(false);
       setTestStatus(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smtpHost, smtpPort, username, password]);
+  }, [currentTestConfigSignature, lastTestedConfigSignature]);
 
   // ── Header handlers ──────────────────────────────────────────────────────
   const addHeader = useCallback((header: CustomHeader) => {
@@ -59,52 +81,127 @@ export function useSendingProfileForm() {
   }, []);
 
   // ── Build API payload (single source of truth) ───────────────────────────
-  const buildPayload = useCallback((): SendingProfileCreate => ({
-    name,
-    from_fname: fromFname,
-    from_lname: fromLname,
-    from_email: fromEmail,
-    smtp_host: smtpHost,
-    smtp_port: smtpPort,
-    username,
-    password,
-    custom_headers: customHeaders.map(({ name: n, value: v }) => ({ name: n, value: v })),
-  }), [name, fromFname, fromLname, fromEmail, smtpHost, smtpPort, username, password, customHeaders]);
+  const buildPayload = useCallback(
+    (): SendingProfileCreate => ({
+      name,
+      from_fname: fromFname,
+      from_lname: fromLname,
+      from_email: fromEmail,
+      smtp_host: smtpHost,
+      smtp_port: smtpPort,
+      username,
+      password,
+      custom_headers: customHeaders.map(({ name: n, value: v }) => ({
+        name: n,
+        value: v
+      }))
+    }),
+    [
+      name,
+      fromFname,
+      fromLname,
+      fromEmail,
+      smtpHost,
+      smtpPort,
+      username,
+      password,
+      customHeaders
+    ]
+  );
 
   // ── Test SMTP configuration ──────────────────────────────────────────────
-  const handleTest = useCallback(async () => {
+  const handleTest = useCallback(async (): Promise<boolean> => {
     if (!realm) {
       toast.error("Could not determine Realm. Are you logged in?");
-      return;
+      return false;
     }
     if (!smtpHost || !username || !password) {
       toast.error("Please fill in all required fields before testing.");
-      return;
+      return false;
+    }
+    if (!fromEmail || !isValidEmail(fromEmail)) {
+      toast.error("Please provide a valid sender email before testing SMTP.");
+      return false;
     }
 
     setIsTesting(true);
     setTestStatus(null);
     setTestPassed(false);
+    setLastTestedConfigSignature(currentTestConfigSignature);
 
     try {
-      const result = await testSendingProfileConfiguration(buildPayload(), keycloak.token);
+      const result = await testSendingProfileConfiguration(
+        buildPayload(),
+        keycloak.token
+      );
       setTestStatus(result.message);
       setTestPassed(true);
+      return true;
     } catch (err: unknown) {
-      const message = err instanceof Error
-        ? err.message
-        : "Failed to test configuration. Check SMTP settings.";
+      const rawMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to test configuration. Check SMTP settings.";
+
+      const isHostResolutionError =
+        /errno\s*-?2/i.test(rawMessage) ||
+        /name or service not known/i.test(rawMessage);
+
+      const message = isHostResolutionError
+        ? "SMTP test failed: Could not resolve SMTP host. Check the Host value and DNS/network settings."
+        : rawMessage;
+
       toast.error(message);
       setTestStatus(message);
       setTestPassed(false);
+      return false;
     } finally {
       setIsTesting(false);
     }
-  }, [realm, name, fromEmail, smtpHost, username, password, buildPayload, keycloak.token]);
+  }, [
+    realm,
+    fromEmail,
+    smtpHost,
+    username,
+    password,
+    currentTestConfigSignature,
+    buildPayload,
+    keycloak.token
+  ]);
 
   // ── Derived validation ───────────────────────────────────────────────────
-  const isBasicValid = !!name && !!fromEmail && !!smtpHost && !!username;
-  const isFullyValid = isBasicValid && !!password;
+  // Check if SMTP configuration has been modified
+  const smtpConfigChanged =
+    smtpHost !== originalSmtpConfig.smtpHost ||
+    smtpPort !== originalSmtpConfig.smtpPort ||
+    username !== originalSmtpConfig.username;
+
+  const isBasicValid =
+    !!name &&
+    !!fromEmail &&
+    isValidEmail(fromEmail) &&
+    !!smtpHost &&
+    !!username;
+
+  // Password is required only if SMTP config changed, or if it's new (pristine form)
+  const isFullyValid = isBasicValid && (!!password || !smtpConfigChanged);
+  const hasChangesSinceLastTest =
+    lastTestedConfigSignature !== null &&
+    lastTestedConfigSignature !== currentTestConfigSignature;
+
+  // Method to store original SMTP config (called when loading existing profile)
+  const setOriginalSmtpValues = useCallback(
+    (host: string, port: number, user: string) => {
+      const original = {
+        smtpHost: host,
+        smtpPort: port,
+        username: user,
+        password: ""
+      };
+      setOriginalSmtpConfig(original);
+    },
+    []
+  );
 
   return {
     // Token / realm
@@ -112,27 +209,40 @@ export function useSendingProfileForm() {
     keycloak,
 
     // Basic info
-    name, setName,
-    fromFname, setFromFname,
-    fromLname, setFromLname,
-    fromEmail, setFromEmail,
+    name,
+    setName,
+    fromFname,
+    setFromFname,
+    fromLname,
+    setFromLname,
+    fromEmail,
+    setFromEmail,
 
     // SMTP
-    smtpHost, setSmtpHost,
-    smtpPort, setSmtpPort,
-    username, setUsername,
-    password, setPassword,
+    smtpHost,
+    setSmtpHost,
+    smtpPort,
+    setSmtpPort,
+    username,
+    setUsername,
+    password,
+    setPassword,
 
     // Headers
-    customHeaders, setCustomHeaders,
-    addHeader, removeHeader,
+    customHeaders,
+    setCustomHeaders,
+    addHeader,
+    removeHeader,
 
     // Operation state
-    status, setStatus,
+    status,
+    setStatus,
     testStatus,
-    isLoading, setIsLoading,
+    isLoading,
+    setIsLoading,
     isTesting,
-    testPassed, setTestPassed,
+    testPassed,
+    setTestPassed,
 
     // Actions
     buildPayload,
@@ -141,5 +251,8 @@ export function useSendingProfileForm() {
     // Derived
     isBasicValid,
     isFullyValid,
+    smtpConfigChanged,
+    hasChangesSinceLastTest,
+    setOriginalSmtpValues
   };
 }

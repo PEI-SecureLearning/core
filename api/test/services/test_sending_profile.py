@@ -16,6 +16,7 @@ from src.services.sending_profile import SendingProfileService
 
 # Fixtures
 
+
 @pytest.fixture(name="engine")
 def engine_fixture():
     engine = create_engine(
@@ -39,34 +40,43 @@ def session_fixture(engine):
 def service_fixture():
     return SendingProfileService()
 
+
 # Helpers
 
-def _profile_data(**overrides) -> SendingProfileCreate:
-    defaults = dict(
-        name="Test Profile",
-        smtp_host="smtp.example.com",
-        smtp_port=587,
-        username="testuser",
-        password="",
-        from_fname="Alice",
-        from_lname="Sender",
-        from_email="alice@example.com",
-        custom_headers=[],
-    )
-    defaults.update(overrides)
-    return SendingProfileCreate(**defaults)
 
-def _header_data(**overrides) -> List[CustomHeaderCreate]:
+def _profile_data(**overrides) -> SendingProfileCreate:
+    defaults = {
+        "name": "Test Profile",
+        "smtp_host": "smtp.example.com",
+        "smtp_port": 587,
+        "username": "testuser",
+        "password": "",
+        "from_fname": "Alice",
+        "from_lname": "Sender",
+        "from_email": "alice@example.com",
+        "custom_headers": [],
+    }
+
+    profile = SendingProfileCreate(**defaults)
+    return profile.model_copy(update=overrides)
+
+
+def _header_data(
+    extra: List[CustomHeaderCreate] | None = None,
+) -> List[CustomHeaderCreate]:
     default_headers = [
         CustomHeaderCreate(name="X-Custom", value="hello"),
         CustomHeaderCreate(name="X-Another", value="world"),
     ]
-    default_headers.extend(overrides)
+    if extra:
+        default_headers.extend(extra)
     return default_headers
 
 
-def _insert_profile(session: Session, realm: str = "test-realm", **overrides) -> SendingProfile:
-    defaults = dict(
+def _insert_profile(
+    session: Session, realm: str = "test-realm", **overrides
+) -> SendingProfile:
+    profile = SendingProfile(
         name="Test Profile",
         smtp_host="smtp.example.com",
         smtp_port=587,
@@ -77,8 +87,10 @@ def _insert_profile(session: Session, realm: str = "test-realm", **overrides) ->
         from_email="alice@example.com",
         realm_name=realm,
     )
-    defaults.update(overrides)
-    profile = SendingProfile(**defaults)
+
+    for key, value in overrides.items():
+        setattr(profile, key, value)
+
     session.add(profile)
     session.commit()
     session.refresh(profile)
@@ -105,7 +117,6 @@ class TestCreateSendingProfile:
         assert p.smtp_port == _profile_data().smtp_port
         assert p.realm_name == realm
 
-
     def test_create_profile_with_custom_headers(
         self, service: SendingProfileService, session: Session
     ):
@@ -129,15 +140,20 @@ class TestCreateSendingProfile:
 class TestGetSendingProfile:
     """Tests for SendingProfileService.get_sending_profile."""
 
-    def test_get_existing_profile(self, service: SendingProfileService, session: Session):
+    def test_get_existing_profile(
+        self, service: SendingProfileService, session: Session
+    ):
         profile = _insert_profile(session)
+        assert profile.id is not None
         result = service.get_sending_profile(profile.id, session)
         assert result is not None
         assert result.name == profile.name
-    
-    def test_get_nonexistent_profile(self, service: SendingProfileService, session: Session):
-        result = service.get_sending_profile(99999, session)
-        assert result is None
+
+    def test_get_nonexistent_profile(
+        self, service: SendingProfileService, session: Session
+    ):
+        with pytest.raises(LookupError, match="Sending profile not found"):
+            service.get_sending_profile(99999, session)
 
 
 class TestGetSendingProfilesByRealm:
@@ -156,12 +172,16 @@ class TestGetSendingProfilesByRealm:
         assert r1[1].name == "B"
         r2 = service.get_sending_profiles_by_realm(realm2, session)
         assert len(r2) == 1
-    
-    def test_empty_realm_returns_empty(self, service: SendingProfileService, session: Session):
+
+    def test_empty_realm_returns_empty(
+        self, service: SendingProfileService, session: Session
+    ):
         result = service.get_sending_profiles_by_realm("no-such-realm", session)
         assert result == []
-    
-    def test_returns_display_info_type(self, service: SendingProfileService, session: Session):
+
+    def test_returns_display_info_type(
+        self, service: SendingProfileService, session: Session
+    ):
         _insert_profile(session)
         infos = service.get_sending_profiles_by_realm("test-realm", session)
         assert all(isinstance(i, SendingProfileDisplayInfo) for i in infos)
@@ -170,16 +190,16 @@ class TestGetSendingProfilesByRealm:
 class TestDeleteSendingProfile:
     """Tests for SendingProfileService.delete_sending_profile."""
 
-
     def test_delete_removes_profile(self, service, session):
         profile = _insert_profile(session)
         service.delete_sending_profile(profile.id, session)
-        assert service.get_sending_profile(profile.id, session) is None
+        with pytest.raises(LookupError, match="Sending profile not found"):
+            service.get_sending_profile(profile.id, session)
         assert session.exec(select(SendingProfile)).first() is None
-    
+
     def test_delete_cascades_headers(self, service, session):
         """Create profile + header, delete profile.
-           Assert headers are also gone (cascade delete-orphan)."""
+        Assert headers are also gone (cascade delete-orphan)."""
         profile = _profile_data(custom_headers=_header_data())
         service.create_sending_profile(profile, "test-realm", session)
         profile_id = session.exec(select(SendingProfile)).first().id
@@ -187,16 +207,19 @@ class TestDeleteSendingProfile:
         service.delete_sending_profile(profile_id, session)
         assert session.exec(select(CustomHeader)).first() is None
 
-    def test_delete_nonexistent_is_noop(self, service, session):
-        """Delete an ID that doesn't exist. Should not raise."""
-        service.delete_sending_profile(99999, session)  # no error
+    def test_delete_nonexistent_raises_not_found(self, service, session):
+        with pytest.raises(LookupError, match="Sending profile not found"):
+            service.delete_sending_profile(99999, session)
 
 
 class TestUpdateSendingProfile:
     """Tests for SendingProfileService.update_sending_profile."""
 
-    def test_update_changes_fields(self, service: SendingProfileService, session: Session):
+    def test_update_changes_fields(
+        self, service: SendingProfileService, session: Session
+    ):
         profile = _insert_profile(session)
+        assert profile.id is not None
         updated = service.update_sending_profile(
             profile.id,
             _profile_data(name="Updated", smtp_host="new.smtp.com"),
@@ -205,15 +228,15 @@ class TestUpdateSendingProfile:
         assert updated is not None
         assert updated.name == "Updated"
         assert updated.smtp_host == "new.smtp.com"
-    
+
     def test_update_replaces_custom_headers(self, service, session):
         """Create with header A. Update with headers B,C.
-           Assert A is gone, B+C exist."""
+        Assert A is gone, B+C exist."""
         profile = _profile_data(custom_headers=_header_data())
         service.create_sending_profile(profile, "test-realm", session)
         profile_id = session.exec(select(SendingProfile)).first().id
 
-        header3: CustomHeaderCreate = CustomHeaderCreate(name = "X-third", value = "trello")
+        header3: CustomHeaderCreate = CustomHeaderCreate(name="X-third", value="trello")
         new_headers = [header3]
 
         service.update_sending_profile(
@@ -225,12 +248,11 @@ class TestUpdateSendingProfile:
         r = session.exec(select(CustomHeader)).all()
         assert len(r) == 1
         assert r[0].name == "X-third"
-    
-    def test_update_nonexistent_returns_none(self, service, session):
-        """Update an ID that doesn't exist. Assert result is None."""
-        result = service.update_sending_profile(99999, _profile_data(), session)
-        assert result is None
-    
+
+    def test_update_nonexistent_raises_not_found(self, service, session):
+        with pytest.raises(LookupError, match="Sending profile not found"):
+            service.update_sending_profile(99999, _profile_data(), session)
+
     def test_update_preserves_realm(self, service, session):
         profile = _profile_data(custom_headers=_header_data())
         realm_name = "test-realm"

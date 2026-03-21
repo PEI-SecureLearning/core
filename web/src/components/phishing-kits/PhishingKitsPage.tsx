@@ -13,12 +13,10 @@ export default function PhishingKitsPage() {
     kits,
     filteredKits,
     isLoading,
-    isFetching,
     searchQuery,
     setSearchQuery,
     viewMode,
     setViewMode,
-    refetch,
     handleDelete,
     isDeleting,
   } = usePhishingKits();
@@ -29,8 +27,6 @@ export default function PhishingKitsPage() {
         viewMode={viewMode}
         setViewMode={setViewMode}
         onNewKit={() => navigate({ to: "/phishing-kits/new" })}
-        refetch={refetch}
-        isFetching={isFetching}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
       />

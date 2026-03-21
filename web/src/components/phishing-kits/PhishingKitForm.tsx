@@ -52,7 +52,6 @@ export default function PhishingKitForm({
 function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
   const navigate = useNavigate();
   const { data, getValidationErrors, isValid } = usePhishingKit();
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const stepIcons = [BookOpen, Mail, File, Send] as const;
   const stepCompletedIcons = [
@@ -121,7 +120,7 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to save phishing kit";
-      setSubmitError(message);
+      toast.error(message);
       return false;
     }
   };
@@ -150,14 +149,14 @@ function PhishingKitFormInner({ editId }: { readonly editId?: number }) {
   }
 
   return (
-    <div className="size-full flex flex-col p-6">
+    <div className="size-full flex flex-col">
       <div className="flex-1 min-h-0 ">
         <Stepper
           stepIcons={stepIcons}
           stepCompletedIcons={stepCompletedIcons}
           validateStep={validateStep}
           onBeforeComplete={handleComplete}
-          onFinalStepCompleted={() => {}}
+          onFinalStepCompleted={() => { }}
           nextButtonText="Continue"
           backButtonText="Back"
         >
