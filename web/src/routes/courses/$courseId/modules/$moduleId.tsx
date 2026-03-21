@@ -49,7 +49,7 @@ function ModuleLearnerRoute() {
                 if (!cancelled) setLoading(false);
             }
         }
-        
+
         setLoading(true);
         void loadData();
 
@@ -127,9 +127,9 @@ function ModuleLearnerRoute() {
 
             {/* Module learner */}
             <div className="flex-1 overflow-hidden relative">
-                <ModuleLearner 
-                    module={adaptedMod} 
-                    courseId={courseId} 
+                <ModuleLearner
+                    module={adaptedMod}
+                    courseId={courseId}
                     initialCompletedSections={progress?.completed_sections || []}
                     onSectionComplete={handleSectionComplete}
                     onTaskComplete={handleTaskComplete}

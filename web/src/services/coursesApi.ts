@@ -87,8 +87,8 @@ export async function fetchCourse(id: string, token?: string): Promise<Course> {
     return res.json() as Promise<Course>
 }
 
-export async function fetchEnrolledCourses(token?: string): Promise<Course[]> {
-    const res = await fetch(`${API_BASE}/courses/enrolled`, {
+export async function fetchEnrolledCourses(userId: string, token?: string): Promise<Course[]> {
+    const res = await fetch(`${API_BASE}/courses/${encodeURIComponent(userId)}/enrolled`, {
         headers: authHeaders(token),
     })
     if (!res.ok) throw new Error('Failed to fetch enrolled courses')

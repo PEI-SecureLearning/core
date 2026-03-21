@@ -58,9 +58,9 @@ async def list_modules(
     summary="Get a module",
     description="Returns the full module document including all sections and blocks.",
 )
-async def get_module(module_id: str, realm: CurrentRealm) -> ModuleOut:
+async def get_module(module_id: str) -> ModuleOut:
     module = await module_service.get_module(module_id)
-    if not module or (getattr(module, "realm", None) and module.realm != realm):
+    if not module:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Module not found",

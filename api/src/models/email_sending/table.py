@@ -23,7 +23,7 @@ class EmailSendingStatus(StrEnum):
 
 class EmailSending(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: str = Field(foreign_key="useres.keycloak_id")
+    user_id: str = Field(foreign_key="users.keycloak_id")
     scheduled_date: datetime
     status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
     email_to: str

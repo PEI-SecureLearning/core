@@ -10,7 +10,7 @@ export default function ContManDashboard() {
     const userRoles = keycloak.tokenParsed?.realm_access?.roles || [];
     const realmFeatures = (keycloak.tokenParsed as any)?.features || {};
 
-    const visibleCards = filterLinks(contentManagerLinks, userRoles, realmFeatures).filter(
+    const visibleCards = filterLinks(contentManagerLinks, userRoles, realmFeatures, keycloak.realm).filter(
         (link) => link.showOnWelcome !== false && !!link.description
     );
 

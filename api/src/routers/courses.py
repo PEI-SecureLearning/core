@@ -17,7 +17,6 @@ from fastapi import HTTPException
 
 router = APIRouter()
 
-
 def _get_sub(token: str) -> str:
     claims = decode_token_verified(token)
     sub = claims.get("sub", "")
@@ -43,12 +42,11 @@ async def list_courses(
     )
 
 
-@router.get("/courses/enrolled", summary="List courses the user is enrolled in")
+@router.get("/courses/{user_id}/enrolled", summary="List courses the user is enrolled in")
 async def get_enrolled_courses(
-    token: OAuth2Scheme,
+    user_id: str,
     session: SessionDep,
 ) -> list[CourseOut]:
-    user_id = _get_sub(token)
     from src.models import UserProgress
     
     stmt = select(UserProgress).where(UserProgress.user_id == user_id)

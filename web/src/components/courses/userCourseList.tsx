@@ -46,9 +46,10 @@ export default function UserCourseList() {
 
     useEffect(() => {
         let cancelled = false;
-        
-        const userId = keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email || keycloak.tokenParsed?.sub;
-        
+
+        const userId = keycloak.subject || keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email;
+        console.log(userId);
+
         if (!keycloak.authenticated || !keycloak.token || !userId) return;
 
         setLoading(true);
@@ -59,7 +60,7 @@ export default function UserCourseList() {
                 await keycloak.updateToken(30);
 
                 const [enrolledCourses, progresses] = await Promise.all([
-                    fetchEnrolledCourses(keycloak.token!),
+                    fetchEnrolledCourses(userId, keycloak.token!),
                     getUserProgress(userId, keycloak.token!).catch(() => [])
                 ]);
 

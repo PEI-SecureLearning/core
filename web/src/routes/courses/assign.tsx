@@ -83,9 +83,11 @@ function AssignCoursesPage() {
         
         try {
             // Enroll each selected user in the chosen courses
-            const promises = selectedUsers.map(userId => 
-                enrollUser(realm, userId, selectedCourses, keycloak.token!, deadline ? new Date(deadline).toISOString() : undefined)
-            );
+            const promises = selectedUsers.map(userId => {
+                const user = users.find(u => u.id === userId);
+                const targetId = user?.username || userId;
+                return enrollUser(realm, targetId, selectedCourses, keycloak.token!, deadline ? new Date(deadline).toISOString() : undefined);
+            });
             
             await Promise.all(promises);
             toast.success("Courses assigned successfully");

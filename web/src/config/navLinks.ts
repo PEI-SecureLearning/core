@@ -131,7 +131,7 @@ export const userLinks: NavLinkDef[] = [
         label: "Courses",
         description: "Access and complete your security awareness training.",
         icon: BookOpen,
-        roles: ["DEFAULT_USER"],
+        roles: ["default-roles-$realmname"],
         feature: "lms",
         group: "LMS",
     },
@@ -243,13 +243,21 @@ export const footerLinks: NavLinkDef[] = [
 export function filterLinks(
     links: NavLinkDef[],
     userRoles: string[],
-    realmFeatures: Record<string, boolean>
+    realmFeatures: Record<string, boolean>,
+    realmName?: string
 ): NavLinkDef[] {
     return links.filter((link) => {
         // Feature gate
         if (link.feature && !realmFeatures[link.feature]) return false;
         // Role gate (no roles = visible to all)
-        if (link.roles) return link.roles.some((r) => userRoles.includes(r));
+        if (link.roles) {
+            return link.roles.some((r) => {
+                const requiredRole = r === "default-roles-$realmname" && realmName 
+                    ? `default-roles-${realmName}` 
+                    : r;
+                return userRoles.includes(requiredRole);
+            });
+        }
         return true;
     });
 }

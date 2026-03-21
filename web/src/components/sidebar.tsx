@@ -157,7 +157,7 @@ export function Sidebar() {
   }
 
   // Filter and group
-  const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures);
+  const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures, keycloak.realm);
   const { dashboard, groups, standalone } = groupNavigationLinks(visibleLinks);
 
   const currentActiveGroupLabel =

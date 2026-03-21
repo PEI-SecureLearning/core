@@ -13,7 +13,7 @@ export const WelcomePage = () => {
 
     // Reuse the exact same filter logic as the Sidebar, then keep only cards
     // that should appear on the welcome page and have a description.
-    const visibleCards = filterLinks(userLinks, userRoles, realmFeatures).filter(
+    const visibleCards = filterLinks(userLinks, userRoles, realmFeatures, keycloak.realm).filter(
         (link) => link.showOnWelcome !== false && !!link.description
     );
 

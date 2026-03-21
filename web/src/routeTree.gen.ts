@@ -35,6 +35,8 @@ import { Route as SendingProfilesNewRouteImport } from './routes/sending-profile
 import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
 import { Route as PhishingKitsNewRouteImport } from './routes/phishing-kits/new'
 import { Route as PhishingKitsIdRouteImport } from './routes/phishing-kits/$id'
+import { Route as CoursesManageRouteImport } from './routes/courses/manage'
+import { Route as CoursesAssignRouteImport } from './routes/courses/assign'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
 import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
 import { Route as ContentManagerSettingsRouteImport } from './routes/content-manager/settings'
@@ -193,6 +195,16 @@ const PhishingKitsNewRoute = PhishingKitsNewRouteImport.update({
 const PhishingKitsIdRoute = PhishingKitsIdRouteImport.update({
   id: '/phishing-kits/$id',
   path: '/phishing-kits/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesManageRoute = CoursesManageRouteImport.update({
+  id: '/courses/manage',
+  path: '/courses/manage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesAssignRoute = CoursesAssignRouteImport.update({
+  id: '/courses/assign',
+  path: '/courses/assign',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
@@ -375,6 +387,8 @@ export interface FileRoutesByFullPath {
   '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRoute
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
   '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -400,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
   '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
+  '/campaigns/$id/': typeof CampaignsIdIndexRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/content-manager/courses/$courseId/edit': typeof ContentManagerCoursesCourseIdEditRoute
   '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
@@ -428,6 +443,8 @@ export interface FileRoutesByTo {
   '/content-manager/report': typeof ContentManagerReportRoute
   '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
+  '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRoute
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
   '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -486,6 +503,8 @@ export interface FileRoutesById {
   '/content-manager/settings': typeof ContentManagerSettingsRoute
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRoute
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
   '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -545,6 +564,8 @@ export interface FileRouteTypes {
     | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
+    | '/courses/assign'
+    | '/courses/manage'
     | '/phishing-kits/$id'
     | '/phishing-kits/new'
     | '/sending-profiles/$id'
@@ -570,6 +591,7 @@ export interface FileRouteTypes {
     | '/content-manager/modules/$moduleId'
     | '/content-manager/modules/new'
     | '/admin/tenants'
+    | '/campaigns/$id/'
     | '/courses/$courseId/'
     | '/content-manager/courses/$courseId/edit'
     | '/courses/$courseId/modules/$moduleId'
@@ -598,6 +620,8 @@ export interface FileRouteTypes {
     | '/content-manager/report'
     | '/content-manager/settings'
     | '/content-manager/templates'
+    | '/courses/assign'
+    | '/courses/manage'
     | '/phishing-kits/$id'
     | '/phishing-kits/new'
     | '/sending-profiles/$id'
@@ -655,6 +679,8 @@ export interface FileRouteTypes {
     | '/content-manager/settings'
     | '/content-manager/templates'
     | '/courses/$courseId'
+    | '/courses/assign'
+    | '/courses/manage'
     | '/phishing-kits/$id'
     | '/phishing-kits/new'
     | '/sending-profiles/$id'
@@ -708,6 +734,8 @@ export interface RootRouteChildren {
   ContentManagerSettingsRoute: typeof ContentManagerSettingsRoute
   ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
+  CoursesAssignRoute: typeof CoursesAssignRoute
+  CoursesManageRoute: typeof CoursesManageRoute
   PhishingKitsIdRoute: typeof PhishingKitsIdRoute
   PhishingKitsNewRoute: typeof PhishingKitsNewRoute
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
@@ -912,6 +940,20 @@ declare module '@tanstack/react-router' {
       path: '/phishing-kits/$id'
       fullPath: '/phishing-kits/$id'
       preLoaderRoute: typeof PhishingKitsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/manage': {
+      id: '/courses/manage'
+      path: '/courses/manage'
+      fullPath: '/courses/manage'
+      preLoaderRoute: typeof CoursesManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/assign': {
+      id: '/courses/assign'
+      path: '/courses/assign'
+      fullPath: '/courses/assign'
+      preLoaderRoute: typeof CoursesAssignRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses/$courseId': {
@@ -1210,6 +1252,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContentManagerSettingsRoute: ContentManagerSettingsRoute,
   ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
+  CoursesAssignRoute: CoursesAssignRoute,
+  CoursesManageRoute: CoursesManageRoute,
   PhishingKitsIdRoute: PhishingKitsIdRoute,
   PhishingKitsNewRoute: PhishingKitsNewRoute,
   SendingProfilesIdRoute: SendingProfilesIdRoute,
