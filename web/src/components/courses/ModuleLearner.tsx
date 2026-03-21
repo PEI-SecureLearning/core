@@ -327,11 +327,14 @@ function Toast({
    ──────────────────────────────────────────────────────────────────────────── */
 
 type Props = {
-  readonly module: CourseModule;
+  readonly module: { title: string; difficulty?: string; estimatedTime?: string; sections?: Section[] }; // Accept mapped Module
   readonly courseId: string;
+  readonly initialCompletedSections?: string[];
+  readonly onSectionComplete?: (sectionId: string, totalSections: number) => void;
+  readonly onTaskComplete?: (sectionId: string, taskId: string) => void;
 };
 
-export default function ModuleLearner({ module: mod, courseId }: Props) {
+export default function ModuleLearner({ module: mod, courseId, initialCompletedSections = [], onSectionComplete, onTaskComplete }: Props) {
   const sections = mod.sections ?? [];
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -350,7 +353,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
     Record<string, string>
   >({});
   const [completedSections, setCompletedSections] = useState<Set<string>>(
-    new Set()
+    new Set(initialCompletedSections)
   );
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [openedSections, setOpenedSections] = useState<Set<string>>(
@@ -369,9 +372,15 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
   );
 
   // ── Handlers ──
-  const onMark = useCallback((qid: string, cid: string) => {
-    setAnsweredChoices((prev) => ({ ...prev, [qid]: cid }));
-  }, []);
+  const onMark = useCallback((sectionId: string, qid: string, cid: string) => {
+    setAnsweredChoices((prev) => {
+        // Only trigger onTaskComplete if this is a new answer
+        if (prev[qid] !== cid && onTaskComplete) {
+            onTaskComplete(sectionId, qid);
+        }
+        return { ...prev, [qid]: cid };
+    });
+  }, [onTaskComplete]);
 
   const toggleSection = useCallback(
     (id: string) => {
@@ -399,13 +408,17 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
     [unlockedSections]
   );
 
-  const completeSection = useCallback(
-    (sectionId: string) => {
-      setCompletedSections((prev) => {
-        const next = new Set(prev);
-        next.add(sectionId);
-        return next;
-      });
+    const completeSection = useCallback(
+      (sectionId: string) => {
+        setCompletedSections((prev) => {
+          const next = new Set(prev);
+          next.add(sectionId);
+          return next;
+        });
+  
+        if (onSectionComplete) {
+          onSectionComplete(sectionId, sections.length);
+        }
 
       // Auto-expand next locked section
       const idx = sections.findIndex((s) => s.id === sectionId);
@@ -772,17 +785,17 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                     return sec.blocks.map((block) => {
                                       if (block.kind === "question") localQ++;
                                       return (
-                                        <PreviewBlock
-                                          key={block.id}
-                                          block={block}
-                                          qIndex={
-                                            block.kind === "question"
-                                              ? localQ
-                                              : 0
-                                          }
-                                          answeredChoices={answeredChoices}
-                                          onMark={onMark}
-                                        />
+                                          <PreviewBlock
+                                            key={block.id}
+                                            block={block}
+                                            qIndex={
+                                              block.kind === "question"
+                                                ? localQ
+                                                : 0
+                                            }
+                                            answeredChoices={answeredChoices}
+                                            onMark={(qid, cid) => onMark(sec.id, qid, cid)}
+                                          />
                                       );
                                     });
                                   })()

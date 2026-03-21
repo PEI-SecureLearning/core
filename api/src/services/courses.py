@@ -71,31 +71,31 @@ def _apply_difficulty(query: dict[str, Any], difficulty: str | None) -> None:
 
 # ── Service functions ─────────────────────────────────────────────────────────
 
-async def create_course(payload: CourseCreate, realm: str, created_by: str) -> CourseOut:
+async def create_course(payload: CourseCreate, created_by: str) -> CourseOut:
     """Insert a new course document and return it."""
     now = _now()
     data = payload.model_dump()
-    data.update(realm=realm, created_by=created_by, created_at=now, updated_at=now)
+    data.update(created_by=created_by, created_at=now, updated_at=now)
 
     col = get_courses_collection()
     result = await col.insert_one(data)
     data["_id"] = result.inserted_id
+    print(_doc_to_out(data))
     return _doc_to_out(data)
 
 
 async def list_courses(
-    realm:      str,
     search:     str | None = None,
     category:   str | None = None,
     difficulty: str | None = None,
     page:       int = 1,
     limit:      int = _DEFAULT_PAGE_LIMIT,
 ) -> PaginatedCourses:
-    """Return a paginated, filtered list of courses scoped to a realm."""
+    """Return a paginated, filtered list of courses."""
     limit = min(limit, _MAX_PAGE_LIMIT)
     skip  = (page - 1) * limit
 
-    query: dict[str, Any] = {"realm": realm}
+    query: dict[str, Any] = {}
     _apply_search(query, search)
     _apply_category(query, category)
     _apply_difficulty(query, difficulty)
@@ -114,21 +114,42 @@ async def list_courses(
     )
 
 
-async def get_course(course_id: str, realm: str) -> CourseOut:
+async def list_enrolled_courses(course_ids: list[str]) -> list[CourseOut]:
+    """Return a list of courses by their ObjectIds."""
+    if not course_ids:
+        return []
+        
+    oids = []
+    for cid in course_ids:
+        try:
+            oids.append(ObjectId(cid))
+        except (InvalidId, TypeError):
+            pass
+            
+    if not oids:
+        return []
+        
+    col = get_courses_collection()
+    cursor = col.find({"_id": {"$in": oids}})
+    items = [_doc_to_out(doc) async for doc in cursor]
+    return items
+
+
+async def get_course(course_id: str) -> CourseOut:
     """Fetch a single course by its ObjectId string."""
     col = get_courses_collection()
-    doc = await col.find_one({"_id": _to_object_id(course_id), "realm": realm})
+    doc = await col.find_one({"_id": _to_object_id(course_id)})
     if doc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
     return _doc_to_out(doc)
 
 
-async def update_course(course_id: str, payload: CourseUpdate, realm: str) -> CourseOut:
+async def update_course(course_id: str, payload: CourseUpdate) -> CourseOut:
     """Full replacement update (PUT)."""
     oid = _to_object_id(course_id)
     col = get_courses_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
+    existing = await col.find_one({"_id": oid})
     if existing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
 
@@ -140,12 +161,12 @@ async def update_course(course_id: str, payload: CourseUpdate, realm: str) -> Co
     return _doc_to_out(updated)  # type: ignore[arg-type]
 
 
-async def patch_course(course_id: str, payload: CoursePatch, realm: str) -> CourseOut:
+async def patch_course(course_id: str, payload: CoursePatch) -> CourseOut:
     """Partial update (PATCH) — only sets fields present in the payload."""
     oid = _to_object_id(course_id)
     col = get_courses_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
+    existing = await col.find_one({"_id": oid})
     if existing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
 
@@ -159,12 +180,12 @@ async def patch_course(course_id: str, payload: CoursePatch, realm: str) -> Cour
     return _doc_to_out(updated)  # type: ignore[arg-type]
 
 
-async def delete_course(course_id: str, realm: str) -> None:
+async def delete_course(course_id: str) -> None:
     """Hard-delete a course document."""
     oid = _to_object_id(course_id)
     col = get_courses_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
+    existing = await col.find_one({"_id": oid})
     if existing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
 

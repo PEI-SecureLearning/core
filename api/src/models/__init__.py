@@ -32,6 +32,7 @@ from .org_manager import (
     ComplianceQuizPayload,
     CompliancePolicyResponse,
     ComplianceQuizResponse,
+    CourseEnrollmentPayload,
 )
 from .module import (
     ModuleStatus,
@@ -59,6 +60,7 @@ from .course import (
     CourseOut,
     PaginatedCourses,
 )
+from .user_progress import UserProgress
 
 
 __all__ = [
@@ -130,6 +132,7 @@ __all__ = [
     "ComplianceQuizPayload",
     "CompliancePolicyResponse",
     "ComplianceQuizResponse",
+    "CourseEnrollmentPayload",
     # Learning Module
     "ModuleStatus",
     "Difficulty",

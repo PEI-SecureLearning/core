@@ -46,6 +46,7 @@ export interface NavGroupDef {
 const groupIcons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
     "Phishing": Fish,
     "LMS": GraduationCap,
+    "Learning": BookOpen,
     "Management": FolderCog,
 };
 
@@ -133,6 +134,24 @@ export const userLinks: NavLinkDef[] = [
         roles: ["DEFAULT_USER"],
         feature: "lms",
         group: "LMS",
+    },
+    {
+        href: "/courses/manage",
+        label: "Manage Courses",
+        description: "Manage organization courses.",
+        icon: BookOpen,
+        roles: ["ORG_MANAGER"],
+        feature: "lms",
+        group: "Learning",
+    },
+    {
+        href: "/courses/assign",
+        label: "Assign Courses",
+        description: "Assign courses to users.",
+        icon: GraduationCap,
+        roles: ["ORG_MANAGER"],
+        feature: "lms",
+        group: "Learning",
     },
     {
         href: "/tenants-org-manager",

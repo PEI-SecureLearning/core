@@ -1,35 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { BookOpen, Plus, Trash2 } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { GraduationCap } from "lucide-react";
 import { motion, LayoutGroup, AnimatePresence } from "motion/react";
 import { useKeycloak } from "@react-keycloak/web";
-import { toast } from "sonner";
-import { fetchCourses, deleteCourse, type Course } from "@/services/coursesApi";
+import { fetchEnrolledCourses, type Course } from "@/services/coursesApi";
+import { getUserProgress, type UserProgress } from "@/services/progressApi";
 import CourseCard, { type CardItem } from "./CourseCard";
 import CourseFilters from "./UniversalFilters";
 import type { GridCols } from "./UniversalFilters";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
-
-const ELEVATED_ROLES = [
-    "admin",
-    "org_manager",
-    "CUSTOM_ORG_ADMIN",
-    "CONTENT_MANAGER"
-];
-
-function courseToCardItem(course: Course): CardItem {
-    return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        category: course.category,
-        duration: course.expected_time,
-        unitCount: course.modules.length,
-        unitLabel: "modules",
-        showProgress: false,
-    };
-}
 
 const gridClass: Record<GridCols, string> = {
     1: "grid-cols-1",
@@ -37,23 +16,10 @@ const gridClass: Record<GridCols, string> = {
     3: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
 };
 
-type CourseListProps = {
-    showNewCourse?: boolean;
-    basePath?: string;
-    hideControls?: boolean;
-};
-
-export default function CourseList({
-    showNewCourse = false,
-    basePath = "/courses",
-    hideControls = false,
-}: CourseListProps = {}) {
+export default function UserCourseList() {
     const { keycloak } = useKeycloak();
-    const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? [];
-    const isContentManager = ELEVATED_ROLES.some((r) => userRoles.includes(r));
-    const showControls = isContentManager && !hideControls;
 
-    const [courses, setCourses] = useState<Course[]>([]);
+    const [courses, setCourses] = useState<(Course & { progressObj: UserProgress })[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
@@ -63,7 +29,6 @@ export default function CourseList({
     const [category, setCategory] = useState("All");
     const [cols, setCols] = useState<GridCols>(2);
     const [headerVisible, setHeaderVisible] = useState(true);
-    const [refreshKey, setRefreshKey] = useState(0);
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const lastScrollY = useRef(0);
@@ -79,33 +44,57 @@ export default function CourseList({
         }
     }, []);
 
-    // Fetch courses from backend
     useEffect(() => {
         let cancelled = false;
-        if (!keycloak.token) return;
         
+        const userId = keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email || keycloak.tokenParsed?.sub;
+        
+        if (!keycloak.authenticated || !keycloak.token || !userId) return;
+
         setLoading(true);
         setError(null);
 
-        fetchCourses({
-            token: keycloak.token,
-            search: search || undefined,
-            category: category !== "All" ? category : undefined,
-            difficulty: difficulty !== "All" ? difficulty : undefined,
-            limit: 100,
-        })
-            .then((data) => {
-                if (!cancelled) setCourses(data.items);
-            })
-            .catch(() => {
-                if (!cancelled) setError("Failed to load courses.");
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
+        async function loadData() {
+            try {
+                await keycloak.updateToken(30);
 
+                const [enrolledCourses, progresses] = await Promise.all([
+                    fetchEnrolledCourses(keycloak.token!),
+                    getUserProgress(userId, keycloak.token!).catch(() => [])
+                ]);
+
+                if (!cancelled && enrolledCourses.length === 0) {
+                    setCourses([]);
+                    return;
+                }
+
+                const fetched = enrolledCourses.map(course => {
+                    const progressObj = progresses.find(p => p.course_id === course.id) ?? {
+                        course_id: course.id,
+                        user_id: userId,
+                        completed_sections: [],
+                        is_certified: false,
+                        progress_data: {},
+                        total_completed_tasks: 0,
+                        deadline: null,
+                        expired: false,
+                        updated_at: new Date().toISOString(),
+                    } as UserProgress;
+
+                    return { ...course, progressObj };
+                });
+
+                if (!cancelled) setCourses(fetched);
+            } catch (err) {
+                if (!cancelled) setError("Failed to load your courses.");
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+
+        void loadData();
         return () => { cancelled = true; };
-    }, [keycloak.token, search, difficulty, category, refreshKey]);
+    }, [keycloak.authenticated, keycloak.token]);
 
     // Fetch cover image presigned URLs
     useEffect(() => {
@@ -133,21 +122,37 @@ export default function CourseList({
         return () => { cancelled = true; };
     }, [courses, keycloak.token]);
 
-    const handleDelete = async (courseId: string, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!window.confirm("Delete this course?")) return;
-        try {
-            await deleteCourse(courseId, keycloak.token);
-            toast.success("Course deleted.");
-            setRefreshKey(k => k + 1);
-        } catch {
-            toast.error("Could not delete course.");
-        }
-    };
+    const filteredCourses = courses.filter((c) => {
+        if (search && !c.title.toLowerCase().includes(search.toLowerCase())) return false;
+        if (category !== "All" && c.category !== category) return false;
+        if (difficulty !== "All" && c.difficulty !== difficulty) return false;
+        return true;
+    });
 
-    // Derive unique categories from courses
     const categoryOptions = ["All", ...Array.from(new Set(courses.map(c => c.category).filter(Boolean)))];
+
+    function courseToCardItem(course: Course & { progressObj: UserProgress }): CardItem {
+        const p = course.progressObj;
+        let progNum = 0;
+        if (p.is_certified) {
+            progNum = 100;
+        } else if (course.modules.length > 0) {
+            progNum = Math.min(100, Math.round((p.completed_sections.length / course.modules.length) * 100));
+        }
+
+        return {
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            category: course.category,
+            duration: course.expected_time,
+            unitCount: course.modules.length,
+            unitLabel: "modules",
+            showProgress: true,
+            progress: progNum,
+            coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
+        };
+    }
 
     return (
         <div
@@ -155,29 +160,17 @@ export default function CourseList({
             onScroll={handleScroll}
             className="relative h-full overflow-y-auto"
         >
-            {/* ── Sticky header + filters ─────────────────────────────────── */}
             <div
                 className={`sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border/40 px-6 pt-6 pb-4 space-y-4 transition-all duration-500 ease-in-out ${headerVisible
                     ? "opacity-100 translate-y-0 shadow-none"
                     : "opacity-0 -translate-y-full pointer-events-none shadow-md"
                     }`}
             >
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-foreground">Courses</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Browse and complete security training courses assigned to your organization.
-                        </p>
-                    </div>
-                    {showNewCourse && (
-                        <Link
-                            to={"/content-manager/courses/new" as any}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
-                        >
-                            <Plus size={16} strokeWidth={2.5} />
-                            New Course
-                        </Link>
-                    )}
+                <div>
+                    <h1 className="text-2xl font-bold text-foreground">My Courses</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Continue your assigned learning and track your progress.
+                    </p>
                 </div>
 
                 <CourseFilters
@@ -193,12 +186,11 @@ export default function CourseList({
                     secondaryLabel="All Categories"
                     cols={cols}
                     onColsChange={setCols}
-                    resultCount={courses.length}
+                    resultCount={filteredCourses.length}
                     entityName="course"
                 />
             </div>
 
-            {/* ── Content Area ──────────────────────────────────────────────── */}
             <div className="px-6 pt-4 pb-6">
                 {loading ? (
                     <div className={`grid ${gridClass[cols]} gap-6`}>
@@ -213,25 +205,20 @@ export default function CourseList({
                 ) : courses.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground/70">
                         <div className="w-16 h-16 rounded-full bg-surface-subtle flex items-center justify-center mb-4">
-                            <BookOpen className="w-8 h-8 text-muted-foreground/40" />
+                            <GraduationCap className="w-8 h-8 text-muted-foreground/40" />
                         </div>
-                        {search.trim() ? (
-                            <>
-                                <p className="text-sm font-medium text-muted-foreground">No courses match "{search}"</p>
-                                <p className="text-xs text-muted-foreground/70 mt-1">Try a different search term or reset filters.</p>
-                            </>
-                        ) : (
-                            <>
-                                <p className="text-sm font-medium text-muted-foreground">No courses yet</p>
-                                <p className="text-xs text-muted-foreground/70 mt-1">Create your first course to get started.</p>
-                            </>
-                        )}
+                        <p className="text-base font-medium text-foreground">No courses assigned</p>
+                        <p className="text-sm text-muted-foreground mt-1">You haven't been assigned any training yet.</p>
+                    </div>
+                ) : filteredCourses.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground/70">
+                        <p className="text-sm font-medium text-muted-foreground">No courses match your filters</p>
                     </div>
                 ) : (
                     <LayoutGroup>
                         <motion.div layout className={`grid ${gridClass[cols]} gap-6`}>
                             <AnimatePresence mode="popLayout">
-                                {courses.map((course) => (
+                                {filteredCourses.map((course) => (
                                     <motion.div
                                         key={course.id}
                                         layout
@@ -253,23 +240,10 @@ export default function CourseList({
                                         className="rounded-xl cursor-pointer relative group/card"
                                     >
                                         <CourseCard
-                                            item={{
-                                                ...courseToCardItem(course),
-                                                coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
-                                            }}
+                                            item={courseToCardItem(course)}
                                             cols={cols}
-                                            basePath={basePath}
+                                            basePath="/courses"
                                         />
-                                        {showControls && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => { void handleDelete(course.id, e); }}
-                                                title="Delete course"
-                                                className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm text-red-400 hover:text-red-300 hover:bg-red-500/15 opacity-0 group-hover/card:opacity-100 transition-all duration-200 border border-border/50"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        )}
                                     </motion.div>
                                 ))}
                             </AnimatePresence>

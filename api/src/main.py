@@ -19,6 +19,7 @@ from src.routers import (
     modules,
     phishing_kit,
     courses,
+    progress,
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
@@ -82,3 +83,4 @@ app.include_router(sending_profile.router, prefix="/api", tags=["sending-profile
 app.include_router(modules.router, prefix="/api", tags=["modules"])
 app.include_router(phishing_kit.router, prefix="/api", tags=["phishing-kits"])
 app.include_router(courses.router, prefix="/api", tags=["courses"])
+app.include_router(progress.router, prefix="/api", tags=["progress"])

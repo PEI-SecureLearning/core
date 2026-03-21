@@ -3,6 +3,11 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class CourseEnrollmentPayload(BaseModel):
+    course_ids: list[str]
+    deadline: datetime | None = None
+
+
 class OrgUserCreate(BaseModel):
     username: str
     name: str

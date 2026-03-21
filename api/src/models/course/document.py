@@ -58,7 +58,6 @@ class CourseOut(BaseModel):
     expected_time:   str
     cover_image:     Optional[str]   = None   # content_piece_id — frontend resolves presigned URL
     modules:         list[str]       = Field(default_factory=list)
-    realm:           Optional[str]   = None
     created_by:      Optional[str]   = None
     created_at:      datetime
     updated_at:      datetime
