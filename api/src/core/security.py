@@ -132,6 +132,7 @@ class Roles:
 
         if required_roles.isdisjoint(token_roles):
             permission_label = f"{' or '.join(self.resources)}#{self.scope}"
+            logging.error(f"403 ERROR: Token Roles: {token_roles}, Required: {required_roles}, Payload realm_access: {payload.get('realm_access')} resource_access: {payload.get('resource_access')}")
             raise HTTPException(
                 status_code=403,
                 detail=f"Permission denied for '{permission_label}'",
