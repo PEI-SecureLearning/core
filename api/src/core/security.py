@@ -20,7 +20,7 @@ _JWKS_CLIENTS: dict[str, PyJWKClient] = {}
 class Resource(StrEnum):
     ADMIN = "admin"
     ORG_MANAGER = "org_manager"
-    CONTENT_MANAGER = "content-manager"
+    CONTENT_MANAGER = "content_manager"
 
 
 class Scope(StrEnum):
@@ -94,8 +94,8 @@ class Roles:
             (Resource.ADMIN.value, Scope.MANAGE.value): {"admin"},
             (Resource.ORG_MANAGER.value, Scope.VIEW.value): {"org_manager"},
             (Resource.ORG_MANAGER.value, Scope.MANAGE.value): {"org_manager"},
-            (Resource.CONTENT_MANAGER.value, Scope.VIEW.value): {"content-manager"},
-            (Resource.CONTENT_MANAGER.value, Scope.MANAGE.value): {"content-manager"},
+            (Resource.CONTENT_MANAGER.value, Scope.VIEW.value): {"content_manager"},
+            (Resource.CONTENT_MANAGER.value, Scope.MANAGE.value): {"content_manager"},
         }
 
         required_roles: set[str] = set()
