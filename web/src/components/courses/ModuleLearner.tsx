@@ -111,18 +111,20 @@ function QuestionBlock({
   const typeLabel = QUESTION_TYPE_LABELS[q.type] ?? "Question";
   const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
 
-  const choiceBtnClass = (c: Choice) => {
+  const choiceBtnClass = (c: any) => {
     if (answered !== c.id) {
       return "bg-background border-border text-foreground/90 hover:bg-primary/10/50 hover:border-primary/30";
     }
-    return c.isCorrect
+    const isCorrect = c.is_correct ?? (c as any).isCorrect;
+    return isCorrect
       ? "bg-green-50 border-green-400 text-green-800"
       : "bg-red-50 border-red-400 text-red-800";
   };
 
-  const choiceCircleClass = (c: Choice) => {
+  const choiceCircleClass = (c: any) => {
     if (answered !== c.id) return "border-border/60";
-    return c.isCorrect
+    const isCorrect = c.is_correct ?? (c as any).isCorrect;
+    return isCorrect
       ? "border-green-500 bg-green-100"
       : "border-red-500 bg-red-100";
   };
@@ -164,6 +166,7 @@ function QuestionBlock({
           <div className="flex flex-col gap-2">
             {choices.map((c) => {
               const isSelected = answered === c.id;
+              const isCorrect = c.is_correct ?? (c as any).isCorrect;
               return (
                 <button
                   key={c.id}
@@ -174,10 +177,10 @@ function QuestionBlock({
                   <span
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${choiceCircleClass(c)}`}
                   >
-                    {isSelected && c.isCorrect && (
+                    {isSelected && isCorrect && (
                       <Check className="w-2.5 h-2.5 text-green-600" />
                     )}
-                    {isSelected && !c.isCorrect && (
+                    {isSelected && !isCorrect && (
                       <X className="w-2.5 h-2.5 text-red-600" />
                     )}
                   </span>
@@ -246,7 +249,6 @@ function PreviewBlock({
    Section locking logic
    ──────────────────────────────────────────────────────────────────────────── */
 
-/** Check if all questions in a section have been answered correctly */
 function isSectionComplete(
   section: Section,
   answeredChoices: Record<string, string>
@@ -257,20 +259,15 @@ function isSectionComplete(
 
   if (questions.length === 0) return true; // no questions → auto-complete on open
 
-  if (section.requireCorrectAnswers) {
-    // Every question must be answered correctly
-    return questions.every((qb) => {
-      const q = qb.question;
-      const chosen = answeredChoices[q.id];
-      if (!chosen) return false;
-      const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
-      const correct = choices.find((c) => c.isCorrect);
-      return chosen === correct?.id;
-    });
-  }
-
-  // No strict requirement → just need to have answered each question (any answer)
-  return questions.every((qb) => answeredChoices[qb.question.id] !== undefined);
+  // Every question must be answered correctly to complete the section
+  return questions.every((qb) => {
+    const q = qb.question;
+    const chosen = answeredChoices[q.id];
+    if (!chosen) return false;
+    const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
+    const correct = choices.find((c: any) => c.is_correct ?? (c as any).isCorrect);
+    return chosen === correct?.id;
+  });
 }
 
 /** Determine which sections are unlocked based on sequential completion */
@@ -831,9 +828,7 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                                       )}
                                       {!canComplete && qCount > 0 && (
                                         <p className="text-xs text-muted-foreground/70 italic">
-                                          {sec.requireCorrectAnswers
-                                            ? "Answer all questions correctly to continue"
-                                            : "Answer all questions to continue"}
+                                          Answer all questions correctly to continue
                                         </p>
                                       )}
                                     </>

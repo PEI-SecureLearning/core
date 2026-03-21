@@ -16,7 +16,7 @@ export const Route = createFileRoute("/courses/$courseId/")({
 function CourseDetail() {
   const { courseId } = Route.useParams();
   const { keycloak } = useKeycloak();
-  const userId = keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email || keycloak.tokenParsed?.sub;
+  const userId = keycloak.subject || keycloak.tokenParsed?.sub || keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email;
 
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
