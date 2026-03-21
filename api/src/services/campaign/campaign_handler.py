@@ -51,6 +51,10 @@ class CampaignHandler:
 
         # Link phishing kits (M2M)
         self._update_m2m_relationship(
+            session, UserGroup, new_campaign.user_groups, campaign.user_group_ids
+        )
+
+        self._update_m2m_relationship(
             session, PhishingKit, new_campaign.phishing_kits, campaign.phishing_kit_ids
         )
 
@@ -190,6 +194,10 @@ class CampaignHandler:
             collection.clear()
             for item_id in item_ids:
                 item = session.get(model_class, item_id)
+                if not item and model_class is UserGroup:
+                    item = UserGroup(keycloak_id=item_id)
+                    session.add(item)
+                    session.flush()
                 if item:
                     collection.append(item)
 

@@ -43,6 +43,17 @@ class EmailHandler:
         if not template:
             raise ValueError(f"No email template for email_sending {email_sending.id}")
 
+        subject = template.subject or template.name
+        if not subject:
+            raise ValueError(
+                f"Email template {template.id} has no subject/name for email_sending {email_sending.id}"
+            )
+
+        if not template.content_link:
+            raise ValueError(
+                f"Email template {template.id} has no content_link for email_sending {email_sending.id}"
+            )
+
         rabbitmq_service.send_email(
             RabbitMQEmailMessage(
                 smtp_config=SMTPConfig(
@@ -53,7 +64,7 @@ class EmailHandler:
                 ),
                 sender_email=profile.from_email,
                 receiver_email=email_sending.email_to,
-                subject=template.subject,
+                subject=subject,
                 template_id=template.content_link,
                 tracking_id=email_sending.tracking_token,
                 arguments={

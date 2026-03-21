@@ -18,6 +18,12 @@ async def get_template(template_id: str) -> TemplateOut:
     return await template_service.get_template(template_id)
 
 
+@router.get("/internal/templates/{template_id}")
+async def get_template_internal(template_id: str) -> TemplateOut:
+    """Internal endpoint for trusted service-to-service template fetches."""
+    return await template_service.get_template(template_id)
+
+
 @router.post("/templates", status_code=status.HTTP_201_CREATED, dependencies=[Depends(Roles(Resource.CONTENT_MANAGER, Scope.MANAGE))])
 async def create_template(template: TemplateCreate) -> TemplateOut:
     return await template_service.create_template(template)
