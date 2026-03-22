@@ -39,6 +39,24 @@ async def init_db():
                     "ADD COLUMN IF NOT EXISTS passing_score INTEGER NOT NULL DEFAULT 80"
                 )
             )
+            conn.execute(
+                text(
+                    "ALTER TABLE user_progress "
+                    "ADD COLUMN IF NOT EXISTS start_date TIMESTAMP WITHOUT TIME ZONE"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE user_progress "
+                    "ADD COLUMN IF NOT EXISTS deadline TIMESTAMP WITHOUT TIME ZONE"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE user_progress "
+                    "ADD COLUMN IF NOT EXISTS expired BOOLEAN NOT NULL DEFAULT FALSE"
+                )
+            )
             conn.commit()
         except Exception:
             conn.rollback()

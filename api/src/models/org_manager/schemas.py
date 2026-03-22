@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 class CourseEnrollmentPayload(BaseModel):
     course_ids: list[str]
+    start_date: datetime | None = None
     deadline: datetime | None = None
 
 

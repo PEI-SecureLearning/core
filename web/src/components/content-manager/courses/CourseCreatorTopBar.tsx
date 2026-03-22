@@ -2,7 +2,6 @@ import { ArrowLeft, Eye, Loader2 } from 'lucide-react'
 
 interface CourseCreatorTopBarProps {
     readonly title: string
-    readonly onTitleChange: (title: string) => void
     readonly onBack: () => void
     readonly onPreview: () => void
     readonly canPreview: boolean
@@ -12,7 +11,6 @@ interface CourseCreatorTopBarProps {
 
 export function CourseCreatorTopBar({
     title,
-    onTitleChange,
     onBack,
     onPreview,
     canPreview,
@@ -33,13 +31,9 @@ export function CourseCreatorTopBar({
 
                 <div className="h-5 w-px bg-border flex-shrink-0" />
 
-                <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => onTitleChange(e.target.value)}
-                    placeholder="Untitled Course"
-                    className="flex-1 text-lg font-bold text-foreground placeholder:text-muted-foreground/40 bg-transparent border-none outline-none focus:ring-0 min-w-0"
-                />
+                <h1 className="text-lg font-bold text-foreground truncate">
+                    {title || 'Untitled Course'}
+                </h1>
             </div>
 
             <div className="flex flex-row items-center gap-2">

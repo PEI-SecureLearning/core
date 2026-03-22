@@ -88,6 +88,7 @@ def enroll_user_endpoint(
         session,
         user_id=user_id,
         course_ids=payload.course_ids,
+        start_date=payload.start_date,
         deadline=payload.deadline,
     )
 

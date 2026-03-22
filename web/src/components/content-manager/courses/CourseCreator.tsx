@@ -1,29 +1,17 @@
 import { useState, useCallback } from 'react'
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
-import { AnimatePresence } from 'framer-motion'
-import { Image as ImageIcon, X } from 'lucide-react'
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 import { useKeycloak } from '@react-keycloak/web'
 import { toast } from 'sonner'
 import { createCourse, updateCourse, type CourseDifficulty, type Course } from '@/services/coursesApi'
 import { type Module } from '@/services/modulesApi'
 import { CourseCreatorTopBar } from './CourseCreatorTopBar'
-import { AvailableModuleList } from './AvailableModuleList'
+import { AnimatePresence } from 'framer-motion'
 import { CourseModuleStack } from './CourseModuleStack'
-import { ContentFilePicker, type ContentFileItem } from '@/components/content-manager/modules/module-creation/ContentFilePicker'
-
-
-
-const DIFFICULTY_OPTIONS: CourseDifficulty[] = ['Easy', 'Medium', 'Hard']
-const DIFFICULTY_ACTIVE: Record<CourseDifficulty, string> = {
-    Easy:   'bg-green-500/15 text-green-400 border-green-500/40',
-    Medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/40',
-    Hard:   'bg-red-500/15 text-red-400 border-red-500/40',
-}
-const DIFFICULTY_IDLE = 'bg-surface-subtle text-muted-foreground border-border hover:border-[#7C3AED]/40'
-
-const API_BASE = import.meta.env.VITE_API_URL as string
+import { CourseDetailsSidebar } from './sidebar/CourseDetailsSidebar'
+import { ModuleLibrarySidebar } from './sidebar/ModuleLibrarySidebar'
+import { CoursePreview } from './CoursePreview'
 
 interface CourseCreatorProps {
     readonly onBack: () => void
@@ -36,39 +24,28 @@ interface CourseCreatorProps {
 export function CourseCreator({ onBack, onPublished, initialCourse, initialModules, isEditing }: CourseCreatorProps) {
     const { keycloak } = useKeycloak()
 
-    // Core state
-    const [courseTitle,      setCourseTitle]      = useState(initialCourse?.title ?? '')
-    const [description,      setDescription]      = useState(initialCourse?.description ?? '')
-    const [category,         setCategory]         = useState(initialCourse?.category ?? '')
-    const [difficulty,       setDifficulty]       = useState<CourseDifficulty>(initialCourse?.difficulty ?? 'Easy')
-    const [coverImageId,     setCoverImageId]     = useState<string | null>(initialCourse?.cover_image ?? null)
-    const [coverImageUrl,    setCoverImageUrl]    = useState<string | null>(null)
-    const [selectedModules,  setSelectedModules]  = useState<Module[]>(initialModules ?? [])
-    const [isSaving,         setIsSaving]         = useState(false)
-    const [showFilePicker,   setShowFilePicker]   = useState(false)
-    const [activeModule,     setActiveModule]     = useState<Module | null>(null)
+    // Group state for easier management
+    const [data, setData] = useState({
+        title: initialCourse?.title ?? '',
+        description: initialCourse?.description ?? '',
+        category: initialCourse?.category ?? '',
+        difficulty: (initialCourse?.difficulty as CourseDifficulty) ?? 'Easy',
+        coverImageId: initialCourse?.cover_image ?? null,
+        coverImageUrl: null as string | null,
+    })
+
+    const patch = useCallback((p: Partial<typeof data>) => setData(prev => ({ ...prev, ...p })), [])
+
+    const [selectedModules, setSelectedModules] = useState<Module[]>(initialModules ?? [])
+    const [isSaving, setIsSaving] = useState(false)
+    const [showPreview, setShowPreview] = useState(false)
+    const [activeModule, setActiveModule] = useState<Module | null>(null)
 
     const selectedIds = selectedModules.map((m) => m.id)
 
     // Calculate expected time dynamically
     const totalMinutes = selectedModules.reduce((acc, mod) => acc + (parseInt(mod.estimated_time || '0', 10) || 0), 0)
     const expectedTime = totalMinutes >= 60 ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m` : `${totalMinutes}m`
-
-    // Load initial cover image URL if editing
-    import('react').then(({ useEffect }) => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useEffect(() => {
-            if (!initialCourse?.cover_image || coverImageUrl) return
-            let cancelled = false
-            fetch(`${API_BASE}/content/${encodeURIComponent(initialCourse.cover_image)}/file-url`, {
-                headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '' },
-            })
-                .then(r => r.json() as Promise<{ url: string | null }>)
-                .then(d => { if (!cancelled && d.url) setCoverImageUrl(d.url) })
-                .catch(() => undefined)
-            return () => { cancelled = true }
-        }, [initialCourse?.cover_image, coverImageUrl, keycloak.token])
-    }).catch(() => undefined)
 
     const handleDragStart = useCallback((event: DragStartEvent) => {
         const mod = event.active.data.current?.module as Module | undefined
@@ -81,7 +58,7 @@ export function CourseCreator({ onBack, onPublished, initialCourse, initialModul
         if (!over) return
 
         const activeId = String(active.id)
-        const overId   = String(over.id)
+        const overId = String(over.id)
 
         // Drop from library into stack
         if (activeId.startsWith('library-')) {
@@ -106,28 +83,22 @@ export function CourseCreator({ onBack, onPublished, initialCourse, initialModul
         setSelectedModules((prev) => prev.filter((_, i) => i !== index))
     }, [])
 
-    // Handle cover image selection from ContentFilePicker
-    const handleCoverImageSelected = (url: string, item: ContentFileItem) => {
-        setCoverImageId(item.content_piece_id)
-        setCoverImageUrl(url)
-    }
-
     const handlePublish = async () => {
-        if (!courseTitle.trim()) { toast.error('Title is required.'); return }
-        if (!description.trim()) { toast.error('Description is required.'); return }
-        if (!category.trim())    { toast.error('Category is required.'); return }
+        if (!data.title.trim()) { toast.error('Title is required.'); return }
+        if (!data.description.trim()) { toast.error('Description is required.'); return }
+        if (!data.category.trim()) { toast.error('Category is required.'); return }
         if (selectedModules.length === 0) { toast.error('Add at least one module.'); return }
 
         setIsSaving(true)
         try {
             const payload = {
-                title:         courseTitle.trim(),
-                description:   description.trim(),
-                category:      category.trim(),
-                difficulty,
+                title: data.title.trim(),
+                description: data.description.trim(),
+                category: data.category.trim(),
+                difficulty: data.difficulty,
                 expected_time: expectedTime,
-                cover_image:   coverImageId,
-                modules:       selectedModules.map((m) => m.id),
+                cover_image: data.coverImageId,
+                modules: selectedModules.map((m) => m.id),
             }
             if (isEditing && initialCourse) {
                 await updateCourse(initialCourse.id, payload, keycloak.token)
@@ -148,10 +119,9 @@ export function CourseCreator({ onBack, onPublished, initialCourse, initialModul
     return (
         <div className="fixed inset-0 w-full h-full flex flex-col bg-background">
             <CourseCreatorTopBar
-                title={courseTitle}
-                onTitleChange={setCourseTitle}
+                title={data.title}
                 onBack={onBack}
-                onPreview={() => undefined}
+                onPreview={() => setShowPreview(true)}
                 canPreview={selectedModules.length > 0}
                 onPublish={() => { void handlePublish() }}
                 isSaving={isSaving}
@@ -159,98 +129,20 @@ export function CourseCreator({ onBack, onPublished, initialCourse, initialModul
 
             <DndContext collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <div className="flex-1 flex overflow-hidden">
+                    {/* Left – metadata sidebar */}
+                    <CourseDetailsSidebar
+                        data={{ ...data, expectedTime }}
+                        onChange={patch}
+                        getToken={() => keycloak.token}
+                    />
+
                     {/* Centre – course stack */}
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden bg-surface-subtle">
                         <CourseModuleStack modules={selectedModules} onRemove={handleRemove} />
                     </div>
 
-                    {/* Right – metadata sidebar + module library */}
-                    <div className="w-80 flex-shrink-0 bg-surface border-l border-border overflow-y-auto flex flex-col">
-                        {/* Metadata fields */}
-                        <div className="px-4 pt-4 pb-3 border-b border-border space-y-4">
-                            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Details</p>
-
-                            {/* Description */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Description</label>
-                                <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    rows={3}
-                                    placeholder="What will learners gain?"
-                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 resize-none"
-                                />
-                            </div>
-
-                            {/* Category */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Category</label>
-                                <input
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                    placeholder="e.g. Security Fundamentals"
-                                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30"
-                                />
-                            </div>
-
-                            {/* Difficulty */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Difficulty</label>
-                                <div className="flex gap-2">
-                                    {DIFFICULTY_OPTIONS.map((d) => (
-                                        <button
-                                            key={d}
-                                            type="button"
-                                            onClick={() => setDifficulty(d)}
-                                            className={`flex-1 py-1.5 rounded-lg border text-[11px] font-bold transition-all ${difficulty === d ? DIFFICULTY_ACTIVE[d] : DIFFICULTY_IDLE}`}
-                                        >
-                                            {d}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Expected time (Read Only) */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Expected Time</label>
-                                <div className="w-full rounded-lg border border-border bg-surface-subtle px-3 py-2 text-sm text-foreground flex items-center justify-between">
-                                    <span>{expectedTime}</span>
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Auto-calculated</span>
-                                </div>
-                            </div>
-
-                            {/* Cover image */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cover Image</label>
-                                {coverImageUrl ? (
-                                    <div className="relative group rounded-lg overflow-hidden border border-border">
-                                        <img src={coverImageUrl} alt="Cover" className="w-full h-28 object-cover" />
-                                        <button
-                                            type="button"
-                                            onClick={() => { setCoverImageId(null); setCoverImageUrl(null) }}
-                                            className="absolute top-1.5 right-1.5 p-1 rounded-full bg-background/80 text-muted-foreground hover:text-foreground transition-colors"
-                                        >
-                                            <X className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowFilePicker(true)}
-                                        className="w-full h-20 rounded-lg border-2 border-dashed border-border hover:border-[#7C3AED]/40 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-[#A78BFA] transition-colors"
-                                    >
-                                        <ImageIcon className="w-5 h-5" />
-                                        <span className="text-xs font-medium">Choose image</span>
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Module library */}
-                        <div className="flex-1 overflow-hidden flex flex-col">
-                            <AvailableModuleList selectedIds={selectedIds} />
-                        </div>
-                    </div>
+                    {/* Right – module library */}
+                    <ModuleLibrarySidebar selectedIds={selectedIds} />
                 </div>
 
                 <DragOverlay dropAnimation={null}>
@@ -264,15 +156,11 @@ export function CourseCreator({ onBack, onPublished, initialCourse, initialModul
             </DndContext>
 
             <AnimatePresence>
-                {showFilePicker && (
-                    <ContentFilePicker
-                        token={keycloak.token ?? ''}
-                        accept="image"
-                        onSelect={(url, item) => {
-                            setShowFilePicker(false)
-                            handleCoverImageSelected(url, item)
-                        }}
-                        onClose={() => setShowFilePicker(false)}
+                {showPreview && (
+                    <CoursePreview
+                        data={{ ...data, expectedTime }}
+                        selectedModules={selectedModules}
+                        onClose={() => setShowPreview(false)}
                     />
                 )}
             </AnimatePresence>

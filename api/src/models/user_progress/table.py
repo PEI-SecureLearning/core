@@ -11,6 +11,7 @@ class UserProgress(SQLModel, table=True):
     completed_sections: list[str] = Field(default=[], sa_column=Column(ARRAY(String)))
     total_completed_tasks: int = Field(default=0)
     is_certified: bool = Field(default=False)
+    start_date: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
     expired: bool = Field(default=False)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

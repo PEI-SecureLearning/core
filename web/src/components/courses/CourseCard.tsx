@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { BookOpen, Trash2 } from 'lucide-react'
+import { BookOpen, Trash2, Check } from 'lucide-react'
 import type { GridCols } from './UniversalFilters'
 
 // ─── Generic card data shape ──────────────────────────────────────────────────
@@ -24,6 +24,8 @@ export type CardItem = {
     progress?: number
     /** Optional cover image URL (shown instead of icon/color banner). */
     coverImageUrl?: string
+    /** Whether the course is completed (certified). */
+    isCompleted?: boolean
     /** Status badge text (e.g. 'draft', 'archived'). Only shown when provided. */
     statusBadge?: string
     /** Extra badge text shown top-left (e.g. difficulty). */
@@ -38,6 +40,12 @@ export type CardItem = {
     showProgress?: boolean
     /** Callback for delete action; if provided, shows a trash icon. */
     onDelete?: (id: string) => void
+    /** Whether the card is in selection mode */
+    selectable?: boolean
+    /** Whether the card is currently selected */
+    isSelected?: boolean
+    /** Callback for selection/click when selectable is true */
+    onClick?: () => void
 }
 
 type CourseCardProps = {
@@ -49,6 +57,12 @@ type CourseCardProps = {
     paramKey?: string
     /** Callback for delete action; if provided, shows a trash icon. */
     onDelete?: (id: string) => void
+    /** Whether the card is in selection mode */
+    selectable?: boolean
+    /** Whether the card is currently selected */
+    isSelected?: boolean
+    /** Callback for selection/click when selectable is true */
+    onClick?: () => void
 }
 
 // ─── shared progress badge helpers ───────────────────────────────────────────
@@ -143,6 +157,11 @@ function Banner({
                         <ProgressBadge progress={item.progress ?? 0} />
                     </div>
                 )}
+                {item.isCompleted && (
+                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none opacity-30">
+                        <Check className="w-24 h-24 text-white" strokeWidth={3} />
+                    </div>
+                )}
             </div>
         )
     }
@@ -165,19 +184,77 @@ function Banner({
                     </span>
                 </div>
             )}
+            {item.isCompleted && (
+                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none opacity-30">
+                    <Check className="w-24 h-24 text-white" strokeWidth={3} />
+                </div>
+            )}
         </div>
     )
 }
 
 // ─── 1-col: wide horizontal card ─────────────────────────────────────────────
 
-function CardHorizontal({ item, to, params }: { item: CardItem; to: string; params: Record<string, string> }) {
+function CardHorizontal({ item, to, params, selectable, isSelected, onClick }: { item: CardItem; to: string; params: Record<string, string>; selectable?: boolean; isSelected?: boolean; onClick?: () => void }) {
     const showProg = item.showProgress !== false
+
+    if (selectable) {
+        return (
+            <div onClick={onClick} className={`h-full ${item.isCompleted ? 'grayscale opacity-75' : ''}`}>
+                <div className={`group flex flex-row rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer h-full ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm'}`}>
+                    {/* Left colour strip / cover */}
+                    {item.coverImageUrl ? (
+                        <div className="relative flex-shrink-0 w-40 overflow-hidden">
+                            <img src={item.coverImageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+                        </div>
+                    ) : (
+                        <div className={`relative flex-shrink-0 w-40 bg-gradient-to-br ${item.color ?? 'from-purple-600 to-purple-800'} flex flex-col items-center justify-center gap-2`}>
+                            {item.icon
+                                ? <span className="text-5xl select-none">{item.icon}</span>
+                                : <BookOpen className="w-10 h-10 text-white/50" />
+                            }
+                        </div>
+                    )}
+
+                    {/* Right content */}
+                    <div className="flex flex-col flex-1 p-5 gap-2 min-w-0">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 flex-wrap text-left">
+                                {item.category && (
+                                    <span className="text-xs font-medium text-primary uppercase tracking-wide">
+                                        {item.category}
+                                    </span>
+                                )}
+                                {item.difficultyBadge && (
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${item.difficultyBadgeClass ?? 'bg-muted text-muted-foreground border-border/60'}`}>
+                                        {item.difficultyBadge}
+                                    </span>
+                                )}
+                            </div>
+                            {isSelected && (
+                                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white shadow-sm animate-in zoom-in duration-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                            )}
+                        </div>
+
+                        <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-snug text-left">
+                            {item.title}
+                        </h3>
+
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 flex-1 text-left">
+                            {item.description}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
     return (
         <Link
             to={to as any}
             params={params as any}
-            className="group flex flex-row rounded-r-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
+            className={`group flex flex-row rounded-r-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''}`}
         >
             {/* Left colour strip / cover */}
             {item.coverImageUrl ? (
@@ -243,13 +320,47 @@ function CardHorizontal({ item, to, params }: { item: CardItem; to: string; para
 
 // ─── 2-col: standard vertical card ───────────────────────────────────────────
 
-function CardVertical({ item, to, params }: { item: CardItem; to: string; params: Record<string, string> }) {
+function CardVertical({ item, to, params, selectable, isSelected, onClick }: { item: CardItem; to: string; params: Record<string, string>; selectable?: boolean; isSelected?: boolean; onClick?: () => void }) {
     const showProg = item.showProgress !== false
+
+    if (selectable) {
+        return (
+            <div
+                onClick={onClick}
+                className={`group flex flex-col h-full rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm'}`}
+            >
+                <div className="relative">
+                    <Banner item={item} height="h-36" iconSize="text-5xl" />
+                    {isSelected && (
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white shadow-lg animate-in zoom-in duration-200 z-20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-col flex-1 p-4 gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {item.category && (
+                            <span className="text-xs font-medium text-primary uppercase tracking-wide">
+                                {item.category}
+                            </span>
+                        )}
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                        {item.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
+                        {item.description}
+                    </p>
+                </div>
+            </div>
+        )
+    }
     return (
         <Link
             to={to as any}
             params={params as any}
-            className="group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
+            className={`group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''}`}
         >
             <Banner item={item} height="h-36" iconSize="text-5xl" />
 
@@ -278,13 +389,42 @@ function CardVertical({ item, to, params }: { item: CardItem; to: string; params
 
 // ─── 3-col: compact card ──────────────────────────────────────────────────────
 
-function CardCompact({ item, to, params }: { item: CardItem; to: string; params: Record<string, string> }) {
+function CardCompact({ item, to, params, selectable, isSelected, onClick }: { item: CardItem; to: string; params: Record<string, string>; selectable?: boolean; isSelected?: boolean; onClick?: () => void }) {
     const showProg = item.showProgress !== false
+
+    if (selectable) {
+        return (
+            <div
+                onClick={onClick}
+                className={`group flex flex-col h-full rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm'}`}
+            >
+                <div className="relative">
+                    <Banner item={item} height="h-24" iconSize="text-4xl" />
+                    {isSelected && (
+                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white shadow-lg animate-in zoom-in duration-200 z-20">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-col flex-1 p-3 gap-1.5">
+                    {item.category && (
+                        <span className="text-[10px] font-medium text-primary uppercase tracking-wide">
+                            {item.category}
+                        </span>
+                    )}
+                    <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
+                        {item.title}
+                    </h3>
+                </div>
+            </div>
+        )
+    }
     return (
         <Link
             to={to as any}
             params={params as any}
-            className="group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer"
+            className={`group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''}`}
         >
             <Banner item={item} height="h-24" iconSize="text-4xl" />
 
@@ -311,14 +451,14 @@ function CardCompact({ item, to, params }: { item: CardItem; to: string; params:
 
 // ─── main export ──────────────────────────────────────────────────────────────
 
-export default function CourseCard({ item, cols, basePath = '/courses', paramKey = 'courseId', onDelete }: CourseCardProps) {
+export default function CourseCard({ item, cols, basePath = '/courses', paramKey = 'courseId', onDelete, selectable, isSelected, onClick }: CourseCardProps) {
     const to = `${basePath}/$${paramKey}`
     const params = { [paramKey]: item.id }
 
     // Prefer prop, fallback to item.onDelete
     const effectiveItem = { ...item, onDelete: onDelete ?? item.onDelete }
 
-    if (cols === 1) return <CardHorizontal item={effectiveItem} to={to} params={params} />
-    if (cols === 3) return <CardCompact item={effectiveItem} to={to} params={params} />
-    return <CardVertical item={effectiveItem} to={to} params={params} />
+    if (cols === 1) return <CardHorizontal item={effectiveItem} to={to} params={params} selectable={selectable} isSelected={isSelected} onClick={onClick} />
+    if (cols === 3) return <CardCompact item={effectiveItem} to={to} params={params} selectable={selectable} isSelected={isSelected} onClick={onClick} />
+    return <CardVertical item={effectiveItem} to={to} params={params} selectable={selectable} isSelected={isSelected} onClick={onClick} />
 }

@@ -371,11 +371,11 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
   // ── Handlers ──
   const onMark = useCallback((sectionId: string, qid: string, cid: string) => {
     setAnsweredChoices((prev) => {
-        // Only trigger onTaskComplete if this is a new answer
-        if (prev[qid] !== cid && onTaskComplete) {
-            onTaskComplete(sectionId, qid);
-        }
-        return { ...prev, [qid]: cid };
+      // Only trigger onTaskComplete if this is a new answer
+      if (prev[qid] !== cid && onTaskComplete) {
+        onTaskComplete(sectionId, qid);
+      }
+      return { ...prev, [qid]: cid };
     });
   }, [onTaskComplete]);
 
@@ -405,17 +405,17 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
     [unlockedSections]
   );
 
-    const completeSection = useCallback(
-      (sectionId: string) => {
-        setCompletedSections((prev) => {
-          const next = new Set(prev);
-          next.add(sectionId);
-          return next;
-        });
-  
-        if (onSectionComplete) {
-          onSectionComplete(sectionId, sections.length);
-        }
+  const completeSection = useCallback(
+    (sectionId: string) => {
+      setCompletedSections((prev) => {
+        const next = new Set(prev);
+        next.add(sectionId);
+        return next;
+      });
+
+      if (onSectionComplete) {
+        onSectionComplete(sectionId, sections.length);
+      }
 
       // Auto-expand next locked section
       const idx = sections.findIndex((s) => s.id === sectionId);
@@ -526,10 +526,10 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                   <span className="font-bold text-primary">
                     {sections.length > 0
                       ? Math.round(
-                          (completedSections.size /
-                            sections.filter((s) => !s.isOptional).length) *
-                            100
-                        )
+                        (completedSections.size /
+                          sections.filter((s) => !s.isOptional).length) *
+                        100
+                      )
                       : 0}
                     %
                   </span>
@@ -588,11 +588,10 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                         : undefined
                     }
                     className={`w-full text-left ${sidebarCollapsed ? "px-2 py-2 justify-center" : "px-4 py-2.5"} flex items-start gap-2.5 transition-colors group border-l-2 border-transparent
-                                        ${
-                                          isLocked
-                                            ? "cursor-not-allowed opacity-50"
-                                            : "hover:bg-surface-subtle hover:border-primary/50 cursor-pointer"
-                                        }`}
+                                        ${isLocked
+                        ? "cursor-not-allowed opacity-50"
+                        : "hover:bg-surface-subtle hover:border-primary/50 cursor-pointer"
+                      }`}
                   >
                     <span
                       className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeCls}`}
@@ -679,24 +678,22 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
                         className={`bg-background rounded-2xl border shadow-sm overflow-hidden scroll-mt-4 transition-all
-                                            ${
-                                              isLocked
-                                                ? "border-border opacity-60"
-                                                : isComplete
-                                                  ? "border-emerald-200 bg-emerald-50/30"
-                                                  : "border-border"
-                                            }`}
+                                            ${isLocked
+                            ? "border-border opacity-60"
+                            : isComplete
+                              ? "border-emerald-200 bg-emerald-50/30"
+                              : "border-border"
+                          }`}
                       >
                         {/* Section header */}
                         <button
                           type="button"
                           onClick={() => toggleSection(sec.id)}
                           className={`w-full flex items-center gap-3 px-6 py-4 transition-colors text-left group
-                                                ${
-                                                  isLocked
-                                                    ? "bg-surface-subtle cursor-not-allowed"
-                                                    : "bg-background hover:bg-surface-subtle cursor-pointer"
-                                                }`}
+                                                ${isLocked
+                              ? "bg-surface-subtle cursor-not-allowed"
+                              : "bg-background hover:bg-surface-subtle cursor-pointer"
+                            }`}
                         >
                           <span
                             className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0
@@ -782,17 +779,17 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                                     return sec.blocks.map((block) => {
                                       if (block.kind === "question") localQ++;
                                       return (
-                                          <PreviewBlock
-                                            key={block.id}
-                                            block={block}
-                                            qIndex={
-                                              block.kind === "question"
-                                                ? localQ
-                                                : 0
-                                            }
-                                            answeredChoices={answeredChoices}
-                                            onMark={(qid, cid) => onMark(sec.id, qid, cid)}
-                                          />
+                                        <PreviewBlock
+                                          key={block.id}
+                                          block={block}
+                                          qIndex={
+                                            block.kind === "question"
+                                              ? localQ
+                                              : 0
+                                          }
+                                          answeredChoices={answeredChoices}
+                                          onMark={(qid, cid) => onMark(sec.id, qid, cid)}
+                                        />
                                       );
                                     });
                                   })()
@@ -807,11 +804,10 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                                         onClick={() => completeSection(sec.id)}
                                         disabled={!canComplete}
                                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all
-                                                                            ${
-                                                                              canComplete
-                                                                                ? "bg-primary text-white hover:bg-primary shadow-md hover:shadow-lg active:scale-[0.97]"
-                                                                                : "bg-muted text-muted-foreground/70 cursor-not-allowed"
-                                                                            }`}
+                                                                            ${canComplete
+                                            ? "bg-primary text-white hover:bg-primary shadow-md hover:shadow-lg active:scale-[0.97]"
+                                            : "bg-muted text-muted-foreground/70 cursor-not-allowed"
+                                          }`}
                                       >
                                         <CheckCircle className="w-4 h-4" />
                                         Complete Section
@@ -857,9 +853,8 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="bg-linear-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-center text-white shadow-xl"
                       >
-                        <PartyPopper className="w-12 h-12 mx-auto mb-4 text-amber-300" />
                         <h2 className="text-2xl font-bold mb-2">
-                          Module Complete! 🎉
+                          Module Complete!
                         </h2>
                         <p className="text-accent-secondary/60 mb-6">
                           You've successfully completed all sections in "

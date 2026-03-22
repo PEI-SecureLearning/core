@@ -6,6 +6,10 @@ import Stepper, { Step } from '@/components/ui/Stepper';
 import { fetchCourses, type Course } from '@/services/coursesApi';
 import { enrollUser } from '@/services/progressApi';
 import { toast } from 'sonner';
+import { fetchGroups, fetchGroupMembers } from '@/services/userGroupsApi';
+import CourseSelectionStep from '@/components/courses/assign/CourseSelectionStep';
+import UserGroupSelectionStep from '@/components/courses/assign/UserGroupSelectionStep';
+import SchedulingStep from '@/components/courses/assign/SchedulingStep';
 
 export const Route = createFileRoute('/courses/assign')({
     component: AssignCoursesPage,
@@ -16,7 +20,7 @@ const API_BASE = import.meta.env.VITE_API_URL;
 function AssignCoursesPage() {
     const { keycloak } = useKeycloak();
     const navigate = useNavigate();
-    
+
     const realm = useMemo(() => {
         const iss = (keycloak.tokenParsed as any)?.iss;
         if (!iss) return '';
@@ -25,39 +29,111 @@ function AssignCoursesPage() {
     }, [keycloak.tokenParsed]);
 
     const [courses, setCourses] = useState<Course[]>([]);
-    const [users, setUsers] = useState<any[]>([]);
+    const [groups, setGroups] = useState<any[]>([]);
+    const [groupMembersMap, setGroupMembersMap] = useState<Record<string, string[]>>({});
     const [loadingCourses, setLoadingCourses] = useState(true);
-    const [loadingUsers, setLoadingUsers] = useState(true);
+    const [loadingGroups, setLoadingGroups] = useState(true);
+    const [coverUrls, setCoverUrls] = useState<Record<string, string>>({});
 
     const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [deadline, setDeadline] = useState<string>('');
+
 
     useEffect(() => {
         if (!keycloak.token) return;
-        
+
         fetchCourses({ token: keycloak.token, limit: 100 })
             .then(data => setCourses(data.items))
             .catch(() => toast.error("Failed to load courses"))
             .finally(() => setLoadingCourses(false));
 
         if (realm) {
-            fetch(`${API_BASE}/org-manager/${encodeURIComponent(realm)}/users`, {
-                headers: { Authorization: `Bearer ${keycloak.token}` }
-            })
-            .then(res => res.json())
-            .then(data => setUsers(data.users || []))
-            .catch(() => toast.error("Failed to load users"))
-            .finally(() => setLoadingUsers(false));
+            fetchGroups(realm, keycloak.token)
+                .then(async (data) => {
+                    const loadedGroups = data.groups || [];
+                    setGroups(loadedGroups);
+
+                    // Fetch members for each group to map them
+                    const memberMap: Record<string, string[]> = {};
+                    await Promise.all(loadedGroups.map(async (g) => {
+                        if (g.id) {
+                            try {
+                                const membersRes = await fetchGroupMembers(realm, g.id, keycloak.token);
+                                memberMap[g.id] = (membersRes.members || []).map(m => m.id).filter(Boolean) as string[];
+                            } catch (e) {
+                                console.error(`Failed to load members for group ${g.name}`, e);
+                            }
+                        }
+                    }));
+                    setGroupMembersMap(memberMap);
+                })
+                .catch(() => toast.error("Failed to load user groups"))
+                .finally(() => setLoadingGroups(false));
         }
     }, [keycloak.token, realm]);
+
+    // Fetch cover image presigned URLs
+    useEffect(() => {
+        let cancelled = false;
+        const coverIds = Array.from(new Set(courses.map(c => c.cover_image).filter(Boolean))) as string[];
+        if (coverIds.length === 0) {
+            setCoverUrls({});
+            return;
+        }
+        const headers = { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : '' };
+        Promise.all(
+            coverIds.map(async (id) => {
+                try {
+                    const res = await fetch(`${API_BASE}/content/${encodeURIComponent(id)}/file-url`, { headers });
+                    if (!res.ok) return [id, ''] as const;
+                    const data = await res.json() as { url: string | null };
+                    return [id, data.url ?? ''] as const;
+                } catch {
+                    return [id, ''] as const;
+                }
+            })
+        ).then((entries) => {
+            if (!cancelled) setCoverUrls(Object.fromEntries(entries.filter(([, v]) => v)));
+        }).catch(() => undefined);
+        return () => { cancelled = true; };
+    }, [courses, keycloak.token]);
 
     const handleCourseToggle = (id: string) => {
         setSelectedCourses(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
     };
 
-    const handleUserToggle = (id: string) => {
-        setSelectedUsers(prev => prev.includes(id) ? prev.filter(u => u !== id) : [...prev, id]);
+
+    const handleGroupToggle = (groupId: string) => {
+        const memberIds = groupMembersMap[groupId] || [];
+        if (memberIds.length === 0) return;
+
+        // Are all group members already selected?
+        const allSelected = memberIds.every(id => selectedUsers.includes(id));
+
+        if (allSelected) {
+            // Deselect all members of this group
+            setSelectedUsers(prev => prev.filter(id => !memberIds.includes(id)));
+        } else {
+            // Select all members of this group
+            setSelectedUsers(prev => Array.from(new Set([...prev, ...memberIds])));
+        }
+    };
+
+    // Check if a group should appear as "selected" based on its members
+    const isGroupSelected = (groupId: string) => {
+        const memberIds = groupMembersMap[groupId] || [];
+        if (memberIds.length === 0) return false;
+        return memberIds.every(id => selectedUsers.includes(id));
+    };
+
+    // Check if some members of a group are selected (for partial state)
+    const isGroupPartial = (groupId: string) => {
+        const memberIds = groupMembersMap[groupId] || [];
+        if (memberIds.length === 0) return false;
+        const selectedCount = memberIds.filter(id => selectedUsers.includes(id)).length;
+        return selectedCount > 0 && selectedCount < memberIds.length;
     };
 
     const validateStep = (step: number) => {
@@ -80,13 +156,13 @@ function AssignCoursesPage() {
 
     const handleComplete = async () => {
         if (!keycloak.token || !realm) return false;
-        
+
         try {
             // Enroll each selected user in the chosen courses
-            const promises = selectedUsers.map(userId => 
-                enrollUser(realm, userId, selectedCourses, keycloak.token!, deadline ? new Date(deadline).toISOString() : undefined)
+            const promises = selectedUsers.map(userId =>
+                enrollUser(realm, userId, selectedCourses, keycloak.token!, deadline ? new Date(deadline).toISOString() : undefined, startDate ? new Date(startDate).toISOString() : undefined)
             );
-            
+
             await Promise.all(promises);
             toast.success("Courses assigned successfully");
             navigate({ to: '/courses/manage' });
@@ -97,7 +173,7 @@ function AssignCoursesPage() {
         }
     };
 
-    if (loadingCourses || loadingUsers) {
+    if (loadingCourses || loadingGroups) {
         return (
             <div className="flex h-full items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -106,14 +182,10 @@ function AssignCoursesPage() {
     }
 
     return (
-        <div className="h-full w-full flex flex-col items-center bg-surface-subtle p-6 overflow-hidden animate-[fadeIn_0.5s_ease-out]">
-            <div className="max-w-5xl w-full flex-col flex gap-4 h-full">
-                <div>
-                   <h1 className="text-2xl font-bold text-foreground">Assign Courses</h1>
-                   <p className="text-muted-foreground text-sm">Select courses and users to assign training.</p>
-                </div>
-                
-                <div className="flex-1 rounded-2xl border border-border shadow-sm overflow-hidden min-h-0 bg-card">
+        <div className="h-full w-full flex flex-col items-center bg-surface-subtle overflow-hidden ">
+            <div className="w-full flex-col flex gap-4 h-full">
+
+                <div className="flex-1 border border-border shadow-sm overflow-hidden min-h-0 bg-card animate-[fadeIn_0.5s_ease-out]">
                     <Stepper
                         initialStep={1}
                         onBeforeComplete={handleComplete}
@@ -121,91 +193,34 @@ function AssignCoursesPage() {
                         stepIcons={[BookOpen, Users, Calendar]}
                     >
                         <Step>
-                            <div className="space-y-4">
-                                <div>
-                                    <h2 className="text-xl font-semibold text-foreground">Select Courses</h2>
-                                    <p className="text-sm text-muted-foreground">Choose one or more courses to assign.</p>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
-                                    {courses.map(course => (
-                                        <div 
-                                            key={course.id}
-                                            onClick={() => handleCourseToggle(course.id)}
-                                            className={`p-4 rounded-xl border cursor-pointer transition-all ${selectedCourses.includes(course.id) ? 'border-primary bg-primary/5' : 'border-border bg-card hover:border-primary/50'}`}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div className="mt-1 flex-shrink-0">
-                                                    <input 
-                                                        type="checkbox" 
-                                                        checked={selectedCourses.includes(course.id)}
-                                                        readOnly
-                                                        className="w-4 h-4 rounded-sm border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-medium text-foreground">{course.title}</h3>
-                                                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{course.description}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {courses.length === 0 && (
-                                        <div className="col-span-full py-8 text-center text-muted-foreground">No courses available.</div>
-                                    )}
-                                </div>
-                            </div>
-                        </Step>
-                        
-                        <Step>
-                            <div className="space-y-4">
-                                <div>
-                                    <h2 className="text-xl font-semibold text-foreground">Select Users</h2>
-                                    <p className="text-sm text-muted-foreground">Choose who will receive these courses.</p>
-                                </div>
-                                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
-                                    {users.map(user => (
-                                        <div 
-                                            key={user.id}
-                                            onClick={() => handleUserToggle(user.id)}
-                                            className={`p-3 rounded-lg border flex items-center gap-3 cursor-pointer transition-colors ${selectedUsers.includes(user.id) ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/50'}`}
-                                        >
-                                            <input 
-                                                type="checkbox" 
-                                                checked={selectedUsers.includes(user.id)}
-                                                readOnly
-                                                className="w-4 h-4 rounded-sm border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                                            />
-                                            <div>
-                                                <p className="font-medium text-sm text-foreground">{user.firstName} {user.lastName} <span className="text-muted-foreground font-normal ml-1">({user.username})</span></p>
-                                                <p className="text-xs text-muted-foreground">{user.email}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {users.length === 0 && (
-                                        <div className="py-8 text-center text-muted-foreground">No users found.</div>
-                                    )}
-                                </div>
-                            </div>
+                            <CourseSelectionStep
+                                courses={courses}
+                                selectedCourses={selectedCourses}
+                                onCourseToggle={handleCourseToggle}
+                                coverUrls={coverUrls}
+                            />
                         </Step>
 
                         <Step>
-                            <div className="space-y-6">
-                                <div>
-                                    <h2 className="text-xl font-semibold text-foreground">Set Deadline</h2>
-                                    <p className="text-sm text-muted-foreground">Choose a deadline for completion. Leave blank for default 30 days.</p>
-                                </div>
-                                
-                                <div className="max-w-md">
-                                    <label className="block text-sm font-medium text-foreground mb-1.5">Deadline Date</label>
-                                    <input 
-                                        type="date"
-                                        value={deadline}
-                                        onChange={(e) => setDeadline(e.target.value)}
-                                        className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                                    />
-                                    <p className="mt-2 text-xs text-muted-foreground">Assigned courses will appear expired if incomplete by this date.</p>
-                                </div>
-                            </div>
+                            <UserGroupSelectionStep
+                                groups={groups}
+                                groupMembersMap={groupMembersMap}
+                                selectedUsers={selectedUsers}
+                                onGroupToggle={handleGroupToggle}
+                                isGroupSelected={isGroupSelected}
+                                isGroupPartial={isGroupPartial}
+                            />
+                        </Step>
+
+                        <Step>
+                            <SchedulingStep
+                                startDate={startDate}
+                                setStartDate={setStartDate}
+                                deadline={deadline}
+                                setDeadline={setDeadline}
+                                selectedCoursesCount={selectedCourses.length}
+                                selectedUsersCount={selectedUsers.length}
+                            />
                         </Step>
                     </Stepper>
                 </div>

@@ -18,7 +18,7 @@ const ELEVATED_ROLES = [
     "CONTENT_MANAGER"
 ];
 
-function courseToCardItem(course: Course): CardItem {
+export function courseToCardItem(course: Course): CardItem {
     return {
         id: course.id,
         title: course.title,

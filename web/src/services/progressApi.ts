@@ -16,11 +16,11 @@ export interface UserProgress {
     updated_at: string;
 }
 
-export async function enrollUser(realm: string, userId: string, courseIds: string[], token: string, deadline?: string): Promise<{ status: string; enrolled: number }> {
+export async function enrollUser(realm: string, userId: string, courseIds: string[], token: string, deadline?: string, startDate?: string): Promise<{ status: string; enrolled: number }> {
     const res = await fetch(`${API_BASE}/org-manager/${realm}/users/${userId}/enroll`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
-        body: JSON.stringify({ course_ids: courseIds, deadline }),
+        body: JSON.stringify({ course_ids: courseIds, deadline, start_date: startDate }),
     })
     if (!res.ok) throw new Error('Failed to enroll user')
     return res.json()

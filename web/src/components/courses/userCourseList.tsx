@@ -130,6 +130,12 @@ export default function UserCourseList() {
         return true;
     });
 
+    const sortedCourses = [...filteredCourses].sort((a, b) => {
+        const aDone = a.progressObj.is_certified ? 1 : 0;
+        const bDone = b.progressObj.is_certified ? 1 : 0;
+        return aDone - bDone;
+    });
+
     const categoryOptions = ["All", ...Array.from(new Set(courses.map(c => c.category).filter(Boolean)))];
 
     function courseToCardItem(course: Course & { progressObj: UserProgress }): CardItem {
@@ -151,6 +157,7 @@ export default function UserCourseList() {
             unitLabel: "modules",
             showProgress: true,
             progress: progNum,
+            isCompleted: course.progressObj.is_certified,
             coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
         };
     }
@@ -219,7 +226,7 @@ export default function UserCourseList() {
                     <LayoutGroup>
                         <motion.div layout className={`grid ${gridClass[cols]} gap-6`}>
                             <AnimatePresence mode="popLayout">
-                                {filteredCourses.map((course) => (
+                                {sortedCourses.map((course) => (
                                     <motion.div
                                         key={course.id}
                                         layout

@@ -254,25 +254,41 @@ class user_handler:
             session.commit()
 
     def enroll_user(
-        self, session: Session, user_id: str, course_ids: list[str], deadline=None
+        self, session: Session, user_id: str, course_ids: list[str], start_date=None, deadline=None
     ) -> dict:
         """Assign courses to a user."""
         from datetime import datetime, timedelta
         from src.models import UserProgress
         
+        # Defaults
+        if start_date is None:
+            start_date = datetime.utcnow()
         if deadline is None:
-            deadline = datetime.utcnow() + timedelta(days=30)
+            deadline = start_date + timedelta(days=30)
             
         enrolled_count = 0
         for cid in course_ids:
+            # Upsert or check if exists?
+            # User intent is usually "Assign or Re-assign".
+            # For now, let's keep the existing check but update start_date/deadline if it already exists?
+            # Actually, the user says "all appear selected". 
+            # If they re-assign, they might want to update the deadline.
+            
             existing = session.get(UserProgress, {"user_id": user_id, "course_id": cid})
             if not existing:
                 up = UserProgress(
                     user_id=user_id,
                     course_id=cid,
+                    start_date=start_date,
                     deadline=deadline
                 )
                 session.add(up)
+                enrolled_count += 1
+            else:
+                # Update the existing enrollment's schedule
+                existing.start_date = start_date
+                existing.deadline = deadline
+                session.add(existing)
                 enrolled_count += 1
                 
         if enrolled_count > 0:
