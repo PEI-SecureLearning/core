@@ -200,7 +200,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       KEYCLOAK_URL: ${KEYCLOAK_INTERNAL_URL}
-      KEYCLOAK_ISSUER_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_ISSUER_URL: ${KC_HOSTNAME_URL}
       CLIENT_SECRET: ${CLIENT_SECRET}
       MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
       MONGODB_DB: securelearning
@@ -247,8 +247,8 @@ services:
       context: ../web
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${API_URL}
-        VITE_KEYCLOAK_URL: ${KEYCLOAK_URL}
+        VITE_API_URL: ${API_URL}/api
+        VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
         VITE_BASE_PATH: ${VITE_BASE_PATH}
         VITE_WEB_URL: ${WEB_URL}
     container_name: frontend
