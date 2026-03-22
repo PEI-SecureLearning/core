@@ -53,6 +53,22 @@ class realm_handler:
             features=realm.features,
         )
 
+        try:
+            token = self.admin._get_admin_token()
+            users = self.admin.list_users(realm.name)
+            org_manager_user = next((u for u in users if str(u.get("username")).lower() == "org_manager"), None)
+            if org_manager_user:
+                client = self.admin.keycloak_client.get_client_by_client_id(realm.name, token, "realm-management")
+                if client:
+                    client_id = client.get("id")
+                    client_role = self.admin.keycloak_client.get_client_role(realm.name, token, client_id, "realm-admin")
+                    if client_role:
+                        self.admin.keycloak_client.assign_client_roles(
+                            realm.name, token, org_manager_user.get("id"), client_id, [client_role]
+                        )
+        except Exception as e:
+            print(f"Warning: Failed to bootstrap ORG_MANAGER with realm-admin: {e}")
+
         self._ensure_realm(session, realm.name, normalized_domain)
 
         

@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Eye, Layout } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import { templateApi } from "@/services/templateApi";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
 import RefreshButton from "@/components/shared/RefreshButton";
 import SearchBar from "@/components/shared/SearchBar";
+import { TemplateCard } from "@/components/templates/TemplateCard";
 import { TemplateFormModal } from "@/components/templates/TemplateFormModal";
 import { TemplatePreviewModal } from "@/components/templates/TemplatePreviewModal";
 import { LoadingGrid } from "@/components/templates/LoadingGrid";
@@ -22,7 +24,6 @@ type ViewMode = "grid" | "table";
 const templateMatchesQuery = (template: Template, query: string) => {
   const haystack = [
     template.name,
-    template.subject,
     template.description,
     template.category
   ]
@@ -38,13 +39,14 @@ export default function TemplatesPage() {
     Template[]
   >({
     queryKey: ["templates"],
-    queryFn: () => apiClient.get<Template[]>("/templates"),
+    queryFn: () => templateApi.getTemplates(),
     staleTime: 30_000
   });
   const qc = useQueryClient();
 
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [form, setForm] = useState(initialTemplateForm);
   const [activeTab, setActiveTab] =
     useState<(typeof templatePaths)[number]>("/templates/emails/");
@@ -54,7 +56,9 @@ export default function TemplatesPage() {
   const templates = useMemo(() => data ?? [], [data]);
   const { keycloak } = useKeycloak();
   const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? [];
-  const isContentManager = userRoles.includes("CONTENT_MANAGER");
+  const isContentManager = userRoles.includes("content_manager") || userRoles.includes("CONTENT_MANAGER");
+  const isOrgManager = userRoles.includes("org_manager") || userRoles.includes("ORG_MANAGER");
+  const canManageTemplates = isContentManager || isOrgManager;
   const grouped = useMemo(() => {
     return templates.reduce<Record<string, Template[]>>(
       (acc, t) => {
@@ -78,153 +82,12 @@ export default function TemplatesPage() {
     ) as Record<string, Template[]>;
   }, [grouped, searchQuery]);
 
-  const renderTemplateCard = (template: Template, isEmail: boolean) => {
-    if (viewMode === "table") {
-      return (
-        <div
-          key={template.id}
-          className="flex items-center gap-3 px-4 py-3 rounded-md border border-border bg-background"
-        >
-          <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-            {isEmail ? (
-              <Eye className="h-4 w-4 text-primary" />
-            ) : (
-              <Layout className="h-4 w-4 text-primary" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
-              {template.name}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {template.subject || template.description || "No description"}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Updated {new Date(template.updated_at).toLocaleDateString()}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 h-8 text-xs shrink-0"
-            onClick={() => setPreviewId(template.id)}
-          >
-            <Eye className="h-3.5 w-3.5" />
-            Preview
-          </Button>
-        </div>
-      );
-    }
-
-    if (isEmail) {
-      return (
-        <div
-          key={template.id}
-          className="relative border-2 rounded-lg bg-background overflow-hidden transition-all duration-200 text-left w-full hover:border-primary/50 hover:shadow-sm border-border"
-        >
-          <div className="border-b border-border/50 bg-muted/20 px-3 py-2.5">
-            <p className="text-sm font-medium text-foreground truncate pr-8">
-              {template.name}
-            </p>
-          </div>
-          <div className="p-3">
-            {template.subject && template.subject !== template.name && (
-              <p className="text-xs text-primary/80 truncate">
-                {template.subject}
-              </p>
-            )}
-            {template.description && (
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                {template.description}
-              </p>
-            )}
-            <p className="text-[11px] text-muted-foreground mt-2">
-              Updated {new Date(template.updated_at).toLocaleDateString()}
-            </p>
-            <div className="mt-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 h-8 text-xs"
-                onClick={() => setPreviewId(template.id)}
-              >
-                <Eye className="h-3.5 w-3.5" />
-                Preview
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div
-        key={template.id}
-        className="relative border-2 rounded-lg bg-background overflow-hidden transition-all duration-200 text-left w-full hover:border-primary/50 hover:shadow-sm border-border group"
-      >
-        <div className="w-full h-32 bg-muted/30 border-b border-border/50 relative overflow-hidden">
-          {template.html ? (
-            <iframe
-              title={`thumb-${template.id}`}
-              srcDoc={template.html}
-              sandbox=""
-              className="pointer-events-none"
-              style={{
-                width: "200%",
-                height: "200%",
-                transform: "scale(0.5)",
-                transformOrigin: "top left",
-                border: 0
-              }}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <Layout className="h-10 w-10 text-muted-foreground/30" />
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setPreviewId(template.id)}
-            className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 rounded-md bg-background/90 border border-border/60 text-xs text-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background hover:text-foreground"
-          >
-            <Eye className="h-3 w-3" />
-            Preview
-          </button>
-        </div>
-        <div className="p-3">
-          <p className="text-sm font-medium text-foreground truncate">
-            {template.name}
-          </p>
-          {template.subject && template.subject !== template.name && (
-            <p className="text-xs text-primary/80 truncate mt-0.5">
-              {template.subject}
-            </p>
-          )}
-          {template.description && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-              {template.description}
-            </p>
-          )}
-          <p className="text-[11px] text-muted-foreground mt-2">
-            Updated {new Date(template.updated_at).toLocaleDateString()}
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-  const previewTemplate = useMemo(
-    () => templates.find((t) => t.id === previewId),
-    [previewId, templates]
-  );
-
   const createTemplate = useMutation({
     mutationFn: () =>
-      apiClient.post<Template>("/templates", {
+      templateApi.createTemplate({
         name: form.name,
         path: form.path,
-        subject: form.subject,
+        subject: form.path === "/templates/emails/" ? form.subject : undefined,
         category: form.category || null,
         description: form.description || null,
         html: form.html
@@ -233,16 +96,79 @@ export default function TemplatesPage() {
       qc.invalidateQueries({ queryKey: ["templates"] });
       setForm(initialTemplateForm);
       setShowForm(false);
-    }
+      toast.success("Template created successfully");
+    },
+    onError: () => toast.error("Failed to create template")
+  });
+
+  const updateTemplate = useMutation({
+    mutationFn: (data: { id: string; payload: Partial<Template> }) =>
+      templateApi.updateTemplate(data.id, data.payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["templates"] });
+      setForm(initialTemplateForm);
+      setEditingTemplate(null);
+      setShowForm(false);
+      toast.success("Template updated successfully");
+    },
+    onError: () => toast.error("Failed to update template")
+  });
+
+  const deleteTemplate = useMutation({
+    mutationFn: (id: string) => templateApi.deleteTemplate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["templates"] });
+      toast.success("Template deleted successfully");
+    },
+    onError: () => toast.error("Failed to delete template")
   });
 
   const openCreateModal = () => {
+    setEditingTemplate(null);
     setForm({ ...initialTemplateForm, path: activeTab });
     setShowForm(true);
   };
 
+  const openEditModal = (template: Template) => {
+    setEditingTemplate(template);
+    setForm({
+      name: template.name,
+      path: template.path,
+      subject: template.subject || "",
+      category: template.category || "",
+      description: template.description || "",
+      html: template.html || ""
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = (template: Template) => {
+    if (confirm(`Are you sure you want to delete the template "${template.name}"?`)) {
+      deleteTemplate.mutate(template.id);
+    }
+  };
+
+  const previewTemplate = useMemo(
+    () => templates.find((t) => t.id === previewId),
+    [previewId, templates]
+  );
+
   const saveTemplate = () => {
-    createTemplate.mutate();
+    if (editingTemplate) {
+      updateTemplate.mutate({
+        id: editingTemplate.id,
+        payload: {
+          name: form.name,
+          path: form.path,
+          subject: form.path === "/templates/emails/" ? form.subject : undefined,
+          category: form.category || null,
+          description: form.description || null,
+          html: form.html
+        }
+      });
+    } else {
+      createTemplate.mutate();
+    }
   };
 
   return (
@@ -257,7 +183,7 @@ export default function TemplatesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {isContentManager && (
+          {canManageTemplates && (
             <Button
               className="inline-flex items-center gap-2 text-white border-0 transition-colors bg-primary hover:bg-primary/90"
               onClick={openCreateModal}
@@ -272,15 +198,19 @@ export default function TemplatesPage() {
       {isLoading && <LoadingGrid />}
 
       {/* 3. Protect the Form Modal (prevent manual state triggering) */}
-      {showForm && isContentManager && (
+      {showForm && canManageTemplates && (
         <TemplateFormModal
           showForm={showForm}
-          editingTemplate={null}
+          editingTemplate={editingTemplate}
           form={form}
           setForm={setForm}
-          onClose={() => setShowForm(false)}
+          onClose={() => {
+            setShowForm(false);
+            setEditingTemplate(null);
+            setForm(initialTemplateForm);
+          }}
           onSave={saveTemplate}
-          isSaving={createTemplate.isPending}
+          isSaving={editingTemplate ? updateTemplate.isPending : createTemplate.isPending}
         />
       )}
 
@@ -360,9 +290,18 @@ export default function TemplatesPage() {
                             : "space-y-2"
                         )}
                       >
-                        {bucket.map((template) =>
-                          renderTemplateCard(template, isEmail)
-                        )}
+                        {bucket.map((template) => (
+                          <TemplateCard
+                            key={template.id}
+                            template={template}
+                            isEmail={isEmail}
+                            layout={viewMode === "grid" ? "grid" : "list"}
+                            onPreview={() => setPreviewId(template.id)}
+                            onEdit={canManageTemplates ? () => openEditModal(template) : undefined}
+                            onDelete={canManageTemplates ? () => handleDelete(template) : undefined}
+                            deleting={deleteTemplate.isPending}
+                          />
+                        ))}
                       </div>
                     )}
                   </TabsContent>
