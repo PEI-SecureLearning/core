@@ -33,7 +33,9 @@ class base_handler:
             "Content-Type": "application/json",
         }
 
-        r = requests.request(method, url, headers=headers, params=params, json=json_data)
+        r = requests.request(
+            method, url, headers=headers, params=params, json=json_data
+        )
 
         try:
             r.raise_for_status()
@@ -41,7 +43,6 @@ class base_handler:
             raise HTTPException(status_code=r.status_code, detail=str(e))
 
         return r
-        
 
     def get_admin_token(self) -> str:
         """Get admin service account token using client credentials."""
@@ -67,8 +68,20 @@ class base_handler:
             token_data = response.json()
             return token_data.get("access_token")
         except requests.exceptions.RequestException:
-            raise HTTPException(status_code=500, detail="Failed to retrieve admin token")
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve admin token"
+            )
         except json.JSONDecodeError:
             raise HTTPException(
                 status_code=500, detail="Failed to decode admin token response"
             )
+
+
+_instance: base_handler | None = None
+
+
+def get_base_handler() -> base_handler:
+    global _instance
+    if _instance is None:
+        _instance = base_handler()
+    return _instance

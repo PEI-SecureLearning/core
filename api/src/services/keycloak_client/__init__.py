@@ -5,7 +5,7 @@ from src.services.keycloak_client.role_handler import role_handler
 from src.services.keycloak_client.client_handler import client_handler
 
 
-class KeycloakClient(base_handler, user_handler, group_handler, role_handler, client_handler):
+class KeycloakClient(user_handler, group_handler, role_handler, client_handler):
     """Unified Keycloak API client."""
 
     def __init__(self):

@@ -1,5 +1,49 @@
 const API_BASE = import.meta.env.VITE_API_URL;
 
+type GroupDto = { id?: string; name?: string; path?: string };
+type GroupListApiResponse = GroupDto[] | { realm?: string; groups?: GroupDto[] };
+
+type MemberDto = {
+  id?: string;
+  username?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+};
+type GroupMembersApiResponse =
+  | MemberDto[]
+  | { realm?: string; groupId?: string; members?: MemberDto[] };
+
+function normalizeGroupsResponse(
+  payload: GroupListApiResponse,
+  realm: string
+): { realm: string; groups: GroupDto[] } {
+  if (Array.isArray(payload)) {
+    return { realm, groups: payload };
+  }
+
+  return {
+    realm: payload.realm || realm,
+    groups: payload.groups || [],
+  };
+}
+
+function normalizeGroupMembersResponse(
+  payload: GroupMembersApiResponse,
+  realm: string,
+  groupId: string
+): { realm: string; groupId: string; members: MemberDto[] } {
+  if (Array.isArray(payload)) {
+    return { realm, groupId, members: payload };
+  }
+
+  return {
+    realm: payload.realm || realm,
+    groupId: payload.groupId || groupId,
+    members: payload.members || [],
+  };
+}
+
 export async function fetchGroups(realm: string, token?: string) {
   const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
     headers: {
@@ -7,7 +51,8 @@ export async function fetchGroups(realm: string, token?: string) {
     },
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{ realm: string; groups: { id?: string; name?: string; path?: string }[] }>;
+  const payload = (await res.json()) as GroupListApiResponse;
+  return normalizeGroupsResponse(payload, realm);
 }
 
 export async function createGroup(realm: string, name: string, token?: string) {
@@ -46,14 +91,13 @@ export async function createUser(
   groupId: string | null,
   token?: string
 ) {
-  const res = await fetch(`${API_BASE}/realms/users`, {
+  const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/users`, {
     method: "POST",
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      realm,
       username,
       name,
       email,
@@ -97,11 +141,8 @@ export async function fetchGroupMembers(realm: string, groupId: string, token?: 
     }
   );
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{
-    realm: string;
-    groupId: string;
-    members: { id?: string; username?: string; email?: string; firstName?: string; lastName?: string }[];
-  }>;
+  const payload = (await res.json()) as GroupMembersApiResponse;
+  return normalizeGroupMembersResponse(payload, realm, groupId);
 }
 
 export async function deleteGroup(realm: string, groupId: string, token?: string) {

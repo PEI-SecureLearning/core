@@ -2,10 +2,13 @@ import requests
 from sqlmodel import Session, select
 
 from src.models import Realm, User
+from src.services.keycloak_admin.base_handler import base_handler
 
 
+class user_handler(base_handler):
 
-class user_handler:
+    def __init__(self):
+        super().__init__()
 
     def list_users(self, realm_name: str) -> list[dict]:
         """List users in a realm (basic fields only)."""
@@ -16,9 +19,9 @@ class user_handler:
         """Return the total number of users in a realm."""
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/users/count"
-        
+
         r = self.keycloak_client._make_request("GET", url, token)
-        
+
         return r.json()
 
     def delete_user(self, session: Session, realm_name: str, user_id: str):
@@ -42,7 +45,9 @@ class user_handler:
         if role_repr:
             kc.assign_realm_roles(realm_name, token, user_id, [role_repr])
 
-    def remove_realm_role_from_user(self, realm_name: str, user_id: str, role_name: str):
+    def remove_realm_role_from_user(
+        self, realm_name: str, user_id: str, role_name: str
+    ):
         """Remove a realm role from a user."""
         token = self._get_admin_token()
         kc = self.keycloak_client
@@ -88,7 +93,6 @@ class user_handler:
             ],
         }
 
-
         payload = {k: v for k, v in payload.items() if v not in (None, {}, [])}
 
         r = kc.create_user(realm_name, token, payload)
@@ -96,11 +100,11 @@ class user_handler:
         # If session is provided and user was created, add to local DB
         if r.status_code not in (201, 204) or not session:
             return r
-            
+
         location = r.headers.get("Location")
         if not location:
             return r
-        
+
         user_id = location.rstrip("/").split("/")[-1]
 
         # Determine org manager flag from requested role
@@ -115,8 +119,20 @@ class user_handler:
             existing.email = email or existing.email
             existing.is_org_manager = is_org_manager
         else:
-            user = User(keycloak_id=user_id, email=email or "", is_org_manager=is_org_manager)
+            user = User(
+                keycloak_id=user_id, email=email or "", is_org_manager=is_org_manager
+            )
             session.add(user)
         session.commit()
 
         return r
+
+
+_instance: user_handler | None = None
+
+
+def get_user_handler() -> user_handler:
+    global _instance
+    if _instance is None:
+        _instance = user_handler()
+    return _instance
