@@ -57,6 +57,8 @@ class SendingProfileService:
             raise ValueError("Server disconnected unexpectedly")
         except TimeoutError:
             raise ValueError("Connection timed out")
+        except OSError as e:
+            raise ValueError(f"Network error: {e}")
         except Exception as e:
             raise RuntimeError(str(e))
 

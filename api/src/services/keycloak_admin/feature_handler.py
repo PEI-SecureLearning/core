@@ -1,9 +1,14 @@
 from fastapi import HTTPException
+from src.services.keycloak_admin.base_handler import base_handler
 
 CLAIM_NAME = "claim.name"
 CLAIM_VALUE = "claim.value"
 
-class feature_handler:
+
+class feature_handler(base_handler):
+
+    def __init__(self):
+        super().__init__()
 
     def get_realm_features(self, realm_name: str) -> dict[str, bool]:
         """
@@ -14,15 +19,15 @@ class feature_handler:
         token = self._get_admin_token()
 
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes"
-    
-        r = self.keycloak_client._make_request("GET",url,token)
-  
+
+        r = self.keycloak_client._make_request("GET", url, token)
+
         scope_id = self.find_feature_scope(r.json())
 
         # Get the protocol mappers for this scope
         mappers_url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models"
-        
-        r = self.keycloak_client._make_request("GET",mappers_url,token)
+
+        r = self.keycloak_client._make_request("GET", mappers_url, token)
 
         mappers = r.json()
 
@@ -40,9 +45,10 @@ class feature_handler:
 
         return features
 
-
-    def find_feature_scope(self,scopes):
-        feature_scope = next((s for s in scopes if s.get("name") == "realm-feature-flags"),None)
+    def find_feature_scope(self, scopes):
+        feature_scope = next(
+            (s for s in scopes if s.get("name") == "realm-feature-flags"), None
+        )
 
         if not feature_scope:
             raise HTTPException(status_code=404, detail="Feature scope not found")
@@ -53,32 +59,35 @@ class feature_handler:
 
         return scope_id
 
-
-    def toggle_realm_feature(self, realm_name: str, feature_name: str, enabled: bool) -> bool:
+    def toggle_realm_feature(
+        self, realm_name: str, feature_name: str, enabled: bool
+    ) -> bool:
         """Toggle a feature flag for a realm. Returns True if successful."""
         token = self._get_admin_token()
 
         # Get the realm-feature-flags scope
         url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes"
-        r = self.keycloak_client._make_request("GET",url,token)
+        r = self.keycloak_client._make_request("GET", url, token)
 
         scope_id = self.find_feature_scope(r.json())
 
         if not scope_id:
-            scope_id = self._create_client_scope(realm_name, "realm-feature-flags", token)
+            scope_id = self._create_client_scope(
+                realm_name, "realm-feature-flags", token
+            )
 
         # Get existing mappers
         mappers_url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models"
-       
-        r = self.keycloak_client._make_request("GET",mappers_url,token)
-        
+
+        r = self.keycloak_client._make_request("GET", mappers_url, token)
+
         mappers = r.json()
 
         existing_mapper = None
         for mapper in mappers:
-            
+
             config = mapper.get("config", {})
-            
+
             if config.get(CLAIM_NAME) == f"features.{feature_name}":
                 existing_mapper = mapper
                 break
@@ -87,19 +96,22 @@ class feature_handler:
 
             mapper_id = existing_mapper.get("id")
             update_url = f"{self.keycloak_url}/admin/realms/{realm_name}/client-scopes/{scope_id}/protocol-mappers/models/{mapper_id}"
-            
+
             existing_mapper["config"][CLAIM_VALUE] = str(enabled).lower()
-            
-            r = self.keycloak_client._make_request("PUT",update_url,token,json_data=existing_mapper)
-            
+
+            r = self.keycloak_client._make_request(
+                "PUT", update_url, token, json_data=existing_mapper
+            )
+
             return r.status_code in (204, 200)
 
         else:
             # Create new mapper
-            self._add_hardcoded_claim_mapper(realm_name, scope_id, feature_name, enabled, token)
+            self._add_hardcoded_claim_mapper(
+                realm_name, scope_id, feature_name, enabled, token
+            )
 
             return True
-
 
     def _create_client_scope(
         self, realm_name: str, scope_name: str, token: str
@@ -117,13 +129,12 @@ class feature_handler:
             },
         }
 
-        r = self.keycloak_client._make_request("POST",url,token,json_data=payload)
-        
+        r = self.keycloak_client._make_request("POST", url, token, json_data=payload)
+
         location = r.headers.get("Location", "")
         scope_id = location.split("/")[-1] if location else None
-        
+
         return scope_id
-     
 
     def _add_hardcoded_claim_mapper(
         self,
@@ -151,7 +162,16 @@ class feature_handler:
             },
         }
 
-        r = self.keycloak_client._make_request("POST",url,token,json_data=payload)
-        
+        r = self.keycloak_client._make_request("POST", url, token, json_data=payload)
+
         return r.status_code in (201, 204)
 
+
+_instance: feature_handler | None = None
+
+
+def get_feature_handler() -> feature_handler:
+    global _instance
+    if _instance is None:
+        _instance = feature_handler()
+    return _instance

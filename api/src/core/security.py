@@ -20,7 +20,7 @@ _JWKS_CLIENTS: dict[str, PyJWKClient] = {}
 class Resource(StrEnum):
     ADMIN = "admin"
     ORG_MANAGER = "org_manager"
-    CONTENT_MANAGER = "content-manager"
+    CONTENT_MANAGER = "content_manager"
 
 
 class Scope(StrEnum):
@@ -94,8 +94,8 @@ class Roles:
             (Resource.ADMIN.value, Scope.MANAGE.value): {"admin"},
             (Resource.ORG_MANAGER.value, Scope.VIEW.value): {"org_manager"},
             (Resource.ORG_MANAGER.value, Scope.MANAGE.value): {"org_manager"},
-            (Resource.CONTENT_MANAGER.value, Scope.VIEW.value): {"content-manager"},
-            (Resource.CONTENT_MANAGER.value, Scope.MANAGE.value): {"content-manager"},
+            (Resource.CONTENT_MANAGER.value, Scope.VIEW.value): {"content_manager"},
+            (Resource.CONTENT_MANAGER.value, Scope.MANAGE.value): {"content_manager"},
         }
 
         required_roles: set[str] = set()
@@ -132,6 +132,7 @@ class Roles:
 
         if required_roles.isdisjoint(token_roles):
             permission_label = f"{' or '.join(self.resources)}#{self.scope}"
+            logging.error(f"403 ERROR: Token Roles: {token_roles}, Required: {required_roles}, Payload realm_access: {payload.get('realm_access')} resource_access: {payload.get('resource_access')}")
             raise HTTPException(
                 status_code=403,
                 detail=f"Permission denied for '{permission_label}'",

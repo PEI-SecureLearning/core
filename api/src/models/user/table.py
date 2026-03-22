@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
-    from .email_sending import EmailSending
+    from models import EmailSending
 
 
 class User(SQLModel, table=True):

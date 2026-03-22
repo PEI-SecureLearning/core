@@ -30,6 +30,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+      - mongo_configdb_data:/data/configdb
       - ../mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     healthcheck:
       test:
@@ -44,7 +45,7 @@ services:
           "--authenticationDatabase",
           "admin",
           "--eval",
-          "db.adminCommand('ping')"
+          "db.adminCommand('ping')",
         ]
       interval: 10s
       timeout: 5s
@@ -136,12 +137,13 @@ services:
       CLIENT_SECRET: ${CLIENT_SECRET}
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
+      JAVA_OPTS_APPEND: "-Dkeycloak.migration.strategy=IGNORE_EXISTING"
 
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1"
+          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1",
         ]
       interval: 30s
       timeout: 10s
@@ -159,6 +161,7 @@ services:
       - ../keycloak/themes:/opt/keycloak/themes:ro
       - ../keycloak/imports:/opt/keycloak/data/import:ro
       - ../keycloak/providers:/opt/keycloak/providers:ro
+      - keycloak_data:/opt/keycloak/data
 
   api:
     build:
@@ -237,6 +240,9 @@ services:
 
 volumes:
   db_data:
+  db_runtime_data:
   rabbitmq_data:
   mongo_data:
+  mongo_configdb_data:
   garage_data:
+  keycloak_data:

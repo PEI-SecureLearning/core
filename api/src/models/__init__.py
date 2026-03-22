@@ -1,14 +1,56 @@
 # Import order matters for SQLModel relationships
 # Import link tables and models without relationships first
-from .user_group import CampaignUserGroupLink, UserGroup
-from .realm import Realm, RealmCreate, RealmResponse, RealmInfo, RealmInfoResponse, RealmUserCreate, RealmGroupCreate
-from .user import User
+from .user_group import (
+    CampaignUserGroupLink,
+    UserGroup,
+    KeycloakGroupDTO,
+)
+from .realm import (
+    Realm,
+    RealmCreate,
+    RealmResponse,
+    RealmInfo,
+    RealmInfoResponse,
+    RealmUserCreate,
+    RealmGroupCreate,
+)
+from .user import User, UserDTO, UserCreatedInRealmDTO, UserListInRealmDTO
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
-from .phishing_kit import PhishingKit, PhishingKitCreate, PhishingKitDisplayInfo, CampaignPhishingKitLink, PhishingKitSendingProfileLink
-from .sending_profile import SendingProfile, SendingProfileCreate, SendingProfileDisplayInfo, SendingProfileRead, CampaignSendingProfileLink, CustomHeader, CustomHeaderCreate, CustomHeaderRead
-from .campaign import Campaign, CampaignCreate, CampaignStatus, CampaignDisplayInfo, CampaignDetailInfo, CampaignGlobalStats, CampaignUpdate, MIN_INTERVAL_SECONDS
-from .email_sending import EmailSending, EmailSendingStatus, UserSendingInfo, RabbitMQEmailMessage, SMTPConfig
+from .phishing_kit import (
+    PhishingKit,
+    PhishingKitCreate,
+    PhishingKitDisplayInfo,
+    CampaignPhishingKitLink,
+    PhishingKitSendingProfileLink,
+)
+from .sending_profile import (
+    SendingProfile,
+    SendingProfileCreate,
+    SendingProfileDisplayInfo,
+    SendingProfileRead,
+    CampaignSendingProfileLink,
+    CustomHeader,
+    CustomHeaderCreate,
+    CustomHeaderRead,
+)
+from .campaign import (
+    Campaign,
+    CampaignCreate,
+    CampaignStatus,
+    CampaignDisplayInfo,
+    CampaignDetailInfo,
+    CampaignGlobalStats,
+    CampaignUpdate,
+    MIN_INTERVAL_SECONDS,
+)
+from .email_sending import (
+    EmailSending,
+    EmailSendingStatus,
+    UserSendingInfo,
+    RabbitMQEmailMessage,
+    SMTPConfig,
+)
 from .compliance import (
     ComplianceAcceptance,
     TenantCompliancePolicy,
@@ -65,6 +107,9 @@ from .user_progress import UserProgress, AssignmentStatus
 __all__ = [
     # User
     "User",
+    "UserDTO",
+    "UserCreatedInRealmDTO",
+    "UserListInRealmDTO",
     # Campaign
     "Campaign",
     "CampaignCreate",
@@ -111,6 +156,7 @@ __all__ = [
     "SendingProfileRead",
     # User Group
     "UserGroup",
+    "KeycloakGroupDTO",
     # Compliance
     "ComplianceAcceptance",
     "TenantCompliancePolicy",

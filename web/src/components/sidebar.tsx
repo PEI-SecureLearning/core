@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { PanelLeftClose, PanelLeftOpen, ChevronDown } from "lucide-react";
 import {
@@ -156,22 +156,20 @@ export function Sidebar() {
     routePrefix = "/content-manager";
   }
 
-  // Filter and group
-  const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures, keycloak.realm);
-  const { dashboard, groups, standalone } = groupNavigationLinks(visibleLinks);
+  const [initDone, setInitDone] = useState(false);
 
-  const currentActiveGroupLabel =
-    groups.find((group) =>
-      group.links.some((link) => location.pathname.startsWith(link.href))
-    )?.label ?? null;
+  const visibleLinks = useMemo(() => filterLinks(sourceLinks, userRoles, realmFeatures), [sourceLinks, userRoles, realmFeatures]);
+  const { dashboard, groups, standalone } = useMemo(() => groupNavigationLinks(visibleLinks), [visibleLinks]);
 
   useEffect(() => {
-    if (openGroupKey && groups.some((group) => group.label === openGroupKey)) {
-      return;
+    if (!initDone) {
+      const activeGroup = groups.find((group: any) =>
+        group.links.some((link: NavLinkDef) => location.pathname.startsWith(link.href))
+      )?.label;
+      setOpenGroupKey(activeGroup ?? groups[0]?.label ?? null);
+      setInitDone(true);
     }
-
-    setOpenGroupKey(currentActiveGroupLabel ?? groups[0]?.label ?? null);
-  }, [currentActiveGroupLabel, groups, openGroupKey]);
+  }, [groups, location.pathname, initDone]);
 
   // Adjust footer links with route prefix if they aren't absolute
   const activeFooterLinks = footerLinks.map((link) => ({
@@ -212,7 +210,7 @@ export function Sidebar() {
             </li>
           )}
 
-          {groups.map((group) => (
+          {groups.map((group: any) => (
             <SidebarGroup
               key={group.label}
               {...group}
@@ -226,7 +224,7 @@ export function Sidebar() {
             />
           ))}
 
-          {standalone.map((link) => (
+          {standalone.map((link: NavLinkDef) => (
             <li key={link.href}>
               <SidebarLink {...link} isCollapsed={!expanded} />
             </li>

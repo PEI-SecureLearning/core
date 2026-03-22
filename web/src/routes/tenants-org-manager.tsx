@@ -96,7 +96,7 @@ function UsersManagement() {
     setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
       const res = await fetch(
-        `${API_BASE}/realms/admin/${encodeURIComponent(realm)}/users/${encodeURIComponent(id)}`,
+        `${API_BASE}/${encodeURIComponent(realm)}/users/${encodeURIComponent(id)}`,
         {
           method: "DELETE",
           headers: {
