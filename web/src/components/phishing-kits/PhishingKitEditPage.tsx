@@ -4,8 +4,7 @@ import { useKeycloak } from "@react-keycloak/web";
 import { Loader2 } from "lucide-react";
 import { fetchPhishingKit } from "@/services/phishingKitsApi";
 import { fetchSendingProfiles } from "@/services/sendingProfilesApi";
-import type { Template } from "@/components/templates/types";
-import { apiClient } from "@/lib/api-client";
+import { templateApi } from "@/services/templateApi";
 import PhishingKitForm from "./PhishingKitForm";
 
 interface PhishingKitEditPageProps {
@@ -28,7 +27,7 @@ export default function PhishingKitEditPage({
     isError: templatesError
   } = useQuery({
     queryKey: ["templates"],
-    queryFn: () => apiClient.get<Template[]>("/templates")
+    queryFn: () => templateApi.getTemplates()
   });
 
   const {

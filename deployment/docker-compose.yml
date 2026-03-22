@@ -36,7 +36,8 @@ services:
     expose:
       - "5432"
     volumes:
-      - db_data:/var/lib/postgresql
+      - db_runtime_data:/var/lib/postgresql
+      - db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -57,6 +58,7 @@ services:
       - "27017"
     volumes:
       - mongo_data:/data/db
+      - mongo_configdb_data:/data/configdb
     healthcheck:
       test:
         [
@@ -160,6 +162,7 @@ services:
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CLIENT_SECRET: ${CLIENT_SECRET}
 
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "false"
@@ -168,9 +171,9 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HEALTH_ENABLED: "true"
 
-      CLIENT_SECRET: ${CLIENT_SECRET}
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
+      JAVA_OPTS_APPEND: "-Dkeycloak.migration.strategy=IGNORE_EXISTING"
     healthcheck:
       test: ["CMD", "true"]
       interval: 30s
@@ -182,6 +185,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+    volumes:
+      - keycloak_data:/opt/keycloak/data
 
   api:
     build:
@@ -267,6 +273,9 @@ networks:
 
 volumes:
   db_data:
+  db_runtime_data:
   garage_data:
   rabbitmq_data:
   mongo_data:
+  mongo_configdb_data:
+  keycloak_data:

@@ -15,6 +15,7 @@ from typing import Any
 
 from bson import ObjectId
 from bson.errors import InvalidId
+from pymongo import ReturnDocument
 from fastapi import HTTPException, status
 
 from src.core.mongo import get_modules_collection
@@ -139,19 +140,23 @@ async def update_module(module_id: str, payload: ModuleUpdate, realm: str) -> Mo
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
+    data = payload.model_dump()
+    # We must explicitly look up existing version or default to 1 for atomic bump?
+    # Actually wait, we can do $inc for version! Let's just do it directly.
+    data["updated_at"] = _now()
+    
+    updated = await col.find_one_and_update(
+        {"_id": oid, "realm": realm},
+        {
+            "$set": data,
+            "$inc": {"version": 1}
+        },
+        return_document=ReturnDocument.AFTER
+    )
+    if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
 
-    data = payload.model_dump()
-    data.update(
-        updated_at=_now(),
-        version=existing.get("version", 1) + 1,
-    )
-
-    await col.update_one({"_id": oid}, {"$set": data})
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
+    return _doc_to_out(updated)
 
 
 async def patch_module(module_id: str, payload: ModulePatch, realm: str) -> ModuleOut:
@@ -159,22 +164,27 @@ async def patch_module(module_id: str, payload: ModulePatch, realm: str) -> Modu
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-
-    # Only include fields that were explicitly provided (exclude_unset)
     delta = payload.model_dump(exclude_unset=True)
     if not delta:
-        # Nothing to change — return as-is to avoid a spurious DB round-trip
+        existing = await col.find_one({"_id": oid, "realm": realm})
+        if existing is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
         return _doc_to_out(existing)
 
     delta["updated_at"] = _now()
-    delta["version"]    = existing.get("version", 1) + 1
 
-    await col.update_one({"_id": oid}, {"$set": delta})
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
+    updated = await col.find_one_and_update(
+        {"_id": oid, "realm": realm},
+        {
+            "$set": delta,
+            "$inc": {"version": 1}
+        },
+        return_document=ReturnDocument.AFTER
+    )
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
+
+    return _doc_to_out(updated)
 
 
 async def delete_module(module_id: str, realm: str) -> None:
@@ -182,8 +192,6 @@ async def delete_module(module_id: str, realm: str) -> None:
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
+    deleted = await col.find_one_and_delete({"_id": oid, "realm": realm})
+    if deleted is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-
-    await col.delete_one({"_id": oid})
