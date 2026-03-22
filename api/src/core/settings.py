@@ -17,6 +17,12 @@ class Settings(BaseSettings):
   POSTGRES_USER: str
   POSTGRES_PASSWORD: str = ""
   POSTGRES_DB: str = ""
+  
+  # Keycloak
+  KEYCLOAK_URL: str = ""
+  KEYCLOAK_INTERNAL_URL: str = ""
+  KEYCLOAK_ISSUER_URL: str = ""
+  CLIENT_SECRET: str = ""
 
   WEB_URL: str = "http://localhost:5173"
   API_URL: str = "http://localhost:8000"
