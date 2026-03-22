@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse, Response
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.services.tracking import TrackingService
+from src.core.settings import settings
 
 router = APIRouter()
 
@@ -68,7 +69,7 @@ TRACKING_PIXEL = bytes(
 )
 
 
-@router.post(
+@router.get(
     "/track/open",
     status_code=200,
     description="Tracking pixel endpoint - records email opens",
@@ -100,13 +101,16 @@ async def track_click(si: str, session: SessionDep):
 
 @router.post(
     "/track/phish",
-    status_code=200,
+    status_code=303,
     description="Phishing event endpoint - records when user submits credentials on landing page",
 )
 def track_phish(si: str, session: SessionDep):
     """
     Called when user submits credentials on the landing page.
-    Records the phishing event.
+    Records the phishing event and redirects to the simulation oops page.
     """
     service.record_phish(si, session)
-    return {"message": "Event recorded"}
+    return RedirectResponse(
+        url=f"{settings.WEB_URL}/simulation-oops.html", 
+        status_code=303
+    )

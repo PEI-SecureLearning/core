@@ -393,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
   '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
+  '/campaigns/$id/': typeof CampaignsIdIndexRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
   '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
@@ -560,6 +561,7 @@ export interface FileRouteTypes {
     | '/content-manager/modules/$moduleId'
     | '/content-manager/modules/new'
     | '/admin/tenants'
+    | '/campaigns/$id/'
     | '/courses/$courseId/'
     | '/courses/$courseId/modules/$moduleId'
   fileRoutesByTo: FileRoutesByTo

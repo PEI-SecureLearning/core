@@ -149,9 +149,8 @@ def process_pending_emails() -> None:
                     # Send email to RabbitMQ
                     campaign_service._send_email_to_rabbitmq(email, campaign)
                     
-                    # Update status and timestamp for sent emails
-                    email.status = EmailSendingStatus.SENT
-                    email.sent_at = datetime.now()
+                    # Update status to queued
+                    email.status = EmailSendingStatus.QUEUED
                     
                     session.commit()
                 except Exception as e:

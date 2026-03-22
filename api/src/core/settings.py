@@ -18,6 +18,9 @@ class Settings(BaseSettings):
   POSTGRES_PASSWORD: str = ""
   POSTGRES_DB: str = ""
 
+  WEB_URL: str = "http://localhost:5173"
+  API_URL: str = "http://localhost:8000"
+
   # MongoDB
   MONGODB_URI: str = "mongodb://template_user:template_pass@mongo:27017/securelearning?authSource=securelearning"
   MONGODB_DB: str = "securelearning"
@@ -48,6 +51,7 @@ class Settings(BaseSettings):
   RABBITMQ_USER: str
   RABBITMQ_PASS: str
   RABBITMQ_QUEUE: str
+  RABBITMQ_TRACKING_QUEUE: str = "tracking_queue"
   
   # Statistics
   # Users who fell for phishing in more than this fraction of campaigns are
