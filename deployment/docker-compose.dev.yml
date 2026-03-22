@@ -10,6 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - db_runtime_data:/var/lib/postgresql
       - db_data:/var/lib/postgresql/data
       - ../db/init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
@@ -30,6 +31,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+      - mongo_configdb_data:/data/configdb
       - ../mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     healthcheck:
       test:
@@ -239,7 +241,9 @@ services:
 
 volumes:
   db_data:
+  db_runtime_data:
   rabbitmq_data:
   mongo_data:
+  mongo_configdb_data:
   garage_data:
   keycloak_data:

@@ -13,21 +13,46 @@ from src.models import (
 from src.models.email_template import EmailTemplate
 from src.models.landing_page import LandingPageTemplate
 
+
 class PhishingKitService:
 
-    def _get_or_create_email_template(self, session: Session, data: PhishingKitCreate) -> EmailTemplate:
-        template = session.exec(select(EmailTemplate).where(EmailTemplate.content_link == data.email_template_id)).first()
+    def _get_or_create_email_template(
+        self, session: Session, data: PhishingKitCreate
+    ) -> EmailTemplate:
+        template = session.exec(
+            select(EmailTemplate).where(
+                EmailTemplate.content_link == data.email_template_id
+            )
+        ).first()
         if not template:
-            template = EmailTemplate(content_link=data.email_template_id, name=data.email_template_name)
+            template = EmailTemplate(
+                content_link=data.email_template_id,
+                name=data.email_template_name,
+                subject=data.email_template_name,
+            )
+            session.add(template)
+            session.commit()
+            session.refresh(template)
+        elif not template.subject and data.email_template_name:
+            template.subject = data.email_template_name
             session.add(template)
             session.commit()
             session.refresh(template)
         return template
 
-    def _get_or_create_landing_page_template(self, session: Session, data: PhishingKitCreate) -> LandingPageTemplate:
-        template = session.exec(select(LandingPageTemplate).where(LandingPageTemplate.content_link == data.landing_page_template_id)).first()
+    def _get_or_create_landing_page_template(
+        self, session: Session, data: PhishingKitCreate
+    ) -> LandingPageTemplate:
+        template = session.exec(
+            select(LandingPageTemplate).where(
+                LandingPageTemplate.content_link == data.landing_page_template_id
+            )
+        ).first()
         if not template:
-            template = LandingPageTemplate(content_link=data.landing_page_template_id, name=data.landing_page_template_name)
+            template = LandingPageTemplate(
+                content_link=data.landing_page_template_id,
+                name=data.landing_page_template_name,
+            )
             session.add(template)
             session.commit()
             session.refresh(template)
