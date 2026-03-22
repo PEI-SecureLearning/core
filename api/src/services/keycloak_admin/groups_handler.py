@@ -1,9 +1,13 @@
 from sqlmodel import Session, select
 
 from src.models import UserGroup
+from src.services.keycloak_admin.base_handler import base_handler
 
 
-class groups_handler:
+class groups_handler(base_handler):
+
+    def __init__(self):
+        super().__init__()
 
     def list_groups(self, realm_name: str) -> list[dict]:
         """List groups in a realm."""
@@ -46,9 +50,21 @@ class groups_handler:
     def remove_user_from_group(self, realm_name: str, user_id: str, group_id: str):
         """Remove a user from a group."""
         token = self._get_admin_token()
-        self.keycloak_client.remove_user_from_group(realm_name, token, user_id, group_id)
+        self.keycloak_client.remove_user_from_group(
+            realm_name, token, user_id, group_id
+        )
 
     def list_group_members(self, realm_name: str, group_id: str) -> list[dict]:
         """List members of a group."""
         token = self._get_admin_token()
         return self.keycloak_client.list_group_members(realm_name, token, group_id)
+
+
+_instance: groups_handler | None = None
+
+
+def get_groups_handler() -> groups_handler:
+    global _instance
+    if _instance is None:
+        _instance = groups_handler()
+    return _instance

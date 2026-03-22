@@ -1,9 +1,13 @@
 import requests
 from fastapi import HTTPException
+from src.services.keycloak_client.base_handler import base_handler
 
 
-class user_handler:
+class user_handler(base_handler):
     """Keycloak user operations."""
+
+    def __init__(self):
+        super().__init__()
 
     def list_users(self, realm: str, token: str) -> list[dict]:
         """List users in the realm."""
@@ -42,3 +46,13 @@ class user_handler:
                 return []
             raise
         return resp.json() or []
+
+
+_instance: user_handler | None = None
+
+
+def get_user_handler() -> user_handler:
+    global _instance
+    if _instance is None:
+        _instance = user_handler()
+    return _instance

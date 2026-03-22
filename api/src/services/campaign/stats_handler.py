@@ -19,6 +19,7 @@ from src.models import (
 
 from src.services.campaign.stats_calculator import CampaignStatCalculator
 
+
 @dataclass
 class SendingMetrics:
     total_sent: int
@@ -32,7 +33,7 @@ class SendingMetrics:
 
 class StatsHandler:
     """Handler for campaign statistics aggregation and transformation.
-    
+
     This class orchestrates database queries and uses CampaignStatCalculator
     for pure stat computations. It transforms campaign ORM objects into
     API response models.
@@ -41,7 +42,9 @@ class StatsHandler:
     def __init__(self):
         self.calc = CampaignStatCalculator()
 
-    def _extract_sending_metrics(self, sendings: Iterable[EmailSending]) -> SendingMetrics:
+    def _extract_sending_metrics(
+        self, sendings: Iterable[EmailSending]
+    ) -> SendingMetrics:
         """Single-pass extraction of metrics from a list of EmailSending objects."""
         total_sent = 0
         total_failed = 0
@@ -68,7 +71,9 @@ class StatsHandler:
                 UserSendingInfo(
                     user_id=s.user_id,
                     email=s.email_to,
-                    status=s.status.value if hasattr(s.status, "value") else str(s.status),
+                    status=(
+                        s.status.value if hasattr(s.status, "value") else str(s.status)
+                    ),
                     sent_at=s.sent_at,
                     opened_at=s.opened_at,
                     clicked_at=s.clicked_at,
@@ -86,7 +91,9 @@ class StatsHandler:
             user_sendings_data=user_sendings_data,
         )
 
-    def _build_user_engagement_from_campaigns(self, campaigns: Iterable[Campaign]) -> dict[str, dict[str, int]]:
+    def _build_user_engagement_from_campaigns(
+        self, campaigns: Iterable[Campaign]
+    ) -> dict[str, dict[str, int]]:
         """Build a per-user engagement summary from campaigns."""
         user_stats: dict[str, dict[str, int]] = {}
 
@@ -94,10 +101,10 @@ class StatsHandler:
             # Track which users were targeted and which fell for this campaign
             targeted_users = {s.user_id for s in campaign.email_sendings}
             fallen_users = {
-                s.user_id for s in campaign.email_sendings 
+                s.user_id
+                for s in campaign.email_sendings
                 if s.clicked_at or s.phished_at
             }
-
 
             # Update stats for each targeted user
             for user_id in targeted_users:
@@ -133,7 +140,9 @@ class StatsHandler:
         users_phished = {s.user_id for s in all_sendings if s.phished_at}
 
         user_engagement = self._build_user_engagement_from_campaigns(campaigns)
-        repeat_offenders = self.calc.find_repeat_offenders_from_engagement_dict(user_engagement)
+        repeat_offenders = self.calc.find_repeat_offenders_from_engagement_dict(
+            user_engagement
+        )
 
         return {
             "total_campaigns": len(campaigns),
@@ -144,17 +153,27 @@ class StatsHandler:
             "total_emails_clicked": total_clicked,
             "total_emails_phished": total_phished,
             "total_emails_failed": sending_metrics.total_failed,
-            "delivery_rate": self.calc.calc_rate(sending_metrics.total_sent, total_scheduled),
+            "delivery_rate": self.calc.calc_rate(
+                sending_metrics.total_sent, total_scheduled
+            ),
             "open_rate": self.calc.calc_rate(total_opened, sending_metrics.total_sent),
-            "click_rate": self.calc.calc_rate(total_clicked, sending_metrics.total_sent),
-            "phish_rate": self.calc.calc_rate(total_phished, sending_metrics.total_sent),
+            "click_rate": self.calc.calc_rate(
+                total_clicked, sending_metrics.total_sent
+            ),
+            "phish_rate": self.calc.calc_rate(
+                total_phished, sending_metrics.total_sent
+            ),
             "unique_users_targeted": len(unique_users),
             "users_who_opened": len(users_opened),
             "users_who_clicked": len(users_clicked),
             "users_who_phished": len(users_phished),
             "repeat_offenders": repeat_offenders,
-            "avg_time_to_open_seconds": self.calc.calc_avg_time_delta(sending_metrics.open_times),
-            "avg_time_to_click_seconds": self.calc.calc_avg_time_delta(sending_metrics.click_times),
+            "avg_time_to_open_seconds": self.calc.calc_avg_time_delta(
+                sending_metrics.open_times
+            ),
+            "avg_time_to_click_seconds": self.calc.calc_avg_time_delta(
+                sending_metrics.click_times
+            ),
         }
 
     def get_global_stats(
@@ -244,11 +263,17 @@ class StatsHandler:
 
         campaign_duration = (campaign.end_date - campaign.begin_date).total_seconds()
         elapsed = (min(now, campaign.end_date) - campaign.begin_date).total_seconds()
-        time_elapsed_pct = max(0, min(100, self.calc.calc_rate(elapsed, campaign_duration))) if campaign_duration > 0 else 0
+        time_elapsed_pct = (
+            max(0, min(100, self.calc.calc_rate(elapsed, campaign_duration)))
+            if campaign_duration > 0
+            else 0
+        )
         progress_pct = self.calc.calc_rate(total_sent, total_recipients)
 
         first_open_at, last_open_at = self.calc.extract_min_max_from_dates(opened_dates)
-        first_click_at, last_click_at = self.calc.extract_min_max_from_dates(clicked_dates)
+        first_click_at, last_click_at = self.calc.extract_min_max_from_dates(
+            clicked_dates
+        )
 
         return CampaignDetailInfo(
             id=campaign.id,  # type: ignore
@@ -259,13 +284,11 @@ class StatsHandler:
             sending_interval_seconds=campaign.sending_interval_seconds,
             status=campaign.status,
             realm_name=campaign.realm_name,
-            user_group_ids=[group.id for group in campaign.user_groups],
+            user_group_ids=[group.keycloak_id for group in campaign.user_groups],
             phishing_kit_ids=[kit.id for kit in campaign.phishing_kits],
             sending_profile_ids=[profile.id for profile in campaign.sending_profiles],
             sending_profile_names=[p.name for p in campaign.sending_profiles],
-            phishing_kit_names=[
-                kit.name for kit in campaign.phishing_kits
-            ],
+            phishing_kit_names=[kit.name for kit in campaign.phishing_kits],
             total_recipients=total_recipients,
             total_sent=total_sent,
             total_opened=total_opened,
@@ -286,6 +309,16 @@ class StatsHandler:
             last_click_at=last_click_at,
             user_sendings=metrics.user_sendings_data,
         )
+
+
+_instance: StatsHandler | None = None
+
+
+def get_stats_handler() -> StatsHandler:
+    global _instance
+    if _instance is None:
+        _instance = StatsHandler()
+    return _instance
 
 
 # Backward compatibility alias

@@ -6,7 +6,13 @@ from src.services.keycloak_admin.event_handler import event_handler
 from src.services.keycloak_admin.feature_handler import feature_handler
 
 
-class KeycloakAdmin(base_handler, realm_handler, user_handler, groups_handler, event_handler, feature_handler):
+class KeycloakAdmin(
+    realm_handler,
+    user_handler,
+    groups_handler,
+    event_handler,
+    feature_handler,
+):
 
     def __init__(self):
         base_handler.__init__(self)
