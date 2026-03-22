@@ -57,6 +57,18 @@ async def init_db():
                     "ADD COLUMN IF NOT EXISTS expired BOOLEAN NOT NULL DEFAULT FALSE"
                 )
             )
+            conn.execute(
+                text(
+                    "ALTER TABLE user_progress "
+                    "ADD COLUMN IF NOT EXISTS status VARCHAR NOT NULL DEFAULT 'SCHEDULED'"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE user_progress "
+                    "ADD COLUMN IF NOT EXISTS notified_at TIMESTAMP WITHOUT TIME ZONE"
+                )
+            )
             conn.commit()
         except Exception:
             conn.rollback()

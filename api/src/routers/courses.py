@@ -46,10 +46,14 @@ async def list_courses(
 async def get_enrolled_courses(
     user_id: str,
     session: SessionDep,
+    exclude_scheduled: bool = Query(False)
 ) -> list[CourseOut]:
-    from src.models import UserProgress
+    from src.models import UserProgress, AssignmentStatus
     
     stmt = select(UserProgress).where(UserProgress.user_id == user_id)
+    if exclude_scheduled:
+        stmt = stmt.where(UserProgress.status != AssignmentStatus.SCHEDULED)
+        
     progress_records = list(session.exec(stmt).all())
     
     if not progress_records:
@@ -58,6 +62,37 @@ async def get_enrolled_courses(
     course_ids = [p.course_id for p in progress_records]
     return await course_service.list_enrolled_courses(course_ids)
 
+
+from pydantic import BaseModel
+from datetime import datetime
+from src.services.progress import assign_course
+
+class CourseAssignPayload(BaseModel):
+    user_ids: list[str]
+    start_date: datetime
+    deadline: datetime
+
+@router.post("/courses/{course_id}/assign", summary="Assign course to users")
+async def assign_course_to_users(
+    course_id: str,
+    payload: CourseAssignPayload,
+    session: SessionDep,
+):
+    assigned = assign_course(
+        course_id=course_id,
+        user_ids=payload.user_ids,
+        start_date=payload.start_date,
+        deadline=payload.deadline,
+        session=session
+    )
+    return {"status": "success", "assigned_count": len(assigned)}
+
+from src.tasks.scheduler import process_course_assignments
+
+@router.post("/courses/scheduler/force-tick", summary="Admin: Force course assignment scheduler tick")
+async def force_scheduler_tick():
+    process_course_assignments()
+    return {"status": "success", "message": "Scheduler tick processed manually."}
 
 @router.get("/courses/{course_id}", summary="Get a course")
 async def get_course(course_id: str) -> CourseOut:

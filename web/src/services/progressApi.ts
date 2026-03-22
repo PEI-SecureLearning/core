@@ -11,6 +11,7 @@ export interface UserProgress {
     completed_sections: string[];
     total_completed_tasks: number;
     is_certified: boolean;
+    status: string;
     deadline: string | null;
     expired: boolean;
     updated_at: string;
@@ -26,8 +27,12 @@ export async function enrollUser(realm: string, userId: string, courseIds: strin
     return res.json()
 }
 
-export async function getUserProgress(userId: string, token: string): Promise<UserProgress[]> {
-    const res = await fetch(`${API_BASE}/users/${userId}/progress`, {
+export async function getUserProgress(userId: string, token: string, excludeScheduled?: boolean): Promise<UserProgress[]> {
+    const params = new URLSearchParams()
+    if (excludeScheduled) params.set('exclude_scheduled', 'true')
+    const qs = params.toString()
+
+    const res = await fetch(`${API_BASE}/users/${userId}/progress${qs ? `?${qs}` : ''}`, {
         headers: authHeaders(token),
     })
     if (!res.ok) throw new Error('Failed to fetch user progress')

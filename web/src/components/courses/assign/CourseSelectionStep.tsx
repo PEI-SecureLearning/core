@@ -57,7 +57,7 @@ export default function CourseSelectionStep({ courses, selectedCourses, onCourse
                 </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto pr-2 max-h-[500px]">
+            <div className="min-h-0 flex-1 pr-2 max-h-[500px]">
                 <div className={`grid gap-4 ${cols === 1 ? 'grid-cols-1' :
                     cols === 2 ? 'grid-cols-2' :
                         'grid-cols-3'

@@ -60,8 +60,8 @@ export default function UserCourseList() {
                 await keycloak.updateToken(30);
 
                 const [enrolledCourses, progresses] = await Promise.all([
-                    fetchEnrolledCourses(userId, keycloak.token!),
-                    getUserProgress(userId, keycloak.token!).catch(() => [])
+                    fetchEnrolledCourses(userId, keycloak.token!, true),
+                    getUserProgress(userId, keycloak.token!, true).catch(() => [])
                 ]);
 
                 if (!cancelled && enrolledCourses.length === 0) {
@@ -75,6 +75,7 @@ export default function UserCourseList() {
                         user_id: userId,
                         completed_sections: [],
                         is_certified: false,
+                        status: 'ACTIVE',
                         progress_data: {},
                         total_completed_tasks: 0,
                         deadline: null,
@@ -131,9 +132,12 @@ export default function UserCourseList() {
     });
 
     const sortedCourses = [...filteredCourses].sort((a, b) => {
-        const aDone = a.progressObj.is_certified ? 1 : 0;
-        const bDone = b.progressObj.is_certified ? 1 : 0;
-        return aDone - bDone;
+        const getPriority = (p: any) => {
+            if (p.is_certified) return 2; // Bottom
+            if (p.status === 'EXPIRED' || p.expired) return 0; // Top
+            return 1; // Middle
+        };
+        return getPriority(a.progressObj) - getPriority(b.progressObj);
     });
 
     const categoryOptions = ["All", ...Array.from(new Set(courses.map(c => c.category).filter(Boolean)))];
@@ -147,6 +151,8 @@ export default function UserCourseList() {
             progNum = Math.min(100, Math.round((p.completed_sections.length / course.modules.length) * 100));
         }
 
+        const isExpired = p.status === 'EXPIRED' || p.expired;
+
         return {
             id: course.id,
             title: course.title,
@@ -158,6 +164,9 @@ export default function UserCourseList() {
             showProgress: true,
             progress: progNum,
             isCompleted: course.progressObj.is_certified,
+            isExpired: isExpired,
+            statusBadge: isExpired ? "Expired" : undefined,
+            statusBadgeClass: isExpired ? "bg-red-600 text-white border-red-700 font-extrabold shadow-sm" : undefined,
             coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
         };
     }

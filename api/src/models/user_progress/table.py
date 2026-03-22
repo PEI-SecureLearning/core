@@ -1,7 +1,16 @@
+from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Column
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from sqlalchemy import String
+from enum import StrEnum
+
+class AssignmentStatus(StrEnum):
+    SCHEDULED = "SCHEDULED"
+    ACTIVE = "ACTIVE"
+    EXPIRED = "EXPIRED"
+    COMPLETED = "COMPLETED"
+
 
 class UserProgress(SQLModel, table=True):
     __tablename__ = "user_progress"
@@ -14,4 +23,6 @@ class UserProgress(SQLModel, table=True):
     start_date: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
     expired: bool = Field(default=False)
+    status: AssignmentStatus = Field(default=AssignmentStatus.SCHEDULED)
+    notified_at: Optional[datetime] = Field(default=None)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

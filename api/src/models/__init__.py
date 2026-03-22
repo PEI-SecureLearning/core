@@ -59,7 +59,7 @@ from .course import (
     CourseOut,
     PaginatedCourses,
 )
-from .user_progress import UserProgress
+from .user_progress import UserProgress, AssignmentStatus
 
 
 __all__ = [
@@ -158,4 +158,6 @@ __all__ = [
     "CoursePatch",
     "CourseOut",
     "PaginatedCourses",
+    "UserProgress",
+    "AssignmentStatus",
 ]

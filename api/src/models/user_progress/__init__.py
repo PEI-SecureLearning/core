@@ -1,3 +1,3 @@
-from .table import UserProgress
+from .table import UserProgress, AssignmentStatus
 
-__all__ = ["UserProgress"]
+__all__ = ["UserProgress", "AssignmentStatus"]

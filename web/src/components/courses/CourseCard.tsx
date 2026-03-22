@@ -26,8 +26,12 @@ export type CardItem = {
     coverImageUrl?: string
     /** Whether the course is completed (certified). */
     isCompleted?: boolean
+    /** Whether the course has expired. */
+    isExpired?: boolean
     /** Status badge text (e.g. 'draft', 'archived'). Only shown when provided. */
     statusBadge?: string
+    /** CSS classes for the status badge color states. */
+    statusBadgeClass?: string
     /** Extra badge text shown top-left (e.g. difficulty). */
     difficultyBadge?: string
     /** CSS classes for the difficulty badge, e.g. colour tokens. */
@@ -142,7 +146,7 @@ function Banner({
                 )}
                 {item.statusBadge && (
                     <div className="absolute bottom-2 right-3 z-10">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md bg-muted/90 text-muted-foreground border-border/60">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.statusBadgeClass ?? 'bg-muted/90 text-muted-foreground border-border/60'}`}>
                             {item.statusBadge}
                         </span>
                     </div>
@@ -201,7 +205,7 @@ function CardHorizontal({ item, to, params, selectable, isSelected, onClick }: {
     if (selectable) {
         return (
             <div onClick={onClick} className={`h-full ${item.isCompleted ? 'grayscale opacity-75' : ''}`}>
-                <div className={`group flex flex-row rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer h-full ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm'}`}>
+                <div className={`group flex flex-row rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer h-full ${item.isExpired ? 'border-red-500/50 bg-red-500/5 shadow-[0_0_12px_-4px_rgba(239,68,68,0.4)]' : (isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm')}`}>
                     {/* Left colour strip / cover */}
                     {item.coverImageUrl ? (
                         <div className="relative flex-shrink-0 w-40 overflow-hidden">
@@ -238,7 +242,7 @@ function CardHorizontal({ item, to, params, selectable, isSelected, onClick }: {
                             )}
                         </div>
 
-                        <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-snug text-left">
+                        <h3 className={`text-base font-semibold text-foreground transition-colors leading-snug text-left ${item.isExpired ? 'group-hover:text-red-500' : 'group-hover:text-primary'}`}>
                             {item.title}
                         </h3>
 
@@ -295,7 +299,7 @@ function CardHorizontal({ item, to, params, selectable, isSelected, onClick }: {
                     )}
                 </div>
 
-                <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                <h3 className={`text-base font-semibold text-foreground transition-colors leading-snug ${item.isExpired ? 'group-hover:text-red-500' : 'group-hover:text-primary'}`}>
                     {item.title}
                 </h3>
 
@@ -312,7 +316,7 @@ function CardHorizontal({ item, to, params, selectable, isSelected, onClick }: {
                     )}
                 </div>
 
-                {showProg && <ProgressBar progress={item.progress ?? 0} />}
+                {showProg && <ProgressBar progress={item.progress ?? 0} color={item.isExpired ? 'bg-red-500' : undefined} />}
             </div>
         </Link>
     )
@@ -327,7 +331,7 @@ function CardVertical({ item, to, params, selectable, isSelected, onClick }: { i
         return (
             <div
                 onClick={onClick}
-                className={`group flex flex-col h-full rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm'}`}
+                className={`group flex flex-col h-full rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${item.isExpired ? 'border-red-500/50 bg-red-500/5 shadow-[0_0_12px_-4px_rgba(239,68,68,0.4)]' : (isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm')}`}
             >
                 <div className="relative">
                     <Banner item={item} height="h-36" iconSize="text-5xl" />
@@ -346,7 +350,7 @@ function CardVertical({ item, to, params, selectable, isSelected, onClick }: { i
                             </span>
                         )}
                     </div>
-                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                    <h3 className={`text-sm font-semibold text-foreground transition-colors leading-snug ${item.isExpired ? 'group-hover:text-red-500' : 'group-hover:text-primary'}`}>
                         {item.title}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
@@ -360,7 +364,7 @@ function CardVertical({ item, to, params, selectable, isSelected, onClick }: { i
         <Link
             to={to as any}
             params={params as any}
-            className={`group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''}`}
+            className={`group flex flex-col rounded-xl border transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${item.isExpired ? 'border-red-500 bg-red-500/5 shadow-[0_0_12px_-4px_rgba(239,68,68,0.4)]' : 'border-border bg-background shadow-sm'}`}
         >
             <Banner item={item} height="h-36" iconSize="text-5xl" />
 
@@ -370,7 +374,7 @@ function CardVertical({ item, to, params, selectable, isSelected, onClick }: { i
                         {item.category}
                     </span>
                 )}
-                <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
+                <h3 className={`text-sm font-semibold text-foreground transition-colors leading-snug ${item.isExpired ? 'group-hover:text-red-500' : 'group-hover:text-primary'}`}>
                     {item.title}
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
@@ -381,7 +385,7 @@ function CardVertical({ item, to, params, selectable, isSelected, onClick }: { i
                         <DeleteButton id={item.id} onDelete={item.onDelete} />
                     )}
                 </div>
-                {showProg && <ProgressBar progress={item.progress ?? 0} />}
+                {showProg && <ProgressBar progress={item.progress ?? 0} color={item.isExpired ? 'bg-red-500' : undefined} />}
             </div>
         </Link>
     )
@@ -396,7 +400,7 @@ function CardCompact({ item, to, params, selectable, isSelected, onClick }: { it
         return (
             <div
                 onClick={onClick}
-                className={`group flex flex-col h-full rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm'}`}
+                className={`group flex flex-col h-full rounded-xl border-2 transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${item.isExpired ? 'border-red-500/50 bg-red-500/5 shadow-[0_0_12px_-4px_rgba(239,68,68,0.4)]' : (isSelected ? 'border-primary bg-primary/5 shadow-md' : 'border-border/60 bg-background hover:border-primary/50 shadow-sm')}`}
             >
                 <div className="relative">
                     <Banner item={item} height="h-24" iconSize="text-4xl" />
@@ -413,7 +417,7 @@ function CardCompact({ item, to, params, selectable, isSelected, onClick }: { it
                             {item.category}
                         </span>
                     )}
-                    <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
+                    <h3 className={`text-xs font-semibold text-foreground transition-colors leading-snug line-clamp-2 ${item.isExpired ? 'group-hover:text-red-500' : 'group-hover:text-primary'}`}>
                         {item.title}
                     </h3>
                 </div>
@@ -424,7 +428,7 @@ function CardCompact({ item, to, params, selectable, isSelected, onClick }: { it
         <Link
             to={to as any}
             params={params as any}
-            className={`group flex flex-col rounded-xl border border-border bg-background shadow-sm transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''}`}
+            className={`group flex flex-col rounded-xl border transition-all duration-200 overflow-hidden cursor-pointer ${item.isCompleted ? 'grayscale opacity-75' : ''} ${item.isExpired ? 'border-red-500 bg-red-500/5 shadow-[0_0_12px_-4px_rgba(239,68,68,0.4)]' : 'border-border bg-background shadow-sm'}`}
         >
             <Banner item={item} height="h-24" iconSize="text-4xl" />
 
@@ -434,7 +438,7 @@ function CardCompact({ item, to, params, selectable, isSelected, onClick }: { it
                         {item.category}
                     </span>
                 )}
-                <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
+                <h3 className={`text-xs font-semibold text-foreground transition-colors leading-snug line-clamp-2 ${item.isExpired ? 'group-hover:text-red-500' : 'group-hover:text-primary'}`}>
                     {item.title}
                 </h3>
                 <div className="flex items-center justify-end mt-auto pt-2 border-t border-border/40 h-8">
@@ -443,7 +447,7 @@ function CardCompact({ item, to, params, selectable, isSelected, onClick }: { it
                     )}
                     {item.onDelete && <DeleteButton id={item.id} onDelete={item.onDelete} />}
                 </div>
-                {showProg && <ProgressBar progress={item.progress ?? 0} />}
+                {showProg && <ProgressBar progress={item.progress ?? 0} color={item.isExpired ? 'bg-red-500' : undefined} />}
             </div>
         </Link>
     )

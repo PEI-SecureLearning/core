@@ -1,6 +1,46 @@
 from sqlmodel import Session, select
 from fastapi import HTTPException
-from src.models import UserProgress
+from datetime import datetime
+from src.models import UserProgress, AssignmentStatus
+
+def assign_course(course_id: str, user_ids: list[str], start_date: datetime, deadline: datetime, session: Session) -> list[UserProgress]:
+    print(f"DEBUG: assign_course course={course_id}, users={len(user_ids)}")
+    assigned = []
+    
+    for uid in user_ids:
+        # Guard against duplicate assignment
+        existing = session.get(UserProgress, {"user_id": uid, "course_id": course_id})
+        if existing:
+            # If it already exists, update the dates and status to scheduled 
+            # (unless it's COMPLETED, we shouldn't touch completed courses but we'll 
+            # assume the admin's intention is to re-assign or extend).
+            if existing.status != AssignmentStatus.COMPLETED or existing.is_certified:
+                 # It's better to update it to scheduled if they are actively trying to restart
+                 existing.status = AssignmentStatus.SCHEDULED
+                 existing.start_date = start_date
+                 existing.deadline = deadline
+                 existing.expired = False
+                 session.add(existing)
+                 assigned.append(existing)
+            continue
+            
+        progress = UserProgress(
+            user_id=uid,
+            course_id=course_id,
+            start_date=start_date,
+            deadline=deadline,
+            status=AssignmentStatus.SCHEDULED,
+            expired=False,
+            progress_data={},
+            completed_sections=[],
+        )
+        session.add(progress)
+        assigned.append(progress)
+        
+    session.commit()
+    for p in assigned:
+        session.refresh(p)
+    return assigned
 
 def get_all_progress(user_id: str, session: Session) -> list[UserProgress]:
     stmt = select(UserProgress).where(UserProgress.user_id == user_id)
@@ -73,7 +113,11 @@ def mark_expired(user_id: str, course_id: str, session: Session) -> UserProgress
     if not progress:
         raise HTTPException(status_code=404, detail="Course progress not found")
         
+    if progress.status != AssignmentStatus.ACTIVE:
+        raise HTTPException(status_code=400, detail="Only ACTIVE assignments can be manually expired")
+        
     progress.expired = True
+    progress.status = AssignmentStatus.EXPIRED
     session.add(progress)
     session.commit()
     session.refresh(progress)

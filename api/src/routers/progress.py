@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles, Resource, Scope
@@ -17,8 +17,12 @@ class SectionComplete(BaseModel):
 
 
 @router.get("")
-def get_user_progress(user_id: str, session: SessionDep):
-    return progress_service.get_all_progress(user_id, session)
+def get_user_progress(user_id: str, session: SessionDep, exclude_scheduled: bool = Query(False)):
+    from src.models import AssignmentStatus
+    all_p = progress_service.get_all_progress(user_id, session)
+    if exclude_scheduled:
+        return [p for p in all_p if p.status != AssignmentStatus.SCHEDULED]
+    return all_p
 
 @router.get("/{course_id}")
 def get_course_progress(user_id: str, course_id: str, session: SessionDep):
