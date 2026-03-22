@@ -26,8 +26,8 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
     async function loadData() {
       try {
         const [enrolledCourses, progresses] = await Promise.all([
-          fetchEnrolledCourses(userId, keycloak.token!),
-          getUserProgress(userId, keycloak.token!).catch(() => [])
+          fetchEnrolledCourses(userId, keycloak.token!, true),
+          getUserProgress(userId, keycloak.token!, true).catch(() => [])
         ]);
 
         const mapped = enrolledCourses.map(c => {
