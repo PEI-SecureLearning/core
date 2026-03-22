@@ -24,5 +24,6 @@ class UserProgress(SQLModel, table=True):
     deadline: datetime | None = Field(default=None)
     expired: bool = Field(default=False)
     status: AssignmentStatus = Field(default=AssignmentStatus.SCHEDULED)
+    realm_name: Optional[str] = Field(default=None, index=True)
     notified_at: Optional[datetime] = Field(default=None)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

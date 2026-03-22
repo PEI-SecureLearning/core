@@ -129,3 +129,11 @@ export async function deleteCourse(id: string, token?: string): Promise<void> {
     })
     if (!res.ok) throw new Error('Failed to delete course')
 }
+
+export async function fetchAllAssignments(token?: string): Promise<any[]> {
+    const res = await fetch(`${API_BASE}/courses/assignments/all`, {
+        headers: authHeaders(token),
+    })
+    if (!res.ok) throw new Error('Failed to fetch assignments')
+    return res.json() as Promise<any[]>
+}

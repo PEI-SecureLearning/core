@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Settings2 } from "lucide-react";
-import type { CampaignStatus } from "@/services/campaignsApi"; // Importa do serviço
+export type CampaignStatus = "scheduled" | "running" | "active" | "completed" | "canceled" | "expired"; // Importa do serviço
 
 interface TimelineBarProps {
   startPercent: number;
@@ -10,8 +10,12 @@ interface TimelineBarProps {
 }
 
 // Mapeamento atualizado para os status do Backend Python
-const statusColors: Record<CampaignStatus, { bg: string; border: string }> = {
+const statusColors: Record<string, { bg: string; border: string }> = {
   running: {
+    bg: "bg-gradient-to-r from-blue-400 to-blue-500",
+    border: "border-blue-400/30",
+  },
+  active: {
     bg: "bg-gradient-to-r from-blue-400 to-blue-500",
     border: "border-blue-400/30",
   },
@@ -26,6 +30,10 @@ const statusColors: Record<CampaignStatus, { bg: string; border: string }> = {
   canceled: {
     bg: "bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/50",
     border: "border-border/30",
+  },
+  expired: {
+    bg: "bg-gradient-to-r from-red-400 to-red-500",
+    border: "border-red-400/30",
   },
 };
 

@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query, status, Depends
 from sqlmodel import Session, select
 
-from src.core.dependencies import OAuth2Scheme, SessionDep
+from src.core.dependencies import OAuth2Scheme, SessionDep, CurrentRealm
 from src.models import (
     CourseCreate,
     CourseOut,
@@ -63,6 +63,52 @@ async def get_enrolled_courses(
     return await course_service.list_enrolled_courses(course_ids)
 
 
+@router.get("/courses/assignments/all", summary="List all course assignments (admin/manager view)")
+async def list_all_assignments(
+    current_realm: CurrentRealm,
+    session: SessionDep,
+) -> list:
+    """
+    Returns all UserProgress records with course titles for the current realm.
+    """
+    from src.models import UserProgress
+    stmt = select(UserProgress).where(UserProgress.realm_name == current_realm)
+    results = session.exec(stmt).all()
+    
+    if not results:
+        return []
+
+    # Fetch course titles from MongoDB via service
+    course_ids = list(set(p.course_id for p in results))
+    courses = await course_service.list_enrolled_courses(course_ids)
+    course_map = {c.id: c.title for c in courses}
+    
+    # Map and group to a Campaign-like shape for the timeline
+    grouped = {}
+    for progress in results:
+        course_title = course_map.get(progress.course_id, "Unknown Course")
+        key = (progress.course_id, progress.start_date, progress.deadline)
+        if key not in grouped:
+            grouped[key] = {
+                "id": f"course_batch_{progress.course_id}_{progress.start_date}_{progress.deadline}",
+                "name": f"Training: {course_title}",
+                "status": progress.status.lower(),
+                "begin_date": progress.start_date.isoformat() if progress.start_date else None,
+                "end_date": progress.deadline.isoformat() if progress.deadline else None,
+                "type": "course",
+                "user_count": 0
+            }
+        grouped[key]["user_count"] += 1
+        
+    # Final name adjustment to include user count
+    assignments = []
+    for val in grouped.values():
+        val["name"] += f" ({val['user_count']} users)"
+        assignments.append(val)
+        
+    return assignments
+
+
 from pydantic import BaseModel
 from datetime import datetime
 from src.services.progress import assign_course
@@ -76,6 +122,7 @@ class CourseAssignPayload(BaseModel):
 async def assign_course_to_users(
     course_id: str,
     payload: CourseAssignPayload,
+    current_realm: CurrentRealm,
     session: SessionDep,
 ):
     assigned = assign_course(
@@ -83,7 +130,8 @@ async def assign_course_to_users(
         user_ids=payload.user_ids,
         start_date=payload.start_date,
         deadline=payload.deadline,
-        session=session
+        session=session,
+        realm_name=current_realm
     )
     return {"status": "success", "assigned_count": len(assigned)}
 

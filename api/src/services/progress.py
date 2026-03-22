@@ -3,8 +3,8 @@ from fastapi import HTTPException
 from datetime import datetime
 from src.models import UserProgress, AssignmentStatus
 
-def assign_course(course_id: str, user_ids: list[str], start_date: datetime, deadline: datetime, session: Session) -> list[UserProgress]:
-    print(f"DEBUG: assign_course course={course_id}, users={len(user_ids)}")
+def assign_course(course_id: str, user_ids: list[str], start_date: datetime, deadline: datetime, session: Session, realm_name: str = None) -> list[UserProgress]:
+    print(f"DEBUG: assign_course course={course_id}, users={len(user_ids)}, realm={realm_name}")
     assigned = []
     
     for uid in user_ids:
@@ -20,6 +20,7 @@ def assign_course(course_id: str, user_ids: list[str], start_date: datetime, dea
                  existing.start_date = start_date
                  existing.deadline = deadline
                  existing.expired = False
+                 existing.realm_name = realm_name
                  session.add(existing)
                  assigned.append(existing)
             continue
@@ -30,6 +31,7 @@ def assign_course(course_id: str, user_ids: list[str], start_date: datetime, dea
             start_date=start_date,
             deadline=deadline,
             status=AssignmentStatus.SCHEDULED,
+            realm_name=realm_name,
             expired=False,
             progress_data={},
             completed_sections=[],

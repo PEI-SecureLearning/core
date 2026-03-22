@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export type CampaignStatus = "scheduled" | "running" | "completed" | "canceled";
+export type CampaignStatus = "scheduled" | "running" | "active" | "completed" | "canceled" | "expired";
 
 export interface Campaign {
   id: number;
