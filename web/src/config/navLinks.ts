@@ -210,6 +210,12 @@ export const contentManagerLinks: NavLinkDef[] = [
         icon: FileText,
         group: "Phishing",
     },
+    {
+        href: "/content-manager/settings",
+        label: "Settings",
+        icon: Settings,
+        showOnWelcome: false,
+    },
 ];
 
 // ── Footer links (shared) ────────────────────────────────────────────────────

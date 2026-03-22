@@ -14,7 +14,6 @@ export function TemplatePreviewModal({ template, onClose }: Props) {
           <div>
             <p className="text-xs uppercase tracking-wide text-muted-foreground">HTML preview</p>
             <h3 className="text-lg font-semibold text-foreground">{template.name}</h3>
-            <p className="text-sm text-muted-foreground">{template.subject}</p>
           </div>
           <Button variant="ghost" onClick={onClose} className="text-muted-foreground">
             Close

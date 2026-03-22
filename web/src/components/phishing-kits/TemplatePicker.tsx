@@ -16,7 +16,7 @@ import SearchBar from "@/components/shared/SearchBar";
 import { cn } from "@/lib/utils";
 import type { Template } from "@/components/templates/types";
 import { TemplatePreviewModal } from "@/components/templates/TemplatePreviewModal";
-import { apiClient } from "@/lib/api-client";
+import { templateApi } from "@/services/templateApi";
 import { toast } from "sonner";
 
 type ViewMode = "grid" | "list";
@@ -67,9 +67,6 @@ function EmailTemplateGridCard({
 
       {/* Info */}
       <div className="p-3">
-        {template.subject && template.subject !== template.name && (
-          <p className="text-xs text-primary/80 truncate">{template.subject}</p>
-        )}
         {template.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
             {template.description}
@@ -165,11 +162,6 @@ function LandingPageTemplateGridCard({
         <p className="text-sm font-medium text-foreground truncate">
           {template.name}
         </p>
-        {template.subject && template.subject !== template.name && (
-          <p className="text-xs text-primary/80 truncate mt-0.5">
-            {template.subject}
-          </p>
-        )}
         {template.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
             {template.description}
@@ -220,7 +212,7 @@ function TemplateListRow({
           {template.name}
         </p>
         <p className="text-xs text-muted-foreground truncate">
-          {template.subject || template.description || "No description"}
+          {template.description || "No description"}
         </p>
       </div>
 
@@ -288,7 +280,7 @@ export default function TemplatePicker({
     setIsLoading(true);
     setError(null);
     try {
-      const all = await apiClient.get<Template[]>("/templates");
+      const all = await templateApi.getTemplates();
       setTemplates(all.filter((t) => t.path === templatePath));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load templates");
@@ -306,8 +298,7 @@ export default function TemplatePicker({
     return templates.filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
-        (t.description ?? "").toLowerCase().includes(q) ||
-        (t.subject ?? "").toLowerCase().includes(q)
+        (t.description ?? "").toLowerCase().includes(q)
     );
   }, [templates, searchQuery]);
 
