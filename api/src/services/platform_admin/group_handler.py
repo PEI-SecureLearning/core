@@ -50,7 +50,7 @@ class group_handler(base_handler):
     def list_group_members_in_realm(self, realm: str, group_id: str) -> list[UserDTO]:
         """List members of a group in the realm."""
         members = self.admin.list_group_members(realm, group_id)
-        return [self._to_user_dto(m) for m in members if m.get("id")]
+        return [self._to_group_member_user_dto(m) for m in members if m.get("id")]
 
     def delete_group_in_realm(
         self, realm: str, group_id: str, session: Session
@@ -88,7 +88,7 @@ class group_handler(base_handler):
             path=group_data.get("path"),
         )
 
-    def _to_user_dto(self, member_data: dict) -> UserDTO:
+    def _to_group_member_user_dto(self, member_data: dict) -> UserDTO:
         """Map Keycloak group member payload to Keycloak user DTO."""
         member_id = member_data.get("id")
         if not member_id:
@@ -99,7 +99,7 @@ class group_handler(base_handler):
         return UserDTO(
             id=member_id,
             username=member_data.get("username"),
-            email=member_data.get("email"),
+            email=member_data.get("email") or "",
             firstName=member_data.get("firstName"),
             lastName=member_data.get("lastName"),
         )
