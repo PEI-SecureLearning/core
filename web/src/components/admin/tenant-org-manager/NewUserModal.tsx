@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { X, User, Mail, AtSign, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useKeycloak } from "@react-keycloak/web";
 import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 import type { Group, CreateUserField } from "./types";
+import { tenantOrgManagerApi } from "@/services/tenantOrgManagerApi";
 
 interface NewUserModalProps {
     realm: string;
@@ -12,10 +12,7 @@ interface NewUserModalProps {
     onUserCreated: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL;
-
 export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly<NewUserModalProps>) {
-    const { keycloak } = useKeycloak();
     const [newUserName, setNewUserName] = useState("");
     const [newUserEmail, setNewUserEmail] = useState("");
     const [newUserUsername, setNewUserUsername] = useState("");
@@ -74,30 +71,16 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         setCreateFieldError(null);
 
         try {
-            const res = await fetch(
-                `${API_BASE}/realms/${encodeURIComponent(realm)}/users`,
+            const data = await tenantOrgManagerApi.createUser(
+                realm,
                 {
-                    method: "POST",
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        username: newUserUsername || newUserEmail.split("@")[0],
-                        name: newUserName,
-                        email: newUserEmail,
-                        role: newUserRole,
-                        group_id: newUserGroupId || undefined,
-                    }),
+                    username: newUserUsername || newUserEmail.split("@")[0],
+                    name: newUserName,
+                    email: newUserEmail,
+                    role: newUserRole,
+                    group_id: newUserGroupId || undefined,
                 }
             );
-
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Failed to create user`);
-            }
-
-            const data = await res.json();
             toast.success(
                 `User created! Temporary password: ${data?.temporary_password ?? "N/A"}`,
                 { position: "top-right" }

@@ -8,14 +8,7 @@ import {
 import { Link, useParams, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import {
-  fetchGroups,
-  fetchGroupMembers,
-  addUserToGroup,
-  fetchUsers,
-  removeUserFromGroup,
-  deleteGroup,
-} from "@/services/userGroupsApi";
+import { userGroupsApi } from "@/services/userGroupsApi";
 import ConfirmDeleteModal from "@/components/usergroups/ConfirmDeleteModal";
 import { GroupMembersTable } from "@/components/usergroups/GroupMembersTable";
 import SearchBar from "@/components/shared/SearchBar";
@@ -61,8 +54,8 @@ export default function UserGroupDetail() {
       setIsLoading(true);
       try {
         const [groupsRes, membersRes] = await Promise.all([
-          fetchGroups(realm, keycloak.token || undefined),
-          fetchGroupMembers(realm, groupId, keycloak.token || undefined),
+          userGroupsApi.getGroups(realm),
+          userGroupsApi.getGroupMembers(realm, groupId),
         ]);
         const found = (groupsRes.groups || []).find((g) => g.id === groupId);
         setGroupName(found?.name || groupId);
@@ -81,7 +74,7 @@ export default function UserGroupDetail() {
     const loadUsers = async () => {
       if (!realm) return;
       try {
-        const res = await fetchUsers(realm, keycloak.token || undefined);
+        const res = await userGroupsApi.getUsers(realm);
         setUsers(
           (res.users || []).map((u) => ({
             id: u.id || "",
@@ -102,7 +95,7 @@ export default function UserGroupDetail() {
     if (!realm || !groupId) return;
     setIsDeleting(true);
     try {
-      await deleteGroup(realm, groupId, keycloak.token || undefined);
+      await userGroupsApi.deleteGroup(realm, groupId);
       navigate({ to: "/usergroups" });
     } catch (err) {
       console.error("Failed to delete group", err);
@@ -118,8 +111,8 @@ export default function UserGroupDetail() {
     setIsLoading(true);
     setStatus(null);
     try {
-      await removeUserFromGroup(realm, groupId, memberId, keycloak.token || undefined);
-      const membersRes = await fetchGroupMembers(realm, groupId, keycloak.token || undefined);
+      await userGroupsApi.removeUserFromGroup(realm, groupId, memberId);
+      const membersRes = await userGroupsApi.getGroupMembers(realm, groupId);
       setMembers(membersRes.members || []);
     } catch (err) {
       console.error("Failed to remove member", err);
@@ -234,8 +227,8 @@ export default function UserGroupDetail() {
                       setIsLoading(true);
                       setStatus(null);
                       try {
-                        await addUserToGroup(realm, groupId, u.id, keycloak.token || undefined);
-                        const membersRes = await fetchGroupMembers(realm, groupId, keycloak.token || undefined);
+                        await userGroupsApi.addUserToGroup(realm, groupId, u.id);
+                        const membersRes = await userGroupsApi.getGroupMembers(realm, groupId);
                         setMembers(membersRes.members || []);
                         setShowAddModal(false);
                         setSearchUser("");
@@ -279,5 +272,4 @@ export default function UserGroupDetail() {
     </div>
   );
 }
-
 
