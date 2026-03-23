@@ -82,14 +82,14 @@ class TrackingService:
         if not kit or not kit.landing_page_template:
             raise HTTPException(status_code=404, detail="Phishing kit not found")
 
-        template = await TemplateService.get_template(kit.landing_page_template.content_link)
+        template = await TemplateService.get_template_internal(kit.landing_page_template.content_link)
 
         if template is None:
             raise HTTPException(status_code=404, detail="Page not found")
 
         # Render template with phish endpoint as redirect
         rendered_html = TemplateService.render_template(template.html, {
-            "redirect": f"/track/phish?si={tracking_token}"
+            "redirect": f"/api/track/phish?si={tracking_token}"
         })
 
         return rendered_html
