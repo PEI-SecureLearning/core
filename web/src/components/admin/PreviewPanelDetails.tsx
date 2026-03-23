@@ -28,7 +28,7 @@ export function PreviewPanelDetails({
             <div>
                 <div className="flex items-center justify-between mb-3 px-1">
                     <span className="text-[10px] font-black text-muted-foreground/70 uppercase tracking-widest">Active Modules</span>
-                    <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-purple-100">
+                    <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
                         {enabledCount} / 2
                     </span>
                 </div>
@@ -42,13 +42,13 @@ export function PreviewPanelDetails({
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/40 shadow-sm transition-all hover:bg-surface-subtle"
                             >
-                                <div className="w-8 h-8 bg-orange-50 border border-orange-100 rounded-lg flex items-center justify-center">
-                                    <Shield className="w-4 h-4 text-orange-600" />
+                                <div className="w-8 h-8 bg-warning/10 border border-warning/20 rounded-lg flex items-center justify-center">
+                                    <Shield className="w-4 h-4 text-warning" />
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-[11px] font-bold text-foreground">Phishing Engine</p>
                                 </div>
-                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm shadow-purple-200">
+                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm shadow-primary/20">
                                     <Check className="w-3 h-3 text-white" />
                                 </div>
                             </motion.div>
@@ -61,13 +61,13 @@ export function PreviewPanelDetails({
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border/40 shadow-sm transition-all hover:bg-surface-subtle"
                             >
-                                <div className="w-8 h-8 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center">
-                                    <BookOpen className="w-4 h-4 text-blue-600" />
+                                <div className="w-8 h-8 bg-info/10 border border-info/20 rounded-lg flex items-center justify-center">
+                                    <BookOpen className="w-4 h-4 text-info" />
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-[11px] font-bold text-foreground">LMS Engine</p>
                                 </div>
-                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm shadow-purple-200">
+                                <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-sm shadow-primary/20">
                                     <Check className="w-3 h-3 text-white" />
                                 </div>
                             </motion.div>

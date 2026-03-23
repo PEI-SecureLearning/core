@@ -6,13 +6,7 @@ import BasicInfo from "./newGroupBasicInfo";
 import NewGroupFooter from "./newGroupFooter";
 import Preview from "./newGroupPreview";
 import MembersSection from "./newGroupMembers";
-import {
-  addUserToGroup,
-  createGroup,
-  createUser,
-  fetchGroups,
-  fetchUsers,
-} from "../../services/userGroupsApi";
+import { userGroupsApi } from "../../services/userGroupsApi";
 
 interface Member {
   id: string;
@@ -75,7 +69,7 @@ export default function NewUserGroup() {
       const realm = tokenRealm || "";
       if (!realm) return;
       try {
-        const res = await fetchUsers(realm, keycloak.token || undefined);
+        const res = await userGroupsApi.getUsers(realm);
         const mapped =
           (res.users || []).map((u) => ({
             id: u.id || "",
@@ -117,10 +111,10 @@ export default function NewUserGroup() {
     setStatus(null);
     try {
       // Create the group first
-      await createGroup(realm, groupName, keycloak.token || undefined);
+      await userGroupsApi.createGroup(realm, { name: groupName });
       let createdId: string | null = null;
       try {
-        const groupsRes = await fetchGroups(realm, keycloak.token || undefined);
+        const groupsRes = await userGroupsApi.getGroups(realm);
         const created = (groupsRes.groups || []).find((g) => g.name === groupName);
         createdId = created?.id || null;
       } catch (err) {
@@ -138,19 +132,17 @@ export default function NewUserGroup() {
             const isExistingUser = m.id && m.id.includes("-") && m.id.length > 30;
 
             if (isExistingUser) {
-              await addUserToGroup(realm, createdId, m.id, keycloak.token || undefined);
+              await userGroupsApi.addUserToGroup(realm, createdId, m.id);
               addedCount++;
             } else {
               const username = m.email?.split("@")[0] || m.name.toLowerCase().replace(/\s+/g, ".");
-              const result = await createUser(
-                realm,
+              const result = await userGroupsApi.createUser(realm, {
                 username,
-                m.name,
-                m.email,
-                "DEFAULT_USER",
-                createdId,
-                keycloak.token || undefined
-              );
+                name: m.name,
+                email: m.email,
+                role: "DEFAULT_USER",
+                group_id: createdId,
+              });
               if (result.status === "created") {
                 createdCount++;
               }

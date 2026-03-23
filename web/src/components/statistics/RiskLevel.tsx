@@ -16,30 +16,30 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
   const getConfig = (pct: number) => {
     if (pct <= 25)
       return {
-        color: "emerald",
+        color: "success",
         label: "Low Risk",
-        gradient: "from-emerald-500 to-teal-500",
-        glowColor: "rgba(16, 185, 129, 0.35)"
+        gradient: "from-success to-success/80",
+        glowColor: "rgba(var(--success-rgb), 0.35)"
       };
     if (pct <= 50)
       return {
-        color: "amber",
+        color: "warning",
         label: "Moderate Risk",
-        gradient: "from-amber-500 to-yellow-400",
-        glowColor: "rgba(245, 158, 11, 0.35)"
+        gradient: "from-warning to-warning/80",
+        glowColor: "rgba(var(--warning-rgb), 0.35)"
       };
     if (pct <= 75)
       return {
         color: "orange",
         label: "High Risk",
-        gradient: "from-orange-500 to-red-400",
-        glowColor: "rgba(249, 115, 22, 0.35)"
+        gradient: "from-warning to-error",
+        glowColor: "rgba(var(--warning-rgb), 0.35)"
       };
     return {
-      color: "rose",
+      color: "error",
       label: "Critical Risk",
-      gradient: "from-rose-500 to-red-600",
-      glowColor: "rgba(244, 63, 94, 0.35)"
+      gradient: "from-error to-error/80",
+      glowColor: "rgba(var(--error-rgb), 0.35)"
     };
   };
 
@@ -49,29 +49,29 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
     string,
     { bg: string; text: string; bar: string; badge: string }
   > = {
-    emerald: {
-      bg: "bg-emerald-500/10",
-      text: "text-emerald-600",
-      bar: "bg-gradient-to-r from-emerald-400 to-teal-500",
-      badge: "bg-emerald-50 border-emerald-100 text-emerald-600"
+    success: {
+      bg: "bg-success/10",
+      text: "text-success",
+      bar: "bg-success",
+      badge: "bg-success/10 border-success/20 text-success"
     },
-    amber: {
-      bg: "bg-amber-500/10",
-      text: "text-amber-600",
-      bar: "bg-gradient-to-r from-amber-400 to-yellow-400",
-      badge: "bg-amber-50 border-amber-100 text-amber-600"
+    warning: {
+      bg: "bg-warning/10",
+      text: "text-warning",
+      bar: "bg-warning",
+      badge: "bg-warning/10 border-warning/20 text-warning"
     },
     orange: {
-      bg: "bg-orange-500/10",
-      text: "text-orange-600",
-      bar: "bg-gradient-to-r from-orange-400 to-red-400",
-      badge: "bg-orange-50 border-orange-100 text-orange-600"
+      bg: "bg-warning/10",
+      text: "text-warning",
+      bar: "bg-linear-to-r from-warning to-error",
+      badge: "bg-warning/10 border-warning/20 text-warning"
     },
-    rose: {
-      bg: "bg-rose-500/10",
-      text: "text-rose-600",
-      bar: "bg-gradient-to-r from-rose-400 to-red-500",
-      badge: "bg-rose-50 border-rose-100 text-rose-600"
+    error: {
+      bg: "bg-error/10",
+      text: "text-error",
+      bar: "bg-error",
+      badge: "bg-error/10 border-error/20 text-error"
     }
   };
 
@@ -80,8 +80,8 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
   return (
     <div
       className={`flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
-        shadow-lg shadow-slate-300/50 p-5
-        hover:shadow-2xl hover:shadow-purple-200/60
+        shadow-lg shadow-muted/50 p-5
+        hover:shadow-2xl hover:shadow-primary/25
         transition-all duration-500 hover:-translate-y-1 group ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

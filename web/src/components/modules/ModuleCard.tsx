@@ -40,7 +40,7 @@ function ActionButton({
             className={cn(
                 "p-1.5 rounded-lg border border-border/50 text-muted-foreground transition-all shadow-sm bg-background",
                 variant === 'danger'
-                    ? "hover:text-red-500 hover:bg-red-50 hover:border-red-200"
+                    ? "hover:text-error hover:bg-error/10 hover:border-error/20"
                     : "hover:text-primary hover:bg-primary/5 hover:border-primary/20"
             )}
             title={title}

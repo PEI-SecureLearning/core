@@ -24,7 +24,7 @@ from src.core.mongo import close_mongo_client
 from src.core.object_storage import ensure_bucket, garage_enabled
 from src.core.settings import settings
 from src.tasks import start_scheduler, shutdown_scheduler
-
+from src.tasks.tracking_consumer import start_tracking_consumer, shutdown_tracking_consumer
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,11 +34,12 @@ async def lifespan(app: FastAPI):
         await ensure_bucket(settings.GARAGE_BUCKET_LOGOS)
     try:
         start_scheduler()
+        start_tracking_consumer()
         yield
     finally:
+        shutdown_scheduler()
+        shutdown_tracking_consumer()
         await close_mongo_client()
-    shutdown_scheduler()
-
 
 app = FastAPI(
     title="Project Template API",
@@ -49,8 +50,8 @@ app = FastAPI(
 )
 
 origins = [
-    os.getenv("WEB_URL"),
-    os.getenv("API_URL"),
+    settings.WEB_URL,
+    settings.API_URL,
 ]
 
 app.add_middleware(

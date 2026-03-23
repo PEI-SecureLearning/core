@@ -253,7 +253,7 @@ export function ContentDisplay({
                                         placeholder="folder name"
                                         className="flex-1 min-w-0 rounded border border-primary/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary bg-surface"
                                     />
-                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { void confirmCreateFolder(); }} className="p-0.5 rounded text-emerald-500 hover:bg-emerald-500/10" title="Confirm">
+                                    <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { void confirmCreateFolder(); }} className="p-0.5 rounded text-success hover:bg-success/10" title="Confirm">
                                         <Check className="w-3.5 h-3.5" />
                                     </button>
                                     <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={cancelCreateFolder} className="p-0.5 rounded text-muted-foreground hover:bg-surface-subtle" title="Cancel">
@@ -287,7 +287,7 @@ export function ContentDisplay({
                 </button>
                 {creatingFolderIn === ROOT_FOLDER_ID && (
                     <div className="mb-1 flex items-center gap-1.5 py-1 pl-8">
-                        <Folder className="w-4 h-4 text-[#A78BFA] shrink-0" />
+                        <Folder className="w-4 h-4 text-primary shrink-0" />
                         <input
                             autoFocus
                             value={newFolderName}
@@ -298,9 +298,9 @@ export function ContentDisplay({
                             }}
                             onBlur={() => { void confirmCreateFolder(); }}
                             placeholder="folder name"
-                            className="flex-1 min-w-0 rounded border border-[#7C3AED]/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-[#7C3AED] bg-surface"
+                            className="flex-1 min-w-0 rounded border border-primary/40 px-1.5 py-0.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary bg-surface"
                         />
-                        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { void confirmCreateFolder(); }} className="p-0.5 rounded text-emerald-500 hover:bg-emerald-500/10" title="Confirm">
+                        <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => { void confirmCreateFolder(); }} className="p-0.5 rounded text-success hover:bg-success/10" title="Confirm">
                             <Check className="w-3.5 h-3.5" />
                         </button>
                         <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={cancelCreateFolder} className="p-0.5 rounded text-muted-foreground hover:bg-surface-subtle" title="Cancel">
@@ -333,7 +333,7 @@ export function ContentDisplay({
 
                     <div className="relative">
                         <SortAsc className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-                        <select value={sortBy} onChange={(e) => onSortChange(e.target.value)} className="bg-surface border border-border rounded-lg py-1.5 pl-8 pr-6 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 cursor-pointer text-foreground">
+                        <select value={sortBy} onChange={(e) => onSortChange(e.target.value)} className="bg-surface border border-border rounded-lg py-1.5 pl-8 pr-6 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer text-foreground">
                             <option value="title">Sort by Name</option>
                             <option value="id">Newest First</option>
                         </select>
@@ -370,10 +370,10 @@ export function ContentDisplay({
                                 <button onClick={() => onViewContent(item.content_piece_id)} aria-label="Open content" title="Open" className="p-1 rounded text-accent-secondary hover:text-accent-secondary/80 hover:bg-primary/10">
                                     <Eye className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => onEditContent(item.content_piece_id)} aria-label="Edit content" title="Edit" className="p-1 rounded text-sky-400 hover:text-sky-300 hover:bg-sky-500/10">
+                                <button onClick={() => onEditContent(item.content_piece_id)} aria-label="Edit content" title="Edit" className="p-1 rounded text-info hover:text-info/80 hover:bg-info/10">
                                     <FilePenLine className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => onDeleteContent(item.content_piece_id)} aria-label="Delete content" title="Delete" className="p-1 rounded text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                                <button onClick={() => onDeleteContent(item.content_piece_id)} aria-label="Delete content" title="Delete" className="p-1 rounded text-error hover:text-error/80 hover:bg-error/10">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>

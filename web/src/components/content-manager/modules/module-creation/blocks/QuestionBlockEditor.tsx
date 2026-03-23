@@ -46,7 +46,7 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
 
     return (
         <div
-            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-amber-400' : 'border-border'
+            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-warning' : 'border-border'
                 }`}
         >
             <div className="flex items-center justify-between px-3 py-1.5 bg-surface-subtle border-b border-border">
@@ -67,7 +67,7 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
                 </div>
                 <button type="button" onClick={onRemove}
                     title="Remove block"
-                    className="ml-auto p-1 text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
+                    className="ml-auto p-1 text-muted-foreground/40 hover:text-error hover:bg-error/10 rounded-md transition-all">
                     <X className="w-4 h-4" />
                 </button>
             </div>
@@ -77,7 +77,7 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
                     value={q.text}
                     onChange={e => onUpdate({ ...q, text: e.target.value })}
                     placeholder="Type your question here..."
-                    className="w-full text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground"
+                    className="w-full text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                 />
             </div>
 
@@ -87,7 +87,7 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
                         value={q.answer}
                         onChange={e => onUpdate({ ...q, answer: e.target.value })}
                         placeholder="Expected answer (optional)..."
-                        className="w-full text-sm bg-surface-subtle border border-dashed border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground italic"
+                        className="w-full text-sm bg-surface-subtle border border-dashed border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground placeholder:text-muted-foreground italic"
                     />
                 ) : (
                     <>
@@ -107,12 +107,12 @@ export function QuestionBlockEditor({ block, onUpdate, onRemove, publishAttempte
                                         value={choice.text}
                                         onChange={e => patchChoice(choice.id, { text: e.target.value })}
                                         placeholder={`Option ${ci + 1}`}
-                                        className="flex-1 text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 text-foreground placeholder:text-muted-foreground"
+                                        className="flex-1 text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground placeholder:text-muted-foreground"
                                     />
                                 )}
                                 {q.type === 'multiple_choice' && (
                                     <button type="button" onClick={() => removeChoice(choice.id)}
-                                        className="text-muted-foreground/50 hover:text-red-400 transition-colors flex-shrink-0">
+                                        className="text-muted-foreground/50 hover:text-error transition-colors flex-shrink-0">
                                         <X className="w-4 h-4" />
                                     </button>
                                 )}

@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { TenantForm } from './admin/TenantForm'
 import { PreviewPanel } from './admin/PreviewPanel'
 import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
+import { isValidTenantDomain, normalizeTenantDomain } from '@/lib/tenantDomainValidation'
 import { apiClient } from '../lib/api-client'
 import { toast } from 'sonner'
 
@@ -51,12 +52,16 @@ export function CreateTenantPage() {
         e.preventDefault()
         setIsLoading(true)
         try {
-            const normalizedDomain = domain.trim().toLowerCase()
+            const normalizedDomain = normalizeTenantDomain(domain)
             const normalizedAdminEmail = adminEmail.trim().toLowerCase()
             const isAdminEmailFormatValid = isValidEmail(normalizedAdminEmail)
             const adminEmailDomain = getEmailDomain(normalizedAdminEmail) ?? ''
             if (!normalizedDomain) {
                 toast.error('Domain is required.')
+                return
+            }
+            if (!isValidTenantDomain(normalizedDomain)) {
+                toast.error('Please provide a valid domain name.')
                 return
             }
             if (!normalizedAdminEmail || !isAdminEmailFormatValid) {
@@ -121,7 +126,7 @@ export function CreateTenantPage() {
     }
 
     return (
-        <div className="w-full bg-gradient-to-br from-gray-50 to-purple-50/30 overflow-y-auto">
+        <div className="w-full bg-gradient-to-br from-surface to-primary/5 overflow-y-auto">
             <div className="w-full max-w-8xl mx-auto p-2 sm:p-2 flex flex-col lg:flex-row items-start justify-center gap-8">
                 {/* Form section */}
                 <div className="flex-1 w-full">

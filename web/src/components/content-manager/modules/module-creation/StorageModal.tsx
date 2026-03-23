@@ -220,7 +220,7 @@ export function StorageModal({ isOpen, onClose, onImport, data }: StorageModalPr
                             type="button"
                             onClick={handleCopyPromptGuide}
                             title="Copy Prompt Guide (LLM Generation)"
-                            className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-[#7C3AED]/10 hover:border-[#7C3AED]/40 hover:text-[#A78BFA] transition-colors"
+                            className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
                         >
                             <Bot className="w-5 h-5" />
                         </button>
@@ -268,7 +268,7 @@ export function StorageModal({ isOpen, onClose, onImport, data }: StorageModalPr
                                     wrap="off"
                                     className="w-full h-40 bg-surface-subtle border border-border rounded-xl px-4 py-4 text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground overflow-auto whitespace-pre"
                                 />
-                                {importError && <p className="text-xs text-red-500 font-medium px-1">{importError}</p>}
+                                {importError && <p className="text-xs text-error font-medium px-1">{importError}</p>}
                             </div>
 
                             <button

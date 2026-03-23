@@ -9,7 +9,7 @@ type ComplianceHeaderProps = {
 
 export default function ComplianceHeader({ doc, step }: ComplianceHeaderProps) {
     return (
-        <div className="bg-gradient-to-r from-purple-800 to-purple-900 text-white px-6 py-4 flex items-center gap-3">
+        <div className="bg-primary text-white px-6 py-4 flex items-center gap-3">
             <ShieldCheck className="h-5 w-5" />
             <div className="flex-1">
                 <p className="text-sm uppercase tracking-wide text-white/80">Compliance Required</p>

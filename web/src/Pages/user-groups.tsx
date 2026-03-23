@@ -4,11 +4,7 @@ import UserGroupsHeader from "@/components/usergroups/userGroupsHeader";
 import UserGroupsGrid from "@/components/usergroups/userGroupsGrid";
 import UserGroupsTable from "@/components/usergroups/userGroupsTable";
 import ConfirmDeleteModal from "@/components/usergroups/ConfirmDeleteModal";
-import {
-  fetchGroups,
-  fetchGroupMembers,
-  deleteGroup,
-} from "@/services/userGroupsApi";
+import { userGroupsApi } from "@/services/userGroupsApi";
 import { Loader2 } from "lucide-react";
 
 export default function UserGroupsPage() {
@@ -33,20 +29,13 @@ export default function UserGroupsPage() {
   const loadData = async (targetRealm: string) => {
     setIsLoading(true);
     try {
-      const groupsRes = await fetchGroups(
-        targetRealm,
-        keycloak.token || undefined
-      );
+      const groupsRes = await userGroupsApi.getGroups(targetRealm);
       // Optionally fetch member counts to keep cards/table closer to previous UX
       const groupsWithCounts = await Promise.all(
         (groupsRes.groups || []).map(async (g) => {
           let memberCount = 0;
           try {
-            const membersRes = await fetchGroupMembers(
-              targetRealm,
-              g.id || "",
-              keycloak.token || undefined
-            );
+            const membersRes = await userGroupsApi.getGroupMembers(targetRealm, g.id || "");
             memberCount = (membersRes.members || []).length;
           } catch {
             memberCount = 0;
@@ -75,7 +64,7 @@ export default function UserGroupsPage() {
     if (!pendingDeleteId || !realm) return;
     setIsDeleting(true);
     try {
-      await deleteGroup(realm, pendingDeleteId, keycloak.token || undefined);
+      await userGroupsApi.deleteGroup(realm, pendingDeleteId);
       setPendingDeleteId(null);
       loadData(realm);
     } catch (err) {

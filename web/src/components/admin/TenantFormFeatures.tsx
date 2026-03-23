@@ -18,7 +18,7 @@ interface FeatureCardProps {
 function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: FeatureCardProps) {
     return (
         <motion.button
-            whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(124, 58, 237, 0.1)" }}
+            whileHover={{ y: -2, boxShadow: "0 10px 25px -5px rgba(var(--primary-rgb), 0.1)" }}
             whileTap={{ scale: 0.98 }}
             type="button"
             onClick={onToggle}
@@ -26,7 +26,7 @@ function FeatureCard({ title, description, icon, iconBg, enabled, onToggle }: Fe
                 flex flex-row items-center w-full text-left relative cursor-pointer group
                 p-4 rounded-2xl border-2 transition-all duration-300 ease-out
                 ${enabled
-                    ? 'border-primary bg-background shadow-xl shadow-purple-500/10'
+                    ? 'border-primary bg-background shadow-xl shadow-primary/10'
                     : 'border-border/40 bg-surface-subtle/50 hover:border-border hover:bg-background'
                 }
             `}
@@ -84,8 +84,8 @@ export function TenantFormFeatures({
     return (
         <div className="w-full bg-background p-2 rounded-2xl h-full flex flex-col">
             <div className="flex items-center gap-2  px-1">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow shadow-purple-200/50">
-                    <Plug className="w-4 h-4 text-white" />
+                <div className="p-2 bg-primary rounded-lg shadow shadow-primary/20">
+                    <Plug className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <div>
                     <h3 className="text-md font-bold text-foreground/90">Feature Modules</h3>
@@ -97,8 +97,8 @@ export function TenantFormFeatures({
                 <FeatureCard
                     title="Phishing & Simulation"
                     description="Simulation engine with dynamic email & landing page templates."
-                    icon={<Shield className="w-6 h-6 text-orange-600" />}
-                    iconBg="bg-orange-50 border border-orange-100/50"
+                    icon={<Shield className="w-6 h-6 text-warning" />}
+                    iconBg="bg-warning/10 border border-warning/20"
                     enabled={features.phishing}
                     onToggle={() => setFeatures(f => ({ ...f, phishing: !f.phishing }))}
                 />
@@ -106,8 +106,8 @@ export function TenantFormFeatures({
                 <FeatureCard
                     title="LMS & Compliance"
                     description="Management system for training courses and progress tracking."
-                    icon={<BookOpen className="w-6 h-6 text-blue-600" />}
-                    iconBg="bg-blue-50 border border-blue-100/50"
+                    icon={<BookOpen className="w-6 h-6 text-info" />}
+                    iconBg="bg-info/10 border border-info/20"
                     enabled={features.lms}
                     onToggle={() => setFeatures(f => ({ ...f, lms: !f.lms }))}
                 />

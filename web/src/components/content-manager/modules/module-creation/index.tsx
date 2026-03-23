@@ -213,7 +213,7 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
                         <button
                             type="button"
                             onClick={handleBack}
-                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#A78BFA] transition-colors"
+                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                             aria-label="Back to Modules"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -234,7 +234,7 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
                         type="button"
                         onClick={() => setStorageModalOpen(true)}
                         title="Import / Export JSON"
-                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-[#7C3AED]/10 hover:border-[#7C3AED]/40 hover:text-[#A78BFA] transition-colors"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
                     >
                         <Upload className="w-4.5 h-4.5" />
                     </button>
@@ -243,7 +243,7 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
                         type="button"
                         onClick={togglePreview}
                         title="Preview Module"
-                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-[#7C3AED]/10 hover:border-[#7C3AED]/40 hover:text-[#A78BFA] transition-colors"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
                     >
                         <Eye className="w-4.5 h-4.5" />
                     </button>
@@ -252,7 +252,7 @@ function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleI
                         type="button"
                         disabled={actionStatus === 'loading'}
                         onClick={handleSave}
-                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         Save
                         {(actionStatus === 'loading' || saveStatus === 'saving') && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

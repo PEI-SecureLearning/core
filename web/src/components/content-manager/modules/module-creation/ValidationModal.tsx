@@ -32,8 +32,8 @@ export function ValidationModal({ isOpen, onClose, missingFields }: ValidationMo
                     >
                         {/* Body */}
                         <div className="flex items-start gap-4 p-6 pb-4">
-                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                                <AlertTriangle className="w-6 h-6 text-amber-600" />
+                            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                                <AlertTriangle className="w-6 h-6 text-warning" />
                             </div>
 
                             <div className="flex-1 min-w-0">
@@ -47,7 +47,7 @@ export function ValidationModal({ isOpen, onClose, missingFields }: ValidationMo
                                 <ul className="mt-4 space-y-2">
                                     {missingFields.map((field) => (
                                         <li key={field} className="flex items-center gap-2.5 text-sm text-foreground/80">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" />
                                             {field}
                                         </li>
                                     ))}

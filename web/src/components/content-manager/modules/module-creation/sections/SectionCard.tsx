@@ -159,7 +159,7 @@ function SectionCardInner({ section, index, onUpdate, onRemove, autoFocus, isSel
 
     let cardBorder = `${theme.border} ${theme.borderHover}`
     if (isSelected) cardBorder = theme.borderActive
-    else if (publishAttempted && titleMissing) cardBorder = 'border border-amber-400 hover:border-amber-500'
+    else if (publishAttempted && titleMissing) cardBorder = 'border border-warning/50 hover:border-warning'
 
     return (
         <div
@@ -186,7 +186,7 @@ function SectionCardInner({ section, index, onUpdate, onRemove, autoFocus, isSel
                 {(() => {
                     let badgeCls = theme.badge
                     if (isSelected) badgeCls = theme.badgeActive
-                    else if (publishAttempted && titleMissing) badgeCls = 'text-amber-600 bg-amber-50 border border-amber-300'
+                    else if (publishAttempted && titleMissing) badgeCls = 'text-warning bg-warning/10 border border-warning/30'
                     return (
                         <span className={`text-[11px] font-bold rounded px-1.5 py-0.5 flex-shrink-0 tabular-nums relative z-10 transition-colors select-none ${badgeCls}`}>
                             {index + 1}
@@ -231,7 +231,7 @@ function SectionCardInner({ section, index, onUpdate, onRemove, autoFocus, isSel
                 <button
                     type="button"
                     onClick={e => { e.stopPropagation(); onRemove() }}
-                    className="text-muted-foreground/50 hover:text-red-400 transition-colors flex-shrink-0 relative z-10"
+                    className="text-muted-foreground/50 hover:text-error transition-colors flex-shrink-0 relative z-10"
                 >
                     <Trash2 className="w-4 h-4" />
                 </button>

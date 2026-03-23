@@ -6,7 +6,13 @@ from src.services.platform_admin.logo_handler import logo_handler
 from src.services.platform_admin.event_handler import event_handler
 
 
-class PlatformAdminService(base_handler, realm_handler, user_handler, group_handler, logo_handler, event_handler):
+class PlatformAdminService(
+    realm_handler,
+    user_handler,
+    group_handler,
+    logo_handler,
+    event_handler,
+):
     """Unified platform admin service composing all domain handlers."""
 
     def __init__(self):

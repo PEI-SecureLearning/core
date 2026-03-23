@@ -1,30 +1,30 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, BarChart3 } from "lucide-react";
 
 function getResultConfig(result: string) {
   switch (result) {
     case "Phished":
       return {
-        color: "text-rose-600",
-        bg: "bg-rose-500/10",
-        hoverBg: "hover:bg-rose-500/15",
+        color: "text-error",
+        bg: "bg-error/10",
+        hoverBg: "hover:bg-error/15",
         label: "Phished",
-        dot: "bg-rose-500"
+        dot: "bg-error"
       };
     case "Ignored":
       return {
-        color: "text-amber-600",
-        bg: "bg-amber-500/10",
-        hoverBg: "hover:bg-amber-500/15",
+        color: "text-warning",
+        bg: "bg-warning/10",
+        hoverBg: "hover:bg-warning/15",
         label: "Ignored",
-        dot: "bg-amber-400"
+        dot: "bg-warning"
       };
     case "Reported":
       return {
-        color: "text-emerald-600",
-        bg: "bg-emerald-500/10",
-        hoverBg: "hover:bg-emerald-500/15",
+        color: "text-success",
+        bg: "bg-success/10",
+        hoverBg: "hover:bg-success/15",
         label: "Reported",
-        dot: "bg-emerald-500"
+        dot: "bg-success"
       };
     default:
       return {
@@ -89,8 +89,8 @@ export default function RecentCampaigns() {
   return (
     <div
       className="flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
-      shadow-lg shadow-slate-300/50 p-6
-      hover:shadow-2xl hover:shadow-purple-200/60
+      shadow-lg shadow-muted/50 p-6
+      hover:shadow-2xl hover:shadow-primary/25
       transition-all duration-500 group"
     >
       <style>{`
@@ -105,6 +105,9 @@ export default function RecentCampaigns() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
         <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary shadow-lg shadow-primary/25 shrink-0">
+            <BarChart3 size={18} className="text-primary-foreground sm:w-5 sm:h-5" />
+          </div>
           <div>
             <h3 className="text-lg font-semibold text-foreground">
               Recent Campaigns
@@ -117,17 +120,17 @@ export default function RecentCampaigns() {
 
         {/* Quick Stats */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full">
+          <span className="text-[11px] font-semibold text-error bg-error/10 border border-error/20 px-2.5 py-1 rounded-full">
             {phishedCount} phished
           </span>
-          <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+          <span className="text-[11px] font-semibold text-success bg-success/10 border border-success/20 px-2.5 py-1 rounded-full">
             {reportedCount} reported
           </span>
         </div>
       </div>
 
       {/* Campaigns List */}
-      <div className="space-y-2.5 max-h-56 overflow-y-auto purple-scrollbar overflow-x-hidden">
+      <div className="space-y-2.5 max-h-56 overflow-y-auto themed-scrollbar overflow-x-hidden">
         {campaigns.map((campaign) => {
           const config = getResultConfig(campaign.result);
 
@@ -136,9 +139,9 @@ export default function RecentCampaigns() {
               key={campaign.id}
               href={campaign.detailsLink}
               className="campaign-row group/row flex items-center justify-between p-3.5 rounded-xl
-                bg-surface-subtle/60 border border-border/40/60
-                hover:border-primary/30/70 hover:bg-primary/10/40
-                hover:shadow-md hover:shadow-purple-100/60"
+                bg-surface-subtle/60 border border-border/40
+                hover:border-primary/30 hover:bg-primary/5
+                hover:shadow-md hover:shadow-primary/10"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div>

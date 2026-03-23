@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import RequiredAsterisk from '@/components/shared/RequiredAsterisk'
 import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
+import { isValidTenantDomain, normalizeTenantDomain } from '@/lib/tenantDomainValidation'
 
 interface TenantFormOrganizationProps {
     realmName: string
@@ -18,8 +19,9 @@ export function TenantFormOrganization({
     adminEmail, setAdminEmail
 }: Readonly<TenantFormOrganizationProps>) {
 
-    const normalizedDomain = domain.trim().toLowerCase().replace(/^@/, '').replace(/^\*\./, '')
+    const normalizedDomain = normalizeTenantDomain(domain)
     const normalizedEmail = adminEmail.trim().toLowerCase()
+    const isDomainFormatValid = isValidTenantDomain(normalizedDomain)
     const isAdminEmailFormatValid = !!normalizedEmail && isValidEmail(normalizedEmail)
     const adminEmailDomain = getEmailDomain(normalizedEmail) ?? ''
     const isAdminEmailDomainMatching =
@@ -48,9 +50,14 @@ export function TenantFormOrganization({
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
                     className="h-10 bg-surface-subtle border-border"
-                    aria-invalid={!normalizedDomain}
+                    aria-invalid={!!domain.trim() && !isDomainFormatValid}
                     required
                 />
+                {!!domain.trim() && !isDomainFormatValid && (
+                    <p className="mt-1 text-xs text-destructive">
+                        Please enter a valid domain name.
+                    </p>
+                )}
             </div>
 
             <div>

@@ -10,12 +10,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql
+      - db_runtime_data:/var/lib/postgresql
+      - db_data:/var/lib/postgresql/data
       - ../db/init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -30,6 +31,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+      - mongo_configdb_data:/data/configdb
       - ../mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     healthcheck:
       test:
@@ -46,7 +48,7 @@ services:
           "--eval",
           "db.adminCommand('ping')"
         ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -91,7 +93,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -136,6 +138,9 @@ services:
       CLIENT_SECRET: ${CLIENT_SECRET}
       WEB_URL: ${WEB_URL}
       API_URL: ${API_URL}
+      JAVA_OPTS_APPEND: "-Dkeycloak.migration.strategy=IGNORE_EXISTING"
+      KC_DB_POOL_INITIAL_SIZE: 5
+      KC_DB_POOL_MAX_SIZE: 10
 
     healthcheck:
       test:
@@ -159,6 +164,7 @@ services:
       - ../keycloak/themes:/opt/keycloak/themes:ro
       - ../keycloak/imports:/opt/keycloak/data/import:ro
       - ../keycloak/providers:/opt/keycloak/providers:ro
+      - keycloak_data:/opt/keycloak/data
 
   api:
     build:
@@ -229,14 +235,17 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ../web/src:/app/src:ro
-      - ../web/public:/app/public:ro
+      - ../web:/app:rw
+      - /app/node_modules
     depends_on:
       api:
         condition: service_healthy
 
 volumes:
   db_data:
+  db_runtime_data:
   rabbitmq_data:
   mongo_data:
+  mongo_configdb_data:
   garage_data:
+  keycloak_data:
