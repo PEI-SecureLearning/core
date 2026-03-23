@@ -30,12 +30,12 @@ export default function RiskTrendChart() {
   const trend = latestValue && previousValue ? latestValue - previousValue : 0;
 
   return (
-    <div className="w-full bg-background/60 backdrop-blur-xl rounded-2xl border-2 border-border/40 shadow-lg shadow-slate-300/50 p-6 hover:shadow-xl transition-all duration-300">
+    <div className="w-full bg-background/60 backdrop-blur-xl rounded-2xl border-2 border-border/40 shadow-lg shadow-muted/50 p-6 hover:shadow-xl transition-all duration-300">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 shadow-lg shadow-purple-500/25">
-            <TrendingUp size={20} className="text-white" />
+          <div className="p-2.5 rounded-xl bg-primary shadow-lg shadow-primary/25">
+            <TrendingUp size={20} className="text-primary-foreground" />
           </div>
           <div className="min-w-0">
             <h3 className="text-lg font-semibold text-foreground">
@@ -49,10 +49,10 @@ export default function RiskTrendChart() {
 
         {/* Trend Indicator */}
         <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${trend >= 0 ? "bg-rose-500/10" : "bg-emerald-500/10"}`}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${trend >= 0 ? "bg-error/10" : "bg-success/10"}`}
         >
           <span
-            className={`text-[13px] font-semibold ${trend >= 0 ? "text-rose-600" : "text-emerald-600"}`}
+            className={`text-[13px] font-semibold ${trend >= 0 ? "text-error" : "text-success"}`}
           >
             {trend >= 0 ? "+" : ""}
             {trend}%
@@ -72,49 +72,49 @@ export default function RiskTrendChart() {
           >
             <defs>
               <linearGradient id="riskGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.05} />
+                <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.05} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#e2e8f0"
+              stroke="var(--border)"
               vertical={false}
             />
             <XAxis
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#64748b", fontSize: 12, fontWeight: 500 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 12, fontWeight: 500 }}
               dy={10}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#64748b", fontSize: 12 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
               ticks={[0, 25, 50, 75, 100]}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "rgba(255, 255, 255, 0.95)",
+                backgroundColor: "var(--background)",
                 backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255, 255, 255, 0.6)",
+                border: "1px solid var(--border)",
                 borderRadius: "12px",
                 boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1)",
                 padding: "12px 16px"
               }}
               labelStyle={{
-                color: "#1e293b",
+                color: "var(--foreground)",
                 fontWeight: 600,
                 marginBottom: "4px"
               }}
-              itemStyle={{ color: "#8b5cf6" }}
+              itemStyle={{ color: "var(--primary)" }}
               formatter={(value: number) => [`${value}%`, "Risk Level"]}
             />
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#8b5cf6"
+              stroke="var(--primary)"
               strokeWidth={3}
               fill="url(#riskGradient)"
             />

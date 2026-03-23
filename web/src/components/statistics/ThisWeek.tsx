@@ -10,8 +10,8 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
 
   return (
     <div
-      className="flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary shadow-lg shadow-slate-300/50 p-5
-        hover:shadow-2xl hover:shadow-purple-200/60 transition-all duration-500 hover:-translate-y-1 group"
+      className="flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary shadow-lg shadow-primary/5 p-5
+        hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1 group"
       style={{ perspective: "800px" }}
     >
       <style>{`
@@ -20,8 +20,8 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           100% { background-position: 200% center; }
         }
         @keyframes pulseGlow {
-          0%, 100% { text-shadow: 0 0 0px rgba(139, 92, 246, 0); }
-          50% { text-shadow: 0 0 24px rgba(139, 92, 246, 0.4); }
+          0%, 100% { text-shadow: 0 0 0px var(--primary); opacity: 0; }
+          50% { text-shadow: 0 0 24px var(--primary); opacity: 0.4; }
         }
         @keyframes dividerPulse {
           0%, 100% { opacity: 0.6; transform: scaleY(1); }
@@ -51,7 +51,7 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           </h3>
         </div>
         <span
-          className="text-[11px] font-medium text-primary/90 bg-primary/10 border border-purple-100 px-2.5 py-1 rounded-full
+          className="text-[11px] font-medium text-primary/90 bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full
           group-hover:bg-primary/20 transition-colors duration-300"
         >
           Active
@@ -60,8 +60,8 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
 
       {/* Stats Display */}
       <div
-        className="flex items-center justify-center gap-0 bg-gradient-to-br from-purple-50/80 to-indigo-50/50 rounded-2xl
-        border border-purple-100/60 group-hover:border-primary/30/80 transition-all duration-300 overflow-hidden"
+        className="flex items-center justify-center gap-0 bg-gradient-to-br from-primary/5 to-accent-secondary/5 rounded-2xl
+        border border-primary/10 group-hover:border-primary/30 transition-all duration-300 overflow-hidden"
       >
         {/* Hours */}
         <div
@@ -102,7 +102,7 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
 
         {/* Divider */}
         <div className="flex flex-col items-center py-4">
-          <div className="h-[80px] w-[2px] rounded-full bg-gradient-to-b from-transparent via-purple-400 to-transparent divider-animated" />
+          <div className="h-[80px] w-[2px] rounded-full bg-gradient-to-b from-transparent via-primary/40 to-transparent divider-animated" />
         </div>
 
         {/* Modules */}
@@ -113,12 +113,12 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           onMouseLeave={() => setHovered(null)}
         >
           <div
-            className={`absolute inset-0 bg-indigo-500/5 rounded-r-2xl transition-opacity duration-300 ${hovered === "modules" ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 bg-accent-secondary/5 rounded-r-2xl transition-opacity duration-300 ${hovered === "modules" ? "opacity-100" : "opacity-0"}`}
           />
 
           <div className="flex items-center gap-1.5 mb-1">
             <span
-              className={`text-[11px] font-medium uppercase tracking-wider transition-colors duration-300 ${hovered === "modules" ? "text-indigo-500" : "text-muted-foreground/70"}`}
+              className={`text-[11px] font-medium uppercase tracking-wider transition-colors duration-300 ${hovered === "modules" ? "text-accent-secondary" : "text-muted-foreground/70"}`}
             >
               Modules
             </span>
@@ -127,7 +127,7 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           <span
             className={`text-5xl sm:text-7xl font-bold leading-none transition-all duration-300 ${
               hovered === "modules"
-                ? "text-indigo-600 scale-110 stat-number-hover"
+                ? "text-accent-secondary scale-110 stat-number-hover"
                 : "text-muted-foreground"
             }`}
             style={{ fontVariantNumeric: "tabular-nums" }}
@@ -136,7 +136,7 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
           </span>
 
           <span
-            className={`text-[12px] mt-1.5 font-medium transition-colors duration-300 ${hovered === "modules" ? "text-indigo-400" : "text-muted-foreground/70"}`}
+            className={`text-[12px] mt-1.5 font-medium transition-colors duration-300 ${hovered === "modules" ? "text-accent-secondary/80" : "text-muted-foreground/70"}`}
           >
             completed
           </span>
@@ -146,8 +146,8 @@ const ThisWeek: React.FC<ThisWeekProps> = ({ hours, modules }) => {
       {/* Bottom shimmer bar */}
       <div className="mt-3 h-1 rounded-full overflow-hidden bg-muted">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-purple-400 via-indigo-400 to-purple-400
-            group-hover:from-purple-500 group-hover:via-indigo-500 group-hover:to-purple-500
+          className="h-full rounded-full bg-gradient-to-r from-primary/60 via-accent-secondary/60 to-primary/60
+            group-hover:from-primary group-hover:via-accent-secondary group-hover:to-primary
             transition-all duration-500"
           style={{
             backgroundSize: "200% auto",

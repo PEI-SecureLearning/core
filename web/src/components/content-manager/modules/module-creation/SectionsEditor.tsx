@@ -293,12 +293,12 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                         <div className="w-px h-4 bg-border shrink-0" />
                         {view === 'module' ? (
                             <button type="button" onClick={addSection}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25">
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20">
                                 <Plus className="w-3.5 h-3.5" /> Add Section
                             </button>
                         ) : (
                             <button type="button" onClick={addRefreshSection}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold bg-accent-secondary text-primary-foreground hover:bg-accent-secondary/90 transition-colors shadow-sm shadow-accent-secondary/20">
                                 <Plus className="w-3.5 h-3.5" /> Add Section
                             </button>
                         )}
@@ -335,7 +335,7 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                                             <p className="text-sm font-medium">No sections yet</p>
                                             <p className="text-xs text-muted-foreground/50">Add a section to start building your module</p>
                                             <button type="button" onClick={addSection}
-                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25">
+                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm shadow-primary/20">
                                                 <Plus className="w-4 h-4" /> Add First Section
                                             </button>
                                         </motion.div>
@@ -370,7 +370,7 @@ export function SectionsEditor({ data, onChange, publishAttempted, getToken }: {
                                             <p className="text-sm font-medium">No refresh sections yet</p>
                                             <p className="text-xs text-muted-foreground/50">Shorter content that reinforces the main module</p>
                                             <button type="button" onClick={addRefreshSection}
-                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm shadow-teal-200">
+                                                className="mt-2 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-accent-secondary text-primary-foreground hover:bg-accent-secondary/90 transition-colors shadow-sm shadow-accent-secondary/20">
                                                 <Plus className="w-4 h-4" /> Add First Refresh Section
                                             </button>
                                         </motion.div>

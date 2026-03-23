@@ -47,8 +47,8 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken, pu
 
     return (
         <>
-            <div className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-amber-400' : 'border-border'
-                }`}>
+            <div className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-warning' : 'border-border'
+                 }`}>
                 <div className="flex items-center gap-1 px-3 py-1.5 bg-surface-subtle border-b border-border">
                     <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1 bg-muted-foreground/10 text-muted-foreground">
                         Media
@@ -70,7 +70,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken, pu
                     </div>
                     <button type="button" onClick={onRemove}
                         title="Remove block"
-                        className="ml-auto p-1 text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
+                        className="ml-auto p-1 text-muted-foreground/40 hover:text-error hover:bg-error/10 rounded-md transition-all">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -83,7 +83,7 @@ export function RichContentBlockEditor({ block, onUpdate, onRemove, getToken, pu
 
                         {block.contentId ? (
                             /* ── Platform file chosen — show media preview with overlay controls ── */
-                            <div className="relative rounded-lg overflow-hidden border border-violet-200 bg-surface-subtle group/preview">
+                            <div className="relative rounded-lg overflow-hidden border border-primary/20 bg-surface-subtle group/preview">
                                 {/* Media preview */}
                                 {block.mediaType === 'image' && block.url && (
                                     <img src={block.url} alt={block.caption || 'preview'}

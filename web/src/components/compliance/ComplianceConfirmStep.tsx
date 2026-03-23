@@ -19,8 +19,8 @@ export default function ComplianceConfirmStep({
     return (
         <div className="space-y-3">
             {/* Passed score banner */}
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                <div className="flex items-center gap-2 text-green-800">
+            <div className="rounded-lg border border-success/20 bg-success/10 p-4">
+                <div className="flex items-center gap-2 text-success">
                     <CheckCircle2 className="h-5 w-5" />
                     <div>
                         <p className="font-semibold">Quiz passed</p>
@@ -34,8 +34,8 @@ export default function ComplianceConfirmStep({
                 type="button"
                 onClick={() => onAttestChange(!attest)}
                 className={`w-full text-left rounded-lg p-4 flex items-start gap-4 transition-all duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${attest
-                    ? 'border-primary bg-primary/10/60 shadow-sm'
-                    : 'border-border bg-background hover:border-primary/50 hover:bg-primary/10/30'
+                    ? 'border-primary bg-primary/10 shadow-sm'
+                    : 'border-border bg-background hover:border-primary/50 hover:bg-primary/5'
                     }`}
             >
                 {/* Custom checkbox indicator */}

@@ -191,7 +191,7 @@ export function BulkImportModal({
                     <button
                         onClick={handleBulkCreate}
                         disabled={isBulkLoading || bulkUsers.every((u) => u.status !== "pending")}
-                        className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+                        className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/25"
                     >
                         {isBulkLoading ? (
                             <span className="flex items-center gap-2">

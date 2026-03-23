@@ -184,7 +184,7 @@ function UsersManagement() {
         }}
       />
 
-      <div className="flex-1 overflow-y-auto px-4 mt-4 pb-6 purple-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 mt-4 pb-6 themed-scrollbar">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-primary/90" />

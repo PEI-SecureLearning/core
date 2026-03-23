@@ -121,7 +121,7 @@ export function CreateTenantPage() {
     }
 
     return (
-        <div className="w-full bg-gradient-to-br from-gray-50 to-purple-50/30 overflow-y-auto">
+        <div className="w-full bg-gradient-to-br from-surface to-primary/5 overflow-y-auto">
             <div className="w-full max-w-8xl mx-auto p-2 sm:p-2 flex flex-col lg:flex-row items-start justify-center gap-8">
                 {/* Form section */}
                 <div className="flex-1 w-full">

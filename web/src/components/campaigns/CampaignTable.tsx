@@ -26,20 +26,20 @@ const statusConfig: Record<
 > = {
   active: {
     label: "Active",
-    color: "text-green-700",
-    bg: "bg-green-100",
+    color: "text-success",
+    bg: "bg-success/10",
     icon: Play
   },
   completed: {
     label: "Completed",
-    color: "text-blue-700",
-    bg: "bg-blue-100",
+    color: "text-primary",
+    bg: "bg-primary/10",
     icon: CheckCircle
   },
   scheduled: {
     label: "Scheduled",
-    color: "text-amber-700",
-    bg: "bg-amber-100",
+    color: "text-warning",
+    bg: "bg-warning/10",
     icon: Clock
   },
   paused: {
@@ -50,8 +50,8 @@ const statusConfig: Record<
   },
   failed: {
     label: "Failed",
-    color: "text-red-700",
-    bg: "bg-red-100",
+    color: "text-error",
+    bg: "bg-error/10",
     icon: XCircle
   }
 };
@@ -122,7 +122,7 @@ function CampaignTableRow({ campaign }: { readonly campaign: Campaign }) {
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">
-          <Globe size={14} className="text-amber-500" />
+          <Globe size={14} className="text-warning" />
           <span className="font-medium text-foreground">
             {campaign.stats.clicked}
           </span>

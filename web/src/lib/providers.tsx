@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             attribute="class"
             defaultTheme="system"
             enableSystem
-            themes={['light', 'dark', 'deuteranopia', 'protanopia', 'system']}
+            themes={['light', 'dark', 'deuteranopia', 'protanopia', 'tritanopia', 'system']}
         >
             <NuqsAdapter>
                 <QueryClientProvider client={queryClient}>
