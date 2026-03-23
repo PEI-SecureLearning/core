@@ -9,12 +9,12 @@ import { UserManagementHeader } from "../components/admin/tenant-org-manager/Use
 import { NewUserModal } from "../components/admin/tenant-org-manager/NewUserModal";
 import { BulkImportModal } from "../components/admin/tenant-org-manager/BulkImportModal";
 import { mapRole } from "../components/admin/tenant-org-manager/utils";
+import { tenantOrgManagerApi } from "../services/tenantOrgManagerApi";
+import { userGroupsApi } from "../services/userGroupsApi";
 
 export const Route = createFileRoute("/tenants-org-manager")({
   component: UsersManagement,
 });
-
-const API_BASE = import.meta.env.VITE_API_URL;
 
 function UsersManagement() {
   const { keycloak } = useKeycloak();
@@ -43,18 +43,8 @@ function UsersManagement() {
   const fetchUsers = async (targetRealm: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(
-        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/users`,
-        {
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-          },
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data.users || []);
-      }
+      const data = await tenantOrgManagerApi.getUsers(targetRealm);
+      setUsers(data.users || []);
     } catch (err) {
       console.error("Failed to fetch users", err);
     } finally {
@@ -64,18 +54,8 @@ function UsersManagement() {
 
   const fetchGroups = async (targetRealm: string) => {
     try {
-      const res = await fetch(
-        `${API_BASE}/realms/${encodeURIComponent(targetRealm)}/groups`,
-        {
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-          },
-        }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setGroups(data.groups || []);
-      }
+      const data = await userGroupsApi.getGroups(targetRealm);
+      setGroups(data.groups || []);
     } catch (err) {
       console.error("Failed to fetch groups", err);
     }
@@ -95,16 +75,7 @@ function UsersManagement() {
 
     setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
-      const res = await fetch(
-        `${API_BASE}/${encodeURIComponent(realm)}/users/${encodeURIComponent(id)}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-          },
-        }
-      );
-      if (!res.ok) throw new Error("Failed to delete user");
+      await tenantOrgManagerApi.deleteUser(realm, id);
       setUsers((prev) => prev.filter((u) => (u.id || u.username) !== id));
     } catch (err) {
       console.error("Failed to delete user", err);
@@ -121,7 +92,7 @@ function UsersManagement() {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await fetch(`${API_BASE}/org-manager/upload`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/org-manager/upload`, {
         method: "POST",
         headers: {
           Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
@@ -184,7 +155,7 @@ function UsersManagement() {
         }}
       />
 
-      <div className="flex-1 overflow-y-auto px-4 mt-4 pb-6 purple-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 mt-4 pb-6 themed-scrollbar">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-primary/90" />

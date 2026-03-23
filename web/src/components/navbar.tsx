@@ -16,7 +16,7 @@ export function Logo() {
         <span className="font-bold text-foreground text-sm sm:text-base lg:text-2xl z-10 translate-y-3 -translate-x-2">
           Secure
         </span>
-        <span className="font-bold text-sm sm:text-base lg:text-xl text-primary z-10 translate-x-3">
+        <span className="font-bold text-sm sm:text-base lg:text-xl z-10 translate-x-3" style={{ color: '#7C3AED' }}>
           Learning
         </span>
       </div>
@@ -58,7 +58,7 @@ export function Navbar() {
   );
 
   return (
-    <nav className="h-[8%] py-2 w-full border-b border-border bg-background">
+    <nav className="h-[8%] py-2 w-full border-b border-sidebar-border bg-sidebar transition-colors duration-300">
       <div className="flex flex-row justify-between h-full mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex-1 flex items-center justify-between gap-2 lg:gap-4">
           {/* Logo/Brand with Breadcrumb */}
@@ -78,7 +78,7 @@ export function Navbar() {
                         {!isLast ? (
                           <Link
                             to={path}
-                            className="text-foreground hover:text-foreground/80 font-medium transition-colors truncate"
+                            className="text-sidebar-foreground hover:text-primary font-medium transition-colors truncate"
                           >
                             {part}
                           </Link>
@@ -102,7 +102,7 @@ export function Navbar() {
 
           {/* User Profile & Logout */}
           <div className="flex items-center gap-2">
-            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-muted transition-colors shrink-0 cursor-pointer">
+            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors shrink-0 cursor-pointer">
               {/* User info */}
               <div className="flex flex-col items-end">
                 <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
@@ -128,7 +128,7 @@ export function Navbar() {
 
             <button
               onClick={() => handleLogout()}
-              className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-md transition-colors cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-error hover:bg-error/10 dark:hover:bg-error/20 rounded-md transition-colors cursor-pointer"
               title="Sign out"
             >
               <LogOut className="h-5 w-5" />

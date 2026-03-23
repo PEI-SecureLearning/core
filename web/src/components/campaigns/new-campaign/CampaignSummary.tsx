@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { useCampaign } from "@/components/campaigns/new-campaign/CampaignContext";
 import { fetchPhishingKits } from "@/services/phishingKitsApi";
 import { fetchSendingProfiles } from "@/services/sendingProfilesApi";
-import { fetchGroupMembers, fetchGroups } from "@/services/userGroupsApi";
+import { userGroupsApi } from "@/services/userGroupsApi";
 import type { PhishingKitDisplayInfo } from "@/types/phishingKit";
 import type { SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
@@ -178,7 +178,7 @@ export default function CampaignSummary() {
             }
 
             try {
-                const response = await fetchGroups(realm, keycloak.token || undefined);
+                const response = await userGroupsApi.getGroups(realm);
                 if (!cancelled) {
                     const groups = (response.groups || [])
                         .filter((group) => !!group.id && !!group.name)
@@ -214,7 +214,7 @@ export default function CampaignSummary() {
         try {
             const membersPerGroup = await Promise.all(
                 data.user_group_ids.map((groupId) =>
-                    fetchGroupMembers(realm, groupId, keycloak.token || undefined)
+                    userGroupsApi.getGroupMembers(realm, groupId)
                 )
             );
 

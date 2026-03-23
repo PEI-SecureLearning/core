@@ -34,7 +34,7 @@ export function SectionTitleEditor({ section, onUpdate, onStopEdit, titleMissing
                     placeholder="Section title..."
                     style={{ minWidth: '10ch' }}
                     className={`text-sm font-semibold text-foreground bg-surface rounded-md px-2 py-0.5 focus:outline-none w-full ${titleMissing
-                        ? 'border border-amber-400 focus:ring-amber-300/40'
+                        ? 'border border-warning focus:ring-warning/40'
                         : `border ${theme.inputBorder} ${theme.inputRing}`
                         }`}
                 />
@@ -53,7 +53,7 @@ export function SectionTitleEditor({ section, onUpdate, onStopEdit, titleMissing
         >
             {(() => {
                 let textCls = 'text-muted-foreground'
-                if (titleMissing) textCls = 'text-amber-500'
+                if (titleMissing) textCls = 'text-warning'
                 else if (section.title) textCls = 'text-foreground'
                 return (
                     <span className={`text-sm font-semibold truncate ${textCls}`}>
@@ -62,7 +62,7 @@ export function SectionTitleEditor({ section, onUpdate, onStopEdit, titleMissing
                 )
             })()}
             {titleMissing
-                ? <AlertCircle className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                ? <AlertCircle className="w-3 h-3 text-warning flex-shrink-0" />
                 : <Pencil className={`w-3 h-3 text-muted-foreground/50 ${theme.pencil} transition-colors flex-shrink-0`} />
             }
         </button>

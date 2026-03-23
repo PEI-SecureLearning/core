@@ -83,7 +83,7 @@ export default function CourseList({
     useEffect(() => {
         let cancelled = false;
         if (!keycloak.token) return;
-        
+
         setLoading(true);
         setError(null);
 

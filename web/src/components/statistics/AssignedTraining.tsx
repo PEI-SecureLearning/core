@@ -15,7 +15,7 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const [stats, setStats] = useState({ assigned: 0, total: 0 });
   const [courseList, setCourseList] = useState<{ name: string; done: boolean; href: string }[]>([]);
 
@@ -40,7 +40,7 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
         });
 
         const completedCount = mapped.filter(c => c.done).length;
-        
+
         setStats({ assigned: completedCount, total: mapped.length });
         setCourseList(mapped);
       } catch (err) {
@@ -206,7 +206,7 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
             {/* Mini progress bar in modal */}
             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mb-5">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-700"
+                className="h-full rounded-full bg-primary transition-all duration-700"
                 style={{ width: `${completionRate}%` }}
               />
             </div>
@@ -214,8 +214,8 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
             <div className="space-y-2 max-h-72 overflow-y-auto purple-scrollbar">
               {courseList.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground/50">
-                   <BookOpen className="w-8 h-8 opacity-20 mb-2" />
-                   <p className="text-sm italic">No courses assigned yet</p>
+                  <BookOpen className="w-8 h-8 opacity-20 mb-2" />
+                  <p className="text-sm italic">No courses assigned yet</p>
                 </div>
               ) : (
                 courseList.map((course, idx) => (
@@ -254,10 +254,10 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
 
             <button
               onClick={() => setShowModal(false)}
-              className="w-full mt-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl
-                font-semibold text-[14px] hover:from-purple-700 hover:to-violet-700
-                transition-all duration-200 shadow-lg shadow-purple-500/25
-                hover:shadow-purple-500/40 hover:-translate-y-0.5 cursor-pointer"
+              className="w-full mt-5 py-2.5 bg-primary text-primary-foreground rounded-xl
+                font-semibold text-[14px] hover:bg-primary/90
+                transition-all duration-200 shadow-lg shadow-primary/25
+                hover:shadow-primary/40 hover:-translate-y-0.5 cursor-pointer"
             >
               Close
             </button>

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 class EmailSendingStatus(StrEnum):
     SCHEDULED = "scheduled"
+    QUEUED = "queued"
     SENT = "sent"
     OPENED = "opened"
     CLICKED = "clicked"

@@ -9,10 +9,13 @@ from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 
 
+from src.core.settings import settings
+
+
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-AUTH_SERVER_URL = os.getenv("KEYCLOAK_URL")
-KEYCLOAK_ISSUER_URL = os.getenv("KEYCLOAK_ISSUER_URL", AUTH_SERVER_URL)
+AUTH_SERVER_URL = settings.KEYCLOAK_URL
+KEYCLOAK_ISSUER_URL = settings.KEYCLOAK_ISSUER_URL or AUTH_SERVER_URL
 RESOURCE_SERVER_ID = "api"
 _JWKS_CLIENTS: dict[str, PyJWKClient] = {}
 

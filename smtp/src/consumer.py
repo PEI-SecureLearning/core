@@ -48,6 +48,15 @@ class RabbitMQConsumer:
             data = json.loads(body)
             email_message = EmailMessage(**data)
             self.email_sender.send(email_message)
+
+            tracking_msg = json.dumps({"action": "sent", "tracking_id": email_message.tracking_id})
+            if self._channel and self._channel.is_open:
+                self._channel.basic_publish(
+                    exchange="",
+                    routing_key=self.rabbitmq_config.RABBITMQ_TRACKING_QUEUE,
+                    body=tracking_msg
+                )
+
         except json.JSONDecodeError:
             print("Error: Failed to decode JSON body")
         except ValidationError as e:

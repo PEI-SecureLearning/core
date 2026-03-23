@@ -142,7 +142,7 @@ function QuestionBlock({
 
   const choiceBtnClass = (c: any) => {
     if (answered !== c.id) {
-      return "bg-background border-border text-foreground/90 hover:bg-primary/10/50 hover:border-primary/30";
+      return "bg-background border-border text-foreground/90 hover:bg-primary/5 hover:border-primary/30";
     }
     const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
     return isCorrect
@@ -257,7 +257,7 @@ function PreviewBlock({
   if (block.kind === "text") {
     return (
       <div
-        className="text-[15px] leading-7 text-foreground/90 [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-primary [&_a]:underline [&_code]:bg-muted [&_code]:text-primary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-background [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground/90 [&_li]:leading-7 [&_blockquote]:border-purple-400 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-primary/10/40 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground/70 [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground/90 [&_th]:border-border [&_td]:text-foreground/90 [&_td]:border-border"
+        className="text-[15px] leading-7 text-foreground/90 [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-primary [&_a]:underline [&_code]:bg-muted [&_code]:text-primary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-background [&_pre]:rounded-xl [&_pre]:text-success [&_pre]:my-4 [&_li]:text-foreground/90 [&_li]:leading-7 [&_blockquote]:border-accent-secondary [&_blockquote]:text-muted-foreground [&_blockquote]:bg-primary/5 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground/70 [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground/90 [&_th]:border-border [&_td]:text-foreground/90 [&_td]:border-border"
         dangerouslySetInnerHTML={{
           __html: renderMarkdown(block.content || "")
         }}
@@ -360,9 +360,9 @@ function Toast({
       onAnimationComplete={() => {
         setTimeout(onDone, 2200);
       }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2"
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background text-foreground px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2 border border-border"
     >
-      <Lock className="w-4 h-4 text-amber-400" />
+      <Lock className="w-4 h-4 text-warning" />
       {message}
     </motion.div>
   );
@@ -665,12 +665,12 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                         </p>
                         <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                           {sec.isOptional && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-blue-500">
+                            <span className="flex items-center gap-0.5 text-[10px] text-info">
                               <SkipForward className="w-2.5 h-2.5" /> Optional
                             </span>
                           )}
                           {sec.requireCorrectAnswers && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-green-500">
+                            <span className="flex items-center gap-0.5 text-[10px] text-success">
                               <CheckCircle className="w-2.5 h-2.5" /> Required
                             </span>
                           )}
@@ -749,7 +749,7 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                         >
                           <span
                             className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0
-                                                ${isComplete ? "bg-emerald-500" : isLocked ? "bg-muted-foreground/40" : "bg-primary"}`}
+                                                ${isComplete ? "bg-success" : isLocked ? "bg-muted-foreground/40" : "bg-primary"}`}
                           >
                             {isComplete ? (
                               <Check className="w-4 h-4" />
@@ -762,18 +762,18 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                           <div className="flex-1 min-w-0">
                             <p
                               className={`text-base font-bold transition-colors truncate
-                                                    ${isLocked ? "text-muted-foreground/70" : isComplete ? "text-emerald-700" : "text-foreground group-hover:text-primary"}`}
+                                                    ${isLocked ? "text-muted-foreground/70" : isComplete ? "text-success" : "text-foreground group-hover:text-primary"}`}
                             >
                               {sec.title || `Section ${i + 1}`}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
                               {sec.isOptional && (
-                                <span className="text-[10px] text-blue-500 font-medium flex items-center gap-0.5">
+                                <span className="text-[10px] text-info font-medium flex items-center gap-0.5">
                                   <SkipForward className="w-3 h-3" /> Optional
                                 </span>
                               )}
                               {sec.requireCorrectAnswers && (
-                                <span className="text-[10px] text-green-500 font-medium flex items-center gap-0.5">
+                                <span className="text-[10px] text-success font-medium flex items-center gap-0.5">
                                   <CheckCircle className="w-3 h-3" /> Correct
                                   answers required
                                 </span>
@@ -785,7 +785,7 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                                 </span>
                               )}
                               {isComplete && (
-                                <span className="text-[10px] text-emerald-600 font-bold">
+                                <span className="text-[10px] text-success font-bold">
                                   ✓ Completed
                                 </span>
                               )}
@@ -869,7 +869,7 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                                         <button
                                           type="button"
                                           onClick={() => skipSection(sec.id)}
-                                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-info hover:bg-info/10 transition-colors"
                                         >
                                           <SkipForward className="w-4 h-4" />
                                           Skip
@@ -883,7 +883,7 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                                     </>
                                   )}
                                   {isComplete && (
-                                    <p className="flex items-center gap-2 text-sm text-emerald-600 font-semibold">
+                                    <p className="flex items-center gap-2 text-sm text-success font-semibold">
                                       <CheckCircle className="w-4 h-4" />
                                       Section completed!
                                     </p>
@@ -904,33 +904,33 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-linear-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-center text-white shadow-xl"
+                        className="bg-primary rounded-2xl p-8 text-center text-primary-foreground shadow-xl border border-primary-foreground/20"
                       >
                         <h2 className="text-2xl font-bold mb-2">
                           {isRenewalMode ? "Refreshment Complete!" : "Module Complete!"}
                         </h2>
                         <p className="text-accent-secondary/60 mb-6">
-                          {isRenewalMode 
+                          {isRenewalMode
                             ? `You've successfully completed the refreshment for "${mod.title}".`
                             : `You've successfully completed all sections in "${mod.title}".`}
                         </p>
                         <div className="flex justify-center gap-4">
-                            <Link
+                          <Link
                             to={"/courses/$courseId" as any}
                             params={{ courseId } as any}
                             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-background text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary/10 transition-all"
-                            >
+                          >
                             ← Back to Course
-                            </Link>
+                          </Link>
 
-                            {isRenewalMode && onRenewalComplete && (
-                                <button
-                                    onClick={() => onRenewalComplete()}
-                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-semibold shadow-md hover:shadow-lg hover:bg-emerald-600 transition-all"
-                                >
-                                    Renew Certificate
-                                </button>
-                            )}
+                          {isRenewalMode && onRenewalComplete && (
+                            <button
+                              onClick={() => onRenewalComplete()}
+                              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-semibold shadow-md hover:shadow-lg hover:bg-emerald-600 transition-all"
+                            >
+                              Renew Certificate
+                            </button>
+                          )}
                         </div>
                       </motion.div>
                     )}

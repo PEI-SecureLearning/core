@@ -12,23 +12,23 @@ interface TimelineBarProps {
 // Mapeamento atualizado para os status do Backend Python
 const statusColors: Record<string, { bg: string; border: string }> = {
   running: {
-    bg: "bg-gradient-to-r from-blue-400 to-blue-500",
-    border: "border-blue-400/30",
+    bg: "bg-info",
+    border: "border-info/30",
   },
   active: {
     bg: "bg-gradient-to-r from-blue-400 to-blue-500",
     border: "border-blue-400/30",
   },
   scheduled: {
-    bg: "bg-gradient-to-r from-amber-300 to-amber-400",
-    border: "border-amber-400/30",
+    bg: "bg-warning",
+    border: "border-warning/30",
   },
   completed: {
-    bg: "bg-gradient-to-r from-emerald-400 to-emerald-500",
-    border: "border-emerald-400/30",
+    bg: "bg-success",
+    border: "border-success/30",
   },
   canceled: {
-    bg: "bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/50",
+    bg: "bg-muted-foreground/40", // Simplificado de gradiente para cor única
     border: "border-border/30",
   },
   expired: {

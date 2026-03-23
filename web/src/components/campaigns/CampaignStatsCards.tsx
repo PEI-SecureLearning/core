@@ -24,7 +24,7 @@ export function CampaignStatsCards({ campaigns }: CampaignStatsCardsProps) {
             </div>
             <div className="bg-background p-4 rounded-xl border border-border shadow-sm">
                 <p className="text-sm text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-green-600">{activeCampaigns}</p>
+                <p className="text-2xl font-bold text-success">{activeCampaigns}</p>
             </div>
             <div className="bg-background p-4 rounded-xl border border-border shadow-sm">
                 <p className="text-sm text-muted-foreground">Total Emails Sent</p>
@@ -32,7 +32,7 @@ export function CampaignStatsCards({ campaigns }: CampaignStatsCardsProps) {
             </div>
             <div className="bg-background p-4 rounded-xl border border-border shadow-sm">
                 <p className="text-sm text-muted-foreground">Avg Click Rate</p>
-                <p className="text-2xl font-bold text-amber-600">{avgClickRate}%</p>
+                <p className="text-2xl font-bold text-warning">{avgClickRate}%</p>
             </div>
         </div>
     );

@@ -2,17 +2,15 @@ import os
 import json
 import requests
 from fastapi import HTTPException
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.core.settings import settings
 
 
 class base_handler:
     """Base handler with shared configuration and HTTP helpers."""
 
     def __init__(self):
-        self.keycloak_url = os.getenv("KEYCLOAK_URL")
-        self.admin_secret = os.getenv("CLIENT_SECRET")
+        self.keycloak_url = settings.KEYCLOAK_URL
+        self.admin_secret = settings.CLIENT_SECRET
 
         if not self.keycloak_url:
             raise HTTPException(

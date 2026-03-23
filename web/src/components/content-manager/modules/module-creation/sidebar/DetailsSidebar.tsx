@@ -33,10 +33,10 @@ function FormField({
         htmlFor={htmlFor}
         className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
       >
-        {icon && <span className="text-[#A78BFA]">{icon}</span>}
+        {icon && <span className="text-primary">{icon}</span>}
         <span>
           {label}
-          {isRequired && <span className="ml-0.5 text-amber-500">*</span>}
+          {isRequired && <span className="ml-0.5 text-warning">*</span>}
         </span>
       </label>
       {children}
@@ -76,7 +76,7 @@ function SidebarFields({
         <button
           type="button"
           onClick={onBrowseCover}
-          className="relative w-full h-24 rounded-xl border-2 border-border hover:border-[#7C3AED]/60 overflow-hidden cursor-pointer transition-colors"
+          className="relative w-full h-24 rounded-xl border-2 border-border hover:border-primary/60 overflow-hidden cursor-pointer transition-colors"
         >
           {data.coverImage ? (
             <img
@@ -85,7 +85,7 @@ function SidebarFields({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-1 text-muted-foreground group-hover:text-[#A78BFA] transition-colors">
+            <div className="flex flex-col items-center justify-center h-full gap-1 text-muted-foreground group-hover:text-primary transition-colors">
               <ImageIcon className="w-5 h-5" />
               <span className="text-[10px]">Click to choose cover</span>
             </div>
@@ -126,7 +126,7 @@ function SidebarFields({
           id="module-category"
           value={data.category}
           onChange={(e) => onChange({ category: e.target.value })}
-          className={`${inputCls} ${warnings.category ? "border-amber-300" : ""}`}
+          className={`${inputCls} ${warnings.category ? "border-warning/50" : ""}`}
         >
           <option value="">Select category</option>
           {CATEGORY_OPTIONS.map((c) => (
@@ -260,7 +260,7 @@ export function DetailsSidebar({
           <button
             type="button"
             onClick={toggleOpen}
-            className="ml-auto text-muted-foreground hover:text-[#A78BFA] transition-colors shrink-0"
+            className="ml-auto text-muted-foreground hover:text-primary transition-colors shrink-0"
             title={open ? "Collapse sidebar" : "Expand sidebar"}
             aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
             aria-expanded={open}

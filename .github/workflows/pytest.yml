@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
+      - name: Copy to .env
+        run: cp .env.dev.example .env  
+
       - name: Run tests
         run: uv run pytest
 

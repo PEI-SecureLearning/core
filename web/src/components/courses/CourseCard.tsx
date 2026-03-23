@@ -75,7 +75,7 @@ type CourseCardProps = {
 
 function ProgressBadge({ progress }: { progress: number }) {
     if (progress === 100)
-        return <span className="text-xs text-emerald-300 font-semibold">✓ Completed</span>
+        return <span className="text-xs text-success font-semibold">✓ Completed</span>
     if (progress > 0)
         return <span className="text-xs text-white/80 font-medium">{progress}%</span>
     return null
@@ -103,7 +103,7 @@ function DeleteButton({ id, onDelete }: { id: string; onDelete?: (id: string) =>
                 e.preventDefault()
                 onDelete(id)
             }}
-            className="p-1.5 rounded-lg bg-surface/80 backdrop-blur-md border border-border/50 text-muted-foreground hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-all shadow-sm"
+            className="p-1.5 rounded-lg bg-surface/80 backdrop-blur-md border border-border/50 text-muted-foreground hover:text-error hover:bg-error/10 hover:border-error/20 transition-all shadow-sm"
             title="Delete Module"
         >
             <Trash2 size={14} />
@@ -173,10 +173,10 @@ function Banner({
     }
 
     return (
-        <div className={`relative ${height} bg-gradient-to-br ${item.color ?? 'from-purple-600 to-purple-800'} flex items-center justify-center`}>
+        <div className={`relative ${height} bg-primary flex items-center justify-center`}>
             {item.icon
                 ? <span className={`${iconSize} select-none`}>{item.icon}</span>
-                : <BookOpen className="w-10 h-10 text-white/30" />
+                : <BookOpen className="w-10 h-10 text-primary-foreground/30" />
             }
             {showProg && (item.progress ?? 0) > 0 && (
                 <div className="absolute bottom-2 right-3">
@@ -185,7 +185,7 @@ function Banner({
             )}
             {item.difficultyBadge && (
                 <div className="absolute top-2 right-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-background/20 text-white border-white/30'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-primary/20 text-primary-foreground border-primary-foreground/30'}`}>
                         {item.difficultyBadge}
                     </span>
                 </div>
@@ -268,10 +268,10 @@ function CardHorizontal({ item, to, params, selectable, isSelected, onClick }: {
                     <img src={item.coverImageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                 </div>
             ) : (
-                <div className={`relative flex-shrink-0 w-40 bg-gradient-to-br ${item.color ?? 'from-purple-600 to-purple-800'} flex flex-col items-center justify-center gap-2`}>
+                <div className={`relative flex-shrink-0 w-40 bg-primary flex flex-col items-center justify-center gap-2`}>
                     {item.icon
                         ? <span className="text-5xl select-none">{item.icon}</span>
-                        : <BookOpen className="w-10 h-10 text-white/50" />
+                        : <BookOpen className="w-10 h-10 text-primary-foreground/50" />
                     }
                     {showProg && (item.progress ?? 0) > 0 && (
                         <div className="absolute bottom-2 right-2">

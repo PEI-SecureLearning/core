@@ -12,10 +12,11 @@ from urllib.parse import urlparse, urlunparse
 import jwt
 from jwt import PyJWKClient
 from fastapi import HTTPException, status
+from src.core.settings import settings
 
 
 REALM_PATH = "/realms/"
-AUTH_SERVER_URL = os.getenv("KEYCLOAK_INTERNAL_URL") or os.getenv("KEYCLOAK_URL")
+AUTH_SERVER_URL = settings.KEYCLOAK_INTERNAL_URL or settings.KEYCLOAK_URL
 SYSTEM_REALMS = {"platform", "master"}
 PRIVILEGED_COMPLIANCE_ROLES = {"admin", "org_manager", "content_manager"}
 

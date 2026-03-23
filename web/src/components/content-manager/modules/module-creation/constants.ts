@@ -29,12 +29,12 @@ export function emptySection(): Section {
 }
 
 export const DIFFICULTY_COLORS: Record<'Easy' | 'Medium' | 'Hard', string> = {
-    Easy:   'bg-green-100 text-green-700 border-green-300',
-    Medium: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-    Hard:   'bg-red-100 text-red-700 border-red-300',
+    Easy:   'bg-success/10 text-success border-success/20',
+    Medium: 'bg-warning/10 text-warning border-warning/20',
+    Hard:   'bg-error/10 text-error border-error/20',
 }
 
-export const inputCls = 'w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-300/50'
+export const inputCls = 'w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50'
 
 export const MD_HEADING_OPTIONS = [
     { label: 'H1 — Title',       insert: '\n# Heading\n'    },

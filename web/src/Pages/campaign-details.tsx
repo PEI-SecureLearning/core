@@ -109,10 +109,10 @@ export default function CampaignDetails() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div
+                     <div
                         className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium ${isEditable
-                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
-                                : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+                                ? "border-success/30 bg-success/10 text-success"
+                                : "border-warning/30 bg-warning/10 text-warning"
                             }`}
                     >
                         {isEditable ? <Clock3 size={15} /> : <Lock size={15} />}
@@ -133,7 +133,7 @@ export default function CampaignDetails() {
             </div>
 
             {loadError && (
-                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm flex items-start gap-2">
+                <div className="rounded-xl border border-error/30 bg-error/10 p-4 text-error text-sm flex items-start gap-2">
                     <AlertTriangle size={16} className="mt-0.5" />
                     <span>{loadError}</span>
                 </div>
@@ -141,7 +141,7 @@ export default function CampaignDetails() {
 
             {!isEditable && (
                 <div className="rounded-2xl border border-border bg-card p-6">
-                    <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-700">
+                    <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 p-4 text-warning">
                         <AlertTriangle size={16} className="mt-0.5" />
                         <div>
                             <p className="font-semibold">Editing is disabled</p>

@@ -10,7 +10,7 @@ import SelectedGroupCard from "./group-picker/SelectedGroupCard";
 import SelectedGroupsEmptyState from "./group-picker/SelectedGroupsEmptyState";
 import SearchableMultiPicker from "@/components/shared/multi-picker/SearchableMultiPicker";
 import useAsyncMultiPickerItems from "@/components/shared/multi-picker/useAsyncMultiPickerItems";
-import { fetchGroups } from "@/services/userGroupsApi";
+import { userGroupsApi } from "@/services/userGroupsApi";
 
 export default function TargetGroupSelector() {
   const { data, updateData } = useCampaign();
@@ -26,7 +26,7 @@ export default function TargetGroupSelector() {
   const loadGroups = useCallback(async (): Promise<CampaignTargetGroup[]> => {
     if (!realm) return [];
 
-    const response = await fetchGroups(realm, keycloak.token || undefined);
+    const response = await userGroupsApi.getGroups(realm);
     return (response.groups || [])
       .filter((group) => !!group.id && !!group.name)
       .map((group) => ({

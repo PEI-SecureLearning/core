@@ -74,8 +74,8 @@ function mimeMatchesFilter(contentType: string, filter: PickerMediaFilter): bool
 
 function fileIcon(contentType: string) {
     if (contentType.startsWith('image/')) return <ImageIcon className="w-4 h-4 text-accent-secondary flex-shrink-0" />
-    if (contentType.startsWith('video/')) return <Video className="w-4 h-4 text-blue-400   flex-shrink-0" />
-    if (contentType.startsWith('audio/')) return <Music className="w-4 h-4 text-green-400  flex-shrink-0" />
+    if (contentType.startsWith('video/')) return <Video className="w-4 h-4 text-info flex-shrink-0" />
+    if (contentType.startsWith('audio/')) return <Music className="w-4 h-4 text-success flex-shrink-0" />
     return <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
 }
 
@@ -224,8 +224,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             <span className="w-3 flex-shrink-0" />
                         )}
                         {isExpanded
-                            ? <FolderOpen className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                            : <Folder className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                            ? <FolderOpen className="w-4 h-4 text-info flex-shrink-0" />
+                            : <Folder className="w-4 h-4 text-info flex-shrink-0" />
                         }
                         <span className="truncate">{label}</span>
                     </button>
@@ -346,7 +346,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
             </div>
         )
         if (error) return (
-            <div className="flex-1 flex items-center justify-center text-red-500 text-sm">{error}</div>
+            <div className="flex-1 flex items-center justify-center text-error text-sm">{error}</div>
         )
         return (
             <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -426,7 +426,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
     function renderUpload() {
         if (uploadDone) return (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground px-8">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
+                <CheckCircle2 className="w-10 h-10 text-success" />
                 <p className="text-sm font-medium text-foreground">Uploaded! Switching to library…</p>
             </div>
         )
@@ -524,7 +524,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                 </div>
 
                 {uploadError && (
-                    <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                    <p className="text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
                         Upload failed: {uploadError}
                     </p>
                 )}

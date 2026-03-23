@@ -46,7 +46,7 @@ function SidebarLink({
         className:
           "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium"
       }}
-      inactiveProps={{ className: "text-muted-foreground hover:bg-muted" }}
+      inactiveProps={{ className: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" }}
       className={`flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm ${indent && !isCollapsed ? "pl-6" : ""}`}
       title={isCollapsed ? label : undefined}
     >
@@ -77,8 +77,8 @@ function SidebarGroup({
         onClick={onToggle}
         title={sidebarExpanded ? undefined : label}
         className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
-          ${open ? "bg-muted/10" : ""}
-          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          ${open ? "bg-sidebar-accent/50" : ""}
+          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
       >
         <Icon className="h-4 w-4 shrink-0" />
         <span className="sidebar-label flex-1 text-left whitespace-nowrap">
@@ -191,7 +191,7 @@ export function Sidebar() {
       <div className="h-10 border-b border-sidebar-border shrink-0 flex items-center justify-end px-2">
         <button
           onClick={handleToggle}
-          className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+          className="p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg transition-colors text-sidebar-foreground"
           title="Toggle sidebar"
         >
           {isCollapsed ? (

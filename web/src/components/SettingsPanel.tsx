@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes'
-import { Sun, Moon, Monitor, Eye, Aperture } from 'lucide-react'
+import { Sun, Moon, Monitor, EyeOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useThemeTransition } from '@/lib/useThemeTransition'
 import { ThemeCard } from '@/components/shared/ThemeCard'
@@ -14,35 +14,42 @@ const themeOptions: ThemeOption[] = [
         value: 'light',
         label: 'Light',
         icon: Sun,
-        accentColor: '#7C3AED',
+        accentColor: 'var(--theme-light-primary)',
         description: 'Clean white background, optimised for bright environments.',
     },
     {
         value: 'dark',
         label: 'Dark',
         icon: Moon,
-        accentColor: '#7C3AED',
+        accentColor: 'var(--theme-dark-primary)',
         description: 'Dark background, easier on the eyes in low-light settings.',
     },
     {
         value: 'deuteranopia',
         label: 'Deuteranopia',
-        icon: Eye,
-        accentColor: '#1D6FE8',
+        icon: EyeOff,
+        accentColor: 'var(--theme-deuteranopia-primary)',
         description: 'Blue accent palette — optimised for green-blind users.',
     },
     {
         value: 'protanopia',
         label: 'Protanopia',
-        icon: Aperture,
-        accentColor: '#0891B2',
+        icon: EyeOff,
+        accentColor: 'var(--theme-protanopia-primary)',
         description: 'Teal accent palette — optimised for red-blind users.',
+    },
+    {
+        value: 'tritanopia',
+        label: 'Tritanopia',
+        icon: EyeOff,
+        accentColor: 'var(--theme-tritanopia-primary)',
+        description: 'Red/Cyan accent palette — optimised for blue-blind users.',
     },
     {
         value: 'system',
         label: 'System',
         icon: Monitor,
-        accentColor: '#7C3AED',
+        accentColor: 'var(--theme-light-primary)',
         description: 'Automatically follows your operating-system preference.',
     },
 ]
@@ -77,7 +84,7 @@ export function SettingsPanel() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {[0, 1, 2, 3, 4].map((i) => (
+                        {[0, 1, 2, 3, 4, 5].map((i) => (
                             <div key={i} className="h-32 rounded-xl border border-border bg-surface animate-pulse" />
                         ))}
                     </div>

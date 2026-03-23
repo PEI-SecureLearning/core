@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { X, User, Mail, AtSign, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useKeycloak } from "@react-keycloak/web";
 import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 import type { Group, CreateUserField } from "./types";
+import { tenantOrgManagerApi } from "@/services/tenantOrgManagerApi";
 
 interface NewUserModalProps {
     realm: string;
@@ -12,10 +12,7 @@ interface NewUserModalProps {
     onUserCreated: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL;
-
 export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly<NewUserModalProps>) {
-    const { keycloak } = useKeycloak();
     const [newUserName, setNewUserName] = useState("");
     const [newUserEmail, setNewUserEmail] = useState("");
     const [newUserUsername, setNewUserUsername] = useState("");
@@ -74,30 +71,16 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         setCreateFieldError(null);
 
         try {
-            const res = await fetch(
-                `${API_BASE}/realms/${encodeURIComponent(realm)}/users`,
+            const data = await tenantOrgManagerApi.createUser(
+                realm,
                 {
-                    method: "POST",
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        username: newUserUsername || newUserEmail.split("@")[0],
-                        name: newUserName,
-                        email: newUserEmail,
-                        role: newUserRole,
-                        group_id: newUserGroupId || undefined,
-                    }),
+                    username: newUserUsername || newUserEmail.split("@")[0],
+                    name: newUserName,
+                    email: newUserEmail,
+                    role: newUserRole,
+                    group_id: newUserGroupId || undefined,
                 }
             );
-
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.detail || `Failed to create user`);
-            }
-
-            const data = await res.json();
             toast.success(
                 `User created! Temporary password: ${data?.temporary_password ?? "N/A"}`,
                 { position: "top-right" }
@@ -132,7 +115,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
 
     const getRoleOptionClass = (value: "ORG_MANAGER" | "DEFAULT_USER"): string => {
         if (newUserRole === value) return "bg-primary/10 border-2 border-primary";
-        if (createFieldError === "role") return "bg-rose-500/10 border border-rose-400 hover:bg-rose-500/20";
+        if (createFieldError === "role") return "bg-error/10 border border-error/50 hover:bg-error/20";
         return "bg-surface-subtle border border-border hover:bg-muted";
     };
 
@@ -172,13 +155,13 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 }}
                                 placeholder="John Doe"
                                 className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "name"
-                                    ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
+                                    ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
+                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                     }`}
                             />
                         </div>
                         {createStatus?.type === "error" && createFieldError === "name" && (
-                            <p className="mt-1.5 text-[12px] text-rose-600">{createStatus.message}</p>
+                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
                         )}
                     </div>
 
@@ -201,13 +184,13 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 }}
                                 placeholder="john.doe@example.com"
                                 className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "email"
-                                    ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
+                                    ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
+                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                     }`}
                             />
                         </div>
                         {createStatus?.type === "error" && createFieldError === "email" && (
-                            <p className="mt-1.5 text-[12px] text-rose-600">{createStatus.message}</p>
+                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
                         )}
                     </div>
 
@@ -232,13 +215,13 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 placeholder="Username"
                                 maxLength={40}
                                 className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "username"
-                                    ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
+                                    ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
+                                    : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                     }`}
                             />
                         </div>
                         {createStatus?.type === "error" && createFieldError === "username" && (
-                            <p className="mt-1.5 text-[12px] text-rose-600">{createStatus.message}</p>
+                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
                         )}
                     </div>
 
@@ -269,7 +252,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                             ))}
                         </div>
                         {createStatus?.type === "error" && createFieldError === "role" && (
-                            <p className="mt-1.5 text-[12px] text-rose-600">{createStatus.message}</p>
+                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
                         )}
                     </div>
 
@@ -287,8 +270,8 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 }
                             }}
                             className={`w-full px-4 py-2.5 rounded-md bg-surface-subtle text-[14px] focus:outline-none transition-all ${createFieldError === "group"
-                                ? "border border-rose-300 focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400"
-                                : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-purple-400"
+                                ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
+                                : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                 }`}
                         >
                             <option value="">No group</option>
@@ -297,7 +280,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                             ))}
                         </select>
                         {createStatus?.type === "error" && createFieldError === "group" && (
-                            <p className="mt-1.5 text-[12px] text-rose-600">{createStatus.message}</p>
+                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
                         )}
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import HTTPException
-from sqlmodel import Session, select, text
+from sqlmodel import Session, select, text, update
 
 from src.models import Campaign, EmailSending, EmailSendingStatus
 
@@ -18,14 +18,16 @@ class TrackingService:
         if sending.sent_at is None:
             sending.sent_at = datetime.now()
             sending.status = EmailSendingStatus.SENT
+            session.add(sending)
 
-            # Increment campaign counter
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_sent += 1
-                session.add(campaign)
-                session.commit()
-                session.refresh(sending)
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_sent=Campaign.total_sent + 1)
+            )
+            session.commit()
+            session.refresh(sending)
 
         return sending
 
@@ -37,14 +39,16 @@ class TrackingService:
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
             sending.status = EmailSendingStatus.OPENED
+            session.add(sending)
 
-            # Increment campaign counter using ORM
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_opened += 1
-                session.add(campaign)
-                session.commit()
-                session.refresh(sending)
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_opened=Campaign.total_opened + 1)
+            )
+            session.commit()
+            session.refresh(sending)
 
         return sending
 
@@ -55,24 +59,28 @@ class TrackingService:
         # Record open if not already recorded (click implies open)
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
-            # Increment campaign counter using ORM
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_opened += 1
-                session.add(campaign)
-                session.commit()
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_opened=Campaign.total_opened + 1)
+            )
 
         # Only count first click
         if sending.clicked_at is None:
             sending.clicked_at = datetime.now()
             sending.status = EmailSendingStatus.CLICKED
-            # Increment campaign counter using ORM
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_clicked += 1
-                session.add(campaign)
-                session.commit()
-            session.refresh(sending)
+            session.add(sending)
+            
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_clicked=Campaign.total_clicked + 1)
+            )
+            
+        session.commit()
+        session.refresh(sending)
 
         return sending
 
@@ -99,26 +107,36 @@ class TrackingService:
         sending = self._get_sending_by_token(tracking_token, session)
 
         # Record open and click if not already recorded (phish implies both)
-        campaign = session.get(Campaign, sending.campaign_id)
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
-            if campaign:
-                campaign.total_opened += 1
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_opened=Campaign.total_opened + 1)
+            )
+            
         if sending.clicked_at is None:
             sending.clicked_at = datetime.now()
-            if campaign:
-                campaign.total_clicked += 1
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_clicked=Campaign.total_clicked + 1)
+            )
 
         # Only count first phish
         if sending.phished_at is None:
             sending.phished_at = datetime.now()
             sending.status = EmailSendingStatus.PHISHED
-            if campaign:
-                campaign.total_phished += 1
-            if campaign:
-                session.add(campaign)
-                session.commit()
-            session.refresh(sending)
+            session.add(sending)
+            
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_phished=Campaign.total_phished + 1)
+            )
+            
+        session.commit()
+        session.refresh(sending)
 
         return sending
 
