@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -14,11 +14,9 @@ import {
   Lock,
   PanelLeftClose,
   PanelLeftOpen,
-  PartyPopper,
   SkipForward,
   X
 } from "lucide-react";
-import type { CourseModule } from "./courseData";
 import { COURSES } from "./courseData";
 import type {
   Block,
@@ -47,50 +45,72 @@ const TF_CHOICES: Choice[] = [
    Block renderers (adapted from ModulePreview)
    ──────────────────────────────────────────────────────────────────────────── */
 
+const API_BASE = import.meta.env.VITE_API_URL as string;
+
 function RichMediaPreview({
-  block
+  block,
+  token
 }: {
-  readonly block: Extract<Block, { kind: "rich_content" }>;
+  readonly block: any; // Allow for both mediaType and media_type
+  readonly token?: string;
 }) {
-  if (!block.url) {
+  const [url, setUrl] = useState(block.url || "");
+  const mediaType = block.mediaType ?? block.media_type;
+  const contentId = block.contentId ?? block.content_id;
+
+  useEffect(() => {
+    if (url || !contentId || !token) return;
+    let cancelled = false;
+    fetch(`${API_BASE}/content/${encodeURIComponent(contentId)}/file-url`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json() as Promise<{ url: string | null }>)
+      .then(d => { if (!cancelled && d.url) setUrl(d.url) })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [contentId, token, url]);
+
+  if (!url) {
     return (
-      <div className="flex items-center justify-center h-24 text-muted-foreground/70 gap-2 text-sm italic">
-        <ImageIcon className="w-5 h-5" /> No media URL set
+      <div className="flex items-center justify-center h-24 text-muted-foreground/70 gap-2 text-sm italic animate-pulse">
+        <ImageIcon className="w-5 h-5" /> Loading media…
       </div>
     );
   }
-  if (block.mediaType === "image") {
+  if (mediaType === "image") {
     return (
       <img
-        src={block.url}
+        src={url}
         alt={block.caption || "media"}
-        className="w-full max-h-80 object-contain"
+        className="w-full max-h-[600px] object-contain shadow-sm rounded-lg"
       />
     );
   }
-  if (block.mediaType === "video") {
+  if (mediaType === "video") {
     return (
-      <video src={block.url} controls className="w-full max-h-80">
+      <video controls className="w-full max-h-[600px] bg-black shadow-inner rounded-lg ring-1 ring-white/10">
+        <source src={url} type="video/mp4" />
         <track kind="captions" />
+        Your browser does not support the video tag.
       </video>
     );
   }
-  if (block.mediaType === "audio") {
+  if (mediaType === "audio") {
     return (
-      <audio src={block.url} controls className="w-full px-4 py-3">
+      <audio src={url} controls className="w-full px-4 py-3">
         <track kind="captions" />
       </audio>
     );
   }
   return (
     <a
-      href={block.url}
+      href={url}
       target="_blank"
       rel="noreferrer"
       className="flex items-center gap-2 px-4 py-3 text-sm text-primary font-medium hover:text-primary/80 transition-colors"
     >
       <FileText className="w-4 h-4 shrink-0" />
-      <span className="truncate">{block.url}</span>
+      <span className="truncate">{url}</span>
     </a>
   );
 }
@@ -115,7 +135,7 @@ function QuestionBlock({
     if (answered !== c.id) {
       return "bg-background border-border text-foreground/90 hover:bg-primary/10/50 hover:border-primary/30";
     }
-    const isCorrect = c.is_correct ?? (c as any).isCorrect;
+    const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
     return isCorrect
       ? "bg-green-50 border-green-400 text-green-800"
       : "bg-red-50 border-red-400 text-red-800";
@@ -123,7 +143,7 @@ function QuestionBlock({
 
   const choiceCircleClass = (c: any) => {
     if (answered !== c.id) return "border-border/60";
-    const isCorrect = c.is_correct ?? (c as any).isCorrect;
+    const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
     return isCorrect
       ? "border-green-500 bg-green-100"
       : "border-red-500 bg-red-100";
@@ -152,12 +172,25 @@ function QuestionBlock({
           <div className="flex gap-2">
             <input
               type="text"
+              defaultValue={answered || ""}
               placeholder="Your answer…"
-              className="flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onMark(q.id, e.currentTarget.value);
+                }
+              }}
+              onBlur={(e) => {
+                onMark(q.id, e.target.value);
+              }}
+              className={`flex-1 bg-surface-subtle border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all ${answered ? (answered.trim().toLowerCase() === (q.answer || "").trim().toLowerCase() ? "border-emerald-500 bg-emerald-50" : "border-red-400 bg-red-50") : "border-border focus:border-primary/50"}`}
             />
             <button
               type="button"
-              className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors bg-primary hover:bg-primary"
+              onClick={(e) => {
+                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                onMark(q.id, input.value);
+              }}
+              className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors bg-primary hover:bg-primary shadow-sm active:scale-95"
             >
               Check
             </button>
@@ -166,7 +199,7 @@ function QuestionBlock({
           <div className="flex flex-col gap-2">
             {choices.map((c) => {
               const isSelected = answered === c.id;
-              const isCorrect = c.is_correct ?? (c as any).isCorrect;
+              const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
               return (
                 <button
                   key={c.id}
@@ -203,12 +236,14 @@ function PreviewBlock({
   block,
   qIndex,
   answeredChoices,
-  onMark
+  onMark,
+  token
 }: {
   readonly block: Block;
   readonly qIndex: number;
   readonly answeredChoices: Record<string, string>;
   readonly onMark: (qid: string, cid: string) => void;
+  readonly token?: string;
 }) {
   if (block.kind === "text") {
     return (
@@ -222,8 +257,8 @@ function PreviewBlock({
   }
   if (block.kind === "rich_content") {
     return (
-      <div className="rounded-xl overflow-hidden border border-border bg-surface-subtle">
-        <RichMediaPreview block={block} />
+      <div className="rounded-xl overflow-hidden border border-border bg-surface-subtle shadow-sm">
+        <RichMediaPreview block={block} token={token} />
         {block.caption && (
           <p className="text-[11px] text-muted-foreground text-center px-3 py-2 border-t border-border italic">
             {block.caption}
@@ -264,7 +299,12 @@ function isSectionComplete(
     const q = qb.question;
     const chosen = answeredChoices[q.id];
     if (!chosen) return false;
-    const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
+
+    if (q.type === "short_answer") {
+      return chosen.trim().toLowerCase() === (q.answer || "").trim().toLowerCase();
+    }
+
+    const choices = (q.type === "true_false" ? TF_CHOICES : q.choices) || [];
     const correct = choices.find((c: any) => c.is_correct ?? (c as any).isCorrect);
     return chosen === correct?.id;
   });
@@ -326,12 +366,15 @@ function Toast({
 type Props = {
   readonly module: { title: string; difficulty?: string; estimatedTime?: string; sections?: Section[] }; // Accept mapped Module
   readonly courseId: string;
+  readonly token?: string; // Add token prop
   readonly initialCompletedSections?: string[];
   readonly onSectionComplete?: (sectionId: string, totalSections: number) => void;
   readonly onTaskComplete?: (sectionId: string, taskId: string) => void;
+  readonly isRenewalMode?: boolean;
+  readonly onRenewalComplete?: () => void;
 };
 
-export default function ModuleLearner({ module: mod, courseId, initialCompletedSections = [], onSectionComplete, onTaskComplete }: Props) {
+export default function ModuleLearner({ module: mod, courseId, token, initialCompletedSections = [], onSectionComplete, onTaskComplete, isRenewalMode, onRenewalComplete }: Props) {
   const sections = mod.sections ?? [];
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -789,6 +832,7 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                                           }
                                           answeredChoices={answeredChoices}
                                           onMark={(qid, cid) => onMark(sec.id, qid, cid)}
+                                          token={token}
                                         />
                                       );
                                     });
@@ -854,19 +898,31 @@ export default function ModuleLearner({ module: mod, courseId, initialCompletedS
                         className="bg-linear-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-center text-white shadow-xl"
                       >
                         <h2 className="text-2xl font-bold mb-2">
-                          Module Complete!
+                          {isRenewalMode ? "Refreshment Complete!" : "Module Complete!"}
                         </h2>
                         <p className="text-accent-secondary/60 mb-6">
-                          You've successfully completed all sections in "
-                          {mod.title}".
+                          {isRenewalMode 
+                            ? `You've successfully completed the refreshment for "${mod.title}".`
+                            : `You've successfully completed all sections in "${mod.title}".`}
                         </p>
-                        <Link
-                          to={"/courses/$courseId" as any}
-                          params={{ courseId } as any}
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-background text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary/10 transition-all"
-                        >
-                          ← Back to Course
-                        </Link>
+                        <div className="flex justify-center gap-4">
+                            <Link
+                            to={"/courses/$courseId" as any}
+                            params={{ courseId } as any}
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-background text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary/10 transition-all"
+                            >
+                            ← Back to Course
+                            </Link>
+
+                            {isRenewalMode && onRenewalComplete && (
+                                <button
+                                    onClick={() => onRenewalComplete()}
+                                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-semibold shadow-md hover:shadow-lg hover:bg-emerald-600 transition-all"
+                                >
+                                    Renew Certificate
+                                </button>
+                            )}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

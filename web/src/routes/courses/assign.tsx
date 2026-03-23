@@ -39,6 +39,7 @@ function AssignCoursesPage() {
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [deadline, setDeadline] = useState<string>('');
+    const [certValidDays, setCertValidDays] = useState<number>(365);
 
 
     useEffect(() => {
@@ -160,7 +161,7 @@ function AssignCoursesPage() {
         try {
             // Enroll each selected user in the chosen courses
             const promises = selectedUsers.map(userId =>
-                enrollUser(realm, userId, selectedCourses, keycloak.token!, deadline ? new Date(deadline).toISOString() : undefined, startDate ? new Date(startDate).toISOString() : undefined)
+                enrollUser(realm, userId, selectedCourses, keycloak.token!, deadline ? new Date(deadline).toISOString() : undefined, startDate ? new Date(startDate).toISOString() : undefined, certValidDays)
             );
 
             await Promise.all(promises);
@@ -213,11 +214,13 @@ function AssignCoursesPage() {
                         </Step>
 
                         <Step>
-                            <SchedulingStep
+                                <SchedulingStep
                                 startDate={startDate}
                                 setStartDate={setStartDate}
                                 deadline={deadline}
                                 setDeadline={setDeadline}
+                                certValidDays={certValidDays}
+                                setCertValidDays={setCertValidDays}
                                 selectedCoursesCount={selectedCourses.length}
                                 selectedUsersCount={selectedUsers.length}
                             />

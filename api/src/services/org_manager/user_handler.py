@@ -254,11 +254,11 @@ class user_handler:
             session.commit()
 
     def enroll_user(
-        self, session: Session, user_id: str, course_ids: list[str], start_date=None, deadline=None
+        self, session: Session, user_id: str, course_ids: list[str], start_date=None, deadline=None, cert_valid_days=365
     ) -> dict:
         """Assign courses to a user."""
         from datetime import datetime, timedelta
-        from src.models import UserProgress
+        from src.models import UserProgress, AssignmentStatus
         
         # Defaults
         if start_date is None:
@@ -268,28 +268,35 @@ class user_handler:
             
         enrolled_count = 0
         for cid in course_ids:
-            # Upsert or check if exists?
-            # User intent is usually "Assign or Re-assign".
-            # For now, let's keep the existing check but update start_date/deadline if it already exists?
-            # Actually, the user says "all appear selected". 
-            # If they re-assign, they might want to update the deadline.
-            
             existing = session.get(UserProgress, {"user_id": user_id, "course_id": cid})
             if not existing:
                 up = UserProgress(
                     user_id=user_id,
                     course_id=cid,
                     start_date=start_date,
-                    deadline=deadline
+                    deadline=deadline,
+                    cert_valid_days=cert_valid_days,
+                    status=AssignmentStatus.SCHEDULED,
+                    overdue=False,
+                    expired=False,
+                    progress_data={},
+                    completed_sections=[]
                 )
                 session.add(up)
                 enrolled_count += 1
             else:
-                # Update the existing enrollment's schedule
-                existing.start_date = start_date
-                existing.deadline = deadline
-                session.add(existing)
-                enrolled_count += 1
+                if existing.status != AssignmentStatus.COMPLETED or existing.is_certified:
+                    existing.status = AssignmentStatus.SCHEDULED
+                    existing.start_date = start_date
+                    existing.deadline = deadline
+                    existing.cert_valid_days = cert_valid_days
+                    existing.overdue = False
+                    existing.expired = False
+                    if existing.status != AssignmentStatus.COMPLETED:
+                        existing.progress_data = {}
+                        existing.completed_sections = []
+                    session.add(existing)
+                    enrolled_count += 1
                 
         if enrolled_count > 0:
             session.commit()

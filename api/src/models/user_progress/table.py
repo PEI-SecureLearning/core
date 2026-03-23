@@ -8,8 +8,9 @@ from enum import StrEnum
 class AssignmentStatus(StrEnum):
     SCHEDULED = "SCHEDULED"
     ACTIVE = "ACTIVE"
-    EXPIRED = "EXPIRED"
+    OVERDUE = "OVERDUE"
     COMPLETED = "COMPLETED"
+    RENEWAL_REQUIRED = "RENEWAL_REQUIRED"
 
 
 class UserProgress(SQLModel, table=True):
@@ -22,6 +23,9 @@ class UserProgress(SQLModel, table=True):
     is_certified: bool = Field(default=False)
     start_date: datetime | None = Field(default=None)
     deadline: datetime | None = Field(default=None)
+    cert_valid_days: float = Field(default=365.0)
+    cert_expires_at: datetime | None = Field(default=None)
+    overdue: bool = Field(default=False)
     expired: bool = Field(default=False)
     status: AssignmentStatus = Field(default=AssignmentStatus.SCHEDULED)
     realm_name: Optional[str] = Field(default=None, index=True)

@@ -63,6 +63,21 @@ function CourseDetail() {
     return () => { cancelled = true; };
   }, [courseId, keycloak.token, userId]);
 
+  const [courseCoverUrl, setCourseCoverUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!course?.cover_image || !keycloak.token) return;
+    const API_BASE = import.meta.env.VITE_API_URL as string;
+    let cancelled = false;
+    fetch(`${API_BASE}/content/${encodeURIComponent(course.cover_image)}/file-url`, {
+        headers: { Authorization: `Bearer ${keycloak.token}` },
+    })
+        .then(r => r.json() as Promise<{ url: string | null }>)
+        .then(d => { if (!cancelled && d.url) setCourseCoverUrl(d.url) })
+        .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [course?.cover_image, keycloak.token]);
+
   const [headerVisible, setHeaderVisible] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastScrollY = useRef(0);
@@ -149,6 +164,8 @@ function CourseDetail() {
     return 0; // maintain original order otherwise
   });
 
+
+
   return (
     <div
       ref={scrollRef}
@@ -172,13 +189,10 @@ function CourseDetail() {
 
         {/* We adapt the course object for CourseHeader which expects COURSES[x] structure */}
         <CourseHeader course={{
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          category: course.category,
-          difficulty: course.difficulty,
-          expected_time: course.expected_time,
-          modules: [] // Not used by CourseHeader internally except for count maybe? Wait, CourseHeader expects `course.modules` to be array of `CourseModule`
+          ...course,
+          coverImage: courseCoverUrl,
+          duration: course.expected_time,
+          modules: adaptedModules,
         } as any} overallProgress={overallProgress} />
       </div>
 

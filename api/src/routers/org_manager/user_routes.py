@@ -90,5 +90,6 @@ def enroll_user_endpoint(
         course_ids=payload.course_ids,
         start_date=payload.start_date,
         deadline=payload.deadline,
+        cert_valid_days=payload.cert_valid_days,
     )
 

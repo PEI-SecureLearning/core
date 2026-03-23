@@ -13,15 +13,19 @@ export interface UserProgress {
     is_certified: boolean;
     status: string;
     deadline: string | null;
+    start_date: string | null;
+    cert_valid_days: number;
+    cert_expires_at: string | null;
+    overdue: boolean;
     expired: boolean;
     updated_at: string;
 }
 
-export async function enrollUser(realm: string, userId: string, courseIds: string[], token: string, deadline?: string, startDate?: string): Promise<{ status: string; enrolled: number }> {
+export async function enrollUser(realm: string, userId: string, courseIds: string[], token: string, deadline?: string, startDate?: string, certValidDays: number = 365): Promise<{ status: string; enrolled: number }> {
     const res = await fetch(`${API_BASE}/org-manager/${realm}/users/${userId}/enroll`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
-        body: JSON.stringify({ course_ids: courseIds, deadline, start_date: startDate }),
+        body: JSON.stringify({ course_ids: courseIds, deadline, start_date: startDate, cert_valid_days: certValidDays }),
     })
     if (!res.ok) throw new Error('Failed to enroll user')
     return res.json()
@@ -67,11 +71,20 @@ export async function completeSection(userId: string, courseId: string, sectionI
     return res.json()
 }
 
-export async function markExpired(userId: string, courseId: string, token: string): Promise<UserProgress> {
-    const res = await fetch(`${API_BASE}/users/${userId}/progress/${courseId}/expire`, {
+export async function completeRefreshment(userId: string, courseId: string, token: string): Promise<UserProgress> {
+    const res = await fetch(`${API_BASE}/users/${userId}/progress/${courseId}/renewal`, {
         method: 'POST',
         headers: authHeaders(token),
     })
-    if (!res.ok) throw new Error('Failed to mark course as expired')
+    if (!res.ok) throw new Error('Failed to complete renewal')
+    return res.json()
+}
+
+export async function markOverdue(userId: string, courseId: string, token: string): Promise<UserProgress> {
+    const res = await fetch(`${API_BASE}/users/${userId}/progress/${courseId}/overdue`, {
+        method: 'POST',
+        headers: authHeaders(token),
+    })
+    if (!res.ok) throw new Error('Failed to mark course as overdue')
     return res.json()
 }

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Settings2 } from "lucide-react";
-export type CampaignStatus = "scheduled" | "running" | "active" | "completed" | "canceled" | "expired"; // Importa do serviço
+export type CampaignStatus = "scheduled" | "running" | "active" | "completed" | "canceled" | "expired" | "overdue"; // Importa do serviço
 
 interface TimelineBarProps {
   startPercent: number;
@@ -32,6 +32,10 @@ const statusColors: Record<string, { bg: string; border: string }> = {
     border: "border-border/30",
   },
   expired: {
+    bg: "bg-gradient-to-r from-red-400 to-red-500",
+    border: "border-red-400/30",
+  },
+  overdue: {
     bg: "bg-gradient-to-r from-red-400 to-red-500",
     border: "border-red-400/30",
   },

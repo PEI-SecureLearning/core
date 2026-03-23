@@ -1,10 +1,10 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { BookOpen, ChevronRight, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useKeycloak } from '@react-keycloak/web'
 import { fetchCourse, type Course } from '@/services/coursesApi'
 import { fetchModule, type Module } from '@/services/modulesApi'
-import { getCourseProgress, completeSection, updateProgress, type UserProgress } from '@/services/progressApi'
+import { getCourseProgress, completeSection, updateProgress, completeRefreshment, type UserProgress } from '@/services/progressApi'
 import ModuleLearner from '@/components/courses/ModuleLearner'
 import { toast } from 'sonner'
 
@@ -15,6 +15,7 @@ export const Route = createFileRoute('/courses/$courseId/modules/$moduleId')({
 function ModuleLearnerRoute() {
     const { courseId, moduleId } = Route.useParams()
     const { keycloak } = useKeycloak()
+    const navigate = useNavigate()
     const userId = keycloak.subject || keycloak.tokenParsed?.sub || keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email;
 
     const [course, setCourse] = useState<Course | null>(null)
@@ -98,11 +99,24 @@ function ModuleLearnerRoute() {
         }
     };
 
+    const isRenewalMode = progress?.status === 'RENEWAL_REQUIRED';
+
+    const handleRenewalComplete = async () => {
+        if (!userId || !keycloak.token) return;
+        try {
+            await completeRefreshment(userId, courseId, keycloak.token);
+            toast.success("Certificate Renewed Successfully!");
+            navigate({ to: "/courses/$courseId" as any, params: { courseId } as any });
+        } catch (err) {
+            toast.error("Failed to renew certificate");
+        }
+    };
+
     // Adapt the UI backend model to ModuleLearner's expected structure if needed
-    // ModuleLearner uses mod.sections and mod.title, which match the new backend `Module` type!
-    // The only difference might be difficulty mapping or estimatedTime.
+    // If renewal mode, override sections with refresh_sections
     const adaptedMod: any = {
         ...mod,
+        sections: isRenewalMode ? (mod.refresh_sections || []) : mod.sections,
         estimatedTime: mod.estimated_time,
     };
 
@@ -123,6 +137,12 @@ function ModuleLearnerRoute() {
                 </Link>
                 <ChevronRight size={14} className="text-muted-foreground/70" />
                 <span className="text-foreground font-medium truncate max-w-xs">{mod.title}</span>
+                {isRenewalMode && (
+                    <>
+                        <ChevronRight size={14} className="text-muted-foreground/70 mx-1" />
+                        <span className="text-amber-500 font-bold text-xs uppercase bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Renewal</span>
+                    </>
+                )}
             </nav>
 
             {/* Module learner */}
@@ -130,9 +150,12 @@ function ModuleLearnerRoute() {
                 <ModuleLearner
                     module={adaptedMod}
                     courseId={courseId}
+                    token={keycloak.token}
                     initialCompletedSections={progress?.completed_sections || []}
                     onSectionComplete={handleSectionComplete}
                     onTaskComplete={handleTaskComplete}
+                    isRenewalMode={isRenewalMode}
+                    onRenewalComplete={handleRenewalComplete}
                 />
             </div>
         </div>

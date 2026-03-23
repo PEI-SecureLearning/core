@@ -117,6 +117,7 @@ class CourseAssignPayload(BaseModel):
     user_ids: list[str]
     start_date: datetime
     deadline: datetime
+    cert_valid_days: float = 365.0
 
 @router.post("/courses/{course_id}/assign", summary="Assign course to users")
 async def assign_course_to_users(
@@ -130,6 +131,7 @@ async def assign_course_to_users(
         user_ids=payload.user_ids,
         start_date=payload.start_date,
         deadline=payload.deadline,
+        cert_valid_days=payload.cert_valid_days,
         session=session,
         realm_name=current_realm
     )

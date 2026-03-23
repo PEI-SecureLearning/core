@@ -16,7 +16,7 @@ from src.services.campaign import CampaignService
 logger = logging.getLogger(__name__)
 
 def process_course_assignments() -> None:
-    """Process course assignments lifecycle (SCHEDULED -> ACTIVE -> EXPIRED)."""
+    """Process course assignments lifecycle (SCHEDULED -> ACTIVE -> OVERDUE)."""
     with Session(engine) as session:
         now = datetime.now()
         updated_count = 0
@@ -36,7 +36,7 @@ def process_course_assignments() -> None:
             logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> ACTIVE")
             updated_count += 1
 
-        # Active -> Expired
+        # Active -> Overdue
         active_assignments = session.exec(
             select(UserProgress).where(
                 UserProgress.status == AssignmentStatus.ACTIVE,
@@ -46,14 +46,32 @@ def process_course_assignments() -> None:
         ).all()
 
         for assignment in active_assignments:
-            assignment.status = AssignmentStatus.EXPIRED
-            assignment.expired = True
-            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> EXPIRED")
+            assignment.status = AssignmentStatus.OVERDUE
+            assignment.overdue = True
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> OVERDUE")
+            updated_count += 1
+            
+        # Completed -> Renewal Required
+        completed_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.COMPLETED,
+                UserProgress.is_certified == True,
+                UserProgress.cert_expires_at <= now
+            )
+        ).all()
+
+        for assignment in completed_assignments:
+            assignment.status = AssignmentStatus.RENEWAL_REQUIRED
+            assignment.is_certified = False
+            assignment.completed_sections = []
+            assignment.progress_data = {}
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> RENEWAL_REQUIRED")
             updated_count += 1
 
         if updated_count > 0:
             session.commit()
             logger.info(f"Processed {updated_count} course assignment(s)")
+
 
 # Global scheduler 
 

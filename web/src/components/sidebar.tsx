@@ -158,7 +158,7 @@ export function Sidebar() {
 
   const [initDone, setInitDone] = useState(false);
 
-  const visibleLinks = useMemo(() => filterLinks(sourceLinks, userRoles, realmFeatures), [sourceLinks, userRoles, realmFeatures]);
+  const visibleLinks = useMemo(() => filterLinks(sourceLinks, userRoles, realmFeatures, keycloak.realm), [sourceLinks, userRoles, realmFeatures, keycloak.realm]);
   const { dashboard, groups, standalone } = useMemo(() => groupNavigationLinks(visibleLinks), [visibleLinks]);
 
   useEffect(() => {

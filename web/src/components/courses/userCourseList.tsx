@@ -79,6 +79,10 @@ export default function UserCourseList() {
                         progress_data: {},
                         total_completed_tasks: 0,
                         deadline: null,
+                        start_date: null,
+                        cert_valid_days: 365,
+                        cert_expires_at: null,
+                        overdue: false,
                         expired: false,
                         updated_at: new Date().toISOString(),
                     } as UserProgress;
@@ -134,7 +138,7 @@ export default function UserCourseList() {
     const sortedCourses = [...filteredCourses].sort((a, b) => {
         const getPriority = (p: any) => {
             if (p.is_certified) return 2; // Bottom
-            if (p.status === 'EXPIRED' || p.expired) return 0; // Top
+            if (p.status === 'OVERDUE' || p.overdue) return 0; // Top
             return 1; // Middle
         };
         return getPriority(a.progressObj) - getPriority(b.progressObj);
@@ -151,7 +155,20 @@ export default function UserCourseList() {
             progNum = Math.min(100, Math.round((p.completed_sections.length / course.modules.length) * 100));
         }
 
-        const isExpired = p.status === 'EXPIRED' || p.expired;
+        const isOverdue = p.status === 'OVERDUE' || p.overdue;
+        const isRenewalRequired = p.status === 'RENEWAL_REQUIRED';
+        const isExpired = p.expired; // Keep expired reference but it's separate now
+
+        let badgeStatus: string | undefined;
+        let badgeClass: string | undefined;
+
+        if (isRenewalRequired) {
+            badgeStatus = "Renewal Required";
+            badgeClass = "bg-amber-500 text-white border-amber-600 font-bold shadow-sm";
+        } else if (isOverdue) {
+            badgeStatus = "Overdue";
+            badgeClass = "bg-red-600 text-white border-red-700 font-extrabold shadow-sm";
+        }
 
         return {
             id: course.id,
@@ -164,9 +181,10 @@ export default function UserCourseList() {
             showProgress: true,
             progress: progNum,
             isCompleted: course.progressObj.is_certified,
+            isOverdue: isOverdue,
             isExpired: isExpired,
-            statusBadge: isExpired ? "Expired" : undefined,
-            statusBadgeClass: isExpired ? "bg-red-600 text-white border-red-700 font-extrabold shadow-sm" : undefined,
+            statusBadge: badgeStatus,
+            statusBadgeClass: badgeClass,
             coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
         };
     }

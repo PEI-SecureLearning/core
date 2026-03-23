@@ -38,14 +38,22 @@ def update_course_progress(
     return progress_service.update_progress(user_id, course_id, payload.section_id, payload.task_id, session)
 
 @router.post("/{course_id}/section")
-def complete_course_section(
+async def complete_course_section(
     user_id: str, 
     course_id: str, 
     payload: SectionComplete, 
     session: SessionDep, 
 ):
-    return progress_service.complete_section(user_id, course_id, payload.section_id, payload.total_sections, session)
+    return await progress_service.complete_section(user_id, course_id, payload.section_id, session)
 
-@router.post("/{course_id}/expire", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
-def mark_course_expired(user_id: str, course_id: str, session: SessionDep, token: OAuth2Scheme):
-    return progress_service.mark_expired(user_id, course_id, session)
+@router.post("/{course_id}/renewal")
+async def complete_course_renewal(
+    user_id: str, 
+    course_id: str, 
+    session: SessionDep, 
+):
+    return await progress_service.complete_refreshment(user_id, course_id, session)
+
+@router.post("/{course_id}/overdue", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
+def mark_course_overdue(user_id: str, course_id: str, session: SessionDep, token: OAuth2Scheme):
+    return progress_service.mark_overdue(user_id, course_id, session)

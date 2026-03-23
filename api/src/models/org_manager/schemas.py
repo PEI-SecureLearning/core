@@ -7,6 +7,7 @@ class CourseEnrollmentPayload(BaseModel):
     course_ids: list[str]
     start_date: datetime | None = None
     deadline: datetime | None = None
+    cert_valid_days: float = 365.0
 
 
 class OrgUserCreate(BaseModel):

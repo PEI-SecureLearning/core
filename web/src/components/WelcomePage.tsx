@@ -74,27 +74,23 @@ export const WelcomePage = () => {
                                 className={`quick-card-container shadow-lg ${isFeatured ? "md:col-span-2 lg:col-span-2" : ""}`}
                             >
                                 {/* Front face */}
-                                <div className={`quick-card-front ${isFeatured ? "bg-gradient-to-br from-card/80 to-accent/10" : "bg-card"}`}>
-                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${isFeatured ? "bg-primary text-primary-foreground" : "bg-accent/10 text-primary"
-                                        }`}>
+                                <div className={`quick-card-front min-h-48 flex flex-col items-center justify-center text-center ${isFeatured ? "bg-gradient-to-br from-card/80 to-accent/10" : "bg-card"}`}>
+                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 translate-y-4 ${isFeatured ? "bg-primary text-primary-foreground" : "bg-accent/10 text-primary"}`}>
                                         <card.icon className="w-6 h-6" />
                                     </div>
-                                    <div className={isFeatured ? "flex flex-col md:flex-row md:items-start justify-between gap-4 flex-1" : "flex-1"}>
-                                        <div className="max-w-md">
-                                            <h3 className={`font-semibold text-foreground mb-2 ${isFeatured ? "text-xl" : "text-lg"}`}>
-                                                {card.label}
-                                            </h3>
-                                            <p className="text-muted-foreground line-clamp-2">{card.description}</p>
-                                        </div>
+                                    <div className="flex-1 flex flex-col items-center justify-center">
+                                        <h3 className={`font-semibold text-foreground mb-2 ${isFeatured ? "text-xl" : "text-lg"}`}>
+                                            {card.label}
+                                        </h3>
                                     </div>
                                 </div>
 
                                 {/* Hover overlay */}
                                 <div className="quick-card-overlay">
-                                    <div className="quick-card-overlay-icon -mb-3 translate-y-2">
-                                        <card.icon className="w-6 h-6" />
+                                    <div className="quick-card-overlay-icon  flex flex-row">
+                                        <card.icon className="w-6 h-6 translate-y-2 mr-2" />
+                                        <p className="quick-card-overlay-title translate-y-2">{card.label}</p>
                                     </div>
-                                    <p className="quick-card-overlay-title translate-y-2">{card.label}</p>
                                     <p className="quick-card-overlay-desc translate-y-2">{card.description}</p>
                                     <Link
                                         to={card.href}
