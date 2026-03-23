@@ -74,15 +74,18 @@ export function AppLoader({
                     />
                     <div className="flex flex-col leading-none">
                         <span className="font-bold text-3xl text-foreground tracking-tight">Secure</span>
-                        <span className="font-bold text-2xl text-primary tracking-tight translate-x-3">Learning</span>
+                        <span className="font-bold text-2xl tracking-tight translate-x-3" style={{ color: '#7C3AED' }}>Learning</span>
                     </div>
                 </div>
 
                 {/* Progress bar */}
                 <div className="w-48 h-0.5 rounded-full bg-muted overflow-hidden">
                     <div
-                        className="h-full rounded-full bg-accent-secondary"
-                        style={{ animation: 'sl-bar 1.8s ease-in-out infinite' }}
+                        className="h-full rounded-full"
+                        style={{ 
+                            animation: 'sl-bar 1.8s ease-in-out infinite',
+                            backgroundColor: '#A78BFA'
+                        }}
                     />
                 </div>
 

@@ -71,15 +71,15 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
         const choiceBtnClass = (c: Choice) => {
             const isSelected = answered === c.id
             if (!isSelected) return 'bg-surface border-border text-foreground hover:bg-primary/10 hover:border-primary/30'
-            if (c.isCorrect) return 'bg-green-50 border-green-400 text-green-800'
-            return 'bg-red-50 border-red-400 text-red-800'
+            if (c.isCorrect) return 'bg-success/10 border-success/40 text-success'
+            return 'bg-error/10 border-error/40 text-error'
         }
 
         const choiceCircleClass = (c: Choice) => {
             const isSelected = answered === c.id
             if (!isSelected) return 'border-border'
-            if (c.isCorrect) return 'border-green-500 bg-green-100'
-            return 'border-red-500 bg-red-100'
+            if (c.isCorrect) return 'border-success bg-success/20'
+            return 'border-error bg-error/20'
         }
 
         return (
@@ -111,8 +111,8 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark }: {
                                         onClick={() => onMark(q.id, c.id)}
                                         className={`flex items-center gap-3 px-4 py-3 rounded-lg border text-sm text-left transition-all ${choiceBtnClass(c)}`}>
                                         <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${choiceCircleClass(c)}`}>
-                                            {isSelected && c.isCorrect && <Check className="w-2.5 h-2.5 text-green-600" />}
-                                            {isSelected && !c.isCorrect && <X className="w-2.5 h-2.5 text-red-600" />}
+                                            {isSelected && c.isCorrect && <Check className="w-2.5 h-2.5 text-success" />}
+                                            {isSelected && !c.isCorrect && <X className="w-2.5 h-2.5 text-error" />}
                                         </span>
                                         <span className="flex-1">{c.text || <em className="text-muted-foreground">Empty choice</em>}</span>
                                     </button>

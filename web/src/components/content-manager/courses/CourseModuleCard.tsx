@@ -10,9 +10,9 @@ interface CourseModuleCardProps {
 }
 
 const DIFFICULTY_COLOR: Record<string, string> = {
-    Easy: 'bg-green-500/15 text-green-400 border-green-500/30',
-    Medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-    Hard: 'bg-red-500/15 text-red-400 border-red-500/30',
+    Easy: 'bg-success/15 text-success border-success/30',
+    Medium: 'bg-warning/15 text-warning border-warning/30',
+    Hard: 'bg-error/15 text-error border-error/30',
 }
 
 export function CourseModuleCard({
@@ -22,7 +22,7 @@ export function CourseModuleCard({
     onRemove,
     dragHandleProps,
 }: CourseModuleCardProps) {
-    const difficultyColor = DIFFICULTY_COLOR[module.difficulty ?? ''] ?? 'bg-red-100 text-red-700 border-red-300'
+    const difficultyColor = DIFFICULTY_COLOR[module.difficulty ?? ''] ?? 'bg-error/10 text-error border-error/20'
 
     return (
         <div
@@ -75,7 +75,7 @@ export function CourseModuleCard({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground/40 hover:text-error hover:bg-error/10 transition-colors"
                 >
                     <X className="w-3.5 h-3.5" />
                 </button>

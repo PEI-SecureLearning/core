@@ -113,18 +113,18 @@ function QuestionBlock({
 
   const choiceBtnClass = (c: Choice) => {
     if (answered !== c.id) {
-      return "bg-background border-border text-foreground/90 hover:bg-primary/10/50 hover:border-primary/30";
+      return "bg-background border-border text-foreground/90 hover:bg-primary/5 hover:border-primary/30";
     }
     return c.isCorrect
-      ? "bg-green-50 border-green-400 text-green-800"
-      : "bg-red-50 border-red-400 text-red-800";
+      ? "bg-success/10 border-success/40 text-success"
+      : "bg-error/10 border-error/40 text-error";
   };
 
   const choiceCircleClass = (c: Choice) => {
     if (answered !== c.id) return "border-border/60";
     return c.isCorrect
-      ? "border-green-500 bg-green-100"
-      : "border-red-500 bg-red-100";
+      ? "border-success bg-success/20"
+      : "border-error bg-error/20";
   };
 
   return (
@@ -175,10 +175,10 @@ function QuestionBlock({
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${choiceCircleClass(c)}`}
                   >
                     {isSelected && c.isCorrect && (
-                      <Check className="w-2.5 h-2.5 text-green-600" />
+                      <Check className="w-2.5 h-2.5 text-success" />
                     )}
                     {isSelected && !c.isCorrect && (
-                      <X className="w-2.5 h-2.5 text-red-600" />
+                      <X className="w-2.5 h-2.5 text-error" />
                     )}
                   </span>
                   <span className="flex-1">
@@ -210,7 +210,7 @@ function PreviewBlock({
   if (block.kind === "text") {
     return (
       <div
-        className="text-[15px] leading-7 text-foreground/90 [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-primary [&_a]:underline [&_code]:bg-muted [&_code]:text-primary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-background [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground/90 [&_li]:leading-7 [&_blockquote]:border-purple-400 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-primary/10/40 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground/70 [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground/90 [&_th]:border-border [&_td]:text-foreground/90 [&_td]:border-border"
+        className="text-[15px] leading-7 text-foreground/90 [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-primary [&_a]:underline [&_code]:bg-muted [&_code]:text-primary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-background [&_pre]:rounded-xl [&_pre]:text-success [&_pre]:my-4 [&_li]:text-foreground/90 [&_li]:leading-7 [&_blockquote]:border-accent-secondary [&_blockquote]:text-muted-foreground [&_blockquote]:bg-primary/5 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground/70 [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground/90 [&_th]:border-border [&_td]:text-foreground/90 [&_td]:border-border"
         dangerouslySetInnerHTML={{
           __html: renderMarkdown(block.content || "")
         }}
@@ -314,9 +314,9 @@ function Toast({
       onAnimationComplete={() => {
         setTimeout(onDone, 2200);
       }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2"
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-background text-foreground px-5 py-3 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-2 border border-border"
     >
-      <Lock className="w-4 h-4 text-amber-400" />
+      <Lock className="w-4 h-4 text-warning" />
       {message}
     </motion.div>
   );
@@ -604,12 +604,12 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                         </p>
                         <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                           {sec.isOptional && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-blue-500">
+                            <span className="flex items-center gap-0.5 text-[10px] text-info">
                               <SkipForward className="w-2.5 h-2.5" /> Optional
                             </span>
                           )}
                           {sec.requireCorrectAnswers && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-green-500">
+                            <span className="flex items-center gap-0.5 text-[10px] text-success">
                               <CheckCircle className="w-2.5 h-2.5" /> Required
                             </span>
                           )}
@@ -673,7 +673,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                               isLocked
                                                 ? "border-border opacity-60"
                                                 : isComplete
-                                                  ? "border-emerald-200 bg-emerald-50/30"
+                                                  ? "border-success/20 bg-success/5"
                                                   : "border-border"
                                             }`}
                       >
@@ -690,7 +690,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                         >
                           <span
                             className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0
-                                                ${isComplete ? "bg-emerald-500" : isLocked ? "bg-muted-foreground/40" : "bg-primary"}`}
+                                                ${isComplete ? "bg-success" : isLocked ? "bg-muted-foreground/40" : "bg-primary"}`}
                           >
                             {isComplete ? (
                               <Check className="w-4 h-4" />
@@ -703,18 +703,18 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                           <div className="flex-1 min-w-0">
                             <p
                               className={`text-base font-bold transition-colors truncate
-                                                    ${isLocked ? "text-muted-foreground/70" : isComplete ? "text-emerald-700" : "text-foreground group-hover:text-primary"}`}
+                                                    ${isLocked ? "text-muted-foreground/70" : isComplete ? "text-success" : "text-foreground group-hover:text-primary"}`}
                             >
                               {sec.title || `Section ${i + 1}`}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
                               {sec.isOptional && (
-                                <span className="text-[10px] text-blue-500 font-medium flex items-center gap-0.5">
+                                <span className="text-[10px] text-info font-medium flex items-center gap-0.5">
                                   <SkipForward className="w-3 h-3" /> Optional
                                 </span>
                               )}
                               {sec.requireCorrectAnswers && (
-                                <span className="text-[10px] text-green-500 font-medium flex items-center gap-0.5">
+                                <span className="text-[10px] text-success font-medium flex items-center gap-0.5">
                                   <CheckCircle className="w-3 h-3" /> Correct
                                   answers required
                                 </span>
@@ -726,7 +726,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                 </span>
                               )}
                               {isComplete && (
-                                <span className="text-[10px] text-emerald-600 font-bold">
+                                <span className="text-[10px] text-success font-bold">
                                   ✓ Completed
                                 </span>
                               )}
@@ -810,7 +810,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                         <button
                                           type="button"
                                           onClick={() => skipSection(sec.id)}
-                                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                                          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium text-info hover:bg-info/10 transition-colors"
                                         >
                                           <SkipForward className="w-4 h-4" />
                                           Skip
@@ -826,7 +826,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                     </>
                                   )}
                                   {isComplete && (
-                                    <p className="flex items-center gap-2 text-sm text-emerald-600 font-semibold">
+                                    <p className="flex items-center gap-2 text-sm text-success font-semibold">
                                       <CheckCircle className="w-4 h-4" />
                                       Section completed!
                                     </p>
@@ -847,20 +847,20 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-linear-to-br from-purple-600 to-purple-800 rounded-2xl p-8 text-center text-white shadow-xl"
+                        className="bg-primary rounded-2xl p-8 text-center text-primary-foreground shadow-xl border border-primary-foreground/20"
                       >
                         <PartyPopper className="w-12 h-12 mx-auto mb-4 text-amber-300" />
                         <h2 className="text-2xl font-bold mb-2">
                           Module Complete! 🎉
                         </h2>
-                        <p className="text-accent-secondary/60 mb-6">
+                        <p className="text-primary-foreground/70 mb-6">
                           You've successfully completed all sections in "
                           {mod.title}".
                         </p>
                         <Link
                           to={"/courses/$courseId" as any}
                           params={{ courseId } as any}
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-background text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary/10 transition-all"
+                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-foreground text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary-foreground/90 transition-all"
                         >
                           ← Back to Course
                         </Link>

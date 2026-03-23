@@ -15,12 +15,7 @@ ENV VITE_BASE_PATH=$VITE_BASE_PATH
 ENV VITE_WEB_URL=$VITE_WEB_URL
 
 COPY package*.json ./
-RUN npm config set registry https://registry.npmjs.org/ \
-    && npm config set fetch-retries 5 \
-    && npm config set fetch-retry-factor 2 \
-    && npm config set fetch-retry-mintimeout 20000 \
-    && npm config set fetch-retry-maxtimeout 120000 \
-    && npm ci --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 
 COPY . .
 RUN npm run build

@@ -108,7 +108,7 @@ class TestCreateEmailsForReadyCampaigns:
 
 
 class TestProcessPendingEmails:
-    def test_processes_pending_emails_and_marks_as_sent(
+    def test_processes_pending_emails_and_marks_as_queued(
         self,
         session: Session,
         users,
@@ -133,6 +133,5 @@ class TestProcessPendingEmails:
         ).all()
 
         assert len(sendings) == 3
-        assert all(s.status == EmailSendingStatus.SENT for s in sendings)
-        assert all(s.sent_at is not None for s in sendings)
+        assert all(s.status == EmailSendingStatus.QUEUED for s in sendings)
         assert mock_rabbitmq_service.send_email.call_count == 3

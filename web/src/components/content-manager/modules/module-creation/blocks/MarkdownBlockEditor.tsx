@@ -31,7 +31,7 @@ function MdDropdown({ label, options, onInsert }: {
     return (
         <div>
             <button ref={btnRef} type="button" onClick={handleOpen}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium rounded bg-surface hover:bg-blue-50 hover:text-blue-700 border border-border transition-colors text-foreground">
+                className="flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-medium rounded bg-surface hover:bg-info/10 hover:text-info border border-border transition-colors text-foreground">
                 {label}
                 <ChevronDown className="w-2.5 h-2.5 opacity-60" />
             </button>
@@ -55,7 +55,7 @@ function MdDropdown({ label, options, onInsert }: {
                             {options.map(opt => (
                                 <button key={opt.label} type="button"
                                     onClick={() => { onInsert(opt.insert); setOpen(false) }}
-                                    className="w-full px-3 py-2 text-left text-[12px] font-medium text-foreground hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                                    className="w-full px-3 py-2 text-left text-[12px] font-medium text-foreground hover:bg-info/10 hover:text-info transition-colors">
                                     {opt.label}
                                 </button>
                             ))}
@@ -87,7 +87,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
     return (
         <div
             aria-label="Text block"
-            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-amber-400' : 'border-border'
+            className={`flex flex-col border rounded-xl overflow-hidden bg-surface group transition-colors ${showWarning ? 'border-warning' : 'border-border'
                 }`}
         >
             <div className="flex items-center gap-1 px-3 py-1.5 bg-surface-subtle border-b border-border">
@@ -118,7 +118,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                         <button type="button" onClick={() => setMode('edit')}
                             title="Edit"
                             className={`flex items-center justify-center w-7 h-7 rounded-full transition-all ${mode === 'edit'
-                                ? 'bg-[#7C3AED] text-white shadow-sm'
+                                ? 'bg-primary text-white shadow-sm'
                                 : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'
                                 }`}>
                             <Edit3 className="w-3.5 h-3.5" />
@@ -126,7 +126,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                         <button type="button" onClick={() => setMode('preview')}
                             title="Preview"
                             className={`flex items-center justify-center w-7 h-7 rounded-full transition-all ${mode === 'preview'
-                                ? 'bg-[#7C3AED] text-white shadow-sm'
+                                ? 'bg-primary text-white shadow-sm'
                                 : 'text-muted-foreground hover:bg-surface-subtle hover:text-foreground'
                                 }`}>
                             <Eye className="w-3.5 h-3.5" />
@@ -134,7 +134,7 @@ export function MarkdownBlockEditor({ block, onUpdate, onRemove, publishAttempte
                     </div>
                     <button type="button" onClick={onRemove}
                         title="Remove block"
-                        className="ml-0.5 p-1 text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
+                        className="ml-0.5 p-1 text-muted-foreground/40 hover:text-error hover:bg-error/10 rounded-md transition-all">
                         <X className="w-4 h-4" />
                     </button>
                 </div>

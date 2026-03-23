@@ -2,20 +2,17 @@ import os
 import json
 from pathlib import Path
 from fastapi import HTTPException
-from dotenv import load_dotenv
+from src.core.settings import settings
 from src.services.keycloak_client import get_keycloak_client
-
-
-load_dotenv()
 
 
 class base_handler:
     def __init__(self):
 
-        self.keycloak_url = os.getenv("KEYCLOAK_URL")
-        self.admin_secret = os.getenv("CLIENT_SECRET")
-        self.web_url = os.getenv("WEB_URL", "http://localhost:3000")
-        self.api_url = os.getenv("API_URL", "http://localhost:8080")
+        self.keycloak_url = settings.KEYCLOAK_URL
+        self.admin_secret = settings.CLIENT_SECRET
+        self.web_url = settings.WEB_URL
+        self.api_url = settings.API_URL
         self.keycloak_client = get_keycloak_client()
 
         if not self.keycloak_url:

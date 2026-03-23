@@ -54,8 +54,8 @@ export function TenantDetails() {
   const hasLogoError = logoError;
 
   const getFeatureIcon = (feature: string) => {
-    if (feature === 'phishing') return <Shield size={16} className="text-orange-500" />
-    if (feature === 'lms') return <BookOpen size={16} className="text-blue-500" />
+    if (feature === 'phishing') return <Shield size={16} className="text-warning" />
+    if (feature === 'lms') return <BookOpen size={16} className="text-info" />
     return <Check size={16} className="text-primary/90" />
   };
 
@@ -217,11 +217,11 @@ export function TenantDetails() {
             <h2 className="text-2xl font-bold text-foreground tracking-tight">{info?.displayName || realmName}</h2>
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border ${info?.enabled === false
-                ? "bg-red-50 text-red-700 border-red-200"
-                : "bg-green-50 text-green-700 border-green-200"
+                ? "bg-error/10 text-error border-error/20"
+                : "bg-success/10 text-success border-success/20"
                 }`}
             >
-              <span className={`w-1.5 h-1.5 rounded-full mr-2 ${info?.enabled === false ? "bg-red-500" : "bg-green-500 animate-pulse"}`} />
+              <span className={`w-1.5 h-1.5 rounded-full mr-2 ${info?.enabled === false ? "bg-error" : "bg-success animate-pulse"}`} />
               {info?.enabled === false ? "Inactive" : "Active"}
             </span>
           </div>
@@ -247,8 +247,8 @@ export function TenantDetails() {
       )}
 
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2 flex items-center gap-3">
-          <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+        <div className="text-sm text-error bg-error/10 border border-error/20 rounded-md px-3 py-2 flex items-center gap-3">
+          <div className="w-1.5 h-1.5 bg-error rounded-full" />
           {error}
         </div>
       )}
@@ -283,7 +283,7 @@ export function TenantDetails() {
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${usageLimit ? (usageCurrent / usageLimit) * 100 : 0}%` }}
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full"
+                    className="bg-gradient-to-r from-primary to-primary/80 h-full rounded-full"
                   />
                 </div>
               </div>
@@ -330,7 +330,7 @@ export function TenantDetails() {
                     className="flex items-center justify-between p-3 bg-background rounded-md border border-border/40 shadow-sm hover:border-border transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-base border border-purple-100">
+                      <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-base border border-primary/20">
                         {manager.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -341,7 +341,7 @@ export function TenantDetails() {
                     <button
                       type="button"
                       onClick={() => handleDeleteManager(manager.id)}
-                      className="p-1.5 text-muted-foreground/70 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
+                      className="p-1.5 text-muted-foreground/70 hover:text-error hover:bg-error/10 rounded-md transition-all"
                       title="Revoke manager role"
                     >
                       <Trash2 size={16} />
@@ -381,7 +381,7 @@ export function TenantDetails() {
                       </span>
                     </div>
                     {active ? (
-                      <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border border-white">
+                      <div className="w-5 h-5 bg-success rounded-full flex items-center justify-center border border-white">
                         <Check size={12} className="text-white" />
                       </div>
                     ) : (

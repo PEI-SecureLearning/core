@@ -10,13 +10,13 @@ export function ProgressBar({ data }: { readonly data: ModuleFormData }) {
     const containerRef = useRef<HTMLDivElement>(null)
     const [tipPos, setTipPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
 
-    let barColor = 'bg-amber-400'
-    if (pct === 100) barColor = 'bg-green-500'
-    else if (pct >= 60) barColor = 'bg-[#7C3AED]'
+    let barColor = 'bg-warning'
+    if (pct === 100) barColor = 'bg-success'
+    else if (pct >= 60) barColor = 'bg-primary'
 
-    let labelColor = 'text-amber-500'
-    if (pct === 100) labelColor = 'text-green-600'
-    else if (pct >= 60) labelColor = 'text-[#A78BFA]'
+    let labelColor = 'text-warning'
+    if (pct === 100) labelColor = 'text-success'
+    else if (pct >= 60) labelColor = 'text-primary'
 
     const handleMouseMove = (e: React.MouseEvent) => {
         const popoverWidth = 240
@@ -87,7 +87,7 @@ export function ProgressBar({ data }: { readonly data: ModuleFormData }) {
                         <ul className="flex flex-col gap-1.5">
                             {missing.map(item => (
                                 <li key={item} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0" />
                                     {item}
                                 </li>
                             ))}

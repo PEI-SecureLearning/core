@@ -174,12 +174,11 @@ def process_pending_emails() -> None:
                 try:
                     # Send email to RabbitMQ
                     campaign_service._send_email_to_rabbitmq(email, campaign)
-
-                    # Update status and timestamp for sent emails
-                    email.status = EmailSendingStatus.SENT
-                    email.sent_at = datetime.now()
-
+                    
+                    # Update status to queued
+                    email.status = EmailSendingStatus.QUEUED
                     session.commit()
+                    
                 except (ValueError, ValidationError) as e:
                     # Irrecoverable payload/configuration issue for this email.
                     email.status = EmailSendingStatus.FAILED
@@ -188,6 +187,7 @@ def process_pending_emails() -> None:
                     logger.error(
                         f"Failed email {email.id} for campaign {email.campaign_id} marked FAILED: {e}"
                     )
+                    
                 except Exception as e:
                     logger.error(
                         f"Failed to process email {email.id} for campaign {email.campaign_id}: {e}"

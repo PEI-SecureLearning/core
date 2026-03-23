@@ -169,7 +169,7 @@ export default function CampaignEditPage() {
                 </CampaignProvider>
             ) : (
                 <div className="rounded-2xl border border-border bg-card p-6">
-                    <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-700">
+                    <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 text-warning">
                         <AlertTriangle size={16} className="mt-0.5" />
                         <div>
                             <p className="font-semibold">Editing is disabled</p>

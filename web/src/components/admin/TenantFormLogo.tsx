@@ -57,10 +57,10 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
     }
 
     return (
-        <div className="translate-y-5 max-w-80 bg-gradient-to-br from-slate-50 to-blue-50/30 p-4 rounded-2xl border border-blue-100/50 flex flex-col">
+        <div className="translate-y-5 max-w-80 bg-gradient-to-br from-surface to-primary/5 p-4 rounded-2xl border border-primary/20 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
-                <div className="p-1.5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow shadow-blue-200/50">
-                    <Image className="w-3.5 h-3.5 text-white" />
+                <div className="p-1.5 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow shadow-primary/20">
+                    <Image className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
                 <div>
                     <h3 className="text-xs font-bold text-foreground">Brand Logo</h3>
@@ -76,7 +76,7 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
             />
             <button
                 type="button"
-                className="flex-1 border-2 border-dashed border-blue-200/70 rounded-xl flex flex-col items-center justify-center p-4 bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all duration-300 group min-h-[120px] overflow-hidden"
+                className="flex-1 border-2 border-dashed border-primary/30 rounded-xl flex flex-col items-center justify-center p-4 bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all duration-300 group min-h-[120px] overflow-hidden"
                 onClick={handleClick}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={handleDrop}
@@ -91,8 +91,8 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                     />
                 ) : (
                     <>
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shadow shadow-blue-100/50">
-                            <Upload className="w-4 h-4 text-blue-500" />
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shadow shadow-primary/10">
+                            <Upload className="w-4 h-4 text-primary" />
                         </div>
                         <p className="text-xs font-semibold text-foreground/90 text-center">
                             Upload Logo
@@ -105,7 +105,7 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
             </button>
 
             {error && (
-                <p className="text-xs text-red-600 mt-2">{error}</p>
+                <p className="text-xs text-error mt-2">{error}</p>
             )}
 
         </div>

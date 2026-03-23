@@ -92,8 +92,8 @@ export function SectionSettingsSidebar({
                                 title={selectedSection.requireCorrectAnswers ? 'Require correct answers: ON' : 'Require correct answers: OFF'}
                                 onClick={() => onUpdate(selectedSection.id, { requireCorrectAnswers: !selectedSection.requireCorrectAnswers })}
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${selectedSection.requireCorrectAnswers
-                                    ? 'bg-green-50 text-green-500 hover:bg-green-100'
-                                    : 'text-muted-foreground/50 hover:bg-surface hover:text-green-400'
+                                    ? 'bg-success/10 text-success hover:bg-success/20'
+                                    : 'text-muted-foreground/50 hover:bg-surface hover:text-success/80'
                                     }`}
                             >
                                 <CheckCircle className="w-4 h-4" />
@@ -103,8 +103,8 @@ export function SectionSettingsSidebar({
                                 title={selectedSection.isOptional ? 'Optional section: ON' : 'Optional section: OFF'}
                                 onClick={() => onUpdate(selectedSection.id, { isOptional: !selectedSection.isOptional })}
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${selectedSection.isOptional
-                                    ? 'bg-blue-50 text-blue-500 hover:bg-blue-100'
-                                    : 'text-muted-foreground/50 hover:bg-surface hover:text-blue-400'
+                                    ? 'bg-info/10 text-info hover:bg-info/20'
+                                    : 'text-muted-foreground/50 hover:bg-surface hover:text-info/80'
                                     }`}
                             >
                                 <SkipForward className="w-4 h-4" />
@@ -114,8 +114,8 @@ export function SectionSettingsSidebar({
                                 title={selectedSection.minTimeSpent ? `Min time: ${selectedSection.minTimeSpent}s` : 'Min time: OFF'}
                                 onClick={() => onUpdate(selectedSection.id, { minTimeSpent: selectedSection.minTimeSpent ? undefined : 30 })}
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${selectedSection.minTimeSpent
-                                    ? 'bg-orange-50 text-orange-500 hover:bg-orange-100'
-                                    : 'text-muted-foreground/50 hover:bg-surface hover:text-orange-400'
+                                    ? 'bg-warning/10 text-warning hover:bg-warning/20'
+                                    : 'text-muted-foreground/50 hover:bg-surface hover:text-warning/80'
                                     }`}
                             >
                                 <Clock className="w-4 h-4" />
@@ -141,9 +141,9 @@ export function SectionSettingsSidebar({
                                     id="require-correct"
                                     checked={selectedSection.requireCorrectAnswers ?? false}
                                     onChange={v => onUpdate(selectedSection.id, { requireCorrectAnswers: v })}
-                                    icon={<CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />}
-                                    iconClass="text-green-600 focus:ring-green-300 accent-green-600"
-                                    hoverClass="group-hover:text-green-600"
+                                    icon={<CheckCircle className="w-3.5 h-3.5 text-success flex-shrink-0" />}
+                                    iconClass="text-success focus:ring-success/30 accent-success"
+                                    hoverClass="group-hover:text-success"
                                     label="Require Correct Answers"
                                     description="All questions must be answered correctly before proceeding"
                                 />
@@ -151,15 +151,15 @@ export function SectionSettingsSidebar({
                                     id="optional-section"
                                     checked={selectedSection.isOptional ?? false}
                                     onChange={v => onUpdate(selectedSection.id, { isOptional: v })}
-                                    icon={<SkipForward className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />}
-                                    iconClass="text-blue-600 focus:ring-blue-300 accent-blue-600"
-                                    hoverClass="group-hover:text-blue-600"
+                                    icon={<SkipForward className="w-3.5 h-3.5 text-info flex-shrink-0" />}
+                                    iconClass="text-info focus:ring-info/30 accent-info"
+                                    hoverClass="group-hover:text-info"
                                     label="Optional Section"
                                     description="Users can skip this section and continue"
                                 />
                                 <div className="flex flex-col gap-1.5">
                                     <label htmlFor="min-time" className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                                        <Clock className="w-3.5 h-3.5 text-orange-600 flex-shrink-0" />
+                                        <Clock className="w-3.5 h-3.5 text-warning flex-shrink-0" />
                                         Minimum Time (seconds)
                                     </label>
                                     <input
@@ -172,7 +172,7 @@ export function SectionSettingsSidebar({
                                         onChange={e => onUpdate(selectedSection.id, {
                                             minTimeSpent: e.target.value ? Number.parseInt(e.target.value, 10) : undefined
                                         })}
-                                        className="w-full text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-300/50 text-foreground placeholder:text-muted-foreground"
+                                        className="w-full text-sm bg-surface-subtle border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-warning/30 text-foreground placeholder:text-muted-foreground"
                                     />
                                     <p className="text-xs text-muted-foreground leading-relaxed">
                                         Minimum time before users can proceed

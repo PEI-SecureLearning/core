@@ -53,13 +53,13 @@ export function LogViewer() {
   const getIcon = (level: LogEntry["level"]) => {
     switch (level) {
       case "error":
-        return <AlertCircle className="text-red-500" size={18} />;
+        return <AlertCircle className="text-error" size={18} />;
       case "warning":
-        return <AlertCircle className="text-yellow-500" size={18} />;
+        return <AlertCircle className="text-warning" size={18} />;
       case "success":
-        return <CheckCircle className="text-green-500" size={18} />;
+        return <CheckCircle className="text-success" size={18} />;
       default:
-        return <Info className="text-blue-500" size={18} />;
+        return <Info className="text-info" size={18} />;
     }
   };
 
@@ -93,7 +93,7 @@ export function LogViewer() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="bg-error/10 border border-error/20 rounded-lg p-4 text-error">
           <p className="font-medium">Failed to load logs</p>
           <p className="text-sm mt-1">{error}</p>
         </div>
@@ -111,11 +111,11 @@ export function LogViewer() {
               placeholder="Search logs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-4 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
           <select
-            className="pl-3 pr-8 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-background"
+            className="pl-3 pr-8 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
@@ -130,7 +130,7 @@ export function LogViewer() {
         <div className="flex-1 overflow-auto p-0">
           {loading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader2 className="animate-spin text-blue-600" size={32} />
+              <Loader2 className="animate-spin text-primary" size={32} />
               <span className="ml-3 text-muted-foreground">
                 Loading logs...
               </span>
