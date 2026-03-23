@@ -44,7 +44,6 @@ export default function SendingProfileFormContainer({
             mode={mode}
             onSubmit={onSubmit}
             testPassed={form.testPassed}
-            hasChangesSinceLastTest={form.hasChangesSinceLastTest}
             isFullyValid={form.isFullyValid}
             smtpConfigChanged={mode === "create" ? true : form.smtpConfigChanged}
         />
