@@ -9,11 +9,11 @@ while IFS= read -r -d '' example_file; do
   cp -f "${example_file}" "${target_file}"
   echo "Copied ${example_file} -> ${target_file}"
   copied=$((copied + 1))
-done < <(find "${ROOT_DIR}" -type f -name ".env.example" -print0)
+done < <(find "${ROOT_DIR}" -type f -name ".env.example.prod" -print0)
 
 if [[ "${copied}" -eq 0 ]]; then
   echo "No .env.example files found."
   exit 1
 fi
 
-echo "Created ${copied} .env file(s) from .env.example."
+echo "Created ${copied} .env file(s) from .env.example.prod."

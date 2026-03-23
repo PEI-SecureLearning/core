@@ -7,10 +7,6 @@ type RealmLookupResponse = {
   realm?: string;
 };
 
-type RealmLookupResponse = {
-    realm?: string;
-};
-
 export const EmailEntry = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

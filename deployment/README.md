@@ -6,10 +6,12 @@ This directory contains Docker Compose configurations and deployment files for r
 
 ```
 deployment/
-├── docker-compose.yml       # Production configuration
-├── docker-compose.dev.yml   # Development configuration (DB only)
-├── nginx.conf              # Nginx reverse proxy configuration
-└── README.md              # This file
+├── docker-compose.yml        # Production configuration
+├── docker-compose.dev.yml    # Development configuration
+├── .env.prod.example         # Production env template
+├── .env.dev.example          # Development env template
+├── nginx.mednat.conf         # Nginx reverse proxy configuration
+└── README.md                 # This file
 ```
 
 ## 🐳 Docker Architecture
@@ -17,30 +19,46 @@ deployment/
 The application uses a **multi-container architecture** with Docker Compose:
 
 ```
-┌─────────────────────────────────────────┐
-│           Nginx (Port 80)               │
-│  - Serves frontend static files         │
-│  - Proxies API requests to backend      │
-└─────────────┬───────────────────────────┘
-              │
-      ┌───────┴────────┐
-      │                │
-┌─────▼──────┐  ┌──────▼──────┐
-│    Web     │  │     API     │
-│  (React)   │  │  (FastAPI)  │
-└────────────┘  └──────┬──────┘
-                       │
-                ┌──────▼──────┐
-                │ PostgreSQL  │
-                │  (Port 5432)│
-                └─────────────┘
+                        ┌──────────────────────────────┐
+                        │  Nginx / Edge Proxy          │
+                        │  - Serves frontend           │
+                        │  - Proxies /api and /kc      │
+                        └───────┬───────────────┬──────┘
+                                │               │
+                         ┌──────▼──────┐ ┌──────▼──────┐
+                         │  Frontend   │ │  Keycloak   │
+                         │   (React)   │ │   (IAM)     │
+                         └──────┬──────┘ └─────────────┘
+                                │
+                    ┌───────────▼───────────┐   ┌───────────────┐
+                    │         API           │◄─►│    Garage     │
+                    │      (FastAPI)        │   │  object store │
+                    └───────┬─────────┬─────┘   └───────────────┘
+                            │         │      (Frontend consumes asset URLs) 
+               ┌────────────▼┐   ┌────▼──────────┐      
+               │ PostgreSQL  │   │ MongoDB       │      
+               │ relational  │   │ templates etc │      
+               └─────────────┘   └───────────────┘      
+                            │                            
+                 ┌──────────▼──────────┐                 
+                 │ RabbitMQ + SMTP     │                 
+                 │ async email sending │                 
+                 └─────────────────────┘                 
+                                                         
+                                            
 ```
 
 ### Services
 
-1. **db** (PostgreSQL): Database service
-2. **api** (FastAPI): Backend API service
-3. **web** (Nginx): Frontend + Reverse Proxy
+1. **nginx**: Edge reverse proxy for the production stack. Terminates HTTP/TLS, serves the built frontend, and routes `/api` to FastAPI and `/kc` to Keycloak.
+2. **frontend**: React application. In production it is built into a static site served behind nginx; in development it runs with the dev server.
+3. **api**: FastAPI backend. Handles application logic, local JWT validation, tenant management, campaign logic, and integrations with storage, queues, and Keycloak.
+4. **keycloak**: Identity and access management service. Issues JWTs, manages realms, clients, users, and authorization-related data.
+5. **db**: PostgreSQL database for relational application data and the Keycloak database.
+6. **mongo**: MongoDB storage for templates and other document-style content.
+7. **garage**: S3-compatible object storage used for content and tenant logos.
+8. **rabbitmq**: Message broker used for asynchronous email workflows.
+9. **smtp**: Email worker/consumer that processes RabbitMQ jobs and sends emails.
 
 ## 🎯 Deployment Configurations
 
@@ -61,13 +79,13 @@ The application uses a **multi-container architecture** with Docker Compose:
 
 **Use this for:**
 - Local development
-- Running only the database
-- Testing with local frontend/backend
+- Running the full stack locally
+- Fast iteration with dev Dockerfiles and mounted source volumes
 
 **What it does:**
-- Runs PostgreSQL only
-- Exposes database port (5432)
-- Allows local API/Web to connect
+- Runs the full development stack
+- Exposes service ports directly to the host
+- Uses development-specific env values
 
 ## 🚀 Quick Start
 
@@ -78,81 +96,54 @@ The application uses a **multi-container architecture** with Docker Compose:
 cd deployment
 
 # Start all services
-docker compose up -d
+docker compose -f docker-compose.yml up -d --build
 
 # View logs
-docker compose logs -f
+docker compose -f docker-compose.yml logs -f
 
 # Stop all services
-docker compose down
+docker compose -f docker-compose.yml down
 ```
 
 Access the application:
-- **Frontend**: http://localhost
-- **API Docs**: http://localhost/api/docs
-- **Health Check**: http://localhost/health
+- **Frontend**: `https://mednat.ieeta.pt:9071/app`
+- **API Docs**: `https://mednat.ieeta.pt:9071/api/docs`
+- **Keycloak**: `https://mednat.ieeta.pt:9071/kc`
 
-### Development with Database Only
+### Development Deployment
 
 ```bash
-# Start PostgreSQL only
+# Start the development stack
 cd deployment
-docker compose -f docker-compose.dev.yml up -d
-
-# Database is now accessible at localhost:5432
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
-Then run API and Web locally:
-```bash
-# Terminal 1 - API
-cd ../api
-uv run fastapi dev src/main.py
-
-# Terminal 2 - Web
-cd ../web
-npm run dev
-```
+Access the development services:
+- **Frontend**: `http://localhost:5173`
+- **API Docs**: `http://localhost:8000/docs`
+- **Keycloak**: `http://localhost:8080`
+- **PostgreSQL**: `localhost:5432`
 
 ## ⚙️ Environment Variables
 
-### Default Values
+### Deployment Env Files
 
-Both compose files use these defaults:
+Copy the desired example env into a .env:
 
-```env
-POSTGRES_USER=myuser
-POSTGRES_PASSWORD=mypassword
-POSTGRES_DB=mydatabase
-POSTGRES_SERVER=db
-POSTGRES_PORT=5432
+```bash
+deployment/.env
 ```
 
-### Override with .env File
+Templates:
 
-Create a `.env` file in the `deployment/` directory:
-
-```env
-# Database Configuration
-POSTGRES_USER=customuser
-POSTGRES_PASSWORD=strongpassword
-POSTGRES_DB=myapp
-POSTGRES_SERVER=db
-POSTGRES_PORT=5432
+```bash
+deployment/.env.dev.example
+deployment/.env.prod.example
 ```
-
-Docker Compose automatically reads this file.
 
 ### Production Best Practices
 
 **Never use default passwords in production!**
-
-```bash
-# Generate a strong password
-openssl rand -base64 32
-
-# Set in .env file
-POSTGRES_PASSWORD=<generated-password>
-```
 
 ## 🔧 Nginx Configuration
 
@@ -162,7 +153,6 @@ The `nginx.conf` file configures:
 Routes API requests to the backend:
 ```
 /api/*       → backend (FastAPI)
-/openapi.json → backend
 /health      → backend
 ```
 
@@ -464,18 +454,12 @@ web:
 
 ### Environment-Specific Configuration
 
-Create multiple environment files:
+Use the matching env file for each stack:
 
 ```bash
-deployment/
-├── .env.development
-├── .env.staging
-├── .env.production
-```
-
-Use with:
-```bash
-docker compose --env-file .env.production up -d
+cd deployment
+docker compose --env-file .env.dev -f docker-compose.dev.yml up -d --build
+docker compose --env-file .env.prod -f docker-compose.yml up -d --build
 ```
 
 ## 📊 Monitoring & Maintenance
