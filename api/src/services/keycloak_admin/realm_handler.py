@@ -1,16 +1,19 @@
 from fastapi import HTTPException
+from src.services.keycloak_admin.base_handler import base_handler
 
 
-class realm_handler:
+class realm_handler(base_handler):
+
+    def __init__(self):
+        super().__init__()
 
     def get_realm(self, realm_name: str) -> dict:
-        
+
         token = self._get_admin_token()
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
         r = self.keycloak_client._make_request("GET", url, token)
-        
-        return r.json()
 
+        return r.json()
 
     def delete_realm(self, realm_name: str) -> None:
         """Delete a realm from Keycloak. DB cleanup is handled by the caller."""
@@ -32,23 +35,21 @@ class realm_handler:
         This relies on realms created with create_realm storing tenant-domain.
         """
         token = self._get_admin_token()
-        
+
         url = f"{self.keycloak_url}/admin/realms"
-        
+
         r = self.keycloak_client._make_request("GET", url, token)
-        
+
         realms = r.json()
-        
-        
+
         for realm in realms:
-            
+
             tenant_domain = self.extract_tenant_domain(realm)
-           
+
             if tenant_domain and tenant_domain.lower() == domain.lower():
                 return realm.get("realm")
-        
-        return None
 
+        return None
 
     def list_realms(self, exclude_system: bool = True) -> list[dict]:
         """
@@ -69,7 +70,9 @@ class realm_handler:
             tenant_domain = self.extract_tenant_domain(realm)
 
             # Fetch feature flags for this realm
-            features = self.get_realm_features(realm_name)
+            from src.services.keycloak_admin.feature_handler import get_feature_handler
+
+            features = get_feature_handler().get_realm_features(realm_name)
 
             result.append(
                 {
@@ -89,7 +92,6 @@ class realm_handler:
 
         return self.extract_tenant_domain(realm_info)
 
-
     def update_realm_attributes(self, realm_name: str, new_attributes: dict) -> None:
         """Merge new_attributes into the existing realm attributes."""
         token = self._get_admin_token()
@@ -100,26 +102,26 @@ class realm_handler:
         attrs.update(new_attributes)
 
         url = f"{self.keycloak_url}/admin/realms/{realm_name}"
-        self.keycloak_client._make_request("PUT", url, token, json_data={"attributes": attrs})
-
+        self.keycloak_client._make_request(
+            "PUT", url, token, json_data={"attributes": attrs}
+        )
 
     def extract_tenant_domain(self, realm_info: dict) -> str | None:
         """Return the tenant-domain attribute for a given realm, if set."""
         attrs = realm_info.get("attributes") or {}
-        
+
         if not isinstance(attrs, dict):
             return None
-        
+
         raw = attrs.get("tenant-domain")
-        
+
         if isinstance(raw, list) and raw:
             return raw[0]
-        
+
         if isinstance(raw, str):
             return raw
-        
-        return None
 
+        return None
 
     def create_realm(
         self,
@@ -199,5 +201,14 @@ class realm_handler:
 
         r = self.keycloak_client._make_request("POST", url, token, json_data=payload)
 
-
         return r
+
+
+_instance: realm_handler | None = None
+
+
+def get_realm_handler() -> realm_handler:
+    global _instance
+    if _instance is None:
+        _instance = realm_handler()
+    return _instance

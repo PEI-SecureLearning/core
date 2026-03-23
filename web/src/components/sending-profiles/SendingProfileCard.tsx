@@ -22,7 +22,7 @@ export default function SendingProfileCard({
       <div className="p-5">
         {/* Header with icon + menu */}
         <div className="flex items-start justify-between mb-4">
-          <div className="h-10 w-10 rounded-md bg-primary/20 flex items-center justify-center flex-shrink-0">
+          <div className="h-10 w-10 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
             <Send className="h-5 w-5 text-primary pl-0.5" />
           </div>
 
@@ -37,7 +37,7 @@ export default function SendingProfileCard({
 
             {showMenu && (
               <>
-                <div
+                <button
                   className="fixed inset-0 z-10"
                   onClick={() => setShowMenu(false)}
                 />
@@ -75,13 +75,13 @@ export default function SendingProfileCard({
 
         {/* From Email */}
         <div className="flex items-center gap-1.5 text-muted-foreground mb-3">
-          <Mail className="h-3.5 w-3.5 flex-shrink-0" />
+          <Mail className="h-3.5 w-3.5 shrink-0" />
           <span className="text-[13px] truncate">{from_email}</span>
         </div>
 
         {/* SMTP Info */}
         <div className="flex items-center gap-1.5 text-muted-foreground/70 pt-3 border-t border-border/60">
-          <Server className="h-3 w-3 flex-shrink-0" />
+          <Server className="h-3 w-3 shrink-0" />
           <span className="text-[12px] truncate">
             {smtp_host}:{smtp_port}
           </span>

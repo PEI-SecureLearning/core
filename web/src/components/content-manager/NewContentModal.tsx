@@ -143,7 +143,7 @@ export function NewContentModal({
         }
     };
 
-    const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 transition-shadow';
+    const inputClass = 'w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-shadow';
 
     return (
         <AnimatePresence>
@@ -174,7 +174,7 @@ export function NewContentModal({
                             <div className="space-y-1">
                                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Folder</label>
                                 <div className="relative">
-                                    <Folder className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A78BFA]" />
+                                    <Folder className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-accent-secondary" />
                                     <select value={selectedFolderId} onChange={(e) => setSelectedFolderId(e.target.value)} className={`${inputClass} pl-9`}>
                                         {sortedFolders.map((folder) => (
                                             <option key={folder.folder_id} value={folder.folder_id}>
@@ -243,7 +243,7 @@ export function NewContentModal({
                                 <button type="button" onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-surface-subtle hover:text-foreground transition-colors">
                                     Cancel
                                 </button>
-                                <button type="submit" disabled={isSubmitting} className="rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:shadow-md hover:from-[#6D28D9] hover:to-[#5B21B6] transition-all duration-200 disabled:opacity-60 active:scale-[0.97]">
+                                <button type="submit" disabled={isSubmitting} className="rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-all duration-200 disabled:opacity-60 active:scale-[0.97]">
                                     {isSubmitting ? 'Saving...' : 'Create'}
                                 </button>
                             </div>

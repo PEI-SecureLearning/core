@@ -20,7 +20,7 @@ export function PreviewPanel({
 }: PreviewPanelProps) {
     return (
         <div className="w-full flex flex-col gap-2">
-            <div className="bg-background/80 backdrop-blur-md rounded-md border border-border/60 overflow-hidden shadow-2xl shadow-purple-500/5">
+            <div className="bg-background/80 backdrop-blur-md rounded-md border border-border/60 overflow-hidden shadow-2xl shadow-primary/5">
                 <PreviewPanelHeader />
                 <PreviewPanelLogo logoPreviewUrl={logoPreviewUrl} />
                 <PreviewPanelDetails
@@ -31,7 +31,7 @@ export function PreviewPanel({
             </div>
 
             <Button
-                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-10 text-lg font-semibold rounded-xl shadow-xl shadow-purple-200/50 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-10 text-lg font-semibold rounded-xl shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                 onClick={handleSubmit}
                 disabled={isLoading}
             >

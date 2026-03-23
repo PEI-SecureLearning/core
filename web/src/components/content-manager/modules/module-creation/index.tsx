@@ -1,14 +1,19 @@
-import { useState, useCallback } from 'react'
-import { AlertCircle, AlertTriangle, ArrowLeft, CheckCircle2, Loader2, X } from 'lucide-react'
-import { publishModule } from '@/services/modulesApi'
+import { useState, useCallback, useEffect } from 'react'
+import { ArrowLeft, Eye, Loader2, Upload } from 'lucide-react'
+import { createModule, updateModule } from '@/services/modulesApi'
+import { toast } from 'sonner'
 import type { ModuleFormData } from './types'
 import { ProgressBar } from './preview/ProgressBar'
 import { DetailsSidebar } from './sidebar/DetailsSidebar'
 import { SectionsEditor } from './SectionsEditor'
 import { ModulePreview } from './preview/ModulePreview'
-import { useAutoSave, type SaveStatus } from './useAutoSave'
-import { calcCompletion } from './utils'
+import { StorageModal } from './StorageModal'
+import { ValidationModal } from './ValidationModal'
+import { uid } from './constants'
+import { calcCompletion, getMissingFields, buildPayload } from './utils'
 import { ConfirmProvider } from '@/components/ui/confirm-modal'
+import { SaveStatus, type SaveStatusState } from './SaveStatus'
+import { LeaveConfirm } from './LeaveConfirm'
 
 const INITIAL_DATA: ModuleFormData = {
     title: '',
@@ -23,105 +28,7 @@ const INITIAL_DATA: ModuleFormData = {
     refreshSections: [],
 }
 
-const STATUS_CLASSES: Record<string, string> = {
-    pending: 'text-muted-foreground bg-surface-subtle',
-    saving:  'text-muted-foreground bg-surface',
-    saved:   'text-green-600 bg-green-50',
-    error:   'text-red-600 bg-red-50',
-}
-
-function SaveStatusPill({ status }: { readonly status: SaveStatus }) {
-    if (status === 'idle') return null
-    return (
-        <div className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-all ${STATUS_CLASSES[status] ?? ''}`}>
-            {status === 'pending' && <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />}
-            {status === 'saving'  && <Loader2 className="w-3 h-3 animate-spin" />}
-            {status === 'saved'   && <CheckCircle2 className="w-3 h-3" />}
-            {status === 'error'   && <AlertCircle className="w-3 h-3" />}
-            <span>
-                {status === 'pending' && 'Unsaved changes'}
-                {status === 'saving'  && 'Saving…'}
-                {status === 'saved'   && 'Saved'}
-                {status === 'error'   && 'Auto-save failed'}
-            </span>
-        </div>
-    )
-}
-
-/** Inline leave-confirmation dialog with live saving-state on the Leave button. */
-function LeaveConfirmDialog({
-    saveStatus,
-    onLeave,
-    onCancel,
-}: {
-    readonly saveStatus: SaveStatus
-    readonly onLeave: () => void
-    readonly onCancel: () => void
-}) {
-    const isSaving = saveStatus === 'pending' || saveStatus === 'saving'
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Backdrop */}
-            <button
-                type="button"
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-default"
-                onClick={onCancel}
-                aria-label="Close dialog"
-            />
-
-            {/* Modal */}
-            <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-                {/* Header */}
-                <div className="flex items-start gap-4 p-6 pb-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                        <AlertTriangle className="w-6 h-6 text-amber-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-foreground">
-                            Leave module editor?
-                        </h3>
-                        <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                            {isSaving
-                                ? 'Auto-saving your changes — please wait a moment before leaving.'
-                                : 'Your changes have been saved. You can safely leave.'}
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="flex-shrink-0 text-muted-foreground hover:text-muted-foreground transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 p-6 pt-4 bg-surface-subtle border-t border-border">
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground bg-surface border border-border rounded-lg hover:bg-surface-subtle transition-colors"
-                    >
-                        Keep editing
-                    </button>
-                    <button
-                        type="button"
-                        disabled={isSaving}
-                        onClick={onLeave}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                        {isSaving
-                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Auto-saving…</>
-                            : 'Leave'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-interface ModuleCreationFormProps {
+export interface ModuleCreationFormProps {
     /** A function that returns the current (possibly refreshed) Keycloak token. */
     getToken: () => string | undefined
     onSuccess?: (moduleId: string) => void
@@ -130,77 +37,172 @@ interface ModuleCreationFormProps {
     initialData?: ModuleFormData
     /** Provide when editing an existing module so auto-save PATCHes instead of POSTing. */
     initialModuleId?: string
+    /** Whether to open the preview modal immediately. */
+    initialPreview?: boolean
 }
 
-function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, initialModuleId }: Readonly<ModuleCreationFormProps>) {
+function ModuleCreationFormInner({ getToken, onBack, initialData, initialModuleId, initialPreview }: Readonly<Omit<ModuleCreationFormProps, 'onSuccess'>>) {
     const isEditing = initialModuleId != null
 
     const [data, setData] = useState<ModuleFormData>(initialData ?? INITIAL_DATA)
     const [actionStatus, setActionStatus] = useState<'idle' | 'loading' | 'error'>('idle')
-    const [previewOpen, setPreviewOpen] = useState(false)
-    const [waveActive, setWaveActive] = useState(0)
-    const [publishAttempted, setPublishAttempted] = useState(false)
+    const [saveStatus, setSaveStatus] = useState<SaveStatusState>('idle')
+    const [moduleId, setModuleId] = useState<string | null>(initialModuleId ?? null)
+    const [previewOpen, setPreviewOpen] = useState(initialPreview ?? false)
+    const [storageModalOpen, setStorageModalOpen] = useState(false)
     const [leaveDialogOpen, setLeaveDialogOpen] = useState(false)
+    const [isDirty, setIsDirty] = useState(false)
+    const [showValidation, setShowValidation] = useState(false)
+    const [publishAttempted, setPublishAttempted] = useState(false)
 
-    const patch = useCallback((p: Partial<ModuleFormData>) => {
+    const patch: (patch: Partial<ModuleFormData>, silent?: boolean) => void = useCallback((p, silent = false) => {
         setData(d => ({ ...d, ...p }))
+        if (!silent) {
+            setSaveStatus('idle')
+            setIsDirty(true)
+        }
     }, [])
 
-    // Auto-save: creates draft on first keystroke, patches on every subsequent change
-    const { saveStatus, moduleId, forceSave, forceSaveIfDirty } = useAutoSave(data, getToken, 15_000, initialModuleId)
+    // Browser navigation guard
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isDirty) {
+                e.preventDefault()
+                e.returnValue = ''
+            }
+        }
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [isDirty])
 
-    /** Open the leave dialog and immediately flush any pending auto-save
-     *  so the user doesn't have to wait for the 15 s debounce to expire. */
     const handleBack = useCallback(() => {
         if (!onBack) return
-        const hasContent = data.title.trim() !== '' || data.sections.length > 0
-        if (!hasContent) { onBack(); return }
-        // Kick off a save only if data was actually changed by the user;
-        // the dialog's Leave button stays disabled until it completes.
-        forceSaveIfDirty()
-        setLeaveDialogOpen(true)
-    }, [onBack, data.title, data.sections.length, forceSaveIfDirty])
+        if (isDirty) {
+            setLeaveDialogOpen(true)
+        } else {
+            onBack()
+        }
+    }, [onBack, isDirty])
 
-    /** Called by the Leave button inside the dialog — only reachable when not saving. */
-    const handleLeaveConfirm = useCallback(() => {
-        setLeaveDialogOpen(false)
-        onBack?.()
-    }, [onBack])
+    const saveInternal = useCallback(async () => {
+        const token = getToken()
+        const payload = buildPayload(data)
 
-    /** Edit mode: just flush the latest changes and call onSuccess. */
-    const handleSave = useCallback(async () => {
-        if (!moduleId) return
+        setSaveStatus('saving')
+        try {
+            let result
+            if (moduleId) {
+                result = await updateModule(moduleId, payload, token)
+            } else {
+                result = await createModule(payload, token)
+                setModuleId(result.id)
+            }
+            setSaveStatus('saved')
+            setIsDirty(false)
+            return result.id
+        } catch (err) {
+            setSaveStatus('error')
+            toast.error(err instanceof Error ? err.message : 'Failed to save module')
+            throw err
+        }
+    }, [data, moduleId, getToken])
+
+    const handleSaveAndLeave = useCallback(async () => {
+        const pct = calcCompletion(data)
+        if (pct < 100) {
+            setPublishAttempted(true)
+            setShowValidation(true)
+            setLeaveDialogOpen(false)
+            return
+        }
+
         setActionStatus('loading')
         try {
-            await forceSave()
-            onSuccess?.(moduleId)
+            await saveInternal()
+            toast.success(moduleId ? 'Module updated successfully' : 'Module created successfully')
+            setLeaveDialogOpen(false)
+            onBack?.()
         } catch {
             setActionStatus('error')
         } finally {
             setActionStatus('idle')
         }
-    }, [moduleId, forceSave, onSuccess])
+    }, [saveInternal, onBack, moduleId, data])
 
-    /** Create mode: validate completion, flush, then publish. */
-    const handlePublish = useCallback(async () => {
+    const handleDiscardAndLeave = useCallback(() => {
+        setLeaveDialogOpen(false)
+        onBack?.()
+    }, [onBack])
+
+    /** Save the module (create or update). */
+    const handleSave = useCallback(async () => {
         const pct = calcCompletion(data)
         if (pct < 100) {
             setPublishAttempted(true)
-            setWaveActive(n => n + 1)
+            setShowValidation(true)
             return
         }
-        if (!moduleId) return
+
         setActionStatus('loading')
         try {
-            await forceSave()
-            const published = await publishModule(moduleId, getToken())
-            onSuccess?.(published.id)
+            await saveInternal()
+            toast.success(moduleId ? 'Module updated successfully' : 'Module created successfully')
         } catch {
             setActionStatus('error')
+        } finally {
+            setActionStatus('idle')
         }
-    }, [moduleId, getToken, onSuccess, data, forceSave])
+    }, [moduleId, saveInternal, data])
 
     const togglePreview = useCallback(() => setPreviewOpen(prev => !prev), [])
+
+    const handleImport = (imported: ModuleFormData) => {
+        const sanitizeBlock = (b: any): any => {
+            if (!b || typeof b !== 'object') return null
+            if (b.kind === 'question') {
+                const q = b.question ?? {}
+                return {
+                    ...b,
+                    id: b.id || uid(),
+                    question: {
+                        ...q,
+                        id: q.id || uid(),
+                        type: q.type || 'multiple_choice',
+                        text: q.text || '',
+                        answer: q.answer || '',
+                        choices: Array.isArray(q.choices) ? q.choices.map((c: any) => ({
+                            ...c,
+                            id: c.id || uid(),
+                            text: c.text || '',
+                            isCorrect: !!c.isCorrect
+                        })) : []
+                    }
+                }
+            }
+            return { ...b, id: b.id || uid() }
+        }
+
+        const sanitizeSection = (s: any): any => {
+            if (!s || typeof s !== 'object') return null
+            return {
+                ...s,
+                id: s.id || uid(),
+                title: s.title || '',
+                blocks: (Array.isArray(s.blocks) ? s.blocks : []).map(sanitizeBlock).filter(Boolean)
+            }
+        }
+
+        const merged: ModuleFormData = {
+            ...INITIAL_DATA,
+            ...imported,
+            sections: (Array.isArray(imported.sections) ? imported.sections : []).map(sanitizeSection).filter(Boolean),
+            refreshSections: (Array.isArray(imported.refreshSections) ? imported.refreshSections : []).map(sanitizeSection).filter(Boolean),
+        }
+        setData(merged)
+        setIsDirty(true)
+        setStorageModalOpen(false)
+        toast.success('Module metadata imported and sanitized')
+    }
 
     return (
         <div className="fixed inset-0 bg-surface-subtle flex flex-col overflow-hidden">
@@ -211,7 +213,7 @@ function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, ini
                         <button
                             type="button"
                             onClick={handleBack}
-                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-[#A78BFA] transition-colors"
+                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
                             aria-label="Back to Modules"
                         >
                             <ArrowLeft className="w-4 h-4" />
@@ -224,46 +226,42 @@ function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, ini
                     {isEditing ? 'Edit module' : 'Create module'}
                 </h1>
 
-                {/* Auto-save status */}
+                {/* Status indicator */}
                 <div className="ml-auto flex items-center gap-3">
-                    <SaveStatusPill status={saveStatus} />
+                    <SaveStatus status={saveStatus} isDirty={isDirty} />
+
+                    <button
+                        type="button"
+                        onClick={() => setStorageModalOpen(true)}
+                        title="Import / Export JSON"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
+                    >
+                        <Upload className="w-4.5 h-4.5" />
+                    </button>
 
                     <button
                         type="button"
                         onClick={togglePreview}
-                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold border border-border bg-surface text-foreground hover:bg-[#7C3AED]/10 hover:border-[#7C3AED]/40 hover:text-[#A78BFA] transition-colors"
+                        title="Preview Module"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg border border-border bg-surface text-foreground hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-colors"
                     >
-                        Preview
+                        <Eye className="w-4.5 h-4.5" />
                     </button>
 
-                    {isEditing ? (
-                        <button
-                            type="button"
-                            disabled={actionStatus === 'loading'}
-                            onClick={handleSave}
-                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                            {actionStatus === 'loading'
-                                ? <>Saving…</>
-                                : <>Save</>
-                            }
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            disabled={actionStatus === 'loading'}
-                            onClick={handlePublish}
-                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                            Publish
-                            {actionStatus === 'loading' && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        disabled={actionStatus === 'loading'}
+                        onClick={handleSave}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm shadow-primary/25 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        Save
+                        {(actionStatus === 'loading' || saveStatus === 'saving') && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    </button>
                 </div>
             </div>
 
             {/* Progress bar */}
-            <ProgressBar data={data} waveActive={waveActive} />
+            <ProgressBar data={data} />
 
             <div className="flex flex-row flex-1 overflow-hidden">
                 <DetailsSidebar
@@ -273,19 +271,39 @@ function ModuleCreationFormInner({ getToken, onSuccess, onBack, initialData, ini
                     getToken={getToken}
                 />
                 <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-                    <SectionsEditor data={data} onChange={patch} publishAttempted={publishAttempted} getToken={getToken} />
+                    <SectionsEditor
+                        data={data}
+                        onChange={patch}
+                        publishAttempted={publishAttempted}
+                        getToken={getToken}
+                    />
                 </div>
             </div>
+
 
             {previewOpen && (
                 <ModulePreview data={data} onClose={togglePreview} />
             )}
 
-            {/* Leave-confirmation dialog — Leave button tracks live saveStatus */}
+            <ValidationModal
+                isOpen={showValidation}
+                onClose={() => setShowValidation(false)}
+                missingFields={getMissingFields(data)}
+            />
+
+            <StorageModal
+                isOpen={storageModalOpen}
+                onClose={() => setStorageModalOpen(false)}
+                onImport={handleImport}
+                data={data}
+            />
+
+            {/* Leave-confirmation dialog — Save/Discard/Cancel options */}
             {leaveDialogOpen && (
-                <LeaveConfirmDialog
-                    saveStatus={saveStatus}
-                    onLeave={handleLeaveConfirm}
+                <LeaveConfirm
+                    isSaving={actionStatus === 'loading'}
+                    onSave={handleSaveAndLeave}
+                    onDiscard={handleDiscardAndLeave}
                     onCancel={() => setLeaveDialogOpen(false)}
                 />
             )}

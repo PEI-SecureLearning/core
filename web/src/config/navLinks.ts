@@ -73,8 +73,8 @@ export const adminLinks: NavLinkDef[] = [
     },
     {
         href: "/admin/settings",
-        label: "Platform Settings",
-        description: "Configure global platform settings, integrations, and defaults.",
+        label: "Settings",
+        description: "Configure theme.",
         icon: Settings,
     },
 ];
@@ -209,6 +209,12 @@ export const contentManagerLinks: NavLinkDef[] = [
         description: "Design and maintain reusable email and page templates.",
         icon: FileText,
         group: "Phishing",
+    },
+    {
+        href: "/content-manager/settings",
+        label: "Settings",
+        icon: Settings,
+        showOnWelcome: false,
     },
 ];
 

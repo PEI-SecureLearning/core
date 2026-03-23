@@ -10,9 +10,8 @@ export default function PhishingKitSendingProfilePicker() {
       onSelectedProfileIdsChange={(ids) =>
         updateData({ sending_profile_ids: ids })
       }
-      tooltipLines={[
-            "Emails will be sent through the selected profiles.",
-      ]}
+      tooltipSide="right"
+      tooltipLines={["Emails will be sent through the selected profiles."]}
     />
   );
 }

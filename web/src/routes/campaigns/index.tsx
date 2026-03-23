@@ -1,7 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import { fetchOrgManagerCampaigns, type Campaign as ServiceCampaign } from "@/services/campaignsApi";
+import {
+  fetchOrgManagerCampaigns,
+  type Campaign as ServiceCampaign
+} from "@/services/campaignsApi";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover";
+import RefreshButton from "@/components/shared/RefreshButton";
 import {
   Plus,
   Search,
@@ -14,8 +23,7 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  CalendarRange,
-  RefreshCw,
+  CalendarRange
 } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
@@ -41,11 +49,16 @@ interface TemplateDoc {
 
 function mapStatus(status: ServiceCampaign["status"]): Campaign["status"] {
   switch (status) {
-    case "running":   return "running";
-    case "completed": return "completed";
-    case "scheduled": return "scheduled";
-    case "canceled":  return "canceled";
-    default:          return "scheduled";
+    case "running":
+      return "running";
+    case "completed":
+      return "completed";
+    case "scheduled":
+      return "scheduled";
+    case "canceled":
+      return "canceled";
+    default:
+      return "scheduled";
   }
 }
 
@@ -55,43 +68,45 @@ const statusConfig = {
     label: "Running",
     color: "text-emerald-400",
     bg: "bg-emerald-500/10 border border-emerald-500/20",
-    Icon: Play,
+    Icon: Play
   },
   completed: {
     label: "Completed",
     color: "text-blue-400",
     bg: "bg-blue-500/10 border border-blue-500/20",
-    Icon: CheckCircle,
+    Icon: CheckCircle
   },
   scheduled: {
     label: "Scheduled",
     color: "text-amber-400",
     bg: "bg-amber-500/10 border border-amber-500/20",
-    Icon: Clock,
+    Icon: Clock
   },
   canceled: {
     label: "Canceled",
     color: "text-muted-foreground",
     bg: "bg-muted/40 border border-border",
-    Icon: XCircle,
-  },
+    Icon: XCircle
+  }
 };
 
 // ─── Dropdown ───────────────────────────────────────────────────────────────
 interface GlassDropdownProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
+  readonly value: string;
+  readonly onChange: (value: string) => void;
+  readonly options: { value: string; label: string }[];
 }
 
 function Dropdown({ value, onChange, options }: GlassDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const selectedLabel = options.find((o) => o.value === value)?.label ?? "Select";
+  const selectedLabel =
+    options.find((o) => o.value === value)?.label ?? "Select";
 
   useEffect(() => {
     function onOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setIsOpen(false);
     }
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
@@ -112,17 +127,21 @@ function Dropdown({ value, onChange, options }: GlassDropdownProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 min-w-[160px] rounded-xl shadow-xl z-50 overflow-hidden
-                        bg-surface border border-border">
+        <div
+          className="absolute top-full left-0 mt-2 min-w-40 rounded-xl shadow-xl z-50 overflow-hidden
+                        bg-surface border border-border"
+        >
           {options.map((option) => (
             <button
               key={option.value}
-              onClick={() => { onChange(option.value); setIsOpen(false); }}
-              className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${
-                value === option.value
-                  ? "text-accent-secondary bg-accent/10"
-                  : "text-foreground hover:bg-surface-subtle"
-              }`}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full px-4 py-2.5 text-left text-[14px] font-medium transition-all duration-150 ${value === option.value
+                ? "text-accent-secondary bg-accent/10"
+                : "text-foreground hover:bg-surface-subtle"
+                }`}
             >
               {option.label}
             </button>
@@ -135,7 +154,7 @@ function Dropdown({ value, onChange, options }: GlassDropdownProps) {
 
 // ─── Route ──────────────────────────────────────────────────────────────────
 export const Route = createFileRoute("/campaigns/")({
-  component: CampaignsPage,
+  component: CampaignsPage
 });
 
 function CampaignsPage() {
@@ -146,14 +165,20 @@ function CampaignsPage() {
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
   const [emailTemplate] = useState<TemplateDoc | null>(null);
   const [landingTemplate] = useState<TemplateDoc | null>(null);
   const [detailLoading] = useState(false);
   const [detailError] = useState<string | null>(null);
 
   const realm = useMemo(() => {
-    return (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1] ?? null;
+    return (
+      (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split(
+        "/realms/"
+      )[1] ?? null
+    );
   }, [keycloak.tokenParsed]);
 
   const fetchCampaigns = useCallback(
@@ -179,17 +204,23 @@ function CampaignsPage() {
           begin_date: c.begin_date,
           end_date: c.end_date,
           status: mapStatus(c.status),
-          stats: { sent: c.total_sent ?? 0, opened: c.total_opened ?? 0, clicked: c.total_clicked ?? 0 },
+          stats: {
+            sent: c.total_sent ?? 0,
+            opened: c.total_opened ?? 0,
+            clicked: c.total_clicked ?? 0
+          }
         }));
         setCampaigns(mapped);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load campaigns");
+        setError(
+          err instanceof Error ? err.message : "Failed to load campaigns"
+        );
       } finally {
         setLoading(false);
         setIsRefreshing(false);
       }
     },
-    [realm, keycloak.token],
+    [realm, keycloak.token]
   );
 
   useEffect(() => {
@@ -204,19 +235,24 @@ function CampaignsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const totalCampaigns   = campaigns.length;
-  const activeCampaigns  = campaigns.filter((c) => c.status === "running").length;
-  const totalEmailsSent  = campaigns.reduce((acc, c) => acc + c.stats.sent, 0);
-  const totalClicks      = campaigns.reduce((acc, c) => acc + c.stats.clicked, 0);
-  const avgClickRate     = totalEmailsSent > 0
-    ? ((totalClicks / totalEmailsSent) * 100).toFixed(1)
-    : "0.0";
+  const totalCampaigns = campaigns.length;
+  const activeCampaigns = campaigns.filter(
+    (c) => c.status === "running"
+  ).length;
+  const totalEmailsSent = campaigns.reduce((acc, c) => acc + c.stats.sent, 0);
+  const totalClicks = campaigns.reduce((acc, c) => acc + c.stats.clicked, 0);
+  const avgClickRate =
+    totalEmailsSent > 0
+      ? ((totalClicks / totalEmailsSent) * 100).toFixed(1)
+      : "0.0";
 
   // ─── Loading / error states ────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground text-sm animate-pulse">Loading campaigns…</p>
+        <p className="text-muted-foreground text-sm animate-pulse">
+          Loading campaigns…
+        </p>
       </div>
     );
   }
@@ -231,7 +267,6 @@ function CampaignsPage() {
   // ─── Page ─────────────────────────────────────────────────────────────
   return (
     <div className="p-8 space-y-8 min-h-screen bg-background text-foreground">
-
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
@@ -245,9 +280,8 @@ function CampaignsPage() {
         <Link
           to="/campaigns/new"
           className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-medium text-[14px]
-                     text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
-                     shadow-lg shadow-[#7C3AED]/25 hover:shadow-[#7C3AED]/40"
-          style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
+                     text-primary-foreground transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
+                     shadow-lg shadow-primary/25 hover:shadow-primary/40 bg-primary hover:bg-primary/90"
         >
           <Plus size={18} strokeWidth={2.5} />
           New Campaign
@@ -257,7 +291,10 @@ function CampaignsPage() {
       {/* ── Filters ────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search campaigns…"
@@ -265,18 +302,18 @@ function CampaignsPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-3 rounded-xl text-[14px] outline-none transition-all duration-200
                        bg-surface border border-border text-foreground placeholder:text-muted-foreground
-                       focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/60"
+                       focus:ring-2 focus:ring-primary/30 focus:border-primary/60"
           />
         </div>
         <Dropdown
           value={statusFilter}
           onChange={setStatusFilter}
           options={[
-            { value: "all",       label: "All Status"  },
-            { value: "running",   label: "Running"     },
-            { value: "scheduled", label: "Scheduled"   },
-            { value: "completed", label: "Completed"   },
-            { value: "canceled",  label: "Canceled"    },
+            { value: "all", label: "All Status" },
+            { value: "running", label: "Running" },
+            { value: "scheduled", label: "Scheduled" },
+            { value: "completed", label: "Completed" },
+            { value: "canceled", label: "Canceled" }
           ]}
         />
         <Link
@@ -287,70 +324,87 @@ function CampaignsPage() {
           <CalendarRange size={16} />
           Timeline
         </Link>
-        <button
-          type="button"
+        <RefreshButton
           onClick={() => void fetchCampaigns(false)}
           disabled={loading || isRefreshing}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200
                      bg-surface border border-border text-muted-foreground hover:text-accent-secondary hover:border-accent-secondary/40
                      disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
-          Refresh
-        </button>
+          isRefreshing={isRefreshing}
+        />
       </div>
 
       {/* ── Stat cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-
         {/* Total */}
         <div className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
-                        hover:border-[#A78BFA]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10">
+                        hover:border-accent-secondary/30 hover:shadow-lg hover:shadow-primary/10">
           <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
             Total Campaigns
           </p>
-          <p className="text-3xl font-semibold text-foreground mt-1.5">{totalCampaigns}</p>
+          <p className="text-3xl font-semibold text-foreground mt-1.5">
+            {totalCampaigns}
+          </p>
         </div>
 
         {/* Active */}
-        <div className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
-                        hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10">
-          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Active</p>
-          <p className="text-3xl font-semibold text-emerald-400 mt-1.5">{activeCampaigns}</p>
+        <div
+          className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
+                        hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10"
+        >
+          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
+            Active
+          </p>
+          <p className="text-3xl font-semibold text-emerald-400 mt-1.5">
+            {activeCampaigns}
+          </p>
         </div>
 
         {/* Sent */}
         <div className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
-                        hover:border-[#A78BFA]/30 hover:shadow-lg hover:shadow-[#7C3AED]/10">
+                        hover:border-accent-secondary/30 hover:shadow-lg hover:shadow-primary/10">
           <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Total Sent</p>
-          <p className="text-3xl font-semibold mt-1.5"
-             style={{ background: "linear-gradient(135deg, #A78BFA, #9333EA)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+          <p className="text-3xl font-semibold mt-1.5 text-accent-secondary">
             {totalEmailsSent.toLocaleString()}
           </p>
         </div>
 
         {/* Click rate */}
-        <div className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
-                        hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/10">
-          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">Avg Click Rate</p>
-          <p className="text-3xl font-semibold text-amber-400 mt-1.5">{avgClickRate}%</p>
+        <div
+          className="bg-surface border border-border rounded-2xl p-5 hover:-translate-y-0.5 transition-all duration-300
+                        hover:border-amber-500/30 hover:shadow-lg hover:shadow-amber-500/10"
+        >
+          <p className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
+            Avg Click Rate
+          </p>
+          <p className="text-3xl font-semibold text-amber-400 mt-1.5">
+            {avgClickRate}%
+          </p>
         </div>
 
-      </div>
+      </div >
 
       {/* ── Table ──────────────────────────────────────────────────────── */}
-      <div className="bg-surface border border-border rounded-2xl flex flex-col overflow-hidden">
+      < div className="bg-surface border border-border rounded-2xl flex flex-col overflow-hidden" >
 
         {/* Fixed header */}
-        <div className="bg-surface-subtle border-b border-border flex-shrink-0">
+        < div className="bg-surface-subtle border-b border-border shrink-0" >
           <table className="w-full">
             <thead>
               <tr>
-                {["Campaign", "Status", "Duration", "Sent", "Opened", "Clicked", ""].map((h, i) => (
+                {[
+                  "Campaign",
+                  "Status",
+                  "Duration",
+                  "Sent",
+                  "Opened",
+                  "Clicked",
+                  ""
+                ].map((h, i) => (
                   <th
-                    key={i}
+                    key={h}
                     className="text-left px-6 py-4 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider"
-                    style={{ width: ["22%","12%","20%","12%","12%","12%","10%"][i] }}
+                    style={{ width: ["22%", "12%", "20%", "12%", "12%", "12%", "10%"][i] }}
                   >
                     {h}
                   </th>
@@ -358,21 +412,29 @@ function CampaignsPage() {
               </tr>
             </thead>
           </table>
-        </div>
+        </div >
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto max-h-[55vh]">
+        < div className="flex-1 overflow-y-auto max-h-[55vh]" >
           <table className="w-full">
             <tbody className="divide-y divide-border">
               {filteredCampaigns.map((campaign) => {
                 const status = statusConfig[campaign.status];
                 const StatusIcon = status.Icon;
-                const clickRate = campaign.stats.sent > 0
-                  ? ((campaign.stats.clicked / campaign.stats.sent) * 100).toFixed(1)
-                  : "0";
-                const openRate = campaign.stats.sent > 0
-                  ? ((campaign.stats.opened / campaign.stats.sent) * 100).toFixed(1)
-                  : "0";
+                const clickRate =
+                  campaign.stats.sent > 0
+                    ? (
+                      (campaign.stats.clicked / campaign.stats.sent) *
+                      100
+                    ).toFixed(1)
+                    : "0";
+                const openRate =
+                  campaign.stats.sent > 0
+                    ? (
+                      (campaign.stats.opened / campaign.stats.sent) *
+                      100
+                    ).toFixed(1)
+                    : "0";
 
                 return (
                   <tr
@@ -389,7 +451,9 @@ function CampaignsPage() {
                     </td>
 
                     <td className="px-6 py-4 w-[12%]">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium ${status.color} ${status.bg}`}>
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium ${status.color} ${status.bg}`}
+                      >
                         <StatusIcon size={13} strokeWidth={2.5} />
                         {status.label}
                       </span>
@@ -397,7 +461,10 @@ function CampaignsPage() {
 
                     <td className="px-6 py-4 w-[20%]">
                       <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                        <Calendar size={14} className="text-muted-foreground/60" />
+                        <Calendar
+                          size={14}
+                          className="text-muted-foreground/60"
+                        />
                         {new Date(campaign.begin_date).toLocaleDateString()} –{" "}
                         {new Date(campaign.end_date).toLocaleDateString()}
                       </div>
@@ -417,7 +484,9 @@ function CampaignsPage() {
                         <span className="font-semibold text-[14px] text-foreground">
                           {campaign.stats.opened.toLocaleString()}
                         </span>
-                        <span className="text-[12px] text-muted-foreground">({openRate}%)</span>
+                        <span className="text-[12px] text-muted-foreground">
+                          ({openRate}%)
+                        </span>
                       </div>
                     </td>
 
@@ -427,46 +496,90 @@ function CampaignsPage() {
                         <span className="font-semibold text-[14px] text-foreground">
                           {campaign.stats.clicked}
                         </span>
-                        <span className="text-[12px] text-muted-foreground">({clickRate}%)</span>
+                        <span className="text-[12px] text-muted-foreground">
+                          ({clickRate}%)
+                        </span>
                       </div>
                     </td>
 
                     <td className="px-6 py-4 w-[10%]">
-                      <div className="relative inline-block text-left">
-                        <details className="group">
-                          <summary className="list-none p-2 hover:bg-surface-subtle rounded-lg transition-colors cursor-pointer flex items-center justify-center">
-                            <MoreVertical size={16} className="text-muted-foreground group-hover:text-foreground" />
-                          </summary>
-                          <div className="absolute right-0 mt-2 w-40 rounded-xl bg-surface border border-border shadow-xl z-10 py-1">
-                            <Link
-                              to={`/campaigns/${campaign.id}` as any}
-                              className="w-full text-left px-4 py-2 text-[13px] text-foreground hover:bg-surface-subtle block transition-colors"
-                            >
-                              View Details
-                            </Link>
-                            <button
-                              className="w-full text-left px-4 py-2 text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
-                              onClick={async () => {
-                                if (!confirm(`Delete "${campaign.name}"? This cannot be undone.`)) return;
-                                try {
-                                  const realm = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss?.split("/realms/")[1];
-                                  if (!realm) { alert("Could not resolve realm from token."); return; }
-                                  const res = await fetch(
-                                    `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${campaign.id}`,
-                                    { method: "DELETE", headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" } }
-                                  );
-                                  if (!res.ok) throw new Error(await res.text() || `Failed (${res.status})`);
-                                  setCampaigns((prev) => prev.filter((c) => c.id !== campaign.id));
-                                } catch (err) {
-                                  alert(err instanceof Error ? err.message : "Failed to delete campaign");
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="p-2 hover:bg-surface-subtle rounded-lg transition-colors cursor-pointer flex items-center justify-center"
+                            aria-label="Campaign options"
+                          >
+                            <MoreVertical
+                              size={16}
+                              className="text-muted-foreground hover:text-foreground"
+                            />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          side="bottom"
+                          sideOffset={8}
+                          className="w-40 rounded-xl bg-surface border border-border shadow-xl z-50 py-1 p-0"
+                        >
+                          <Link
+                            to="/campaigns/$id"
+                            params={{ id: campaign.id }}
+                            className="w-full text-left px-4 py-2 text-[13px] text-foreground hover:bg-surface-subtle block transition-colors"
+                          >
+                            View Details
+                          </Link>
+                          <button
+                            className="w-full text-left px-4 py-2 text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
+                            onClick={async () => {
+                              if (
+                                !confirm(
+                                  `Delete "${campaign.name}"? This cannot be undone.`
+                                )
+                              )
+                                return;
+                              try {
+                                const realm = (
+                                  keycloak.tokenParsed as
+                                  | { iss?: string }
+                                  | undefined
+                                )?.iss?.split("/realms/")[1];
+                                if (!realm) {
+                                  alert("Could not resolve realm from token.");
+                                  return;
                                 }
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </details>
-                      </div>
+                                const res = await fetch(
+                                  `${API_BASE}/org-manager/${encodeURIComponent(realm)}/campaigns/${campaign.id}`,
+                                  {
+                                    method: "DELETE",
+                                    headers: {
+                                      Authorization: keycloak.token
+                                        ? `Bearer ${keycloak.token}`
+                                        : ""
+                                    }
+                                  }
+                                );
+                                if (!res.ok)
+                                  throw new Error(
+                                    (await res.text()) ||
+                                    `Failed (${res.status})`
+                                  );
+                                setCampaigns((prev) =>
+                                  prev.filter((c) => c.id !== campaign.id)
+                                );
+                              } catch (err) {
+                                alert(
+                                  err instanceof Error
+                                    ? err.message
+                                    : "Failed to delete campaign"
+                                );
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </PopoverContent>
+                      </Popover>
                     </td>
                   </tr>
                 );
@@ -474,80 +587,84 @@ function CampaignsPage() {
             </tbody>
           </table>
 
-          {filteredCampaigns.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground text-[15px]">No campaigns found</p>
-            </div>
-          )}
-        </div>
-      </div>
+          {
+            filteredCampaigns.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground text-[15px]">No campaigns found</p>
+              </div>
+            )
+          }
+        </div >
+      </div >
 
       {/* ── Detail modal ───────────────────────────────────────────────── */}
-      {selectedCampaign && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full h-full max-w-5xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground tracking-wide">Campaign Details</p>
-                <h2 className="text-lg font-semibold text-foreground">{selectedCampaign.name}</h2>
-              </div>
-              <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => setSelectedCampaign(null)}>
-                ✕
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 text-sm text-foreground">
-              <p><span className="font-medium text-muted-foreground">Description:</span> {selectedCampaign.description || "No description"}</p>
-              <p><span className="font-medium text-muted-foreground">Start:</span> {new Date(selectedCampaign.begin_date).toLocaleString()}</p>
-              <p><span className="font-medium text-muted-foreground">End:</span> {new Date(selectedCampaign.end_date).toLocaleString()}</p>
-              <p><span className="font-medium text-muted-foreground">Status:</span> {statusConfig[selectedCampaign.status].label}</p>
-
-              <div className="grid grid-cols-3 gap-3">
-                {(["sent","opened","clicked"] as const).map((k) => (
-                  <div key={k} className="bg-surface-subtle rounded-xl p-3 border border-border">
-                    <p className="text-[11px] uppercase text-muted-foreground">{k}</p>
-                    <p className="text-base font-semibold text-foreground mt-0.5">{selectedCampaign.stats[k]}</p>
-                  </div>
-                ))}
+      {
+        selectedCampaign && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-surface border border-border rounded-2xl shadow-2xl w-full h-full max-w-5xl flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground tracking-wide">Campaign Details</p>
+                  <h2 className="text-lg font-semibold text-foreground">{selectedCampaign.name}</h2>
+                </div>
+                <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => setSelectedCampaign(null)}>
+                  ✕
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[{ label: "Email Template", data: emailTemplate }, { label: "Landing Page", data: landingTemplate }].map(({ label, data }) => (
-                  <div key={label} className="bg-surface-subtle rounded-xl p-4 border border-border">
-                    <p className="text-xs uppercase text-muted-foreground mb-2">{label}</p>
-                    {detailLoading ? (
-                      <p className="text-muted-foreground text-sm">Loading…</p>
-                    ) : detailError ? (
-                      <p className="text-red-400 text-sm">{detailError}</p>
-                    ) : data ? (
-                      <div className="space-y-2">
-                        <p className="font-semibold text-foreground">{data.name}</p>
-                        {data.html && (
-                          <div className="border border-border rounded-lg p-2 bg-background max-h-48 overflow-auto">
-                            <div dangerouslySetInnerHTML={{ __html: data.html }} />
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-sm">Not available</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 text-sm text-foreground">
+                <p><span className="font-medium text-muted-foreground">Description:</span> {selectedCampaign.description || "No description"}</p>
+                <p><span className="font-medium text-muted-foreground">Start:</span> {new Date(selectedCampaign.begin_date).toLocaleString()}</p>
+                <p><span className="font-medium text-muted-foreground">End:</span> {new Date(selectedCampaign.end_date).toLocaleString()}</p>
+                <p><span className="font-medium text-muted-foreground">Status:</span> {statusConfig[selectedCampaign.status].label}</p>
 
-            <div className="px-5 py-4 border-t border-border flex justify-end">
-              <button
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white bg-[#7C3AED] hover:bg-[#9333EA] transition-colors"
-                onClick={() => setSelectedCampaign(null)}
-              >
-                Close
-              </button>
+                <div className="grid grid-cols-3 gap-3">
+                  {(["sent", "opened", "clicked"] as const).map((k) => (
+                    <div key={k} className="bg-surface-subtle rounded-xl p-3 border border-border">
+                      <p className="text-[11px] uppercase text-muted-foreground">{k}</p>
+                      <p className="text-base font-semibold text-foreground mt-0.5">{selectedCampaign.stats[k]}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[{ label: "Email Template", data: emailTemplate }, { label: "Landing Page", data: landingTemplate }].map(({ label, data }) => (
+                    <div key={label} className="bg-surface-subtle rounded-xl p-4 border border-border">
+                      <p className="text-xs uppercase text-muted-foreground mb-2">{label}</p>
+                      {detailLoading ? (
+                        <p className="text-muted-foreground text-sm">Loading…</p>
+                      ) : detailError ? (
+                        <p className="text-red-400 text-sm">{detailError}</p>
+                      ) : data ? (
+                        <div className="space-y-2">
+                          <p className="font-semibold text-foreground">{data.name}</p>
+                          {data.html && (
+                            <div className="border border-border rounded-lg p-2 bg-background max-h-48 overflow-auto">
+                              <div dangerouslySetInnerHTML={{ __html: data.html }} />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">Not available</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-5 py-4 border-t border-border flex justify-end">
+                <button
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  onClick={() => setSelectedCampaign(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-    </div>
+    </div >
   );
 }

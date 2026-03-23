@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { Loader2 } from "lucide-react";
 
@@ -30,7 +30,7 @@ export default function SendingProfilesPage() {
 
   const realm = tokenRealm || "";
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await fetchSendingProfiles(
@@ -43,13 +43,13 @@ export default function SendingProfilesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [keycloak.token, realm]);
 
   useEffect(() => {
     if (realm) {
-      loadData();
+      void loadData();
     }
-  }, [realm]);
+  }, [loadData, realm]);
 
   const pendingProfileName =
     profiles.find((p) => p.id === pendingDeleteId)?.name ?? "this profile";
@@ -74,7 +74,12 @@ export default function SendingProfilesPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <SendingProfilesHeader view={view} setView={setView} />
+      <SendingProfilesHeader
+        view={view}
+        setView={setView}
+        onRefresh={loadData}
+        isFetching={isLoading}
+      />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {view === "grid" ? (

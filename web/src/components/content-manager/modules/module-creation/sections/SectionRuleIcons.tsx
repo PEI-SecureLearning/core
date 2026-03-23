@@ -10,9 +10,9 @@ export function SectionRuleIcons({ section, withTooltips }: {
     if (!withTooltips) {
         return (
             <div className="flex items-center gap-1 flex-shrink-0">
-                {section.requireCorrectAnswers && <CheckCircle className="w-3.5 h-3.5 text-green-600" />}
-                {section.isOptional           && <SkipForward  className="w-3.5 h-3.5 text-blue-600"  />}
-                {!!section.minTimeSpent       && <Clock        className="w-3.5 h-3.5 text-orange-600"/>}
+                {section.requireCorrectAnswers && <CheckCircle className="w-3.5 h-3.5 text-success" />}
+                {section.isOptional           && <SkipForward  className="w-3.5 h-3.5 text-info"  />}
+                {!!section.minTimeSpent       && <Clock        className="w-3.5 h-3.5 text-warning"/>}
             </div>
         )
     }
@@ -21,7 +21,7 @@ export function SectionRuleIcons({ section, withTooltips }: {
         <div className="flex items-center gap-1 flex-shrink-0 relative z-10">
             {section.requireCorrectAnswers && (
                 <div className="group relative">
-                    <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                    <CheckCircle className="w-3.5 h-3.5 text-success" />
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#0C0A0F] text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Correct answers required
                     </span>
@@ -29,7 +29,7 @@ export function SectionRuleIcons({ section, withTooltips }: {
             )}
             {section.isOptional && (
                 <div className="group relative">
-                    <SkipForward className="w-3.5 h-3.5 text-blue-600" />
+                    <SkipForward className="w-3.5 h-3.5 text-info" />
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#0C0A0F] text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Optional section
                     </span>
@@ -37,7 +37,7 @@ export function SectionRuleIcons({ section, withTooltips }: {
             )}
             {!!section.minTimeSpent && section.minTimeSpent > 0 && (
                 <div className="group relative">
-                    <Clock className="w-3.5 h-3.5 text-orange-600" />
+                    <Clock className="w-3.5 h-3.5 text-warning" />
                     <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#0C0A0F] text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         Min. {section.minTimeSpent}s required
                     </span>

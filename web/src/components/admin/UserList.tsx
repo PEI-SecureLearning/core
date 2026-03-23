@@ -37,7 +37,7 @@ export function UserList() {
                     <h2 className="text-2xl font-bold text-foreground">User Management</h2>
                     <p className="text-muted-foreground mt-1">Manage users, roles, and permissions</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
                     <Shield size={18} />
                     Add User
                 </button>
@@ -51,13 +51,13 @@ export function UserList() {
                             onChange={setSearchTerm}
                             placeholder="Search users..."
                             iconClassName="text-primary"
-                            inputClassName="h-10 rounded-lg border-border focus-visible:ring-blue-500"
+                            inputClassName="h-10 rounded-lg border-border focus-visible:ring-primary/50"
                         />
                     </div>
                     <div className="relative">
                         <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70" size={20} />
                         <select
-                            className="pl-10 pr-8 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-background"
+                            className="pl-10 pr-8 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent appearance-none bg-background"
                             value={selectedGroup}
                             onChange={(e) => setSelectedGroup(e.target.value)}
                         >
@@ -88,14 +88,14 @@ export function UserList() {
                                 if (user.role === 'Admin') {
                                     roleBadgeClass = 'bg-primary/20 text-primary/80'
                                 } else if (user.role === 'Manager') {
-                                    roleBadgeClass = 'bg-blue-100 text-blue-800'
+                                    roleBadgeClass = 'bg-info/10 text-info'
                                 }
 
                                 return (
                                 <tr key={user.id} className="hover:bg-surface-subtle transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                                                 {user.name.charAt(0)}
                                             </div>
                                             <div>
@@ -111,9 +111,9 @@ export function UserList() {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-muted-foreground">{user.group}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-muted text-foreground'
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-success/10 text-success' : 'bg-muted text-foreground'
                                             }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-green-600' : 'bg-muted-foreground/50'
+                                            <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-success' : 'bg-muted-foreground/50'
                                                 }`} />
                                             {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                                         </span>
@@ -121,10 +121,10 @@ export function UserList() {
                                     <td className="px-6 py-4 text-sm text-muted-foreground">{user.lastActive}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <button className="p-2 text-muted-foreground/70 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <button className="p-2 text-muted-foreground/70 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="p-2 text-muted-foreground/70 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <button className="p-2 text-muted-foreground/70 hover:text-error hover:bg-error/10 rounded-lg transition-colors">
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>

@@ -5,27 +5,30 @@ from src.models import Realm, RealmCreate, User
 
 from src.core.db import engine
 from src.services.compliance import ensure_tenant_policy, ensure_tenant_quiz
+from src.services.platform_admin.base_handler import base_handler
 
 
-class realm_handler:
+class realm_handler(base_handler):
+
+    def __init__(self):
+        super().__init__()
 
     def list_realms(self) -> dict:
         """List all tenant realms from Keycloak (excluding master and platform)."""
         realms = self.admin.list_realms(exclude_system=True)
         return {"realms": realms}
 
-
     def get_realm_by_domain(self, session: Session, domain: str) -> Realm | None:
         statement = select(Realm).where(Realm.domain == domain)
         return session.exec(statement).first()
-
 
     def find_realm_by_domain(self, domain: str) -> str | None:
         """Find realm name by domain using Keycloak admin API."""
         return self.admin.find_realm_by_domain(domain)
 
-
-    def create_realm_in_keycloak(self, realm: RealmCreate, session: Session) -> RealmCreate:
+    def create_realm_in_keycloak(
+        self, realm: RealmCreate, session: Session
+    ) -> RealmCreate:
         """Create a realm in Keycloak."""
         normalized_domain = (realm.domain or "").strip().lower()
         if not normalized_domain:
@@ -38,6 +41,13 @@ class realm_handler:
                 status_code=409,
                 detail=f"Domain '{normalized_domain}' is already in use.",
             )
+        
+        admin_parts = realm.adminEmail.strip().lower().split('@')
+        if len(admin_parts) != 2 or admin_parts[1] != normalized_domain:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Admin email must belong to the '{normalized_domain}' domain.",
+            )
 
         _ = self.admin.create_realm(
             realm_name=realm.name,
@@ -46,16 +56,30 @@ class realm_handler:
             features=realm.features,
         )
 
+        try:
+            token = self.admin._get_admin_token()
+            users = self.admin.list_users(realm.name)
+            org_manager_user = next((u for u in users if str(u.get("username")).lower() == "org_manager"), None)
+            if org_manager_user:
+                client = self.admin.keycloak_client.get_client_by_client_id(realm.name, token, "realm-management")
+                if client:
+                    client_id = client.get("id")
+                    client_role = self.admin.keycloak_client.get_client_role(realm.name, token, client_id, "realm-admin")
+                    if client_role:
+                        self.admin.keycloak_client.assign_client_roles(
+                            realm.name, token, org_manager_user.get("id"), client_id, [client_role]
+                        )
+        except Exception as e:
+            print(f"Warning: Failed to bootstrap ORG_MANAGER with realm-admin: {e}")
+
         self._ensure_realm(session, realm.name, normalized_domain)
 
-        
         session.commit()
 
         ensure_tenant_policy(session, realm.name)
         ensure_tenant_quiz(session, realm.name)
-   
-        return realm
 
+        return realm
 
     def delete_realm_from_keycloak(self, realm_name: str, session: Session) -> dict:
         """Delete a realm from Keycloak."""
@@ -70,14 +94,13 @@ class realm_handler:
                 user = session.get(User, uid)
                 if user:
                     session.delete(user)
-                    
+
         db_realm = session.get(Realm, realm_name)
         if db_realm:
             session.delete(db_realm)
         session.commit()
 
         return response
-
 
     def get_realm_info(self, session: Session, realm_name: str) -> dict | None:
         """Return realm metadata plus users for admin/management views."""
@@ -88,10 +111,13 @@ class realm_handler:
 
         features = self.admin.get_realm_features(realm_name)
         domain = self.admin.get_domain_for_realm(realm_name)
-        logo_updated_at = self._get_realm_attribute(realm_name, "tenant-logo-updated-at")
+        logo_updated_at = self._get_realm_attribute(
+            realm_name, "tenant-logo-updated-at"
+        )
 
-        users = self.list_users_in_realm(session, realm_name).get("users", [])
-    
+        from src.services.platform_admin.user_handler import get_user_handler
+
+        users = get_user_handler().list_users_in_realm(session, realm_name).users
 
         return {
             "realm": realm.get("realm") or realm_name,
@@ -103,4 +129,13 @@ class realm_handler:
             "user_count": len(users),
             "users": users,
         }
- 
+
+
+_instance: realm_handler | None = None
+
+
+def get_realm_handler() -> realm_handler:
+    global _instance
+    if _instance is None:
+        _instance = realm_handler()
+    return _instance

@@ -52,8 +52,8 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
 
       <div
         className={`flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
-          shadow-lg shadow-slate-300/50 p-5
-          hover:shadow-2xl hover:shadow-purple-200/60
+          shadow-lg shadow-muted/50 p-5
+          hover:shadow-2xl hover:shadow-primary/20
           transition-all duration-500 hover:-translate-y-1 group ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -71,7 +71,7 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
             className="text-4xl sm:text-5xl font-bold text-primary transition-all duration-300"
             style={{
               textShadow: isHovered
-                ? "0 0 20px rgba(139, 92, 246, 0.35)"
+                ? "0 0 20px rgba(var(--primary-rgb), 0.35)"
                 : "none",
               transform: isHovered ? "scale(1.05)" : "scale(1)",
               display: "inline-block",
@@ -93,11 +93,11 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
         {/* Progress Bar */}
         <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden mb-1">
           <div
-            className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-purple-400 via-violet-400 to-purple-600 transition-all duration-700 ease-out"
+            className="absolute top-0 left-0 h-full rounded-full bg-primary transition-all duration-700 ease-out"
             style={{
               width: `${completionRate}%`,
               boxShadow: isHovered
-                ? "0 0 12px rgba(139, 92, 246, 0.4), 0 0 6px rgba(139, 92, 246, 0.25)"
+                ? "0 0 12px rgba(var(--primary-rgb), 0.4), 0 0 6px rgba(var(--primary-rgb), 0.25)"
                 : "none",
               backgroundSize: "200% auto",
               animation: isHovered ? "barShimmer 1.8s linear infinite" : "none",
@@ -120,7 +120,7 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
           onClick={() => setShowModal(true)}
           className="group/btn flex items-center gap-1.5 text-[13px] font-semibold text-primary
             hover:text-primary transition-all duration-200 cursor-pointer
-            bg-primary/10 hover:bg-primary/20 border border-purple-100 hover:border-primary/30
+            bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/30
             px-3 py-1.5 rounded-lg"
         >
           View details
@@ -168,37 +168,37 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
             {/* Mini progress bar in modal */}
             <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mb-5">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600 transition-all duration-700"
+                className="h-full rounded-full bg-primary transition-all duration-700"
                 style={{ width: `${completionRate}%` }}
               />
             </div>
 
-            <div className="space-y-2 max-h-72 overflow-y-auto purple-scrollbar">
+            <div className="space-y-2 max-h-72 overflow-y-auto themed-scrollbar">
               {courses.map((course, idx) => (
                 <a
                   key={idx}
                   href={course.href}
                   className="row-slide flex items-center justify-between p-3 rounded-xl
-                    bg-surface-subtle/80 hover:bg-primary/10/60 border border-transparent hover:border-purple-100/60
+                    bg-surface-subtle/80 hover:bg-primary/10 border border-transparent hover:border-primary/20
                     group/row"
                 >
                   <div className="flex items-center gap-2.5">
                     <div
-                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${course.done ? "bg-emerald-500" : "bg-amber-400"}`}
+                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${course.done ? "bg-success" : "bg-warning"}`}
                     />
                     <span className="text-[14px] font-medium text-foreground/90 group-hover/row:text-primary transition-colors">
                       {course.name}
                     </span>
                   </div>
                   {course.done ? (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10">
-                      <span className="text-[11px] font-semibold text-emerald-600">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-success/10">
+                      <span className="text-[11px] font-semibold text-success">
                         Done
                       </span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10">
-                      <span className="text-[11px] font-semibold text-amber-600">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-warning/10">
+                      <span className="text-[11px] font-semibold text-warning">
                         Pending
                       </span>
                     </div>
@@ -209,10 +209,10 @@ const AssignedTraining: React.FC<AssignedTrainingProps> = ({
 
             <button
               onClick={() => setShowModal(false)}
-              className="w-full mt-5 py-2.5 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl
-                font-semibold text-[14px] hover:from-purple-700 hover:to-violet-700
-                transition-all duration-200 shadow-lg shadow-purple-500/25
-                hover:shadow-purple-500/40 hover:-translate-y-0.5 cursor-pointer"
+              className="w-full mt-5 py-2.5 bg-primary text-primary-foreground rounded-xl
+                font-semibold text-[14px] hover:bg-primary/90
+                transition-all duration-200 shadow-lg shadow-primary/25
+                hover:shadow-primary/40 hover:-translate-y-0.5 cursor-pointer"
             >
               Close
             </button>

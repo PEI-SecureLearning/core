@@ -1,145 +1,99 @@
-const API_BASE = import.meta.env.VITE_API_URL;
+import { apiClient } from "@/lib/api-client";
+import type {
+  CreateUserGroupMemberPayload,
+  CreateUserGroupMemberResponse,
+  CreateUserGroupPayload,
+  CreateUserGroupResponse,
+  UpdateUserGroupPayload,
+  UserGroupDto,
+  UserGroupListResponse,
+  UserGroupMemberDto,
+  UserGroupMembersResponse,
+  UserGroupUsersResponse,
+} from "@/types/userGroups";
 
-export async function fetchGroups(realm: string, token?: string) {
-  const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{ realm: string; groups: { id?: string; name?: string; path?: string }[] }>;
+type GroupListApiResponse = UserGroupDto[] | { realm?: string; groups?: UserGroupDto[] };
+type GroupMembersApiResponse =
+  | UserGroupMemberDto[]
+  | { realm?: string; groupId?: string; members?: UserGroupMemberDto[] };
+
+function normalizeGroupsResponse(
+  payload: GroupListApiResponse,
+  realm: string
+): UserGroupListResponse {
+  if (Array.isArray(payload)) {
+    return { realm, groups: payload };
+  }
+
+  return {
+    realm: payload.realm || realm,
+    groups: payload.groups || [],
+  };
 }
 
-export async function createGroup(realm: string, name: string, token?: string) {
-  const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
-    method: "POST",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  const text = await res.text();
-  return text ? JSON.parse(text) : {};
-}
-
-export async function fetchUsers(realm: string, token?: string) {
-  const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/users`, {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{
-    realm: string;
-    users: { id?: string; username?: string; email?: string; firstName?: string; lastName?: string }[];
-  }>;
-}
-
-export async function createUser(
+function normalizeGroupMembersResponse(
+  payload: GroupMembersApiResponse,
   realm: string,
-  username: string,
-  name: string,
-  email: string,
-  role: string,
-  groupId: string | null,
-  token?: string
-) {
-  const res = await fetch(`${API_BASE}/realms/users`, {
-    method: "POST",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      realm,
-      username,
-      name,
-      email,
-      role,
-      group_id: groupId,
-    }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{
-    realm: string;
-    username: string;
-    status: string;
-    temporary_password: string;
-  }>;
+  groupId: string
+): UserGroupMembersResponse {
+  if (Array.isArray(payload)) {
+    return { realm, groupId, members: payload };
+  }
+
+  return {
+    realm: payload.realm || realm,
+    groupId: payload.groupId || groupId,
+    members: payload.members || [],
+  };
 }
 
+export const userGroupsApi = {
+  async getGroups(realm: string): Promise<UserGroupListResponse> {
+    const payload = await apiClient.get<GroupListApiResponse>(
+      `/realms/${encodeURIComponent(realm)}/groups`
+    );
+    return normalizeGroupsResponse(payload, realm);
+  },
 
-export async function addUserToGroup(realm: string, groupId: string, userId: string, token?: string) {
-  const res = await fetch(
-    `${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(
-      userId
-    )}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    }
-  );
-  if (!res.ok) throw new Error(await res.text());
-  return true;
-}
+  createGroup: (realm: string, payload: CreateUserGroupPayload) =>
+    apiClient.post<CreateUserGroupResponse>(
+      `/realms/${encodeURIComponent(realm)}/groups`,
+      payload
+    ),
 
-export async function fetchGroupMembers(realm: string, groupId: string, token?: string) {
-  const res = await fetch(
-    `${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members`,
-    {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    }
-  );
-  if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{
-    realm: string;
-    groupId: string;
-    members: { id?: string; username?: string; email?: string; firstName?: string; lastName?: string }[];
-  }>;
-}
+  getUsers: (realm: string) =>
+    apiClient.get<UserGroupUsersResponse>(`/realms/${encodeURIComponent(realm)}/users`),
 
-export async function deleteGroup(realm: string, groupId: string, token?: string) {
-  const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-    },
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return true;
-}
+  createUser: (realm: string, payload: CreateUserGroupMemberPayload) =>
+    apiClient.post<CreateUserGroupMemberResponse>(
+      `/realms/${encodeURIComponent(realm)}/users`,
+      payload
+    ),
 
-export async function updateGroup(realm: string, groupId: string, name: string, token?: string) {
-  const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}`, {
-    method: "PUT",
-    headers: {
-      Authorization: token ? `Bearer ${token}` : "",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name }),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return true;
-}
+  addUserToGroup: (realm: string, groupId: string, userId: string) =>
+    apiClient.post<void>(
+      `/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`,
+      {}
+    ),
 
-export async function removeUserFromGroup(realm: string, groupId: string, userId: string, token?: string) {
-  const res = await fetch(
-    `${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(
-      userId
-    )}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
-    }
-  );
-  if (!res.ok) throw new Error(await res.text());
-  return true;
-}
+  async getGroupMembers(realm: string, groupId: string): Promise<UserGroupMembersResponse> {
+    const payload = await apiClient.get<GroupMembersApiResponse>(
+      `/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members`
+    );
+    return normalizeGroupMembersResponse(payload, realm, groupId);
+  },
+
+  deleteGroup: (realm: string, groupId: string) =>
+    apiClient.delete(`/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}`) as Promise<void>,
+
+  updateGroup: (realm: string, groupId: string, payload: UpdateUserGroupPayload) =>
+    apiClient.put<void>(
+      `/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}`,
+      payload
+    ),
+
+  removeUserFromGroup: (realm: string, groupId: string, userId: string) =>
+    apiClient.delete(
+      `/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`
+    ) as Promise<void>,
+};

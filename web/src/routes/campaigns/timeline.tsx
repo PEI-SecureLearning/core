@@ -6,7 +6,7 @@ import { TimelineView } from "../../components/campaigns/timeline";
 import { fetchCampaigns, type Campaign } from "@/services/campaignsApi"; // Importa do serviço que criámos acima
 
 export const Route = createFileRoute("/campaigns/timeline")({
-  component: TimelinePage,
+  component: TimelinePage
 });
 
 function TimelinePage() {
@@ -50,7 +50,7 @@ function TimelinePage() {
   }, [realm, keycloak.token]);
 
   return (
-    <div className="w-full p-6 flex flex-col h-full font-[Inter,system-ui,sans-serif] bg-gradient-to-br from-slate-50 via-white to-purple-50/30 animate-[fadeIn_0.5s_ease-out]">
+    <div className="w-full p-6 flex flex-col h-full font-[Inter,system-ui,sans-serif] bg-background animate-[fadeIn_0.5s_ease-out]">
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -59,10 +59,10 @@ function TimelinePage() {
       `}</style>
 
       {/* Header with Back Button */}
-      <div className="h-[6%] flex items-center gap-4 mb-4 flex-shrink-0">
+      <div className="h-[6%] flex items-center gap-4 mb-4 shrink-0">
         <Link
           to="/campaigns"
-          className="flex items-center justify-center w-10 h-10 rounded-xl bg-background/60 backdrop-blur-xl border border-white/40 shadow-lg shadow-slate-200/50 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-background/60 backdrop-blur-xl border border-border shadow-lg shadow-primary/5 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
         >
           <ArrowLeft size={20} className="text-muted-foreground" />
         </Link>

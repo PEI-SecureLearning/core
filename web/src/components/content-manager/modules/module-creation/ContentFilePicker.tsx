@@ -26,21 +26,21 @@ const API_BASE = import.meta.env.VITE_API_URL as string
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface ContentFileItem {
-    id:             string
+    id: string
     content_piece_id: string
-    path:           string
-    title:          string
-    description:    string | null
+    path: string
+    title: string
+    description: string | null
     content_format: string
-    created_at:     string
+    created_at: string
     file: {
-        filename:     string
+        filename: string
         content_type: string
-        size:         number
-        storage?:     'garage' | null
-        object_key?:  string | null
-        etag?:        string | null
-        file_url?:    string | null
+        size: number
+        storage?: 'garage' | null
+        object_key?: string | null
+        etag?: string | null
+        file_url?: string | null
     } | null
 }
 
@@ -48,10 +48,10 @@ export interface ContentFileItem {
 export type PickerMediaFilter = 'image' | 'video' | 'audio' | 'file' | 'any'
 
 interface ContentFilePickerProps {
-    readonly token?:    string
-    readonly accept?:   PickerMediaFilter   // default: 'any'
-    readonly onSelect:  (url: string, item: ContentFileItem) => void
-    readonly onClose:   () => void
+    readonly token?: string
+    readonly accept?: PickerMediaFilter   // default: 'any'
+    readonly onSelect: (url: string, item: ContentFileItem) => void
+    readonly onClose: () => void
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -73,9 +73,9 @@ function mimeMatchesFilter(contentType: string, filter: PickerMediaFilter): bool
 }
 
 function fileIcon(contentType: string) {
-    if (contentType.startsWith('image/')) return <ImageIcon className="w-4 h-4 text-[#A78BFA] flex-shrink-0" />
-    if (contentType.startsWith('video/')) return <Video      className="w-4 h-4 text-blue-400   flex-shrink-0" />
-    if (contentType.startsWith('audio/')) return <Music      className="w-4 h-4 text-green-400  flex-shrink-0" />
+    if (contentType.startsWith('image/')) return <ImageIcon className="w-4 h-4 text-accent-secondary flex-shrink-0" />
+    if (contentType.startsWith('video/')) return <Video className="w-4 h-4 text-info flex-shrink-0" />
+    if (contentType.startsWith('audio/')) return <Music className="w-4 h-4 text-success flex-shrink-0" />
     return <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
 }
 
@@ -101,28 +101,28 @@ function resolvePreviewUrl(item: ContentFileItem): string | null {
 type Tab = 'library' | 'upload'
 
 export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: ContentFilePickerProps) {
-    const [tab,          setTab]          = useState<Tab>('library')
+    const [tab, setTab] = useState<Tab>('library')
 
     // ── Library state ────────────────────────────────────────────────────────
-    const [items,        setItems]        = useState<ContentFileItem[]>([])
-    const [loading,      setLoading]      = useState(true)
-    const [error,        setError]        = useState<string | null>(null)
-    const [search,       setSearch]       = useState('')
-    const [selectedDir,  setSelectedDir]  = useState('content')
+    const [items, setItems] = useState<ContentFileItem[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const [search, setSearch] = useState('')
+    const [selectedDir, setSelectedDir] = useState('content')
     const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(['content']))
-    const [selecting,    setSelecting]    = useState<string | null>(null)
+    const [selecting, setSelecting] = useState<string | null>(null)
 
     // ── Upload state ─────────────────────────────────────────────────────────
-    const [uploadFile,   setUploadFile]   = useState<File | null>(null)
-    const [uploadPath,   setUploadPath]   = useState('content')
-    const [uploadTitle,  setUploadTitle]  = useState('')
-    const [uploadDesc,   setUploadDesc]   = useState('')
-    const [uploadTags,   setUploadTags]   = useState('')
-    const [uploading,    setUploading]    = useState(false)
-    const [uploadError,  setUploadError]  = useState<string | null>(null)
-    const [uploadDone,   setUploadDone]   = useState(false)
-    const [dragOver,     setDragOver]     = useState(false)
-    const fileInputRef                    = useRef<HTMLInputElement>(null)
+    const [uploadFile, setUploadFile] = useState<File | null>(null)
+    const [uploadPath, setUploadPath] = useState('content')
+    const [uploadTitle, setUploadTitle] = useState('')
+    const [uploadDesc, setUploadDesc] = useState('')
+    const [uploadTags, setUploadTags] = useState('')
+    const [uploading, setUploading] = useState(false)
+    const [uploadError, setUploadError] = useState<string | null>(null)
+    const [uploadDone, setUploadDone] = useState(false)
+    const [dragOver, setDragOver] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     // ── Fetch all content items ──────────────────────────────────────────────
 
@@ -212,9 +212,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                         type="button"
                         onClick={() => setSelectedDir(dir)}
                         style={{ paddingLeft: `${8 + level * 14}px` }}
-                        className={`w-full flex items-center gap-2 py-1.5 pr-2 rounded text-left text-sm transition-colors ${
-                            isSelected ? 'bg-[#7C3AED]/15 text-[#A78BFA] font-medium' : 'text-foreground hover:bg-surface'
-                        }`}
+                        className={`w-full flex items-center gap-2 py-1.5 pr-2 rounded text-left text-sm transition-colors ${isSelected ? 'bg-primary/15 text-accent-secondary font-medium' : 'text-foreground hover:bg-surface'
+                            }`}
                     >
                         {hasChildren ? (
                             <ChevronRight
@@ -225,8 +224,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             <span className="w-3 flex-shrink-0" />
                         )}
                         {isExpanded
-                            ? <FolderOpen className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                            : <Folder     className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                            ? <FolderOpen className="w-4 h-4 text-info flex-shrink-0" />
+                            : <Folder className="w-4 h-4 text-info flex-shrink-0" />
                         }
                         <span className="truncate">{label}</span>
                     </button>
@@ -268,8 +267,8 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
         setUploadError(null)
         try {
             const fd = new FormData()
-            fd.append('file',  uploadFile)
-            fd.append('path',  uploadPath.trim() || 'content')
+            fd.append('file', uploadFile)
+            fd.append('path', uploadPath.trim() || 'content')
             fd.append('title', uploadTitle.trim() || uploadFile.name)
             if (uploadDesc.trim()) fd.append('description', uploadDesc.trim())
             if (uploadTags.trim()) fd.append('tags', uploadTags.trim())
@@ -347,7 +346,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
             </div>
         )
         if (error) return (
-            <div className="flex-1 flex items-center justify-center text-red-500 text-sm">{error}</div>
+            <div className="flex-1 flex items-center justify-center text-error text-sm">{error}</div>
         )
         return (
             <div className="flex flex-1 min-h-0 overflow-hidden">
@@ -378,7 +377,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                                 const previewUrl = resolvePreviewUrl(item)
                                 return (
                                     <div key={item.id}
-                                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#7C3AED]/10/50 transition-colors">
+                                        className="flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors">
                                         {item.file ? fileIcon(item.file.content_type) : <FileText className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />}
 
                                         {item.file?.content_type.startsWith('image/') && previewUrl && (
@@ -407,7 +406,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                                                 type="button"
                                                 disabled={isSelecting}
                                                 onClick={() => void handleSelect(item)}
-                                                className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors disabled:opacity-50 disabled:cursor-wait"
+                                                className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-wait"
                                             >
                                                 {isSelecting ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Use'}
                                             </button>
@@ -427,7 +426,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
     function renderUpload() {
         if (uploadDone) return (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 text-muted-foreground px-8">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
+                <CheckCircle2 className="w-10 h-10 text-success" />
                 <p className="text-sm font-medium text-foreground">Uploaded! Switching to library…</p>
             </div>
         )
@@ -442,11 +441,10 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                     onDragOver={e => { e.preventDefault(); setDragOver(true) }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={onDropFile}
-                    className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors py-10 ${
-                        dragOver
-                            ? 'border-[#7C3AED]/60 bg-[#7C3AED]/10'
-                            : 'border-border hover:border-[#7C3AED]/40 hover:bg-[#7C3AED]/10/40'
-                    }`}
+                    className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors py-10 ${dragOver
+                        ? 'border-primary/60 bg-primary/10'
+                        : 'border-border hover:border-primary/40 hover:bg-primary/5'
+                        }`}
                 >
                     <input
                         ref={fileInputRef}
@@ -458,7 +456,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                     />
                     {uploadFile ? (
                         <>
-                            <div className="w-10 h-10 rounded-lg bg-[#7C3AED]/15 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center">
                                 {fileIcon(uploadFile.type)}
                             </div>
                             <div className="text-center">
@@ -487,7 +485,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             value={uploadTitle}
                             onChange={e => setUploadTitle(e.target.value)}
                             placeholder="My file"
-                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -498,7 +496,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             value={uploadPath}
                             onChange={e => setUploadPath(e.target.value)}
                             placeholder="content/images"
-                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40 font-mono"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 font-mono"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -509,7 +507,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             value={uploadDesc}
                             onChange={e => setUploadDesc(e.target.value)}
                             placeholder="Short description…"
-                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -520,13 +518,13 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                             value={uploadTags}
                             onChange={e => setUploadTags(e.target.value)}
                             placeholder="tag1, tag2"
-                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40"
+                            className="border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40"
                         />
                     </div>
                 </div>
 
                 {uploadError && (
-                    <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                    <p className="text-xs text-error bg-error/10 border border-error/20 rounded-lg px-3 py-2">
                         Upload failed: {uploadError}
                     </p>
                 )}
@@ -534,7 +532,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                 <button
                     type="submit"
                     disabled={!uploadFile || uploading}
-                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#7C3AED] text-white hover:bg-[#7C3AED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-[#7C3AED]/25"
+                    className="mt-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-primary/25"
                 >
                     {uploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</> : <><Upload className="w-4 h-4" /> Upload & Use</>}
                 </button>
@@ -564,11 +562,10 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                         <button
                             type="button"
                             onClick={() => setTab('library')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                                tab === 'library'
-                                    ? 'bg-surface text-[#A78BFA] shadow-sm'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${tab === 'library'
+                                ? 'bg-surface text-accent-secondary shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                                }`}
                         >
                             <FolderOpen className="w-3.5 h-3.5" />
                             Library
@@ -576,11 +573,10 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                         <button
                             type="button"
                             onClick={() => { setTab('upload'); setUploadDone(false) }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                                tab === 'upload'
-                                    ? 'bg-surface text-[#A78BFA] shadow-sm'
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${tab === 'upload'
+                                ? 'bg-surface text-accent-secondary shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                                }`}
                         >
                             <Upload className="w-3.5 h-3.5" />
                             Upload
@@ -597,7 +593,7 @@ export function ContentFilePicker({ token, accept = 'any', onSelect, onClose }: 
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
                                     placeholder={`Search ${acceptLabel[accept].toLowerCase()}…`}
-                                    className="pl-9 pr-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 w-52"
+                                    className="pl-9 pr-3 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 w-52"
                                 />
                             </div>
                         )}

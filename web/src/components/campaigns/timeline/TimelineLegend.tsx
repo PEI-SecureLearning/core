@@ -8,9 +8,9 @@ interface LegendItem {
 }
 
 const legendItems: LegendItem[] = [
-  { status: "running", label: "Running", color: "bg-blue-500" }, // Era "active"
-  { status: "scheduled", label: "Scheduled", color: "bg-amber-400" },
-  { status: "completed", label: "Completed", color: "bg-emerald-500" },
+  { status: "running", label: "Running", color: "bg-info" }, // Era "active"
+  { status: "scheduled", label: "Scheduled", color: "bg-warning" },
+  { status: "completed", label: "Completed", color: "bg-success" },
   { status: "canceled", label: "Canceled", color: "bg-muted-foreground/40" }, // Era "paused"
 ];
 

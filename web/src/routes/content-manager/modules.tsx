@@ -38,7 +38,7 @@ function RouteComponent() {
                     <button
                         type="button"
                         onClick={handleNewModule}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md hover:shadow-lg hover:bg-primary/90 transition-all duration-200 active:scale-[0.97]"
                     >
                         <Plus size={16} strokeWidth={2.5} />
                         New Module

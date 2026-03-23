@@ -2,7 +2,7 @@ import NewSendingProfile from "@/components/sending-profiles/new/NewSendingProfi
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/sending-profiles/new")({
-  component: RouteComponent,
+  component: RouteComponent
 });
 
 function RouteComponent() {

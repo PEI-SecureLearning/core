@@ -9,6 +9,7 @@ from src.models import (
     EmailSending,
     RabbitMQEmailMessage,
     SMTPConfig,
+    UserDTO,
 )
 from src.services.rabbit import RabbitMQService
 
@@ -28,6 +29,12 @@ class EmailHandler:
         """
 
         kit = email_sending.phishing_kit
+
+        if not kit:
+            raise ValueError(
+                f"No phishing kit assigned for email_sending {email_sending.id}"
+            )
+
         kit_profiles = kit.sending_profiles
         campaign_profiles = campaign.sending_profiles
 
@@ -43,6 +50,17 @@ class EmailHandler:
         if not template:
             raise ValueError(f"No email template for email_sending {email_sending.id}")
 
+        subject = template.subject or template.name
+        if not subject:
+            raise ValueError(
+                f"Email template {template.id} has no subject/name for email_sending {email_sending.id}"
+            )
+
+        if not template.content_link:
+            raise ValueError(
+                f"Email template {template.id} has no content_link for email_sending {email_sending.id}"
+            )
+
         rabbitmq_service.send_email(
             RabbitMQEmailMessage(
                 smtp_config=SMTPConfig(
@@ -53,7 +71,7 @@ class EmailHandler:
                 ),
                 sender_email=profile.from_email,
                 receiver_email=email_sending.email_to,
-                subject=template.subject,
+                subject=subject,
                 template_id=template.content_link,
                 tracking_id=email_sending.tracking_token,
                 arguments={
@@ -68,7 +86,7 @@ class EmailHandler:
         self,
         session: Session,
         campaign: Campaign,
-        users: dict[str, dict],
+        users: list[UserDTO],
     ) -> list[EmailSending]:
         """Create email sending records for all users.
 
@@ -88,16 +106,26 @@ class EmailHandler:
 
         email_sendings = [
             EmailSending(
-                user_id=user_id,
+                user_id=user.id,
                 campaign_id=campaign.id,
                 phishing_kit_id=secrets.choice(kits).id,
                 scheduled_date=campaign.begin_date
                 + datetime.timedelta(seconds=i * campaign.sending_interval_seconds),
-                email_to=user_data.get("email", ""),
+                email_to=user.email,
             )
-            for i, (user_id, user_data) in enumerate(users.items())
+            for i, user in enumerate(users)
         ]
 
         session.add_all(email_sendings)
         session.flush()
         return email_sendings
+
+
+_instance: EmailHandler | None = None
+
+
+def get_email_handler() -> EmailHandler:
+    global _instance
+    if _instance is None:
+        _instance = EmailHandler()
+    return _instance

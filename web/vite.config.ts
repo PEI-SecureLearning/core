@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
+import path from 'node:path'
 
 export default defineConfig(() => {
   const basePath = process.env.VITE_BASE_PATH || '/'
@@ -31,6 +31,14 @@ export default defineConfig(() => {
         '/api': {
           target: 'http://localhost:8000',
           changeOrigin: true,
+        },
+      },
+    },
+    build: {
+      rollupOptions: {
+        input: {
+          main: path.resolve(__dirname, 'index.html'),
+          simulationOops: path.resolve(__dirname, 'simulation-oops.html'),
         },
       },
     },

@@ -1,5 +1,4 @@
 from .document import (
-    ModuleStatus,
     Difficulty,
     QuestionType,
     RichMediaType,
@@ -20,7 +19,6 @@ from .schemas import (
 )
 
 __all__ = [
-    "ModuleStatus",
     "Difficulty",
     "QuestionType",
     "RichMediaType",

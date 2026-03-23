@@ -9,7 +9,7 @@ export function PreviewPanelLogo({ logoPreviewUrl }: PreviewPanelLogoProps) {
         <div className="flex flex-col items-center py-4 border-b border-border/40 bg-background/40">
             <div className={`
                 w-28 h-28 rounded-[2rem] flex items-center justify-center overflow-hidden
-                shadow-2xl shadow-purple-500/10 border-4 border-white transition-all duration-500
+                shadow-2xl shadow-primary/10 border-4 border-white transition-all duration-500
                 ${logoPreviewUrl ? 'bg-background' : 'bg-surface-subtle'}
             `}>
                 {logoPreviewUrl ? (

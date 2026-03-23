@@ -15,6 +15,7 @@ from typing import Any
 
 from bson import ObjectId
 from bson.errors import InvalidId
+from pymongo import ReturnDocument
 from fastapi import HTTPException, status
 
 from src.core.mongo import get_modules_collection
@@ -22,7 +23,6 @@ from src.models import (
     ModuleCreate,
     ModuleOut,
     ModulePatch,
-    ModuleStatus,
     ModuleUpdate,
     PaginatedModules,
 )
@@ -58,7 +58,6 @@ def _build_mongo_doc(payload: ModuleCreate, realm: str, created_by: str) -> dict
     now = _now()
     data = payload.model_dump()
     data.update(
-        status=ModuleStatus.DRAFT,
         version=1,
         realm=realm,
         created_by=created_by,
@@ -79,7 +78,6 @@ _DEFAULT_SORT = "newest"
 
 async def list_modules(
     realm: str,
-    status_filter: ModuleStatus | None = None,
     search: str | None = None,
     sort: str | None = None,
     page: int = 1,
@@ -90,8 +88,6 @@ async def list_modules(
     skip  = (page - 1) * limit
 
     query: dict[str, Any] = {"realm": realm}
-    if status_filter is not None:
-        query["status"] = status_filter
     if search:
         # Case-insensitive substring match on title or category
         query["$or"] = [
@@ -144,19 +140,23 @@ async def update_module(module_id: str, payload: ModuleUpdate, realm: str) -> Mo
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
+    data = payload.model_dump()
+    # We must explicitly look up existing version or default to 1 for atomic bump?
+    # Actually wait, we can do $inc for version! Let's just do it directly.
+    data["updated_at"] = _now()
+    
+    updated = await col.find_one_and_update(
+        {"_id": oid, "realm": realm},
+        {
+            "$set": data,
+            "$inc": {"version": 1}
+        },
+        return_document=ReturnDocument.AFTER
+    )
+    if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
 
-    data = payload.model_dump()
-    data.update(
-        updated_at=_now(),
-        version=existing.get("version", 1) + 1,
-    )
-
-    await col.update_one({"_id": oid}, {"$set": data})
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
+    return _doc_to_out(updated)
 
 
 async def patch_module(module_id: str, payload: ModulePatch, realm: str) -> ModuleOut:
@@ -164,97 +164,34 @@ async def patch_module(module_id: str, payload: ModulePatch, realm: str) -> Modu
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-
-    # Only include fields that were explicitly provided (exclude_unset)
     delta = payload.model_dump(exclude_unset=True)
     if not delta:
-        # Nothing to change — return as-is to avoid a spurious DB round-trip
+        existing = await col.find_one({"_id": oid, "realm": realm})
+        if existing is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
         return _doc_to_out(existing)
 
     delta["updated_at"] = _now()
-    delta["version"]    = existing.get("version", 1) + 1
 
-    await col.update_one({"_id": oid}, {"$set": delta})
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
-
-
-async def publish_module(module_id: str, realm: str) -> ModuleOut:
-    """Transition a module from draft → published.
-
-    Validates that all required fields are filled before allowing the transition.
-    This is the enforcement point for fields that are optional on create (draft-first).
-    """
-    oid = _to_object_id(module_id)
-    col = get_modules_collection()
-
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-    if existing.get("status") == ModuleStatus.ARCHIVED:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Archived modules cannot be published directly. Un-archive first.",
-        )
-
-    # ── Readiness checks (draft-first: required fields validated here, not on create) ──
-    missing: list[str] = []
-    if not existing.get("title", "").strip():
-        missing.append("title")
-    if not existing.get("category", "").strip():
-        missing.append("category")
-    if not existing.get("estimated_time", "").strip():
-        missing.append("estimated_time")
-    if not existing.get("difficulty"):
-        missing.append("difficulty")
-    if not existing.get("sections"):
-        missing.append("sections (at least one required)")
-    if missing:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"message": "Module is not ready to publish", "missing_fields": missing},
-        )
-
-    await col.update_one(
-        {"_id": oid},
-        {"$set": {"status": ModuleStatus.PUBLISHED, "updated_at": _now()}},
+    updated = await col.find_one_and_update(
+        {"_id": oid, "realm": realm},
+        {
+            "$set": delta,
+            "$inc": {"version": 1}
+        },
+        return_document=ReturnDocument.AFTER
     )
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
-
-
-async def archive_module(module_id: str, realm: str) -> ModuleOut:
-    """Transition a module to archived status."""
-    oid = _to_object_id(module_id)
-    col = get_modules_collection()
-
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
+    if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
 
-    await col.update_one(
-        {"_id": oid},
-        {"$set": {"status": ModuleStatus.ARCHIVED, "updated_at": _now()}},
-    )
-    updated = await col.find_one({"_id": oid})
-    return _doc_to_out(updated)  # type: ignore[arg-type]
+    return _doc_to_out(updated)
 
 
 async def delete_module(module_id: str, realm: str) -> None:
-    """Hard-delete a module document.  Only drafts and archived modules may be deleted."""
+    """Hard-delete a module document."""
     oid = _to_object_id(module_id)
     col = get_modules_collection()
 
-    existing = await col.find_one({"_id": oid, "realm": realm})
-    if existing is None:
+    deleted = await col.find_one_and_delete({"_id": oid, "realm": realm})
+    if deleted is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=MODULE_NOT_FOUND)
-    if existing.get("status") == ModuleStatus.PUBLISHED:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Published modules cannot be deleted. Archive them first.",
-        )
-
-    await col.delete_one({"_id": oid})

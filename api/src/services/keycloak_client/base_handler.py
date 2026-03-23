@@ -2,17 +2,15 @@ import os
 import json
 import requests
 from fastapi import HTTPException
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.core.settings import settings
 
 
 class base_handler:
     """Base handler with shared configuration and HTTP helpers."""
 
     def __init__(self):
-        self.keycloak_url = os.getenv("KEYCLOAK_URL")
-        self.admin_secret = os.getenv("CLIENT_SECRET")
+        self.keycloak_url = settings.KEYCLOAK_URL
+        self.admin_secret = settings.CLIENT_SECRET
 
         if not self.keycloak_url:
             raise HTTPException(
@@ -33,7 +31,9 @@ class base_handler:
             "Content-Type": "application/json",
         }
 
-        r = requests.request(method, url, headers=headers, params=params, json=json_data)
+        r = requests.request(
+            method, url, headers=headers, params=params, json=json_data
+        )
 
         try:
             r.raise_for_status()
@@ -41,7 +41,6 @@ class base_handler:
             raise HTTPException(status_code=r.status_code, detail=str(e))
 
         return r
-        
 
     def get_admin_token(self) -> str:
         """Get admin service account token using client credentials."""
@@ -67,8 +66,20 @@ class base_handler:
             token_data = response.json()
             return token_data.get("access_token")
         except requests.exceptions.RequestException:
-            raise HTTPException(status_code=500, detail="Failed to retrieve admin token")
+            raise HTTPException(
+                status_code=500, detail="Failed to retrieve admin token"
+            )
         except json.JSONDecodeError:
             raise HTTPException(
                 status_code=500, detail="Failed to decode admin token response"
             )
+
+
+_instance: base_handler | None = None
+
+
+def get_base_handler() -> base_handler:
+    global _instance
+    if _instance is None:
+        _instance = base_handler()
+    return _instance

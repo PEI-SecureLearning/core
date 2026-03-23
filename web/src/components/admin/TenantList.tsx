@@ -166,8 +166,8 @@ export function TenantList() {
     }
 
     const getFeatureIcon = (feature: string) => {
-        if (feature === 'phishing') return <Shield size={14} className="text-orange-500" />
-        if (feature === 'lms') return <BookOpen size={14} className="text-blue-500" />
+        if (feature === 'phishing') return <Shield size={14} className="text-warning" />
+        if (feature === 'lms') return <BookOpen size={14} className="text-info" />
         return <Check size={14} className="text-primary/90" />
     }
 
@@ -205,7 +205,7 @@ export function TenantList() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+                    className="bg-error/10 border border-error/20 rounded-lg p-4 text-error"
                 >
                     <p className="font-medium">Failed to load tenants</p>
                     <p className="text-sm mt-1">{error}</p>
@@ -237,7 +237,7 @@ export function TenantList() {
                             variants={item}
                             whileHover={{
                                 y: -5,
-                                boxShadow: "0 20px 25px -5px rgba(124, 58, 237, 0.08), 0 8px 10px -6px rgba(124, 58, 237, 0.08)"
+                                boxShadow: "0 20px 25px -5px rgba(var(--primary-rgb), 0.08), 0 8px 10px -6px rgba(var(--primary-rgb), 0.08)"
                             }}
                             transition={{ duration: 0.2, ease: "easeOut" }}
                             className="bg-background rounded-md border border-border/60 shadow-sm overflow-hidden group/card"
@@ -266,10 +266,10 @@ export function TenantList() {
                                         </div>
                                     </div>
                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${tenant.enabled
-                                        ? 'bg-green-50 text-green-700 border border-green-200'
-                                        : 'bg-red-50 text-red-700 border border-red-200'
+                                        ? 'bg-success/10 text-success border border-success/20'
+                                        : 'bg-error/10 text-error border border-error/20'
                                         }`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tenant.enabled ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${tenant.enabled ? 'bg-success animate-pulse' : 'bg-error'}`} />
                                         {tenant.enabled ? 'Active' : 'Disabled'}
                                     </span>
                                 </div>
@@ -291,12 +291,12 @@ export function TenantList() {
                                                         key={featureName}
                                                         whileHover={{
                                                             scale: 1.02,
-                                                            backgroundColor: isEnabled ? '#f3e8ff' : '#f8fafc',
+                                                            backgroundColor: isEnabled ? 'rgba(var(--primary-rgb), 0.1)' : 'rgba(var(--surface-rgb), 0.5)',
                                                             transition: { duration: 0.15, ease: "easeOut" }
                                                         }}
                                                         className={`
                                                             flex justify-between items-center p-2 rounded-xl border transition-all duration-200
-                                                            ${isEnabled ? 'bg-primary/10/50 border-purple-100' : 'bg-surface-subtle/50 border-border/40 opacity-60'}
+                                                            ${isEnabled ? 'bg-primary/5 border-primary/20' : 'bg-surface-subtle/50 border-border/40 opacity-60'}
                                                         `}
                                                     >
                                                         <div className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export function TenantList() {
                                     <button
                                         onClick={(event) => handleDeleteClick(event, tenant)}
                                         disabled={deleting === tenant.realm || confirmingRealm === tenant.realm}
-                                        className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="text-sm font-medium text-error hover:text-error/80 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {deleting === tenant.realm ? (
                                             <Loader2 className="animate-spin" size={14} />

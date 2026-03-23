@@ -6,34 +6,38 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Image as ImageIcon,
-  AlertTriangle,
   X
 } from "lucide-react";
 import type { ModuleFormData } from "../types";
-import { CATEGORY_OPTIONS, DIFFICULTY_COLORS, inputCls } from "../constants";
+import { CATEGORY_OPTIONS, inputCls } from "../constants";
 import { ContentFilePicker } from "../ContentFilePicker";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
 function FormField({
   label,
+  htmlFor,
   icon,
-  warning,
+  isRequired,
   children
 }: {
   readonly label: string;
+  readonly htmlFor?: string;
   readonly icon?: React.ReactNode;
-  readonly warning?: boolean;
+  readonly isRequired?: boolean;
   readonly children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-        {icon && <span className="text-[#A78BFA]">{icon}</span>}
-        {label}
-        {warning && (
-          <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
-        )}
+      <label
+        htmlFor={htmlFor}
+        className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide"
+      >
+        {icon && <span className="text-primary">{icon}</span>}
+        <span>
+          {label}
+          {isRequired && <span className="ml-0.5 text-warning">*</span>}
+        </span>
       </label>
       {children}
     </div>
@@ -72,11 +76,7 @@ function SidebarFields({
         <button
           type="button"
           onClick={onBrowseCover}
-          className={`relative w-full h-24 rounded-xl border-2 overflow-hidden cursor-pointer transition-colors ${
-            warnings.cover
-              ? "border-amber-300 hover:border-amber-400"
-              : "border-border hover:border-[#7C3AED]/60"
-          }`}
+          className="relative w-full h-24 rounded-xl border-2 border-border hover:border-primary/60 overflow-hidden cursor-pointer transition-colors"
         >
           {data.coverImage ? (
             <img
@@ -85,13 +85,8 @@ function SidebarFields({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-1 text-muted-foreground group-hover:text-[#A78BFA] transition-colors">
-              <div className="relative">
-                <ImageIcon className="w-5 h-5" />
-                {warnings.cover && (
-                  <AlertTriangle className="w-3 h-3 text-amber-400 absolute -top-1 -right-2" />
-                )}
-              </div>
+            <div className="flex flex-col items-center justify-center h-full gap-1 text-muted-foreground group-hover:text-primary transition-colors">
+              <ImageIcon className="w-5 h-5" />
               <span className="text-[10px]">Click to choose cover</span>
             </div>
           )}
@@ -102,6 +97,7 @@ function SidebarFields({
             </div>
           )}
         </button>
+        {/* Clear button — only when image is set */}
         {/* Clear button — only when image is set */}
         {data.coverImage && (
           <button
@@ -115,24 +111,22 @@ function SidebarFields({
         )}
       </div>
 
-      <FormField label="Title" warning={warnings.title}>
+      <FormField label="Title" htmlFor="module-title" isRequired>
         <input
+          id="module-title"
           value={data.title}
           onChange={(e) => onChange({ title: e.target.value })}
           placeholder="Module title..."
-          className={`w-full bg-transparent border-b-2 px-0 py-1.5 text-base font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-colors ${
-            warnings.title
-              ? "border-amber-300 focus:border-[#7C3AED]/60"
-              : "border-border focus:border-[#7C3AED]/60"
-          }`}
+          className={inputCls}
         />
       </FormField>
 
-      <FormField label="Category" warning={warnings.category}>
+      <FormField label="Category" htmlFor="module-category" isRequired>
         <select
+          id="module-category"
           value={data.category}
           onChange={(e) => onChange({ category: e.target.value })}
-          className={`${inputCls} ${warnings.category ? "border-amber-300" : ""}`}
+          className={`${inputCls} ${warnings.category ? "border-warning/50" : ""}`}
         >
           <option value="">Select category</option>
           {CATEGORY_OPTIONS.map((c) => (
@@ -144,18 +138,17 @@ function SidebarFields({
       </FormField>
 
       <FormField label="Difficulty">
-        <div className="flex gap-1.5">
+        <div className="flex p-1 bg-surface-subtle rounded-xl border border-border">
           {(["Easy", "Medium", "Hard"] as const).map((d) => (
             <button
               key={d}
               type="button"
               onClick={() => onChange({ difficulty: d })}
-              className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold border transition-all
-                                ${
-                                  data.difficulty === d
-                                    ? DIFFICULTY_COLORS[d] + " shadow-sm"
-                                    : "bg-surface-subtle text-muted-foreground border-border hover:border-border"
-                                }`}
+              className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all
+                                ${data.difficulty === d
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-surface/50"
+                }`}
             >
               {d}
             </button>
@@ -163,22 +156,24 @@ function SidebarFields({
         </div>
       </FormField>
 
-      <FormField label="Duration" warning={warnings.duration}>
+      <FormField label="Duration" htmlFor="module-duration" isRequired>
         <input
+          id="module-duration"
           value={data.estimatedTime}
           onChange={(e) => onChange({ estimatedTime: e.target.value })}
           placeholder="e.g. 45 minutes"
-          className={`${inputCls} ${warnings.duration ? "border-amber-300" : ""}`}
+          className={inputCls}
         />
       </FormField>
 
-      <FormField label="Description" warning={warnings.desc}>
+      <FormField label="Description" htmlFor="module-description" isRequired>
         <textarea
+          id="module-description"
           value={data.description}
           onChange={(e) => onChange({ description: e.target.value })}
           placeholder="Brief description..."
           rows={4}
-          className={`${inputCls} resize-none ${warnings.desc ? "border-amber-300" : ""}`}
+          className={`${inputCls} resize-none`}
         />
       </FormField>
     </motion.div>
@@ -192,7 +187,7 @@ export function DetailsSidebar({
   getToken
 }: {
   readonly data: ModuleFormData;
-  readonly onChange: (patch: Partial<ModuleFormData>) => void;
+  readonly onChange: (patch: Partial<ModuleFormData>, silent?: boolean) => void;
   readonly publishAttempted?: boolean;
   readonly getToken?: () => string | undefined;
 }) {
@@ -218,7 +213,7 @@ export function DetailsSidebar({
       )
       .then((payload) => {
         if (!revoked && payload.url) {
-          onChange({ coverImage: payload.url });
+          onChange({ coverImage: payload.url }, true);
         }
       })
       .catch(() => {
@@ -265,7 +260,7 @@ export function DetailsSidebar({
           <button
             type="button"
             onClick={toggleOpen}
-            className="ml-auto text-muted-foreground hover:text-[#A78BFA] transition-colors shrink-0"
+            className="ml-auto text-muted-foreground hover:text-primary transition-colors shrink-0"
             title={open ? "Collapse sidebar" : "Expand sidebar"}
             aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
             aria-expanded={open}

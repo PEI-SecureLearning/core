@@ -1,8 +1,10 @@
 import { GripVertical } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useModuleTheme } from '../theme-context'
 
 export function SortableBlock({ id, children }: { readonly id: string; readonly children: React.ReactNode }) {
+    const { theme } = useModuleTheme()
     const {
         attributes,
         listeners,
@@ -28,9 +30,8 @@ export function SortableBlock({ id, children }: { readonly id: string; readonly 
             <button
                 ref={setActivatorNodeRef}
                 type="button"
-                className={`cursor-grab active:cursor-grabbing flex-shrink-0 touch-none mt-2.5 transition-colors ${
-                    isDragging ? 'text-muted-foreground' : 'text-muted-foreground/50 hover:text-muted-foreground'
-                }`}
+                className={`cursor-grab active:cursor-grabbing flex-shrink-0 touch-none mt-2.5 transition-colors ${isDragging ? theme.grip.replace('hover:', '') : `text-muted-foreground/50 ${theme.grip}`
+                    }`}
                 aria-label="Drag to reorder block"
                 {...attributes}
                 {...listeners}

@@ -6,15 +6,17 @@ from unittest.mock import MagicMock, patch
 import pytest
 import os
 
-os.environ.update({
-    "POSTGRES_SERVER": "localhost",
-    "POSTGRES_USER": "testuser",
-    "POSTGRES_PASSWORD": "testpassword",
-    "RABBITMQ_HOST": "localhost",
-    "RABBITMQ_USER": "guest",
-    "RABBITMQ_PASS": "guest",
-    "RABBITMQ_QUEUE": "email_queue",
-})
+os.environ.update(
+    {
+        "POSTGRES_SERVER": "localhost",
+        "POSTGRES_USER": "testuser",
+        "POSTGRES_PASSWORD": "testpassword",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_USER": "guest",
+        "RABBITMQ_PASS": "guest",
+        "RABBITMQ_QUEUE": "email_queue",
+    }
+)
 
 from fastapi import HTTPException
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -23,6 +25,7 @@ from sqlmodel.pool import StaticPool
 from src.models import (
     Campaign,
     CampaignCreate,
+    CampaignUpdate,
     CampaignStatus,
     EmailSending,
     EmailSendingStatus,
@@ -33,14 +36,9 @@ from src.models import (
     Realm,
     SendingProfile,
     User,
+    UserDTO,
     UserGroup,
 )
-
-
-
-
-
-
 
 
 from src.services.campaign import CampaignService
@@ -83,20 +81,26 @@ def mock_rabbitmq():
 @pytest.fixture(autouse=True)
 def mock_platform_admin():
     """Mock the platform admin service globally to return fake Keycloak members."""
-    with patch("src.services.campaign.campaign_handler.get_platform_admin_service") as mock_get:
+    with patch(
+        "src.services.campaign.campaign_handler.get_platform_admin_service"
+    ) as mock_get:
         mock_service = MagicMock()
         mock_get.return_value = mock_service
-        
+
         # Default mock: 3 users split across 2 groups (user-2 is in both)
-        mock_service.list_group_members_in_realm.side_effect = lambda r, g: {
-            "members": [
-                {"id": "user-1", "email": "u1@example.com"},
-                {"id": "user-2", "email": "u2@example.com"}
-            ] if g == "group-1" else [
-                {"id": "user-2", "email": "u2@example.com"},
-                {"id": "user-3", "email": "u3@example.com"}
-            ]
-        }
+        mock_service.list_group_members_in_realm.side_effect = (
+            lambda _realm, group_id: (
+                [
+                    UserDTO(id="user-1", email="u1@example.com"),
+                    UserDTO(id="user-2", email="u2@example.com"),
+                ]
+                if group_id == "group-1"
+                else [
+                    UserDTO(id="user-2", email="u2@example.com"),
+                    UserDTO(id="user-3", email="u3@example.com"),
+                ]
+            )
+        )
         yield mock_service
 
 
@@ -108,40 +112,50 @@ def mock_platform_admin():
 def _setup_realm_and_user(session: Session, realm_name: str = "test-realm") -> User:
     """Create a basic realm and a creator user."""
     session.add(Realm(name=realm_name, domain=f"{realm_name}.local"))
-    
+
     keycloak_id = f"creator-{realm_name}"
     user = session.exec(select(User).where(User.keycloak_id == keycloak_id)).first()
     if not user:
-        user = User(keycloak_id=keycloak_id, email=f"admin_{realm_name}@example.com", dept="IT")
+        user = User(keycloak_id=keycloak_id, email=f"admin_{realm_name}@example.com")
         session.add(user)
-        
+
     session.commit()
     session.refresh(user)
     return user
 
 
-def _create_kit(session: Session, realm_name: str = "test-realm", suffix: str = "1") -> PhishingKit:
+def _create_kit(
+    session: Session, realm_name: str = "test-realm", suffix: str = "1"
+) -> PhishingKit:
     """Create a fully assembled PhishingKit with its templates."""
-    email_tpl = EmailTemplate(name=f"ET-{suffix}", subject=f"Subj {suffix}", content_link=f"/et/{suffix}")
+    email_tpl = EmailTemplate(
+        name=f"ET-{suffix}", subject=f"Subj {suffix}", content_link=f"/et/{suffix}"
+    )
     landing_tpl = LandingPageTemplate(name=f"LP-{suffix}", content_link=f"/lp/{suffix}")
     profile = SendingProfile(
-        name=f"SP-{suffix}", smtp_host="localhost", smtp_port=25,
-        username="u", password="", from_fname="F", from_lname="L",
-        from_email="f@l.com", realm_name=realm_name
+        name=f"SP-{suffix}",
+        smtp_host="localhost",
+        smtp_port=25,
+        username="u",
+        password="",
+        from_fname="F",
+        from_lname="L",
+        from_email="f@l.com",
+        realm_name=realm_name,
     )
-    
+
     session.add(email_tpl)
     session.add(landing_tpl)
     session.add(profile)
     session.commit()
-    
+
     kit = PhishingKit(
         name=f"Kit {suffix}",
         email_template_id=email_tpl.id,
         landing_page_template_id=landing_tpl.id,
-        sending_profile_id=profile.id,
+        sending_profiles=[profile],
         realm_name=realm_name,
-        args={"arg1": "val1"}
+        args={"arg1": "val1"},
     )
     session.add(kit)
     session.commit()
@@ -162,16 +176,16 @@ class TestCampaignHelpers:
         # "group-1" has user-1, user-2
         # "group-2" has user-2, user-3
         users = service._collect_users_from_groups(["group-1", "group-2"], "test-realm")
-        
+        user_ids = {u.id for u in users}
+
         assert len(users) == 3
-        assert "user-1" in users
-        assert "user-2" in users  # Only counted once
-        assert "user-3" in users
+        assert "user-1" in user_ids
+        assert "user-2" in user_ids  # Only counted once
+        assert "user-3" in user_ids
 
     def test_calculate_interval_respects_minimum(self, service: CampaignService):
         """Ensure the MIN_INTERVAL_SECONDS is respected even on very short campaigns."""
-        
-        
+
         now = datetime.datetime.now(datetime.timezone.utc)
         # Campaign lasts 10 seconds, but min interval is usually 60s
         data = CampaignCreate(
@@ -183,7 +197,7 @@ class TestCampaignHelpers:
             user_group_ids=[],
             creator_id="test",
         )
-        
+
         interval = service._calculate_interval(data, user_count=5)
         # Should force the ceiling to be at least MIN_INTERVAL_SECONDS
         assert interval == MIN_INTERVAL_SECONDS
@@ -195,7 +209,7 @@ class TestCampaignHelpers:
 
 
 class TestCreateCampaign:
-    
+
     def test_create_campaign_success_and_m2m_linking(
         self, service: CampaignService, session: Session
     ):
@@ -204,62 +218,73 @@ class TestCreateCampaign:
         user = _setup_realm_and_user(session)
         kit1 = _create_kit(session, suffix="First")
         kit2 = _create_kit(session, suffix="Second")
-        
+
+        # Create UserGroup records for validation
+        g1 = UserGroup(keycloak_id="group-1")
+        g2 = UserGroup(keycloak_id="group-2")
+        session.add_all([g1, g2])
+        session.commit()
+
         now = datetime.datetime.now(datetime.timezone.utc)
         ten_mins_later = now + datetime.timedelta(days=1)
-        
+
         data = CampaignCreate(
             name="Test Campaign",
             begin_date=now,
             end_date=ten_mins_later,
-            sending_interval_seconds=120, # Minimum 2 minutes between sends
+            sending_interval_seconds=120,  # Minimum 2 minutes between sends
             phishing_kit_ids=[kit1.id, kit2.id],
             user_group_ids=["group-1", "group-2"],  # Mock returns 3 unique users
             creator_id=user.keycloak_id,
         )
-        
+
         # Act
         campaign = service.create_campaign(data, "test-realm", session)
-        
+
         # Assert
         assert campaign.id is not None
         assert campaign.name == "Test Campaign"
         assert campaign.realm_name == "test-realm"
         assert campaign.total_recipients == 3
-        assert campaign.status == CampaignStatus.SCHEDULED  
-        
+        assert campaign.status == CampaignStatus.SCHEDULED
+
         # Verify M2M linking worked
         assert len(campaign.phishing_kits) == 2
         kit_names = {k.name for k in campaign.phishing_kits}
         assert "Kit First" in kit_names
         assert "Kit Second" in kit_names
-        
+
         # Verify EmailSendings were not created yet
         sendings = session.exec(
             select(EmailSending).where(EmailSending.campaign_id == campaign.id)
         ).all()
         assert len(sendings) == 0
 
-
     def test_create_campaign_invalid_kit_id(
         self, service: CampaignService, session: Session
     ):
         """Validation fail: Passing a phishing kit ID that doesn't exist."""
         creator = _setup_realm_and_user(session)
+
+        # Create UserGroup record so group validation passes
+        g1 = UserGroup(keycloak_id="group-1")
+        session.add(g1)
+        session.commit()
+
         now = datetime.datetime.now()
         data = CampaignCreate(
             name="Bad Kit",
             begin_date=now,
             end_date=now + datetime.timedelta(days=1),
             sending_interval_seconds=60,
-            phishing_kit_ids=[9999], # DOES NOT EXIST
+            phishing_kit_ids=[9999],  # DOES NOT EXIST
             user_group_ids=["group-1"],
             creator_id=creator.keycloak_id,
         )
-        
+
         with pytest.raises(HTTPException) as exc:
             service.create_campaign(data, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "Invalid phishing kit ID" in exc.value.detail
 
@@ -267,7 +292,16 @@ class TestCreateCampaign:
         self, service: CampaignService, session: Session
     ):
         """Validation fail: Missing creator."""
+        # Set up realm first so realm validation passes
+        _setup_realm_and_user(session)
+
         kit = _create_kit(session)
+
+        # Create UserGroup record
+        g1 = UserGroup(keycloak_id="group-1")
+        session.add(g1)
+        session.commit()
+
         now = datetime.datetime.now()
         data = CampaignCreate(
             name="Bad Creator",
@@ -276,12 +310,12 @@ class TestCreateCampaign:
             sending_interval_seconds=60,
             phishing_kit_ids=[kit.id],
             user_group_ids=["group-1"],
-            creator_id="nobody", # DOES NOT EXIST
+            creator_id="nobody",  # DOES NOT EXIST
         )
-        
+
         with pytest.raises(HTTPException) as exc:
             service.create_campaign(data, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "Invalid creator ID" in exc.value.detail
 
@@ -293,34 +327,57 @@ class TestCreateCampaign:
 
 class TestGetCampaigns:
 
-    def test_get_campaigns_returns_only_for_realm(self, service: CampaignService, session: Session):
+    def test_get_campaigns_returns_only_for_realm(
+        self, service: CampaignService, session: Session
+    ):
         """Verify get_campaigns only returns campaigns belonging to the specified realm."""
-        
+
         now = datetime.datetime.now()
         end = now + datetime.timedelta(days=1)
-        
+
         # Create campaigns in realm A
-        c1 = Campaign(name="Camp A1", realm_name="realm-a", total_recipients=10, sending_interval_seconds=60, begin_date=now, end_date=end)
-        c2 = Campaign(name="Camp A2", realm_name="realm-a", total_recipients=5, sending_interval_seconds=60, begin_date=now, end_date=end)
-        
+        c1 = Campaign(
+            name="Camp A1",
+            realm_name="realm-a",
+            total_recipients=10,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=end,
+        )
+        c2 = Campaign(
+            name="Camp A2",
+            realm_name="realm-a",
+            total_recipients=5,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=end,
+        )
+
         # Create campaign in realm B
-        c3 = Campaign(name="Camp B1", realm_name="realm-b", total_recipients=15, sending_interval_seconds=60, begin_date=now, end_date=end)
-        
+        c3 = Campaign(
+            name="Camp B1",
+            realm_name="realm-b",
+            total_recipients=15,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=end,
+        )
+
         session.add_all([c1, c2, c3])
         session.commit()
-        
+
         # Fetch for realm A
         results_a = service.get_campaigns("realm-a", session)
         assert len(results_a) == 2
         names_a = {c.name for c in results_a}
         assert "Camp A1" in names_a
         assert "Camp A2" in names_a
-        
+
         # Fetch for realm B
         results_b = service.get_campaigns("realm-b", session)
         assert len(results_b) == 1
         assert results_b[0].name == "Camp B1"
-        
+
         # Fetch for empty realm
         results_empty = service.get_campaigns("realm-empty", session)
         assert len(results_empty) == 0
@@ -338,86 +395,142 @@ class TestCancelCampaign:
         _setup_realm_and_user(session, realm_name="test-realm")
         kit = _create_kit(session)
         now = datetime.datetime.now()
-        
-        c = Campaign(name="To Cancel", realm_name="test-realm", status=CampaignStatus.SCHEDULED, total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+
+        c = Campaign(
+            name="To Cancel",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
         c.phishing_kits.append(kit)
         session.add(c)
         session.commit()
-        
-        es = EmailSending(campaign_id=c.id, user_id="u1", scheduled_date=now, email_to="test@test.com", status=EmailSendingStatus.SCHEDULED)
+
+        es = EmailSending(
+            campaign_id=c.id,
+            user_id="u1",
+            scheduled_date=now,
+            email_to="test@test.com",
+            status=EmailSendingStatus.SCHEDULED,
+        )
         session.add(es)
         session.commit()
-        
+
         # Act
         service.cancel_campaign(c.id, "test-realm", session)
-        
+
         # Assert
         session.refresh(c)
         assert c.status == CampaignStatus.CANCELED
         assert len(c.phishing_kits) == 1
         assert c.phishing_kits[0].id == kit.id
-        
+
         session.refresh(es)
         assert es.status == EmailSendingStatus.FAILED
 
-    def test_cancel_campaign_running_success(self, service: CampaignService, session: Session):
+    def test_cancel_campaign_running_success(
+        self, service: CampaignService, session: Session
+    ):
         """Verify canceling a running campaign changes its status and only fails scheduled emails."""
         _setup_realm_and_user(session, realm_name="test-realm")
         kit = _create_kit(session)
         now = datetime.datetime.now()
-        
-        c = Campaign(name="Running to Cancel", realm_name="test-realm", status=CampaignStatus.RUNNING, total_recipients=2, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+
+        c = Campaign(
+            name="Running to Cancel",
+            realm_name="test-realm",
+            status=CampaignStatus.RUNNING,
+            total_recipients=2,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
         c.phishing_kits.append(kit)
         session.add(c)
         session.commit()
-        
-        es_sched = EmailSending(campaign_id=c.id, user_id="u1", scheduled_date=now, email_to="u1@test.com", status=EmailSendingStatus.SCHEDULED)
-        es_sent = EmailSending(campaign_id=c.id, user_id="u2", scheduled_date=now, email_to="u2@test.com", status=EmailSendingStatus.SENT)
+
+        es_sched = EmailSending(
+            campaign_id=c.id,
+            user_id="u1",
+            scheduled_date=now,
+            email_to="u1@test.com",
+            status=EmailSendingStatus.SCHEDULED,
+        )
+        es_sent = EmailSending(
+            campaign_id=c.id,
+            user_id="u2",
+            scheduled_date=now,
+            email_to="u2@test.com",
+            status=EmailSendingStatus.SENT,
+        )
         session.add_all([es_sched, es_sent])
         session.commit()
-        
+
         # Act
         service.cancel_campaign(c.id, "test-realm", session)
-        
+
         # Assert
         session.refresh(c)
         assert c.status == CampaignStatus.CANCELED
         assert len(c.phishing_kits) == 1
         assert c.phishing_kits[0].id == kit.id
-        
+
         session.refresh(es_sched)
         assert es_sched.status == EmailSendingStatus.FAILED
 
         session.refresh(es_sent)
         assert es_sent.status == EmailSendingStatus.SENT
 
-    def test_cancel_campaign_already_canceled(self, service: CampaignService, session: Session):
+    def test_cancel_campaign_already_canceled(
+        self, service: CampaignService, session: Session
+    ):
         """Verify canceling an already canceled campaign raises 400."""
         _setup_realm_and_user(session, realm_name="test-realm")
         now = datetime.datetime.now()
-        
-        c = Campaign(name="Canceled", realm_name="test-realm", status=CampaignStatus.CANCELED, total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+
+        c = Campaign(
+            name="Canceled",
+            realm_name="test-realm",
+            status=CampaignStatus.CANCELED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
         session.add(c)
         session.commit()
-        
+
         with pytest.raises(HTTPException) as exc:
             service.cancel_campaign(c.id, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "already canceled" in exc.value.detail
 
-    def test_cancel_campaign_completed(self, service: CampaignService, session: Session):
+    def test_cancel_campaign_completed(
+        self, service: CampaignService, session: Session
+    ):
         """Verify canceling a completed campaign raises 400."""
         _setup_realm_and_user(session, realm_name="test-realm")
         now = datetime.datetime.now()
-        
-        c = Campaign(name="Completed", realm_name="test-realm", status=CampaignStatus.COMPLETED, total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1))
+
+        c = Campaign(
+            name="Completed",
+            realm_name="test-realm",
+            status=CampaignStatus.COMPLETED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
         session.add(c)
         session.commit()
-        
+
         with pytest.raises(HTTPException) as exc:
             service.cancel_campaign(c.id, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "completed campaign" in exc.value.detail
 
@@ -431,113 +544,335 @@ class TestUpdateCampaign:
 
     def test_update_campaign_success(self, service: CampaignService, session: Session):
         """Verify update modifies basic fields and many-to-many relationships."""
-        user = _setup_realm_and_user(session, realm_name="test-realm")
         kit1 = _create_kit(session, suffix="One")
         kit2 = _create_kit(session, suffix="Two")
-        
+
         g1 = UserGroup(keycloak_id="g1")
         g2 = UserGroup(keycloak_id="g2")
         session.add_all([g1, g2])
         session.commit()
-        
+
         now = datetime.datetime.now()
         c = Campaign(
-            name="Old Name", realm_name="test-realm", status=CampaignStatus.SCHEDULED,
-            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+            name="Old Name",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
         )
         c.phishing_kits.append(kit1)
         c.user_groups.append(g1)
         session.add(c)
         session.commit()
-        
-        update_data = CampaignCreate(
+
+        update_data = CampaignUpdate(
             name="New Name",
             begin_date=now,
             end_date=now + datetime.timedelta(days=2),
             sending_interval_seconds=120,
             phishing_kit_ids=[kit2.id],
             user_group_ids=["g2"],
-            creator_id=user.keycloak_id
         )
-        
+
         # Act
         updated = service.update_campaign(c.id, update_data, "test-realm", session)
-        
+
         # Assert
         assert updated.name == "New Name"
         assert updated.sending_interval_seconds == 120
-        
+
         assert len(updated.phishing_kits) == 1
         assert updated.phishing_kits[0].id == kit2.id
-        
+
         assert len(updated.user_groups) == 1
         assert updated.user_groups[0].keycloak_id == "g2"
 
-    def test_update_campaign_not_scheduled_fails(self, service: CampaignService, session: Session):
+    def test_update_campaign_not_scheduled_fails(
+        self, service: CampaignService, session: Session
+    ):
         """Verify updating a non-SCHEDULED campaign raises 400."""
-        user = _setup_realm_and_user(session, realm_name="test-realm")
+        kit = _create_kit(session)
         now = datetime.datetime.now()
-        
+
         c = Campaign(
-            name="Running", realm_name="test-realm", status=CampaignStatus.RUNNING,
-            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+            name="Running",
+            realm_name="test-realm",
+            status=CampaignStatus.RUNNING,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
         )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
         session.add(c)
         session.commit()
-        
-        update_data = CampaignCreate(
-            name="New Name", begin_date=now, end_date=now + datetime.timedelta(days=2),
-            sending_interval_seconds=120, phishing_kit_ids=[], user_group_ids=[], creator_id=user.keycloak_id
+
+        update_data = CampaignUpdate(
+            name="New Name",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[kit.id],
+            user_group_ids=["g1"],
         )
-        
+
         with pytest.raises(HTTPException) as exc:
             service.update_campaign(c.id, update_data, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "Cannot update" in exc.value.detail
 
-    def test_update_campaign_canceled_fails(self, service: CampaignService, session: Session):
+    def test_update_campaign_canceled_fails(
+        self, service: CampaignService, session: Session
+    ):
         """Verify updating a CANCELED campaign raises 400."""
-        user = _setup_realm_and_user(session, realm_name="test-realm")
+        kit = _create_kit(session)
         now = datetime.datetime.now()
-        
+
         c = Campaign(
-            name="Canceled", realm_name="test-realm", status=CampaignStatus.CANCELED,
-            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+            name="Canceled",
+            realm_name="test-realm",
+            status=CampaignStatus.CANCELED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
         )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
         session.add(c)
         session.commit()
-        
-        update_data = CampaignCreate(
-            name="New Name", begin_date=now, end_date=now + datetime.timedelta(days=2),
-            sending_interval_seconds=120, phishing_kit_ids=[], user_group_ids=[], creator_id=user.keycloak_id
+
+        update_data = CampaignUpdate(
+            name="New Name",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[kit.id],
+            user_group_ids=["g1"],
         )
-        
+
         with pytest.raises(HTTPException) as exc:
             service.update_campaign(c.id, update_data, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "Cannot update" in exc.value.detail
 
-    def test_update_campaign_completed_fails(self, service: CampaignService, session: Session):
+    def test_update_campaign_completed_fails(
+        self, service: CampaignService, session: Session
+    ):
         """Verify updating a COMPLETED campaign raises 400."""
-        user = _setup_realm_and_user(session, realm_name="test-realm")
+        kit = _create_kit(session)
         now = datetime.datetime.now()
-        
+
         c = Campaign(
-            name="Completed", realm_name="test-realm", status=CampaignStatus.COMPLETED,
-            total_recipients=1, sending_interval_seconds=60, begin_date=now, end_date=now + datetime.timedelta(days=1)
+            name="Completed",
+            realm_name="test-realm",
+            status=CampaignStatus.COMPLETED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
         )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
         session.add(c)
         session.commit()
-        
-        update_data = CampaignCreate(
-            name="New Name", begin_date=now, end_date=now + datetime.timedelta(days=2),
-            sending_interval_seconds=120, phishing_kit_ids=[], user_group_ids=[], creator_id=user.keycloak_id
+
+        update_data = CampaignUpdate(
+            name="New Name",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[kit.id],
+            user_group_ids=["g1"],
         )
-        
+
         with pytest.raises(HTTPException) as exc:
             service.update_campaign(c.id, update_data, "test-realm", session)
-            
+
         assert exc.value.status_code == 400
         assert "Cannot update" in exc.value.detail
+
+    def test_update_campaign_invalid_kit_id(
+        self, service: CampaignService, session: Session
+    ):
+        """Validation fail: Passing an invalid phishing kit ID in update."""
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+
+        c = Campaign(
+            name="To Update",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
+        session.add(c)
+        session.commit()
+
+        update_data = CampaignUpdate(
+            name="Updated",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[9999],
+            user_group_ids=["g1"],  # Invalid kit ID
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+
+        assert exc.value.status_code == 400
+        assert "Invalid phishing kit ID" in exc.value.detail
+
+    def test_update_campaign_empty_kits_fails(
+        self, service: CampaignService, session: Session
+    ):
+        """Validation fail: Passing empty phishing_kit_ids in update."""
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+
+        c = Campaign(
+            name="To Update",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
+        session.add(c)
+        session.commit()
+
+        update_data = CampaignUpdate(
+            name="Updated",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[],
+            user_group_ids=["g1"],  # No kits
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+
+        assert exc.value.status_code == 400
+        assert "At least one phishing kit must be selected" in exc.value.detail
+
+    def test_update_campaign_empty_groups_fails(
+        self, service: CampaignService, session: Session
+    ):
+        """Validation fail: Passing empty user_group_ids in update."""
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+
+        c = Campaign(
+            name="To Update",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
+        session.add(c)
+        session.commit()
+
+        update_data = CampaignUpdate(
+            name="Updated",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=120,
+            phishing_kit_ids=[kit.id],
+            user_group_ids=[],  # No groups
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+
+        assert exc.value.status_code == 400
+        assert "At least one user group must be selected" in exc.value.detail
+
+    def test_update_campaign_invalid_dates(
+        self, service: CampaignService, session: Session
+    ):
+        """Validation fail: End date is before begin date in update."""
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+
+        c = Campaign(
+            name="To Update",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
+        session.add(c)
+        session.commit()
+
+        update_data = CampaignUpdate(
+            name="Updated",
+            begin_date=now,
+            end_date=now - datetime.timedelta(days=1),  # End before begin
+            sending_interval_seconds=120,
+            phishing_kit_ids=[kit.id],
+            user_group_ids=["g1"],
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+
+        assert exc.value.status_code == 400
+        assert "End date must be after begin date" in exc.value.detail
+
+    def test_update_campaign_invalid_interval(
+        self, service: CampaignService, session: Session
+    ):
+        """Validation fail: Invalid sending_interval_seconds in update."""
+        kit = _create_kit(session)
+        now = datetime.datetime.now()
+
+        c = Campaign(
+            name="To Update",
+            realm_name="test-realm",
+            status=CampaignStatus.SCHEDULED,
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        c.phishing_kits.append(kit)
+        c.user_groups.append(UserGroup(keycloak_id="g1"))
+        session.add(c)
+        session.commit()
+
+        update_data = CampaignUpdate(
+            name="Updated",
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=2),
+            sending_interval_seconds=0,
+            phishing_kit_ids=[kit.id],
+            user_group_ids=["g1"],  # Invalid interval
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            service.update_campaign(c.id, update_data, "test-realm", session)
+
+        assert exc.value.status_code == 400
+        assert "Sending interval must be positive" in exc.value.detail

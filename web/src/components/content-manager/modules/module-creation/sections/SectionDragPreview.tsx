@@ -1,9 +1,9 @@
 import { FileText, GripVertical, HelpCircle, Image } from 'lucide-react'
 import type { Section } from '../types'
 import { SectionRuleIcons } from './SectionRuleIcons'
-import { THEMES, type AccentColor } from './themes'
+import { THEMES, type AccentColor } from '../theme-context'
 
-export function SectionDragPreview({ section, index, accentColor = 'purple' }: {
+export function SectionDragPreview({ section, index, accentColor = 'primary' }: {
     readonly section: Section
     readonly index: number
     readonly accentColor?: AccentColor
@@ -18,7 +18,7 @@ export function SectionDragPreview({ section, index, accentColor = 'purple' }: {
         <div className={`flex flex-col bg-surface rounded-2xl overflow-hidden shadow-2xl border-2 ${theme.dragBorder} w-[340px] rotate-1 opacity-95`}>
             <div className="flex items-center gap-2 px-4 py-3 bg-surface-subtle border-b border-border">
                 <GripVertical className={`w-4 h-4 ${theme.dragGrip} flex-shrink-0`} />
-                <span className={`text-[11px] font-bold rounded px-1.5 py-0.5 flex-shrink-0 tabular-nums ${theme.dragBadge}`}>
+                <span className="text-[10px] font-bold bg-muted-foreground/10 text-muted-foreground rounded px-1.5 py-0.5 flex-shrink-0 tabular-nums">
                     {index + 1}
                 </span>
                 <span className={`flex-1 text-sm font-semibold truncate ${section.title ? 'text-foreground' : 'text-muted-foreground'}`}>

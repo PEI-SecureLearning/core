@@ -19,7 +19,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
     if (block.kind === 'text') {
         return (
             <div
-                className="text-[15px] leading-7 text-foreground [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-[#A78BFA] [&_a]:underline [&_code]:bg-surface-subtle [&_code]:text-[#A78BFA] [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-[#0C0A0F] [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground [&_li]:leading-7 [&_blockquote]:border-[#7C3AED]/40 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-[#7C3AED]/10 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground [&_th]:border-border [&_td]:text-foreground [&_td]:border-border"
+                className="text-[15px] leading-7 text-foreground [&_h1]:text-foreground [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1 [&_strong]:text-foreground [&_strong]:font-semibold [&_em]:text-muted-foreground [&_a]:text-accent-secondary [&_a]:underline [&_code]:bg-surface-subtle [&_code]:text-accent-secondary [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:font-mono [&_pre]:bg-[#0C0A0F] [&_pre]:rounded-xl [&_pre]:text-green-300 [&_pre]:my-4 [&_li]:text-foreground [&_li]:leading-7 [&_blockquote]:border-primary/40 [&_blockquote]:text-muted-foreground [&_blockquote]:bg-primary/10 [&_blockquote]:py-1 [&_hr]:border-border [&_del]:text-muted-foreground [&_table]:w-full [&_th]:bg-surface-subtle [&_th]:text-foreground [&_th]:border-border [&_td]:text-foreground [&_td]:border-border"
                 dangerouslySetInnerHTML={{ __html: renderMarkdown(block.content || '') }}
             />
         )
@@ -37,7 +37,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
             if (block.mediaType === 'audio') return <audio src={block.url} controls className="w-full px-4 py-3"><track kind="captions" /></audio>
             return (
                 <a href={block.url} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-[#A78BFA] font-medium hover:text-[#7C3AED] transition-colors">
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-accent-secondary font-medium hover:text-primary transition-colors">
                     <FileText className="w-4 h-4 flex-shrink-0" />
                     <span className="truncate">{block.url}</span>
                 </a>
@@ -70,7 +70,7 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
 
         const choiceBtnClass = (c: Choice) => {
             const isSelected = answered === c.id
-            if (!isSelected) return 'bg-surface border-border text-foreground hover:bg-[#7C3AED]/10 hover:border-[#7C3AED]/30'
+            if (!isSelected) return 'bg-surface border-border text-foreground hover:bg-primary/10 hover:border-primary/30'
             if (c.isCorrect) return 'bg-green-50 border-green-400 text-green-800'
             return 'bg-red-50 border-red-400 text-red-800'
         }
@@ -85,8 +85,8 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
         const interactiveInput = q.type === 'short_answer' ? (
             <div className="flex gap-2">
                 <input type="text" placeholder="Your answer…"
-                    className="flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 focus:border-[#7C3AED]/40" />
-                <button type="button" style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }} className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors">
+                    className="flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40" />
+                <button type="button" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg transition-colors hover:bg-primary/90">
                     Check
                 </button>
             </div>
@@ -126,8 +126,8 @@ function PreviewBlock({ block, qIndex, answeredChoices, onMark, interactive }: {
         return (
             <div className="border border-border rounded-xl overflow-hidden bg-surface shadow-sm">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-surface-subtle border-b border-border">
-                    <ListChecks className="w-3.5 h-3.5 text-[#A78BFA] flex-shrink-0" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#A78BFA]">{typeLabel}</span>
+                    <ListChecks className="w-3.5 h-3.5 text-accent-secondary flex-shrink-0" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-accent-secondary">{typeLabel}</span>
                     <span className="ml-auto text-[10px] text-muted-foreground">Q{qIndex}</span>
                 </div>
                 <div className="px-5 py-4">
@@ -183,13 +183,13 @@ export function ModuleDetailView({ data, onBack, interactive = true }: ModuleDet
                     <button
                         type="button"
                         onClick={onBack}
-                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#A78BFA] transition-colors flex-shrink-0"
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-accent-secondary transition-colors flex-shrink-0"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Back to Modules
                     </button>
                     <div className="h-5 w-px bg-border flex-shrink-0" />
-                    <div className="w-7 h-7 rounded-lg bg-[#7C3AED] flex items-center justify-center flex-shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
                         <BookOpen className="w-3.5 h-3.5 text-white" />
                     </div>
                     <span className="text-sm font-bold text-foreground truncate">
@@ -227,7 +227,7 @@ export function ModuleDetailView({ data, onBack, interactive = true }: ModuleDet
                             <img src={data.coverImage} alt="cover" className="w-full h-20 object-cover rounded-lg" />
                         ) : (
                             <div className="w-full h-20 rounded-lg bg-surface-subtle flex items-center justify-center">
-                                <BookOpen className="w-7 h-7 text-[#7C3AED]/40" />
+                                <BookOpen className="w-7 h-7 text-primary/40" />
                             </div>
                         )}
                         {data.description && (
@@ -250,13 +250,13 @@ export function ModuleDetailView({ data, onBack, interactive = true }: ModuleDet
                                 return (
                                     <button key={sec.id} type="button"
                                         onClick={() => scrollTo(sec.id)}
-                                        className="w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-surface-subtle transition-colors group border-l-2 border-transparent hover:border-[#7C3AED]/40">
-                                        <span className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${isCollapsed ? 'bg-surface text-muted-foreground' : 'bg-[#7C3AED] text-white'
+                                        className="w-full text-left px-4 py-2.5 flex items-start gap-2.5 hover:bg-surface-subtle transition-colors group border-l-2 border-transparent hover:border-primary/40">
+                                        <span className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${isCollapsed ? 'bg-surface text-muted-foreground' : 'bg-primary text-primary-foreground'
                                             }`}>
                                             {i + 1}
                                         </span>
                                         <div className="min-w-0">
-                                            <p className="text-xs font-semibold text-foreground group-hover:text-[#A78BFA] truncate transition-colors">
+                                            <p className="text-xs font-semibold text-foreground group-hover:text-accent-secondary truncate transition-colors">
                                                 {sec.title || `Task ${i + 1}`}
                                             </p>
                                             {qCount > 0 && (
@@ -297,11 +297,11 @@ export function ModuleDetailView({ data, onBack, interactive = true }: ModuleDet
                                             onClick={() => toggleSection(sec.id)}
                                             className="w-full flex items-center gap-3 px-6 py-4 bg-surface hover:bg-surface-subtle transition-colors text-left group"
                                         >
-                                            <span className="w-7 h-7 rounded-lg bg-[#7C3AED] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                                            <span className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground flex-shrink-0">
                                                 {i + 1}
                                             </span>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-base font-bold text-foreground group-hover:text-[#A78BFA] transition-colors truncate">
+                                                <p className="text-base font-bold text-foreground group-hover:text-accent-secondary transition-colors truncate">
                                                     {sec.title || `Task ${i + 1}`}
                                                 </p>
                                                 {qCount > 0 && (
@@ -313,7 +313,7 @@ export function ModuleDetailView({ data, onBack, interactive = true }: ModuleDet
                                             <motion.div
                                                 animate={{ rotate: isCollapsed ? -90 : 0 }}
                                                 transition={{ duration: 0.2 }}
-                                                className="text-muted-foreground group-hover:text-[#A78BFA] flex-shrink-0"
+                                                className="text-muted-foreground group-hover:text-accent-secondary flex-shrink-0"
                                             >
                                                 <ChevronDown className="w-5 h-5" />
                                             </motion.div>

@@ -1,11 +1,11 @@
 import { useTheme } from "next-themes";
+import { useCallback } from "react";
 
 type SetTheme = (theme: string) => void;
 
 /**
  * Wraps next-themes' setTheme with a View Transition API animation.
- * The new theme "grows" in from the top-left corner (0, 0) to the
- * bottom-right, simulating a diagonal wipe.
+ * The new theme "grows" in from the center of the screen
  *
  * Falls back to the plain setTheme call when the browser doesn't
  * support startViewTransition (e.g. Firefox < 126, Safari < 18).
@@ -13,7 +13,7 @@ type SetTheme = (theme: string) => void;
 export function useThemeTransition(): SetTheme {
   const { setTheme } = useTheme();
 
-  return (nextTheme: string) => {
+  return useCallback((nextTheme: string) => {
     if (
       !document.startViewTransition ||
       globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -22,12 +22,15 @@ export function useThemeTransition(): SetTheme {
       return;
     }
 
-    // Origin: top-left corner
-    const x = 0;
-    const y = 0;
+    // Origin: center of the screen for a more fluid feel
+    const x = globalThis.innerWidth / 2;
+    const y = globalThis.innerHeight / 2;
 
-    // The clip circle needs to reach the farthest corner (bottom-right)
-    const endRadius = Math.hypot(globalThis.innerWidth, globalThis.innerHeight);
+    // The clip circle needs to reach the farthest corner
+    const endRadius = Math.hypot(
+      Math.max(x, globalThis.innerWidth - x),
+      Math.max(y, globalThis.innerHeight - y)
+    );
 
     const transition = document.startViewTransition(() => {
       setTheme(nextTheme);
@@ -42,12 +45,11 @@ export function useThemeTransition(): SetTheme {
           ],
         },
         {
-          duration: 600,
-          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-          // Animate the *incoming* (new) snapshot
+          duration: 500,
+          easing: "cubic-bezier(0.65, 0, 0.35, 1)",
           pseudoElement: "::view-transition-new(root)",
         }
       );
     });
-  };
+  }, [setTheme]);
 }

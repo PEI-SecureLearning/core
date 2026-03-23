@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, status
 
 from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models import OrgUserCreate, RealmUserCreate
+from src.models import (
+    OrgUserCreate,
+    RealmUserCreate,
+    UserDTO,
+    UserCreatedInRealmDTO,
+    UserListInRealmDTO,
+)
 from src.services.platform_admin import get_platform_admin_service
 
 realm_service = get_platform_admin_service()
@@ -12,7 +18,12 @@ realm_service = get_platform_admin_service()
 router = APIRouter()
 
 
-@router.post("/realms/users", status_code=status.HTTP_201_CREATED, dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))])
+@router.post(
+    "/realms/users",
+    status_code=status.HTTP_201_CREATED,
+    response_model=UserCreatedInRealmDTO,
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))],
+)
 def create_user_in_realm(
     session: SessionDep, user: RealmUserCreate, token: OAuth2Scheme
 ):
@@ -32,6 +43,7 @@ def create_user_in_realm(
 @router.post(
     "/realms/{realm}/users",
     status_code=status.HTTP_201_CREATED,
+    response_model=UserCreatedInRealmDTO,
     dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 def create_user_in_own_realm(
@@ -53,21 +65,31 @@ def create_user_in_own_realm(
     )
 
 
-@router.get("/realms/{realm}/users", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))])
+@router.get(
+    "/realms/{realm}/users",
+    response_model=UserListInRealmDTO,
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
+)
 def list_users_in_realm(session: SessionDep, realm: str, token: OAuth2Scheme):
     """List users inside the specified Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, realm)
     return realm_service.list_users_in_realm(session, realm)
 
 
-@router.get("/realms/{realm}/users/{user_id}", dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))])
+@router.get(
+    "/realms/{realm}/users/{user_id}",
+    response_model=UserDTO,
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))],
+)
 def get_user_in_realm(realm: str, user_id: str, token: OAuth2Scheme):
     realm_service.validate_realm_access(token, realm)
     return realm_service.get_user_in_realm(realm, user_id)
 
 
 @router.delete(
-    "/realms/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))]
+    "/realms/{realm}/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))],
 )
 def delete_user_in_realm(
     realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
@@ -78,17 +100,19 @@ def delete_user_in_realm(
 
 
 @router.put(
-    "/realms/{realm}/role/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))]
+    "/realms/{realm}/role/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))],
 )
-def update_user_role_in_realm(
-    realm: str, user_id: str, role: str, token: OAuth2Scheme
-):
+def update_user_role_in_realm(realm: str, user_id: str, role: str, token: OAuth2Scheme):
     realm_service.update_user_role_in_realm(realm, user_id, role)
     return None
 
 
 @router.delete(
-    "/realms/admin/{realm}/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))]
+    "/realms/admin/{realm}/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))],
 )
 def admin_delete_user_in_realm(
     realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme

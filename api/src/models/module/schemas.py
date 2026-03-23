@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from .document import Section, Difficulty, ModuleStatus
+from .document import Section, Difficulty
 
 
 class ModuleCreate(BaseModel):
@@ -32,7 +32,6 @@ class ModulePatch(BaseModel):
     cover_image:        Optional[str]            = None
     estimated_time:     Optional[str]            = None
     difficulty:         Optional[Difficulty]     = None
-    status:             Optional[ModuleStatus]   = None
     has_refresh_module: Optional[bool]           = None
     sections:           Optional[list[Section]]  = None
     refresh_sections:   Optional[list[Section]]  = None
@@ -41,7 +40,6 @@ class ModulePatch(BaseModel):
 class ModuleOut(ModuleCreate):
     """Serialised form of a persisted module document."""
     id:          str                    # str(ObjectId)
-    status:      ModuleStatus           = ModuleStatus.DRAFT
     version:     int                    = 1
     realm:       Optional[str]          = None
     created_by:  Optional[str]          = None

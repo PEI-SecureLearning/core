@@ -6,23 +6,17 @@ import {
   Eye,
   Check,
   Loader2,
-  AlertCircle,
-  CircleQuestionMark
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip";
+import FormTooltip from "@/components/shared/FormTooltip";
 import DisplayModeToggle from "@/components/shared/DisplayModeToggle";
 import SearchBar from "@/components/shared/SearchBar";
 import { cn } from "@/lib/utils";
 import type { Template } from "@/components/templates/types";
 import { TemplatePreviewModal } from "@/components/templates/TemplatePreviewModal";
-import { apiClient } from "@/lib/api-client";
+import { templateApi } from "@/services/templateApi";
 import { toast } from "sonner";
 
 type ViewMode = "grid" | "list";
@@ -73,9 +67,6 @@ function EmailTemplateGridCard({
 
       {/* Info */}
       <div className="p-3">
-        {template.subject && template.subject !== template.name && (
-          <p className="text-xs text-primary/80 truncate">{template.subject}</p>
-        )}
         {template.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
             {template.description}
@@ -171,11 +162,6 @@ function LandingPageTemplateGridCard({
         <p className="text-sm font-medium text-foreground truncate">
           {template.name}
         </p>
-        {template.subject && template.subject !== template.name && (
-          <p className="text-xs text-primary/80 truncate mt-0.5">
-            {template.subject}
-          </p>
-        )}
         {template.description && (
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
             {template.description}
@@ -226,7 +212,7 @@ function TemplateListRow({
           {template.name}
         </p>
         <p className="text-xs text-muted-foreground truncate">
-          {template.subject || template.description || "No description"}
+          {template.description || "No description"}
         </p>
       </div>
 
@@ -294,7 +280,7 @@ export default function TemplatePicker({
     setIsLoading(true);
     setError(null);
     try {
-      const all = await apiClient.get<Template[]>("/templates");
+      const all = await templateApi.getTemplates();
       setTemplates(all.filter((t) => t.path === templatePath));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load templates");
@@ -312,8 +298,7 @@ export default function TemplatePicker({
     return templates.filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
-        (t.description ?? "").toLowerCase().includes(q) ||
-        (t.subject ?? "").toLowerCase().includes(q)
+        (t.description ?? "").toLowerCase().includes(q)
     );
   }, [templates, searchQuery]);
 
@@ -328,29 +313,7 @@ export default function TemplatePicker({
           <DefaultIcon size={12} />
           {sectionLabel}
         </span>
-        <TooltipProvider>
-          <Tooltip delayDuration={200}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="text-primary hover:text-primary/80 transition-colors"
-                aria-label={`More information about ${sectionLabel.toLowerCase()}`}
-              >
-                <CircleQuestionMark size={14} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="right"
-              className="bg-popover border-border text-popover-foreground"
-            >
-              <div className="text-[12px] font-medium space-y-1 max-w-[300px]">
-                {sectionTooltipLines.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <FormTooltip side="right" content={sectionTooltipLines} />
       </div>
 
       {/* Toolbar */}

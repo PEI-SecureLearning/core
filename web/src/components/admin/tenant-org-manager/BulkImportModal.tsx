@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
-import { useKeycloak } from "@react-keycloak/web";
 import type { BulkUser } from "./types";
+import { tenantOrgManagerApi } from "@/services/tenantOrgManagerApi";
+import { userGroupsApi } from "@/services/userGroupsApi";
 
 interface BulkImportModalProps {
     realm: string;
@@ -10,15 +11,12 @@ interface BulkImportModalProps {
     onBulkCreated: () => void;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL;
-
 export function BulkImportModal({
     realm,
     initialBulkUsers,
     onClose,
     onBulkCreated,
 }: BulkImportModalProps) {
-    const { keycloak } = useKeycloak();
     const [bulkUsers, setBulkUsers] = useState<BulkUser[]>(initialBulkUsers);
     const [isBulkLoading, setIsBulkLoading] = useState(false);
 
@@ -38,11 +36,7 @@ export function BulkImportModal({
         const groupIdMap: Record<string, string> = {};
         const fetchGroupsIds = async () => {
             try {
-                const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
-                    headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const data = await userGroupsApi.getGroups(realm);
                 (data.groups || []).forEach((g: any) => {
                     if (g.name && g.id) groupIdMap[g.name] = g.id;
                 });
@@ -54,15 +48,8 @@ export function BulkImportModal({
         for (const name of groupNames) {
             if (groupIdMap[name]) continue;
             try {
-                const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ name }),
-                });
-                if (res.ok) await fetchGroupsIds();
+                await userGroupsApi.createGroup(realm, { name });
+                await fetchGroupsIds();
             } catch { /* ignore */ }
         }
 
@@ -76,55 +63,39 @@ export function BulkImportModal({
                 continue;
             }
             try {
-                const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/users`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "",
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
+                const data = await tenantOrgManagerApi.createUser(
+                    realm,
+                    {
                         username: u.username,
                         name: u.name,
                         email: u.email,
                         role: u.role,
-                    }),
-                });
-                if (!res.ok) {
-                    updated[i] = { ...u, status: `error ${res.status}` };
-                    continue;
-                }
-                const data = await res.json();
+                    }
+                );
                 updated[i] = { ...u, status: `created (pwd: ${data?.temporary_password ?? "N/A"})` };
                 if (u.groups?.length) createdUsers.push({ email: u.email, groups: u.groups });
-            } catch {
-                updated[i] = { ...u, status: "error" };
+            } catch (error) {
+                const message = error instanceof Error ? error.message : "error";
+                updated[i] = { ...u, status: message };
             }
         }
 
         // Assign groups
         try {
-            const res = await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/users`, {
-                headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
+            const data = await tenantOrgManagerApi.getUsers(realm);
+            const userMap: Record<string, string> = {};
+            (data.users || []).forEach((usr: any) => {
+                if (usr.email && usr.id) userMap[usr.email.toLowerCase()] = usr.id;
             });
-            if (res.ok) {
-                const data = await res.json();
-                const userMap: Record<string, string> = {};
-                (data.users || []).forEach((usr: any) => {
-                    if (usr.email && usr.id) userMap[usr.email.toLowerCase()] = usr.id;
-                });
-                for (const entry of createdUsers) {
-                    const uid = userMap[entry.email.toLowerCase()];
-                    if (!uid) continue;
-                    for (const gName of entry.groups) {
-                        const gid = groupIdMap[gName];
-                        if (!gid) continue;
-                        try {
-                            await fetch(`${API_BASE}/realms/${encodeURIComponent(realm)}/groups/${encodeURIComponent(gid)}/members/${encodeURIComponent(uid)}`, {
-                                method: "POST",
-                                headers: { Authorization: keycloak.token ? `Bearer ${keycloak.token}` : "" },
-                            });
-                        } catch { /* ignore */ }
-                    }
+            for (const entry of createdUsers) {
+                const uid = userMap[entry.email.toLowerCase()];
+                if (!uid) continue;
+                for (const gName of entry.groups) {
+                    const gid = groupIdMap[gName];
+                    if (!gid) continue;
+                    try {
+                        await userGroupsApi.addUserToGroup(realm, gid, uid);
+                    } catch { /* ignore */ }
                 }
             }
         } catch { /* ignore */ }
@@ -191,7 +162,7 @@ export function BulkImportModal({
                     <button
                         onClick={handleBulkCreate}
                         disabled={isBulkLoading || bulkUsers.every((u) => u.status !== "pending")}
-                        className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/25"
+                        className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-primary-foreground bg-primary hover:bg-primary/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/25"
                     >
                         {isBulkLoading ? (
                             <span className="flex items-center gap-2">

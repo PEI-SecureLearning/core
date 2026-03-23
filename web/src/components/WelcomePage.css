@@ -10,12 +10,12 @@
 }
 
 .quick-card-container:hover {
-    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.15), 0 4px 10px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.15), 0 4px 10px rgba(0, 0, 0, 0.08);
     border-color: var(--accent-secondary);
 }
 
-.dark .quick-card-container:hover {
-    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25), 0 4px 10px rgba(0, 0, 0, 0.3);
+.dark .quick-card-container:active {
+    box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.25), 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Front face (always visible) ── */

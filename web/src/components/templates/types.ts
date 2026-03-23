@@ -2,7 +2,7 @@ export interface Template {
   id: string;
   name: string;
   path: string;
-  subject: string;
+  subject?: string | null;
   category?: string | null;
   description?: string | null;
   html: string;

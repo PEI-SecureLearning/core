@@ -123,7 +123,7 @@ export default function CourseList({
           {showNewCourse && (
             <Link
               to={"/content-manager/courses/new" as any}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-md hover:shadow-lg hover:bg-primary/90 transition-all duration-200 active:scale-[0.97]"
             >
               <Plus size={16} strokeWidth={2.5} />
               New Course
@@ -194,7 +194,7 @@ export default function CourseList({
                       y: -4,
                       scale: 1.02,
                       boxShadow:
-                        "0 12px 28px -6px rgba(147, 51, 234, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.06)"
+                        "0 12px 28px -6px rgba(var(--primary-rgb), 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.06)"
                     }}
                     transition={{
                       layout: { type: "spring", stiffness: 300, damping: 30 },

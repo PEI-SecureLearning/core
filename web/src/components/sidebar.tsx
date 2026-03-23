@@ -1,11 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useKeycloak } from "@react-keycloak/web";
-import {
-  PanelLeftClose,
-  PanelLeftOpen,
-  ChevronDown,
-} from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, ChevronDown } from "lucide-react";
 import {
   adminLinks,
   userLinks,
@@ -21,6 +17,15 @@ interface SidebarLinkProps {
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   exact?: boolean;
+}
+
+interface SidebarGroupProps {
+  label: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  links: NavLinkDef[];
+  sidebarExpanded: boolean;
+  open: boolean;
+  onToggle: () => void;
 }
 
 // SidebarLink
@@ -41,7 +46,7 @@ function SidebarLink({
         className:
           "text-primary dark:text-accent-secondary bg-primary/10 dark:bg-primary/20 font-medium"
       }}
-      inactiveProps={{ className: "text-muted-foreground hover:bg-muted" }}
+      inactiveProps={{ className: "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" }}
       className={`flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm ${indent && !isCollapsed ? "pl-6" : ""}`}
       title={isCollapsed ? label : undefined}
     >
@@ -57,41 +62,23 @@ function SidebarGroup({
   label,
   icon: Icon,
   links,
-  sidebarCollapsed,
-  sidebarExpanded
-}: {
-  label: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  links: NavLinkDef[];
-  sidebarCollapsed: boolean;
-  sidebarExpanded: boolean;
-}) {
+  sidebarExpanded,
+  open,
+  onToggle
+}: Readonly<SidebarGroupProps>) {
   const location = useLocation();
   const isAnyActive = links.some((l) => location.pathname.startsWith(l.href));
-  const [open, setOpen] = useState(true);
-  const userChoice = useRef<boolean | null>(null);
-  const prevCollapsed = useRef(sidebarCollapsed);
-
-  useEffect(() => {
-    if (prevCollapsed.current === sidebarCollapsed) return;
-    prevCollapsed.current = sidebarCollapsed;
-  }, [sidebarCollapsed]);
-
-  const showChildren = open;
-
-  const handleToggle = () => {
-    const next = !open;
-    setOpen(next);
-    userChoice.current = next;
-  };
+  const showChildren = open && sidebarExpanded;
 
   return (
     <li>
       <button
-        onClick={handleToggle}
+        type="button"
+        onClick={onToggle}
         title={sidebarExpanded ? undefined : label}
         className={`w-full flex items-center gap-2 lg:gap-3 px-4 py-2 text-xs sm:text-sm transition-colors
-          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
+          ${open ? "bg-sidebar-accent/50" : ""}
+          ${isAnyActive ? "text-primary dark:text-accent-secondary font-medium" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
       >
         <Icon className="h-4 w-4 shrink-0" />
         <span className="sidebar-label flex-1 text-left whitespace-nowrap">
@@ -102,15 +89,17 @@ function SidebarGroup({
         />
       </button>
 
-      <ul
-        className={`overflow-hidden transition-all duration-200 ease-in-out ${showChildren ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-200 ease-in-out ${showChildren ? "grid-rows-[1fr] opacity-100 bg-muted/40" : "grid-rows-[0fr] opacity-0"}`}
       >
-        {links.map((link) => (
-          <li key={link.href}>
-            <SidebarLink {...link} isCollapsed={sidebarCollapsed} indent />
-          </li>
-        ))}
-      </ul>
+        <ul className="overflow-hidden">
+          {links.map((link) => (
+            <li key={link.href}>
+              <SidebarLink {...link} isCollapsed={!sidebarExpanded} indent />
+            </li>
+          ))}
+        </ul>
+      </div>
     </li>
   );
 }
@@ -120,6 +109,7 @@ function SidebarGroup({
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { keycloak } = useKeycloak();
   const location = useLocation();
@@ -165,15 +155,29 @@ export function Sidebar() {
     sourceLinks = contentManagerLinks;
     routePrefix = "/content-manager";
   }
+  
+  const [initDone, setInitDone] = useState(false);
 
-  // Filter and group
-  const visibleLinks = filterLinks(sourceLinks, userRoles, realmFeatures);
-  const { dashboard, groups, standalone } = groupNavigationLinks(visibleLinks);
+  const visibleLinks = useMemo(() => filterLinks(sourceLinks, userRoles, realmFeatures), [sourceLinks, userRoles, realmFeatures]);
+  const { dashboard, groups, standalone } = useMemo(() => groupNavigationLinks(visibleLinks), [visibleLinks]);
+
+  useEffect(() => {
+    if (!initDone) {
+      const activeGroup = groups.find((group: any) =>
+        group.links.some((link: NavLinkDef) => location.pathname.startsWith(link.href))
+      )?.label;
+      setOpenGroupKey(activeGroup ?? groups[0]?.label ?? null);
+      setInitDone(true);
+    }
+  }, [groups, location.pathname, initDone]);
 
   // Adjust footer links with route prefix if they aren't absolute
-  const activeFooterLinks = footerLinks.map(link => ({
+  const activeFooterLinks = footerLinks.map((link) => ({
     ...link,
-    href: link.href.startsWith("/") && routePrefix ? `${routePrefix}${link.href}` : link.href
+    href:
+      link.href.startsWith("/") && routePrefix
+        ? `${routePrefix}${link.href}`
+        : link.href
   }));
 
   return (
@@ -187,7 +191,7 @@ export function Sidebar() {
       <div className="h-10 border-b border-sidebar-border shrink-0 flex items-center justify-end px-2">
         <button
           onClick={handleToggle}
-          className="p-2 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
+          className="p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg transition-colors text-sidebar-foreground"
           title="Toggle sidebar"
         >
           {isCollapsed ? (
@@ -205,17 +209,22 @@ export function Sidebar() {
               <SidebarLink {...dashboard} isCollapsed={!expanded} />
             </li>
           )}
-          
-          {groups.map((group) => (
+
+          {groups.map((group: any) => (
             <SidebarGroup
               key={group.label}
               {...group}
-              sidebarCollapsed={isCollapsed}
               sidebarExpanded={expanded}
+              open={openGroupKey === group.label}
+              onToggle={() =>
+                setOpenGroupKey((prev) =>
+                  prev === group.label ? null : group.label
+                )
+              }
             />
           ))}
 
-          {standalone.map((link) => (
+          {standalone.map((link: NavLinkDef) => (
             <li key={link.href}>
               <SidebarLink {...link} isCollapsed={!expanded} />
             </li>

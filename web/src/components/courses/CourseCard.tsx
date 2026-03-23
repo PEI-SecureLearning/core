@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Clock, BarChart2, Users, BookOpen } from 'lucide-react'
+import { BookOpen, Trash2 } from 'lucide-react'
 import type { GridCols } from './UniversalFilters'
 
 // ─── Generic card data shape ──────────────────────────────────────────────────
@@ -36,6 +36,8 @@ export type CardItem = {
      * Defaults to true when omitted.
      */
     showProgress?: boolean
+    /** Callback for delete action; if provided, shows a trash icon. */
+    onDelete?: (id: string) => void
 }
 
 type CourseCardProps = {
@@ -45,13 +47,15 @@ type CourseCardProps = {
     basePath?: string
     /** Route param key injected into the link, default 'courseId' */
     paramKey?: string
+    /** Callback for delete action; if provided, shows a trash icon. */
+    onDelete?: (id: string) => void
 }
 
 // ─── shared progress badge helpers ───────────────────────────────────────────
 
 function ProgressBadge({ progress }: { progress: number }) {
     if (progress === 100)
-        return <span className="text-xs text-emerald-300 font-semibold">✓ Completed</span>
+        return <span className="text-xs text-success font-semibold">✓ Completed</span>
     if (progress > 0)
         return <span className="text-xs text-white/80 font-medium">{progress}%</span>
     return null
@@ -66,6 +70,24 @@ function ProgressBar({ progress, color = 'bg-primary/90' }: { progress: number; 
                 style={{ width: `${progress}%` }}
             />
         </div>
+    )
+}
+
+function DeleteButton({ id, onDelete }: { id: string; onDelete?: (id: string) => void }) {
+    if (!onDelete) return null
+    return (
+        <button
+            type="button"
+            onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                onDelete(id)
+            }}
+            className="p-1.5 rounded-lg bg-surface/80 backdrop-blur-md border border-border/50 text-muted-foreground hover:text-error hover:bg-error/10 hover:border-error/20 transition-all shadow-sm"
+            title="Delete Module"
+        >
+            <Trash2 size={14} />
+        </button>
     )
 }
 
@@ -111,6 +133,11 @@ function Banner({
                         </span>
                     </div>
                 )}
+                {item.onDelete && (
+                    <div className="absolute bottom-2 left-3 z-10">
+                        <DeleteButton id={item.id} onDelete={item.onDelete} />
+                    </div>
+                )}
                 {showProg && (item.progress ?? 0) > 0 && (
                     <div className="absolute bottom-2 right-3 z-10">
                         <ProgressBadge progress={item.progress ?? 0} />
@@ -121,10 +148,10 @@ function Banner({
     }
 
     return (
-        <div className={`relative ${height} bg-gradient-to-br ${item.color ?? 'from-purple-600 to-purple-800'} flex items-center justify-center`}>
+        <div className={`relative ${height} bg-primary flex items-center justify-center`}>
             {item.icon
                 ? <span className={`${iconSize} select-none`}>{item.icon}</span>
-                : <BookOpen className="w-10 h-10 text-white/30" />
+                : <BookOpen className="w-10 h-10 text-primary-foreground/30" />
             }
             {showProg && (item.progress ?? 0) > 0 && (
                 <div className="absolute bottom-2 right-3">
@@ -133,7 +160,7 @@ function Banner({
             )}
             {item.difficultyBadge && (
                 <div className="absolute top-2 right-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-background/20 text-white border-white/30'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md ${item.difficultyBadgeClass ?? 'bg-primary/20 text-primary-foreground border-primary-foreground/30'}`}>
                         {item.difficultyBadge}
                     </span>
                 </div>
@@ -158,14 +185,19 @@ function CardHorizontal({ item, to, params }: { item: CardItem; to: string; para
                     <img src={item.coverImageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
                 </div>
             ) : (
-                <div className={`relative flex-shrink-0 w-40 bg-gradient-to-br ${item.color ?? 'from-purple-600 to-purple-800'} flex flex-col items-center justify-center gap-2`}>
+                <div className={`relative flex-shrink-0 w-40 bg-primary flex flex-col items-center justify-center gap-2`}>
                     {item.icon
                         ? <span className="text-5xl select-none">{item.icon}</span>
-                        : <BookOpen className="w-10 h-10 text-white/50" />
+                        : <BookOpen className="w-10 h-10 text-primary-foreground/50" />
                     }
                     {showProg && (item.progress ?? 0) > 0 && (
                         <div className="absolute bottom-2 right-2">
                             <ProgressBadge progress={item.progress ?? 0} />
+                        </div>
+                    )}
+                    {item.onDelete && (
+                        <div className="absolute bottom-2 left-2">
+                            <DeleteButton id={item.id} onDelete={item.onDelete} />
                         </div>
                     )}
                 </div>
@@ -194,21 +226,9 @@ function CardHorizontal({ item, to, params }: { item: CardItem; to: string; para
                     {item.description}
                 </p>
 
-                <div className="flex items-center gap-4 text-xs text-muted-foreground/70">
-                    {item.duration && (
-                        <span className="flex items-center gap-1">
-                            <Clock size={12} /> {item.duration}
-                        </span>
-                    )}
-                    {item.unitCount !== undefined && (
-                        <span className="flex items-center gap-1">
-                            <BarChart2 size={12} /> {item.unitCount} {item.unitLabel ?? 'modules'}
-                        </span>
-                    )}
-                    {item.userCount !== undefined && (
-                        <span className="flex items-center gap-1">
-                            <Users size={12} /> {item.userCount} users
-                        </span>
+                <div className="flex items-center justify-end text-xs text-muted-foreground/70 h-8 mt-auto">
+                    {item.onDelete && (
+                        <DeleteButton id={item.id} onDelete={item.onDelete} />
                     )}
                     {showProg && (item.progress ?? 0) > 0 && (
                         <span className="ml-auto text-primary font-semibold">{item.progress}%</span>
@@ -245,16 +265,9 @@ function CardVertical({ item, to, params }: { item: CardItem; to: string; params
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
                     {item.description}
                 </p>
-                <div className="flex items-center gap-3 pt-2 border-t border-border/40 mt-1">
-                    {item.duration && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
-                            <Clock size={12} /> {item.duration}
-                        </span>
-                    )}
-                    {item.unitCount !== undefined && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground/70">
-                            <BarChart2 size={12} /> {item.unitCount} {item.unitLabel ?? 'modules'}
-                        </span>
+                <div className="flex items-center justify-end pt-2 border-t border-border/40 mt-1 h-9">
+                    {item.onDelete && (
+                        <DeleteButton id={item.id} onDelete={item.onDelete} />
                     )}
                 </div>
                 {showProg && <ProgressBar progress={item.progress ?? 0} />}
@@ -284,20 +297,11 @@ function CardCompact({ item, to, params }: { item: CardItem; to: string; params:
                 <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
                     {item.title}
                 </h3>
-                <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/40">
-                    {item.duration && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-                            <Clock size={10} /> {item.duration}
-                        </span>
-                    )}
-                    {item.unitCount !== undefined && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-                            <BarChart2 size={10} /> {item.unitCount}
-                        </span>
-                    )}
+                <div className="flex items-center justify-end mt-auto pt-2 border-t border-border/40 h-8">
                     {showProg && (item.progress ?? 0) > 0 && (
-                        <span className="text-[10px] font-semibold text-primary">{item.progress}%</span>
+                        <span className="mr-auto text-[10px] font-semibold text-primary">{item.progress}%</span>
                     )}
+                    {item.onDelete && <DeleteButton id={item.id} onDelete={item.onDelete} />}
                 </div>
                 {showProg && <ProgressBar progress={item.progress ?? 0} />}
             </div>
@@ -307,11 +311,14 @@ function CardCompact({ item, to, params }: { item: CardItem; to: string; params:
 
 // ─── main export ──────────────────────────────────────────────────────────────
 
-export default function CourseCard({ item, cols, basePath = '/courses', paramKey = 'courseId' }: CourseCardProps) {
+export default function CourseCard({ item, cols, basePath = '/courses', paramKey = 'courseId', onDelete }: CourseCardProps) {
     const to = `${basePath}/$${paramKey}`
     const params = { [paramKey]: item.id }
 
-    if (cols === 1) return <CardHorizontal item={item} to={to} params={params} />
-    if (cols === 3) return <CardCompact item={item} to={to} params={params} />
-    return <CardVertical item={item} to={to} params={params} />
+    // Prefer prop, fallback to item.onDelete
+    const effectiveItem = { ...item, onDelete: onDelete ?? item.onDelete }
+
+    if (cols === 1) return <CardHorizontal item={effectiveItem} to={to} params={params} />
+    if (cols === 3) return <CardCompact item={effectiveItem} to={to} params={params} />
+    return <CardVertical item={effectiveItem} to={to} params={params} />
 }
