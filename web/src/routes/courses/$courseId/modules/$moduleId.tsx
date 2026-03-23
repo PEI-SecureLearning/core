@@ -36,7 +36,39 @@ function ModuleLearnerRoute() {
                 ]);
                 if (cancelled) return;
                 setCourse(courseData);
-                setMod(modData);
+
+                // Before setting the module, resolve all media URLs
+                const API_BASE = import.meta.env.VITE_API_URL as string;
+                const headers = { Authorization: `Bearer ${keycloak.token}` };
+
+                const resolveBlock = async (b: any): Promise<any> => {
+                    if (b.kind === 'rich_content') {
+                        const contentId = b.url; // snake_case API stores ID in 'url'
+                        if (contentId && !contentId.startsWith('http')) {
+                            try {
+                                const res = await fetch(`${API_BASE}/content/${encodeURIComponent(contentId)}/file-url`, { headers });
+                                if (res.ok) {
+                                    const d = await res.json();
+                                    return { ...b, url: d.url || b.url, contentId };
+                                }
+                            } catch { /* ignore */ }
+                        }
+                    }
+                    return b;
+                };
+
+                const resolveSection = async (s: any): Promise<any> => ({
+                    ...s,
+                    blocks: await Promise.all(s.blocks.map(resolveBlock))
+                });
+
+                const resolvedMod: Module = {
+                    ...modData,
+                    sections: await Promise.all(modData.sections.map(resolveSection)),
+                    refresh_sections: await Promise.all((modData.refresh_sections || []).map(resolveSection))
+                };
+
+                if (!cancelled) setMod(resolvedMod);
 
                 try {
                     const progData = await getCourseProgress(userId!, courseId, keycloak.token!);

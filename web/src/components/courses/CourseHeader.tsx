@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Clock, Users } from "lucide-react";
+import { ChevronDown, Clock } from "lucide-react";
 import type { Course } from "./courseData";
 
 const difficultyBadge: Record<string, string> = {
@@ -75,10 +75,6 @@ export default function CourseHeader({
               <span className="flex items-center gap-1.5">
                 <Clock size={15} className="text-primary/90" />
                 {course.duration}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Users size={15} className="text-primary/90" />
-                {course.userCount ?? 0} Users
               </span>
             </div>
 

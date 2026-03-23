@@ -41,7 +41,7 @@ export function CourseCreatorTopBar({
                     type="button"
                     onClick={onPreview}
                     disabled={!canPreview}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${canPreview
+                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${canPreview
                         ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:bg-primary/90'
                         : 'bg-surface-subtle text-muted-foreground cursor-not-allowed'
                         }`}

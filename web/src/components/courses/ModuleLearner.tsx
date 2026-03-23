@@ -51,12 +51,14 @@ function RichMediaPreview({
   block,
   token
 }: {
-  readonly block: any; // Allow for both mediaType and media_type
+  readonly block: any;
   readonly token?: string;
 }) {
-  const [url, setUrl] = useState(block.url || "");
   const mediaType = block.mediaType ?? block.media_type;
-  const contentId = block.contentId ?? block.content_id;
+  const contentId = block.contentId ?? block.content_id ?? (block.url?.startsWith("http") ? "" : block.url);
+
+  // If we already have a real URL, use it immediately.
+  const [url, setUrl] = useState(() => (block.url?.startsWith("http") ? block.url : ""));
 
   useEffect(() => {
     if (url || !contentId || !token) return;
@@ -72,11 +74,12 @@ function RichMediaPreview({
 
   if (!url) {
     return (
-      <div className="flex items-center justify-center h-24 text-muted-foreground/70 gap-2 text-sm italic animate-pulse">
+      <div className="flex items-center justify-center h-48 text-muted-foreground/70 gap-2 text-sm italic animate-pulse bg-muted/20 rounded-lg border border-dashed border-border shrink-0">
         <ImageIcon className="w-5 h-5" /> Loading media…
       </div>
     );
   }
+
   if (mediaType === "image") {
     return (
       <img
@@ -86,15 +89,20 @@ function RichMediaPreview({
       />
     );
   }
+
   if (mediaType === "video") {
     return (
-      <video controls className="w-full max-h-[600px] bg-black shadow-inner rounded-lg ring-1 ring-white/10">
-        <source src={url} type="video/mp4" />
+      <video
+        src={url}
+        controls
+        className="block max-w-full max-h-[700px] mx-auto rounded-lg shadow-sm ring-1 ring-border/20"
+      >
         <track kind="captions" />
         Your browser does not support the video tag.
       </video>
     );
   }
+
   if (mediaType === "audio") {
     return (
       <audio src={url} controls className="w-full px-4 py-3">
@@ -102,6 +110,7 @@ function RichMediaPreview({
       </audio>
     );
   }
+
   return (
     <a
       href={url}

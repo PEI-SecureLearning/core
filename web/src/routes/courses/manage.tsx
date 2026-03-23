@@ -1,16 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import CourseList from '@/components/courses/courseList'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/courses/manage')({
-    component: ManageCoursesComponent,
+    component: () => <Outlet />,
 })
-
-function ManageCoursesComponent() {
-    return (
-        <CourseList
-            showNewCourse={false}
-            hideControls={true}
-            basePath="/courses/manage"
-        />
-    )
-}
