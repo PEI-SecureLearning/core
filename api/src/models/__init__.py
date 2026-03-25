@@ -13,6 +13,7 @@ from .realm import (
     RealmInfoResponse,
     RealmUserCreate,
     RealmGroupCreate,
+    RealmFeatureToggle,
 )
 from .user import User, UserDTO, UserCreatedInRealmDTO, UserListInRealmDTO
 from .email_template import EmailTemplate
@@ -149,6 +150,7 @@ __all__ = [
     "RealmInfoResponse",
     "RealmUserCreate",
     "RealmGroupCreate",
+    "RealmFeatureToggle",
     # Sending Profile
     "SendingProfile",
     "SendingProfileCreate",

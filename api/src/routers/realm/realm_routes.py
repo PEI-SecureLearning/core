@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, status
 
 from src.core.security import Roles, Resource, Scope
 from src.core.dependencies import SafeRealm, SessionDep
-from src.models import RealmCreate, RealmInfoResponse, RealmResponse
+from src.models import RealmCreate, RealmInfoResponse, RealmResponse, RealmFeatureToggle
 from src.services.platform_admin import get_platform_admin_service
 
 realm_service = get_platform_admin_service()
@@ -59,3 +59,12 @@ def get_realm_info(realm: SafeRealm, session: SessionDep):
     if not realm:
         raise HTTPException(status_code=404, detail="Realm not found")
     return {"realm": realm}
+
+
+@router.patch("/realms/{realm}/features/{feature_name}", dependencies=[Depends(Roles(Resource.ADMIN, Scope.MANAGE))])
+def toggle_realm_feature(realm: SafeRealm, feature_name: str, toggle: RealmFeatureToggle):
+    """Toggle a feature flag for a realm."""
+    success = realm_service.admin.toggle_realm_feature(realm, feature_name, toggle.enabled)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to toggle feature")
+    return {"success": True}

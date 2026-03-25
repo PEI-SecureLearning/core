@@ -39,3 +39,6 @@ class RealmUserCreate(SQLModel):
 
 class RealmGroupCreate(SQLModel):
     name: str
+
+class RealmFeatureToggle(SQLModel):
+    enabled: bool
