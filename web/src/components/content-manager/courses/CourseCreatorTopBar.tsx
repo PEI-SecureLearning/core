@@ -53,8 +53,7 @@ export function CourseCreatorTopBar({
                     type="button"
                     onClick={onPublish}
                     disabled={isSaving}
-                    style={{ background: "linear-gradient(135deg, #7C3AED, #9333EA)" }}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-colors shadow-sm shadow-[#7C3AED]/25 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition-colors bg-linear-to-br from-primary to-accent-gradient-end shadow-sm shadow-primary/25 disabled:opacity-40 disabled:cursor-not-allowed h-9"
                 >
                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     {isSaving ? 'Publishing...' : 'Publish'}

@@ -2,9 +2,15 @@ import { useKeycloak } from "@react-keycloak/web";
 import "./WelcomePage.css";
 import { motion } from "motion/react";
 import { Link } from "@tanstack/react-router";
-import { userLinks, filterLinks } from "../config/navLinks";
+import { userLinks, filterLinks, type NavLinkDef } from "../config/navLinks";
 
-export const WelcomePage = () => {
+interface WelcomePageProps {
+    readonly links?: NavLinkDef[];
+    readonly title?: React.ReactNode;
+    readonly subtitle?: string;
+}
+
+export const WelcomePage = ({ links = userLinks, title, subtitle }: WelcomePageProps) => {
     const { keycloak } = useKeycloak();
 
     const userRoles = keycloak.tokenParsed?.realm_access?.roles || [];
@@ -13,7 +19,7 @@ export const WelcomePage = () => {
 
     // Reuse the exact same filter logic as the Sidebar, then keep only cards
     // that should appear on the welcome page and have a description.
-    const visibleCards = filterLinks(userLinks, userRoles, realmFeatures, keycloak.realm).filter(
+    const visibleCards = filterLinks(links, userRoles, realmFeatures, keycloak.realm).filter(
         (link) => link.showOnWelcome !== false && !!link.description
     );
 
@@ -28,7 +34,6 @@ export const WelcomePage = () => {
         hidden: { opacity: 0, y: 20 },
         show: { opacity: 1, y: 0 },
     };
-
 
     const featuredPositions = new Set<number>();
     let pos = 4;
@@ -47,12 +52,18 @@ export const WelcomePage = () => {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="mb-6"
+                    className="mb-6 flex flex-col gap-1"
                 >
-                    <h1 className="text-4xl font-bold text-foreground tracking-tight">
-                        Welcome back, <span className="text-primary">{username}</span>
-                    </h1>
-
+                    {title ? (
+                        <div className="text-4xl font-bold text-foreground tracking-tight">
+                            {title}
+                        </div>
+                    ) : (
+                        <h1 className="text-4xl font-bold text-foreground tracking-tight">
+                            Welcome back, <span className="text-primary">{username}</span>
+                        </h1>
+                    )}
+                    {subtitle && <p className="text-muted-foreground mt-1 text-lg">{subtitle}</p>}
                 </motion.div>
 
                 {/* Cards Grid */}
@@ -74,8 +85,8 @@ export const WelcomePage = () => {
                                 className={`quick-card-container shadow-lg ${isFeatured ? "md:col-span-2 lg:col-span-2" : ""}`}
                             >
                                 {/* Front face */}
-                                <div className={`quick-card-front min-h-48 flex flex-col items-center justify-center text-center ${isFeatured ? "bg-gradient-to-br from-card/80 to-accent/10" : "bg-card"}`}>
-                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 translate-y-4 ${isFeatured ? "bg-primary text-primary-foreground" : "bg-accent/10 text-primary"}`}>
+                                <div className="quick-card-front min-h-48 flex flex-col items-center justify-center text-center bg-card">
+                                    <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 translate-y-4 bg-accent/10 text-primary">
                                         <card.icon className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1 flex flex-col items-center justify-center">

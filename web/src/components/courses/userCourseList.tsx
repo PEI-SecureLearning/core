@@ -4,9 +4,10 @@ import { motion, LayoutGroup, AnimatePresence } from "motion/react";
 import { useKeycloak } from "@react-keycloak/web";
 import { fetchEnrolledCourses, type Course } from "@/services/coursesApi";
 import { getUserProgress, type UserProgress } from "@/services/progressApi";
-import CourseCard, { type CardItem } from "./CourseCard";
+import { ModuleCard } from "@/components/modules/ModuleCard";
 import CourseFilters from "./UniversalFilters";
 import type { GridCols } from "./UniversalFilters";
+import { useNavigate } from "@tanstack/react-router";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
@@ -18,6 +19,7 @@ const gridClass: Record<GridCols, string> = {
 
 export default function UserCourseList() {
     const { keycloak } = useKeycloak();
+    const navigate = useNavigate();
 
     const [courses, setCourses] = useState<(Course & { progressObj: UserProgress })[]>([]);
     const [loading, setLoading] = useState(true);
@@ -146,48 +148,7 @@ export default function UserCourseList() {
 
     const categoryOptions = ["All", ...Array.from(new Set(courses.map(c => c.category).filter(Boolean)))];
 
-    function courseToCardItem(course: Course & { progressObj: UserProgress }): CardItem {
-        const p = course.progressObj;
-        let progNum = 0;
-        if (p.is_certified) {
-            progNum = 100;
-        } else if (course.modules.length > 0) {
-            progNum = Math.min(100, Math.round((p.completed_sections.length / course.modules.length) * 100));
-        }
-
-        const isOverdue = p.status === 'OVERDUE' || p.overdue;
-        const isRenewalRequired = p.status === 'RENEWAL_REQUIRED';
-        const isExpired = p.expired; // Keep expired reference but it's separate now
-
-        let badgeStatus: string | undefined;
-        let badgeClass: string | undefined;
-
-        if (isRenewalRequired) {
-            badgeStatus = "Renewal Required";
-            badgeClass = "bg-amber-500 text-white border-amber-600 font-bold shadow-sm";
-        } else if (isOverdue) {
-            badgeStatus = "Overdue";
-            badgeClass = "bg-red-600 text-white border-red-700 font-extrabold shadow-sm";
-        }
-
-        return {
-            id: course.id,
-            title: course.title,
-            description: course.description,
-            category: course.category,
-            duration: course.expected_time,
-            unitCount: course.modules.length,
-            unitLabel: "modules",
-            showProgress: true,
-            progress: progNum,
-            isCompleted: course.progressObj.is_certified,
-            isOverdue: isOverdue,
-            isExpired: isExpired,
-            statusBadge: badgeStatus,
-            statusBadgeClass: badgeClass,
-            coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
-        };
-    }
+    // Function removed in favor of inline transformation
 
     return (
         <div
@@ -253,34 +214,67 @@ export default function UserCourseList() {
                     <LayoutGroup>
                         <motion.div layout className={`grid ${gridClass[cols]} gap-6`}>
                             <AnimatePresence mode="popLayout">
-                                {sortedCourses.map((course) => (
-                                    <motion.div
-                                        key={course.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        whileHover={{
-                                            y: -4,
-                                            scale: 1.02,
-                                            boxShadow: "0 12px 28px -6px rgba(147, 51, 234, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.06)"
-                                        }}
-                                        transition={{
-                                            layout: { type: "spring", stiffness: 300, damping: 30 },
-                                            opacity: { duration: 0.2 },
-                                            scale: { duration: 0.2 },
-                                            y: { type: "spring", stiffness: 400, damping: 25 },
-                                            boxShadow: { duration: 0.25 }
-                                        }}
-                                        className="rounded-xl cursor-pointer relative group/card"
-                                    >
-                                        <CourseCard
-                                            item={courseToCardItem(course)}
-                                            cols={cols}
-                                            basePath="/courses"
-                                        />
-                                    </motion.div>
-                                ))}
+                                {sortedCourses.map((course) => {
+                                    const p = course.progressObj;
+                                    let progNum = 0;
+                                    if (p.is_certified) {
+                                        progNum = 100;
+                                    } else if (course.modules.length > 0) {
+                                        progNum = Math.min(100, Math.round((p.completed_sections.length / course.modules.length) * 100));
+                                    }
+                                    const isOverdue = p.status === 'OVERDUE' || p.overdue;
+                                    const isRenewalRequired = p.status === 'RENEWAL_REQUIRED';
+                                    let badgeStatus: string | undefined;
+                                    let badgeClass: string | undefined;
+                                    if (isRenewalRequired) {
+                                        badgeStatus = "Renewal Required";
+                                        badgeClass = "bg-amber-500 text-white border-amber-600 font-bold shadow-sm";
+                                    } else if (isOverdue) {
+                                        badgeStatus = "Overdue";
+                                        badgeClass = "bg-red-600 text-white border-red-700 font-extrabold shadow-sm";
+                                    }
+
+                                    return (
+                                        <motion.div
+                                            key={course.id}
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            whileHover={{
+                                                y: -4,
+                                                scale: 1.02,
+                                                boxShadow: "0 12px 28px -6px rgba(147, 51, 234, 0.18), 0 4px 12px -2px rgba(0, 0, 0, 0.06)"
+                                            }}
+                                            transition={{
+                                                layout: { type: "spring", stiffness: 300, damping: 30 },
+                                                opacity: { duration: 0.2 },
+                                                scale: { duration: 0.2 },
+                                                y: { type: "spring", stiffness: 400, damping: 25 },
+                                                boxShadow: { duration: 0.25 }
+                                            }}
+                                            className="rounded-xl cursor-pointer relative group/card h-full"
+                                        >
+                                            <ModuleCard
+                                                title={course.title}
+                                                category={course.category}
+                                                description={course.description}
+                                                coverImage={course.cover_image ? coverUrls[course.cover_image] : undefined}
+                                                estimatedTime={course.expected_time ? `${course.expected_time} min` : undefined}
+                                                difficulty={course.difficulty}
+                                                progress={progNum}
+                                                showProgress={true}
+                                                isCompleted={p.is_certified}
+                                                isOverdue={isOverdue}
+                                                statusBadge={badgeStatus}
+                                                statusBadgeClass={badgeClass}
+                                                onClick={() => navigate({ to: `/courses/$courseId`, params: { courseId: course.id } } as any)}
+                                                layout={cols === 1 ? 'list' : 'grid'}
+                                                showActions={false}
+                                            />
+                                        </motion.div>
+                                    );
+                                })}
                             </AnimatePresence>
                         </motion.div>
                     </LayoutGroup>

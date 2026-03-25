@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@/lib/use-query";
 import { useMemo } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { Loader2 } from "lucide-react";

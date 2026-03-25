@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@/lib/use-query";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { templateApi } from "@/services/templateApi";
@@ -39,8 +39,7 @@ export default function TemplatesPage() {
     Template[]
   >({
     queryKey: ["templates"],
-    queryFn: () => templateApi.getTemplates(),
-    staleTime: 30_000
+    queryFn: () => templateApi.getTemplates()
   });
   const qc = useQueryClient();
 
@@ -93,7 +92,7 @@ export default function TemplatesPage() {
         html: form.html
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["templates"] });
+      qc.invalidateQueries();
       setForm(initialTemplateForm);
       setShowForm(false);
       toast.success("Template created successfully");
@@ -105,7 +104,7 @@ export default function TemplatesPage() {
     mutationFn: (data: { id: string; payload: Partial<Template> }) =>
       templateApi.updateTemplate(data.id, data.payload),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["templates"] });
+      qc.invalidateQueries();
       setForm(initialTemplateForm);
       setEditingTemplate(null);
       setShowForm(false);
@@ -117,7 +116,7 @@ export default function TemplatesPage() {
   const deleteTemplate = useMutation({
     mutationFn: (id: string) => templateApi.deleteTemplate(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["templates"] });
+      qc.invalidateQueries();
       toast.success("Template deleted successfully");
     },
     onError: () => toast.error("Failed to delete template")
@@ -167,7 +166,7 @@ export default function TemplatesPage() {
         }
       });
     } else {
-      createTemplate.mutate();
+      createTemplate.mutate(undefined);
     }
   };
 

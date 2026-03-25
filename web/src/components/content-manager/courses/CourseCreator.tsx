@@ -147,7 +147,7 @@ export function CourseCreator({ onBack, onPublished, initialCourse, initialModul
 
                 <DragOverlay dropAnimation={null}>
                     {activeModule && (
-                        <div className="w-64 opacity-90 rotate-2 scale-105 p-3 rounded-xl border border-[#7C3AED]/40 bg-surface shadow-xl">
+                        <div className="w-64 opacity-90 rotate-2 scale-105 p-3 rounded-xl border border-primary/40 bg-surface shadow-xl">
                             <p className="text-sm font-semibold text-foreground truncate">{activeModule.title}</p>
                             <p className="text-xs text-muted-foreground">{activeModule.category}</p>
                         </div>

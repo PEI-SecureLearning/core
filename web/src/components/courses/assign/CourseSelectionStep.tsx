@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
 import { BookOpen } from 'lucide-react';
 import { type Course } from '@/services/coursesApi';
-import { courseToCardItem } from '@/components/courses/courseList';
-import CourseCard from '@/components/courses/CourseCard';
+import { ModuleCard } from '@/components/modules/ModuleCard';
 import UniversalFilters, { type GridCols } from '@/components/courses/UniversalFilters';
 
 interface CourseSelectionStepProps {
@@ -63,16 +62,18 @@ export default function CourseSelectionStep({ courses, selectedCourses, onCourse
                         'grid-cols-3'
                     }`}>
                     {filteredCourses.map(course => (
-                        <CourseCard
+                        <ModuleCard
                             key={course.id}
-                            item={{
-                                ...courseToCardItem(course),
-                                coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined
-                            }}
-                            cols={cols}
-                            selectable={true}
+                            title={course.title}
+                            category={course.category}
+                            description={course.description}
+                            coverImage={course.cover_image ? coverUrls[course.cover_image] : undefined}
+                            estimatedTime={course.expected_time ? `${course.expected_time} min` : undefined}
+                            difficulty={course.difficulty}
+                            layout={cols === 1 ? 'list' : 'grid'}
                             isSelected={selectedCourses.includes(course.id)}
                             onClick={() => onCourseToggle(course.id)}
+                            showActions={false}
                         />
                     ))}
                 </div>

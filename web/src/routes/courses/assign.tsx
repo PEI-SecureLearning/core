@@ -6,7 +6,7 @@ import Stepper, { Step } from '@/components/ui/Stepper';
 import { fetchCourses, type Course } from '@/services/coursesApi';
 import { enrollUser } from '@/services/progressApi';
 import { toast } from 'sonner';
-import { fetchGroups, fetchGroupMembers } from '@/services/userGroupsApi';
+import { userGroupsApi } from '@/services/userGroupsApi';
 import CourseSelectionStep from '@/components/courses/assign/CourseSelectionStep';
 import UserGroupSelectionStep from '@/components/courses/assign/UserGroupSelectionStep';
 import SchedulingStep from '@/components/courses/assign/SchedulingStep';
@@ -51,7 +51,7 @@ function AssignCoursesPage() {
             .finally(() => setLoadingCourses(false));
 
         if (realm) {
-            fetchGroups(realm, keycloak.token)
+            userGroupsApi.getGroups(realm)
                 .then(async (data) => {
                     const loadedGroups = data.groups || [];
                     setGroups(loadedGroups);
@@ -61,7 +61,7 @@ function AssignCoursesPage() {
                     await Promise.all(loadedGroups.map(async (g) => {
                         if (g.id) {
                             try {
-                                const membersRes = await fetchGroupMembers(realm, g.id, keycloak.token);
+                                const membersRes = await userGroupsApi.getGroupMembers(realm, g.id);
                                 memberMap[g.id] = (membersRes.members || []).map(m => m.id).filter(Boolean) as string[];
                             } catch (e) {
                                 console.error(`Failed to load members for group ${g.name}`, e);

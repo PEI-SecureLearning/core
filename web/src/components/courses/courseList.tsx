@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { BookOpen, Plus, Trash2 } from "lucide-react";
+import { BookOpen, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { motion, LayoutGroup, AnimatePresence } from "motion/react";
 import { useKeycloak } from "@react-keycloak/web";
 import { toast } from "sonner";
 import { fetchCourses, deleteCourse, type Course } from "@/services/coursesApi";
-import CourseCard, { type CardItem } from "./CourseCard";
+import { ModuleCard } from "@/components/modules/ModuleCard";
+import { useNavigate } from "@tanstack/react-router";
 import CourseFilters from "./UniversalFilters";
 import type { GridCols } from "./UniversalFilters";
 
@@ -18,18 +19,7 @@ const ELEVATED_ROLES = [
     "CONTENT_MANAGER"
 ];
 
-export function courseToCardItem(course: Course): CardItem {
-    return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        category: course.category,
-        duration: course.expected_time,
-        unitCount: course.modules.length,
-        unitLabel: "modules",
-        showProgress: false,
-    };
-}
+
 
 const gridClass: Record<GridCols, string> = {
     1: "grid-cols-1",
@@ -49,6 +39,7 @@ export default function CourseList({
     hideControls = false,
 }: CourseListProps = {}) {
     const { keycloak } = useKeycloak();
+    const navigate = useNavigate();
     const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? [];
     const isContentManager = ELEVATED_ROLES.some((r) => userRoles.includes(r));
     const showControls = isContentManager && !hideControls;
@@ -133,9 +124,11 @@ export default function CourseList({
         return () => { cancelled = true; };
     }, [courses, keycloak.token]);
 
-    const handleDelete = async (courseId: string, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleDelete = async (courseId: string, e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         if (!window.confirm("Delete this course?")) return;
         try {
             await deleteCourse(courseId, keycloak.token);
@@ -172,7 +165,7 @@ export default function CourseList({
                     {showNewCourse && (
                         <Link
                             to={"/content-manager/courses/new" as any}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-purple-600 to-purple-700 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 active:scale-[0.97]"
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-linear-to-r from-primary to-accent-gradient-end text-white text-sm font-semibold shadow-md hover:shadow-lg hover:brightness-110 transition-all duration-200 active:scale-[0.97]"
                         >
                             <Plus size={16} strokeWidth={2.5} />
                             New Course
@@ -252,24 +245,20 @@ export default function CourseList({
                                         }}
                                         className="rounded-xl cursor-pointer relative group/card"
                                     >
-                                        <CourseCard
-                                            item={{
-                                                ...courseToCardItem(course),
-                                                coverImageUrl: course.cover_image ? coverUrls[course.cover_image] : undefined,
-                                            }}
-                                            cols={cols}
-                                            basePath={basePath}
+                                        <ModuleCard
+                                            title={course.title}
+                                            category={course.category}
+                                            description={course.description}
+                                            coverImage={course.cover_image ? coverUrls[course.cover_image] : undefined}
+                                            estimatedTime={course.expected_time ? `${course.expected_time} min` : undefined}
+                                            difficulty={course.difficulty}
+                                            onClick={() => navigate({ to: `${basePath}/$courseId`, params: { courseId: course.id } } as any)}
+                                            onPreview={showControls ? () => navigate({ to: `/content-manager/courses/$courseId`, params: { courseId: course.id } } as any) : undefined}
+                                            onEdit={showControls ? () => navigate({ to: `/content-manager/courses/$courseId/edit`, params: { courseId: course.id } } as any) : undefined}
+                                            onDelete={showControls ? () => void handleDelete(course.id) : undefined}
+                                            layout={cols === 1 ? 'list' : 'grid'}
+                                            showActions={showControls}
                                         />
-                                        {showControls && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => { void handleDelete(course.id, e); }}
-                                                title="Delete course"
-                                                className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm text-red-400 hover:text-red-300 hover:bg-red-500/15 opacity-0 group-hover/card:opacity-100 transition-all duration-200 border border-border/50"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        )}
                                     </motion.div>
                                 ))}
                             </AnimatePresence>

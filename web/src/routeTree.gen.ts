@@ -35,6 +35,7 @@ import { Route as SendingProfilesNewRouteImport } from './routes/sending-profile
 import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
 import { Route as PhishingKitsNewRouteImport } from './routes/phishing-kits/new'
 import { Route as PhishingKitsIdRouteImport } from './routes/phishing-kits/$id'
+import { Route as CoursesManageRouteImport } from './routes/courses/manage'
 import { Route as CoursesAssignRouteImport } from './routes/courses/assign'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
 import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
@@ -198,6 +199,11 @@ const PhishingKitsIdRoute = PhishingKitsIdRouteImport.update({
   path: '/phishing-kits/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoursesManageRoute = CoursesManageRouteImport.update({
+  id: '/courses/manage',
+  path: '/courses/manage',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesAssignRoute = CoursesAssignRouteImport.update({
   id: '/courses/assign',
   path: '/courses/assign',
@@ -284,9 +290,9 @@ const AdminHelpRoute = AdminHelpRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const CoursesManageIndexRoute = CoursesManageIndexRouteImport.update({
-  id: '/courses/manage/',
-  path: '/courses/manage/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => CoursesManageRoute,
 } as any)
 const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
   id: '/',
@@ -304,9 +310,9 @@ const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const CoursesManageCourseIdRoute = CoursesManageCourseIdRouteImport.update({
-  id: '/courses/manage/$courseId',
-  path: '/courses/manage/$courseId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$courseId',
+  path: '/$courseId',
+  getParentRoute: () => CoursesManageRoute,
 } as any)
 const ContentManagerModulesNewRoute =
   ContentManagerModulesNewRouteImport.update({
@@ -394,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRouteWithChildren
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
   '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -422,7 +429,7 @@ export interface FileRoutesByFullPath {
   '/admin/tenants': typeof AdminTenantsIndexRoute
   '/campaigns/$id/': typeof CampaignsIdIndexRoute
   '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
-  '/courses/manage': typeof CoursesManageIndexRoute
+  '/courses/manage/': typeof CoursesManageIndexRoute
   '/content-manager/courses/$courseId/edit': typeof ContentManagerCoursesCourseIdEditRoute
   '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
@@ -512,6 +519,7 @@ export interface FileRoutesById {
   '/content-manager/templates': typeof ContentManagerTemplatesRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRouteWithChildren
   '/phishing-kits/$id': typeof PhishingKitsIdRoute
   '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
@@ -574,6 +582,7 @@ export interface FileRouteTypes {
     | '/content-manager/templates'
     | '/courses/$courseId'
     | '/courses/assign'
+    | '/courses/manage'
     | '/phishing-kits/$id'
     | '/phishing-kits/new'
     | '/sending-profiles/$id'
@@ -602,7 +611,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/campaigns/$id/'
     | '/courses/$courseId/'
-    | '/courses/manage'
+    | '/courses/manage/'
     | '/content-manager/courses/$courseId/edit'
     | '/courses/$courseId/modules/$moduleId'
   fileRoutesByTo: FileRoutesByTo
@@ -691,6 +700,7 @@ export interface FileRouteTypes {
     | '/content-manager/templates'
     | '/courses/$courseId'
     | '/courses/assign'
+    | '/courses/manage'
     | '/phishing-kits/$id'
     | '/phishing-kits/new'
     | '/sending-profiles/$id'
@@ -747,6 +757,7 @@ export interface RootRouteChildren {
   ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
   CoursesAssignRoute: typeof CoursesAssignRoute
+  CoursesManageRoute: typeof CoursesManageRouteWithChildren
   PhishingKitsIdRoute: typeof PhishingKitsIdRoute
   PhishingKitsNewRoute: typeof PhishingKitsNewRoute
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
@@ -766,8 +777,6 @@ export interface RootRouteChildren {
   ContentManagerCoursesNewRoute: typeof ContentManagerCoursesNewRoute
   ContentManagerModulesModuleIdRoute: typeof ContentManagerModulesModuleIdRoute
   ContentManagerModulesNewRoute: typeof ContentManagerModulesNewRoute
-  CoursesManageCourseIdRoute: typeof CoursesManageCourseIdRoute
-  CoursesManageIndexRoute: typeof CoursesManageIndexRoute
   ContentManagerCoursesCourseIdEditRoute: typeof ContentManagerCoursesCourseIdEditRoute
 }
 
@@ -955,6 +964,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhishingKitsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/courses/manage': {
+      id: '/courses/manage'
+      path: '/courses/manage'
+      fullPath: '/courses/manage'
+      preLoaderRoute: typeof CoursesManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses/assign': {
       id: '/courses/assign'
       path: '/courses/assign'
@@ -1076,10 +1092,10 @@ declare module '@tanstack/react-router' {
     }
     '/courses/manage/': {
       id: '/courses/manage/'
-      path: '/courses/manage'
-      fullPath: '/courses/manage'
+      path: '/'
+      fullPath: '/courses/manage/'
       preLoaderRoute: typeof CoursesManageIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CoursesManageRoute
     }
     '/courses/$courseId/': {
       id: '/courses/$courseId/'
@@ -1104,10 +1120,10 @@ declare module '@tanstack/react-router' {
     }
     '/courses/manage/$courseId': {
       id: '/courses/manage/$courseId'
-      path: '/courses/manage/$courseId'
+      path: '/$courseId'
       fullPath: '/courses/manage/$courseId'
       preLoaderRoute: typeof CoursesManageCourseIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CoursesManageRoute
     }
     '/content-manager/modules_/new': {
       id: '/content-manager/modules_/new'
@@ -1250,6 +1266,20 @@ const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
   CoursesCourseIdRouteChildren,
 )
 
+interface CoursesManageRouteChildren {
+  CoursesManageCourseIdRoute: typeof CoursesManageCourseIdRoute
+  CoursesManageIndexRoute: typeof CoursesManageIndexRoute
+}
+
+const CoursesManageRouteChildren: CoursesManageRouteChildren = {
+  CoursesManageCourseIdRoute: CoursesManageCourseIdRoute,
+  CoursesManageIndexRoute: CoursesManageIndexRoute,
+}
+
+const CoursesManageRouteWithChildren = CoursesManageRoute._addFileChildren(
+  CoursesManageRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -1273,6 +1303,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
   CoursesAssignRoute: CoursesAssignRoute,
+  CoursesManageRoute: CoursesManageRouteWithChildren,
   PhishingKitsIdRoute: PhishingKitsIdRoute,
   PhishingKitsNewRoute: PhishingKitsNewRoute,
   SendingProfilesIdRoute: SendingProfilesIdRoute,
@@ -1292,8 +1323,6 @@ const rootRouteChildren: RootRouteChildren = {
   ContentManagerCoursesNewRoute: ContentManagerCoursesNewRoute,
   ContentManagerModulesModuleIdRoute: ContentManagerModulesModuleIdRoute,
   ContentManagerModulesNewRoute: ContentManagerModulesNewRoute,
-  CoursesManageCourseIdRoute: CoursesManageCourseIdRoute,
-  CoursesManageIndexRoute: CoursesManageIndexRoute,
   ContentManagerCoursesCourseIdEditRoute:
     ContentManagerCoursesCourseIdEditRoute,
 }

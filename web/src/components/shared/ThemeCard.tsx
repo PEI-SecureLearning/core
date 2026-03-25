@@ -8,7 +8,7 @@ export type ThemeCardProps = {
     icon: React.ComponentType<{ className?: string }>
     accentColor: string
     isActive: boolean
-    onSelect: (value: string) => void
+    onSelect: (value: string, event?: React.MouseEvent) => void
 }
 
 export const ThemeCard = memo(function ThemeCard({
@@ -27,7 +27,7 @@ export const ThemeCard = memo(function ThemeCard({
     return (
         <button
             type="button"
-            onClick={() => onSelect(value)}
+            onClick={(e) => onSelect(value, e)}
             aria-pressed={isActive}
             style={
                 isActive
