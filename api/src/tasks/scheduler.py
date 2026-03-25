@@ -9,13 +9,72 @@ from pydantic import ValidationError
 from sqlmodel import Session, col, select
 
 from src.core.db import engine
-from src.models import Campaign, CampaignStatus, EmailSending, EmailSendingStatus
+from src.models import Campaign, CampaignStatus, EmailSending, EmailSendingStatus, UserProgress, AssignmentStatus
 
 from src.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
 
-# Global scheduler
+def process_course_assignments() -> None:
+    """Process course assignments lifecycle (SCHEDULED -> ACTIVE -> OVERDUE)."""
+    with Session(engine) as session:
+        now = datetime.now()
+        updated_count = 0
+
+        # Scheduled -> Active
+        scheduled_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.SCHEDULED,
+                UserProgress.start_date <= now
+            )
+        ).all()
+
+        for assignment in scheduled_assignments:
+            assignment.status = AssignmentStatus.ACTIVE
+            assignment.notified_at = now
+            # TODO: trigger direct notification service here
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> ACTIVE")
+            updated_count += 1
+
+        # Active -> Overdue
+        active_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.ACTIVE,
+                UserProgress.deadline <= now,
+                UserProgress.is_certified == False
+            )
+        ).all()
+
+        for assignment in active_assignments:
+            assignment.status = AssignmentStatus.OVERDUE
+            assignment.overdue = True
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> OVERDUE")
+            updated_count += 1
+            
+        # Completed -> Renewal Required
+        completed_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.COMPLETED,
+                UserProgress.is_certified == True,
+                UserProgress.cert_expires_at <= now
+            )
+        ).all()
+
+        for assignment in completed_assignments:
+            assignment.status = AssignmentStatus.RENEWAL_REQUIRED
+            assignment.is_certified = False
+            assignment.completed_sections = []
+            assignment.progress_data = {}
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> RENEWAL_REQUIRED")
+            updated_count += 1
+
+        if updated_count > 0:
+            session.commit()
+            logger.info(f"Processed {updated_count} course assignment(s)")
+
+
+# Global scheduler 
+
 
 
 _scheduler: BackgroundScheduler | None = None
@@ -227,6 +286,15 @@ def start_scheduler(interval_minutes: int = 1) -> BackgroundScheduler:
         replace_existing=True,
     )
 
+    # Add job to process course assignments
+    _scheduler.add_job(
+        process_course_assignments,
+        trigger=IntervalTrigger(minutes=interval_minutes),
+        id="process_course_assignments",
+        name="Process course assignments based on time",
+        replace_existing=True,
+    )
+
     # Add job to create emails for ready campaigns
     _scheduler.add_job(
         create_emails_for_ready_campaigns,
@@ -250,6 +318,7 @@ def start_scheduler(interval_minutes: int = 1) -> BackgroundScheduler:
 
     # Run once immediately on startup
     update_campaign_statuses()
+    process_course_assignments()
     create_emails_for_ready_campaigns()
     process_pending_emails()
 

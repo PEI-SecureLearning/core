@@ -1,6 +1,7 @@
 from .schemas import (
     OrgUserCreate,
     OrgGroupCreate,
+    CourseEnrollmentPayload,
     CompliancePolicyPayload,
     QuizQuestionPayload,
     ComplianceQuizPayload,
@@ -11,6 +12,7 @@ from .schemas import (
 __all__ = [
     "OrgUserCreate",
     "OrgGroupCreate",
+    "CourseEnrollmentPayload",
     "CompliancePolicyPayload",
     "QuizQuestionPayload",
     "ComplianceQuizPayload",

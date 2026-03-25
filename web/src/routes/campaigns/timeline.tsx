@@ -3,7 +3,8 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { TimelineView } from "../../components/campaigns/timeline";
-import { fetchCampaigns, type Campaign } from "@/services/campaignsApi"; // Importa do serviço que criámos acima
+import { fetchCampaigns, type Campaign } from "@/services/campaignsApi";
+import { fetchAllAssignments } from "@/services/coursesApi";
 
 export const Route = createFileRoute("/campaigns/timeline")({
   component: TimelinePage
@@ -33,13 +34,17 @@ function TimelinePage() {
       try {
         setIsLoading(true);
         // Chama a função que bate no endpoint GET /campaigns
-        const data = await fetchCampaigns(realm, keycloak.token);
+        const [campaignData, assignmentData] = await Promise.all([
+          fetchCampaigns(realm, keycloak.token),
+          fetchAllAssignments(keycloak.token!)
+        ]);
 
-        // Opcional: Converter IDs para string se o TimelineView refilar com números
-        // Mas se o backend mandar números, o TypeScript vai ajudar-te.
-        setCampaigns(data);
+        const combined = [...campaignData, ...assignmentData].sort((a, b) => 
+          new Date(a.begin_date).getTime() - new Date(b.begin_date).getTime()
+        );
+        setCampaigns(combined as any);
       } catch (err) {
-        console.error("Deu barraca ao carregar as campanhas:", err);
+        console.error("Deu barraca ao carregar os dados:", err);
         setError("Failed to load timeline data.");
       } finally {
         setIsLoading(false);

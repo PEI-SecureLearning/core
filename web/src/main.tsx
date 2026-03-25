@@ -89,11 +89,9 @@ const App = () => {
       {!isLoading && (
         <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
           <ErrorBoundary>
-            <StrictMode>
-              <Providers>
-                <RouterProvider router={router} />
-              </Providers>
-            </StrictMode>
+            <Providers>
+              <RouterProvider router={router} />
+            </Providers>
           </ErrorBoundary>
         </ReactKeycloakProvider>
       )}

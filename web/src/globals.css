@@ -76,6 +76,10 @@
   --theme-tritanopia-primary: #D62828;
   --theme-tritanopia-bg: rgba(214, 40, 40, 0.1);
   --theme-tritanopia-ring: rgba(214, 40, 40, 0.3);
+
+  --theme-system-primary: #7C3AED;
+  --theme-system-bg: rgba(124, 58, 237, 0.1);
+  --theme-system-ring: rgba(124, 58, 237, 0.3);
 }
 
 .dark {
@@ -318,9 +322,10 @@ body,
   mix-blend-mode: normal;
 }
 
-/* The incoming snapshot sits on top */
+/* The incoming snapshot sits on top and starts clipped to prevent flashing */
 ::view-transition-new(root) {
   z-index: 10;
+  clip-path: circle(0px at var(--x, 50%) var(--y, 50%));
 }
 
 /* Scrollbars — color follows active theme accent */

@@ -36,8 +36,13 @@ function RichMediaPreview({ block }: { readonly block: Extract<Block, { kind: 'r
     }
     if (block.mediaType === 'video') {
         return (
-            <video src={block.url} controls className="w-full max-h-80">
+            <video
+                src={block.url}
+                controls
+                className="block max-w-full max-h-[700px] mx-auto rounded-lg shadow-sm ring-1 ring-border/20"
+            >
                 <track kind="captions" />
+                Your browser does not support the video tag.
             </video>
         )
     }
