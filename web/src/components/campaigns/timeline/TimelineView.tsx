@@ -193,11 +193,10 @@ export const TimelineView = memo(function TimelineView({
               <button
                 key={period}
                 onClick={() => setViewPeriod(period)}
-                className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer capitalize ${
-                  viewPeriod === period
+                className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer capitalize ${viewPeriod === period
                     ? "bg-background shadow-md text-primary"
                     : "text-muted-foreground hover:text-foreground/90 hover:bg-background/50"
-                }`}
+                  }`}
               >
                 {period}
               </button>

@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { Users, X, UserPlus, Search, Upload } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 
@@ -142,6 +142,7 @@ function MembersSection({
   onStatus,
 }: MembersSectionProps) {
   const { keycloak } = useKeycloak();
+  const [isFocused, setIsFocused] = useState(false);
   const handleFileSelect = useCallback(async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -195,13 +196,20 @@ function MembersSection({
           placeholder="Search by name, email, or department..."
           className="w-full pl-11 pr-4 py-3 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           onChange={(e) => onSearchChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setTimeout(() => setIsFocused(false), 200)}
         />
       </div>
 
       {/* Search Results Dropdown */}
-      {searchQuery && filteredUsers.length > 0 && (
-        <div className="mb-5 max-h-60 overflow-y-auto rounded-xl border border-border bg-surface">
-          {filteredUsers.slice(0, 5).map((user) => (
+      {(searchQuery || isFocused) && filteredUsers.length > 0 && (
+        <div className="mb-5 max-h-60 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+          {!searchQuery && (
+            <div className="px-4 py-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider border-b border-border/40">
+              Suggested Members
+            </div>
+          )}
+          {filteredUsers.slice(0, 3).map((user) => (
             <SearchResultRow
               key={user.id}
               user={user}

@@ -59,6 +59,7 @@ class RichContentBlock(BaseModel):
     order:      int                    = Field(..., ge=0)
     media_type: RichMediaType
     url:        str                    = ""
+    content_id: str                    = ""
     caption:    str                    = ""
 
 

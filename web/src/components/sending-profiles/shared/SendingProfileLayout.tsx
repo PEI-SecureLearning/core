@@ -30,7 +30,6 @@ interface Props {
   setUsername: (v: string) => void;
   password: string;
   setPassword: (v: string) => void;
-  onTest: () => void;
   isTesting: boolean;
   testStatus: string | null;
 
@@ -62,7 +61,6 @@ export default function SendingProfileLayout({
   setUsername,
   password,
   setPassword,
-  onTest,
   isTesting,
   testStatus,
   customHeaders,
@@ -111,7 +109,6 @@ export default function SendingProfileLayout({
                 setUsername={setUsername}
                 password={password}
                 setPassword={setPassword}
-                onTest={onTest}
                 isTesting={isTesting}
                 testStatus={testStatus}
               />

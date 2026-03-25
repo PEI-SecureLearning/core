@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@/lib/use-query";
 import { fetchPhishingKits, deletePhishingKit } from "@/services/phishingKitsApi";
 import { useConfirm } from "@/components/ui/confirm-modal";
 import type { PhishingKitDisplayInfo } from "@/types/phishingKit";
@@ -23,12 +23,11 @@ export function usePhishingKits() {
   >({
     queryKey: ["phishing-kits"],
     queryFn: fetchPhishingKits,
-    staleTime: 30_000,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deletePhishingKit(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["phishing-kits"] }),
+    onSuccess: () => qc.invalidateQueries(),
   });
 
   const kits = data ?? [];

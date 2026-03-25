@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Clock, Users } from "lucide-react";
+import { ChevronDown, Clock } from "lucide-react";
 import type { Course } from "./courseData";
 
 const difficultyBadge: Record<string, string> = {
@@ -9,7 +9,7 @@ const difficultyBadge: Record<string, string> = {
 };
 
 type CourseHeaderProps = {
-  course: Course;
+  course: Course & { coverImage?: string | null };
   overallProgress: number;
 };
 
@@ -57,7 +57,7 @@ export default function CourseHeader({
             {/* Badges */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold ${difficultyBadge[course.difficulty]}`}
+                className={`px-3 py-1 rounded-full text-xs font-semibold ${difficultyBadge[course.difficulty || 'Beginner']}`}
               >
                 {course.difficulty}
               </span>
@@ -75,10 +75,6 @@ export default function CourseHeader({
               <span className="flex items-center gap-1.5">
                 <Clock size={15} className="text-primary/90" />
                 {course.duration}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Users size={15} className="text-primary/90" />
-                {course.userCount} Users
               </span>
             </div>
 
@@ -105,11 +101,15 @@ export default function CourseHeader({
         {/* Right illustration area — hide when collapsed */}
         {!collapsed && (
           <div
-            className={`hidden lg:flex items-center justify-center w-60 bg-gradient-to-br ${course.color} bg-opacity-10`}
+            className={`hidden lg:flex items-center justify-center w-64 flex-shrink-0 ${course.coverImage ? '' : `bg-gradient-to-br ${course.color} bg-opacity-10`}`}
           >
-            <div className="w-24 h-24 rounded-2xl bg-primary/30 flex items-center justify-center">
-              <span className="text-4xl select-none">{course.icon}</span>
-            </div>
+            {course.coverImage ? (
+                <img src={course.coverImage} alt={course.title} className="w-full h-full object-cover" />
+            ) : (
+                <div className="w-24 h-24 rounded-2xl bg-primary/30 flex items-center justify-center">
+                  <span className="text-4xl select-none">{course.icon}</span>
+                </div>
+            )}
           </div>
         )}
       </div>

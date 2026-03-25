@@ -72,7 +72,7 @@ services:
           "--authenticationDatabase",
           "admin",
           "--eval",
-          "db.adminCommand('ping')"
+          "db.adminCommand('ping')",
         ]
       interval: 5s
       timeout: 5s
@@ -95,7 +95,7 @@ services:
       - ./garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
-      test: [ "CMD", "/garage", "-c", "/etc/garage.toml", "status" ]
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -251,7 +251,7 @@ services:
       context: ../web
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${API_URL}/api
+        VITE_API_URL: ${API_URL}
         VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
         VITE_BASE_PATH: ${VITE_BASE_PATH}
         VITE_WEB_URL: ${WEB_URL}

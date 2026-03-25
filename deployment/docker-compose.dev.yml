@@ -10,7 +10,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_runtime_data:/var/lib/postgresql
       - db_data:/var/lib/postgresql/data
       - ../db/init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
@@ -46,7 +45,7 @@ services:
           "--authenticationDatabase",
           "admin",
           "--eval",
-          "db.adminCommand('ping')"
+          "db.adminCommand('ping')",
         ]
       interval: 5s
       timeout: 5s
@@ -146,7 +145,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1"
+          "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost:8080\\r\\nConnection: close\\r\\n\\r\\n' >&3;cat <&3 | grep -q '\"status\": \"UP\"' && exit 0 || exit 1",
         ]
       interval: 30s
       timeout: 10s
