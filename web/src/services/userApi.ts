@@ -5,7 +5,7 @@ import type {
   TenantUserListResponse,
 } from "@/types/tenantOrgManager";
 
-export const tenantOrgManagerApi = {
+export const userApi = {
   getUsers: (realm: string) =>
     apiClient.get<TenantUserListResponse>(`/realms/${encodeURIComponent(realm)}/users`),
 
@@ -17,6 +17,6 @@ export const tenantOrgManagerApi = {
 
   deleteUser: (realm: string, userId: string) =>
     apiClient.delete(
-      `/org-manager/${encodeURIComponent(realm)}/users/${encodeURIComponent(userId)}`
-    ) as Promise<void>,
+      `/realms/${encodeURIComponent(realm)}/users/${encodeURIComponent(userId)}`
+    ),
 };
