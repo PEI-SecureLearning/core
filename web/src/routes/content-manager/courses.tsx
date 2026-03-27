@@ -11,7 +11,7 @@ function RouteComponent() {
     const { keycloak } = useKeycloak()
 
     const userRoles = keycloak.tokenParsed?.realm_access?.roles ?? []
-    const isContentManager = userRoles.includes('CONTENT_MANAGER')
+    const isContentManager = userRoles.includes('CONTENT_MANAGER') || userRoles.includes('admin')
 
     return (
         <CourseList

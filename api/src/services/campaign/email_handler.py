@@ -75,9 +75,7 @@ class EmailHandler:
                 template_id=template.content_link,
                 tracking_id=email_sending.tracking_token,
                 arguments={
-                    **(kit.args if kit.args else {}),
-                    "name": email_sending.user_id,
-                    "tracking_id": email_sending.tracking_token,
+                    **(kit.args if kit.args else {})
                 },
             )
         )

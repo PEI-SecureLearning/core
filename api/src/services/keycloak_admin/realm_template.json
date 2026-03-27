@@ -67,6 +67,7 @@
                     "protocolMapper": "oidc-sub-mapper",
                     "consentRequired": false,
                     "config": {
+                        "id.token.claim": "true",
                         "introspection.token.claim": "true",
                         "access.token.claim": "true"
                     }
@@ -449,7 +450,8 @@
         "email",
         "roles",
         "web-origins",
-        "acr"
+        "acr",
+        "basic"
     ],
     "enabled_event_types": [
         "LOGIN",

@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -14,11 +14,9 @@ import {
   Lock,
   PanelLeftClose,
   PanelLeftOpen,
-  PartyPopper,
   SkipForward,
   X
 } from "lucide-react";
-import type { CourseModule } from "./courseData";
 import { COURSES } from "./courseData";
 import type {
   Block,
@@ -47,50 +45,81 @@ const TF_CHOICES: Choice[] = [
    Block renderers (adapted from ModulePreview)
    ──────────────────────────────────────────────────────────────────────────── */
 
+const API_BASE = import.meta.env.VITE_API_URL as string;
+
 function RichMediaPreview({
-  block
+  block,
+  token
 }: {
-  readonly block: Extract<Block, { kind: "rich_content" }>;
+  readonly block: any;
+  readonly token?: string;
 }) {
-  if (!block.url) {
+  const mediaType = block.mediaType ?? block.media_type;
+  const contentId = block.contentId ?? block.content_id ?? (block.url?.startsWith("http") ? "" : block.url);
+
+  // If we already have a real URL, use it immediately.
+  const [url, setUrl] = useState(() => (block.url?.startsWith("http") ? block.url : ""));
+
+  useEffect(() => {
+    if (url || !contentId || !token) return;
+    let cancelled = false;
+    fetch(`${API_BASE}/content/${encodeURIComponent(contentId)}/file-url`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json() as Promise<{ url: string | null }>)
+      .then(d => { if (!cancelled && d.url) setUrl(d.url) })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [contentId, token, url]);
+
+  if (!url) {
     return (
-      <div className="flex items-center justify-center h-24 text-muted-foreground/70 gap-2 text-sm italic">
-        <ImageIcon className="w-5 h-5" /> No media URL set
+      <div className="flex items-center justify-center h-48 text-muted-foreground/70 gap-2 text-sm italic animate-pulse bg-muted/20 rounded-lg border border-dashed border-border shrink-0">
+        <ImageIcon className="w-5 h-5" /> Loading media…
       </div>
     );
   }
-  if (block.mediaType === "image") {
+
+  if (mediaType === "image") {
     return (
       <img
-        src={block.url}
+        src={url}
         alt={block.caption || "media"}
-        className="w-full max-h-80 object-contain"
+        className="w-full max-h-[600px] object-contain shadow-sm rounded-lg"
       />
     );
   }
-  if (block.mediaType === "video") {
+
+  if (mediaType === "video") {
     return (
-      <video src={block.url} controls className="w-full max-h-80">
+      <video
+        src={url}
+        controls
+        className="block max-w-full max-h-[700px] mx-auto rounded-lg shadow-sm ring-1 ring-border/20"
+      >
         <track kind="captions" />
+        Your browser does not support the video tag.
       </video>
     );
   }
-  if (block.mediaType === "audio") {
+
+  if (mediaType === "audio") {
     return (
-      <audio src={block.url} controls className="w-full px-4 py-3">
+      <audio src={url} controls className="w-full px-4 py-3">
         <track kind="captions" />
       </audio>
     );
   }
+
   return (
     <a
-      href={block.url}
+      href={url}
       target="_blank"
       rel="noreferrer"
       className="flex items-center gap-2 px-4 py-3 text-sm text-primary font-medium hover:text-primary/80 transition-colors"
     >
       <FileText className="w-4 h-4 shrink-0" />
-      <span className="truncate">{block.url}</span>
+      <span className="truncate">{url}</span>
     </a>
   );
 }
@@ -111,20 +140,22 @@ function QuestionBlock({
   const typeLabel = QUESTION_TYPE_LABELS[q.type] ?? "Question";
   const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
 
-  const choiceBtnClass = (c: Choice) => {
+  const choiceBtnClass = (c: any) => {
     if (answered !== c.id) {
       return "bg-background border-border text-foreground/90 hover:bg-primary/5 hover:border-primary/30";
     }
-    return c.isCorrect
-      ? "bg-success/10 border-success/40 text-success"
-      : "bg-error/10 border-error/40 text-error";
+    const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
+    return isCorrect
+      ? "bg-green-50 border-green-400 text-green-800"
+      : "bg-red-50 border-red-400 text-red-800";
   };
 
-  const choiceCircleClass = (c: Choice) => {
+  const choiceCircleClass = (c: any) => {
     if (answered !== c.id) return "border-border/60";
-    return c.isCorrect
-      ? "border-success bg-success/20"
-      : "border-error bg-error/20";
+    const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
+    return isCorrect
+      ? "border-green-500 bg-green-100"
+      : "border-red-500 bg-red-100";
   };
 
   return (
@@ -150,12 +181,25 @@ function QuestionBlock({
           <div className="flex gap-2">
             <input
               type="text"
+              defaultValue={answered || ""}
               placeholder="Your answer…"
-              className="flex-1 bg-surface-subtle border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onMark(q.id, e.currentTarget.value);
+                }
+              }}
+              onBlur={(e) => {
+                onMark(q.id, e.target.value);
+              }}
+              className={`flex-1 bg-surface-subtle border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all ${answered ? (answered.trim().toLowerCase() === (q.answer || "").trim().toLowerCase() ? "border-emerald-500 bg-emerald-50" : "border-red-400 bg-red-50") : "border-border focus:border-primary/50"}`}
             />
             <button
               type="button"
-              className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors bg-primary hover:bg-primary"
+              onClick={(e) => {
+                const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                onMark(q.id, input.value);
+              }}
+              className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-colors bg-primary hover:bg-primary shadow-sm active:scale-95"
             >
               Check
             </button>
@@ -164,6 +208,7 @@ function QuestionBlock({
           <div className="flex flex-col gap-2">
             {choices.map((c) => {
               const isSelected = answered === c.id;
+              const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
               return (
                 <button
                   key={c.id}
@@ -174,11 +219,11 @@ function QuestionBlock({
                   <span
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${choiceCircleClass(c)}`}
                   >
-                    {isSelected && c.isCorrect && (
-                      <Check className="w-2.5 h-2.5 text-success" />
+                    {isSelected && isCorrect && (
+                      <Check className="w-2.5 h-2.5 text-green-600" />
                     )}
-                    {isSelected && !c.isCorrect && (
-                      <X className="w-2.5 h-2.5 text-error" />
+                    {isSelected && !isCorrect && (
+                      <X className="w-2.5 h-2.5 text-red-600" />
                     )}
                   </span>
                   <span className="flex-1">
@@ -200,12 +245,14 @@ function PreviewBlock({
   block,
   qIndex,
   answeredChoices,
-  onMark
+  onMark,
+  token
 }: {
   readonly block: Block;
   readonly qIndex: number;
   readonly answeredChoices: Record<string, string>;
   readonly onMark: (qid: string, cid: string) => void;
+  readonly token?: string;
 }) {
   if (block.kind === "text") {
     return (
@@ -219,8 +266,8 @@ function PreviewBlock({
   }
   if (block.kind === "rich_content") {
     return (
-      <div className="rounded-xl overflow-hidden border border-border bg-surface-subtle">
-        <RichMediaPreview block={block} />
+      <div className="rounded-xl overflow-hidden border border-border bg-surface-subtle shadow-sm">
+        <RichMediaPreview block={block} token={token} />
         {block.caption && (
           <p className="text-[11px] text-muted-foreground text-center px-3 py-2 border-t border-border italic">
             {block.caption}
@@ -246,7 +293,6 @@ function PreviewBlock({
    Section locking logic
    ──────────────────────────────────────────────────────────────────────────── */
 
-/** Check if all questions in a section have been answered correctly */
 function isSectionComplete(
   section: Section,
   answeredChoices: Record<string, string>
@@ -257,20 +303,20 @@ function isSectionComplete(
 
   if (questions.length === 0) return true; // no questions → auto-complete on open
 
-  if (section.requireCorrectAnswers) {
-    // Every question must be answered correctly
-    return questions.every((qb) => {
-      const q = qb.question;
-      const chosen = answeredChoices[q.id];
-      if (!chosen) return false;
-      const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
-      const correct = choices.find((c) => c.isCorrect);
-      return chosen === correct?.id;
-    });
-  }
+  // Every question must be answered correctly to complete the section
+  return questions.every((qb) => {
+    const q = qb.question;
+    const chosen = answeredChoices[q.id];
+    if (!chosen) return false;
 
-  // No strict requirement → just need to have answered each question (any answer)
-  return questions.every((qb) => answeredChoices[qb.question.id] !== undefined);
+    if (q.type === "short_answer") {
+      return chosen.trim().toLowerCase() === (q.answer || "").trim().toLowerCase();
+    }
+
+    const choices = (q.type === "true_false" ? TF_CHOICES : q.choices) || [];
+    const correct = choices.find((c: any) => c.is_correct ?? (c as any).isCorrect);
+    return chosen === correct?.id;
+  });
 }
 
 /** Determine which sections are unlocked based on sequential completion */
@@ -327,11 +373,17 @@ function Toast({
    ──────────────────────────────────────────────────────────────────────────── */
 
 type Props = {
-  readonly module: CourseModule;
+  readonly module: { title: string; difficulty?: string; estimatedTime?: string; sections?: Section[] }; // Accept mapped Module
   readonly courseId: string;
+  readonly token?: string; // Add token prop
+  readonly initialCompletedSections?: string[];
+  readonly onSectionComplete?: (sectionId: string, totalSections: number) => void;
+  readonly onTaskComplete?: (sectionId: string, taskId: string) => void;
+  readonly isRenewalMode?: boolean;
+  readonly onRenewalComplete?: () => void;
 };
 
-export default function ModuleLearner({ module: mod, courseId }: Props) {
+export default function ModuleLearner({ module: mod, courseId, token, initialCompletedSections = [], onSectionComplete, onTaskComplete, isRenewalMode, onRenewalComplete }: Props) {
   const sections = mod.sections ?? [];
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -350,7 +402,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
     Record<string, string>
   >({});
   const [completedSections, setCompletedSections] = useState<Set<string>>(
-    new Set()
+    new Set(initialCompletedSections)
   );
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [openedSections, setOpenedSections] = useState<Set<string>>(
@@ -369,9 +421,15 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
   );
 
   // ── Handlers ──
-  const onMark = useCallback((qid: string, cid: string) => {
-    setAnsweredChoices((prev) => ({ ...prev, [qid]: cid }));
-  }, []);
+  const onMark = useCallback((sectionId: string, qid: string, cid: string) => {
+    setAnsweredChoices((prev) => {
+      // Only trigger onTaskComplete if this is a new answer
+      if (prev[qid] !== cid && onTaskComplete) {
+        onTaskComplete(sectionId, qid);
+      }
+      return { ...prev, [qid]: cid };
+    });
+  }, [onTaskComplete]);
 
   const toggleSection = useCallback(
     (id: string) => {
@@ -406,6 +464,10 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
         next.add(sectionId);
         return next;
       });
+
+      if (onSectionComplete) {
+        onSectionComplete(sectionId, sections.length);
+      }
 
       // Auto-expand next locked section
       const idx = sections.findIndex((s) => s.id === sectionId);
@@ -516,10 +578,10 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                   <span className="font-bold text-primary">
                     {sections.length > 0
                       ? Math.round(
-                          (completedSections.size /
-                            sections.filter((s) => !s.isOptional).length) *
-                            100
-                        )
+                        (completedSections.size /
+                          sections.filter((s) => !s.isOptional).length) *
+                        100
+                      )
                       : 0}
                     %
                   </span>
@@ -578,11 +640,10 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                         : undefined
                     }
                     className={`w-full text-left ${sidebarCollapsed ? "px-2 py-2 justify-center" : "px-4 py-2.5"} flex items-start gap-2.5 transition-colors group border-l-2 border-transparent
-                                        ${
-                                          isLocked
-                                            ? "cursor-not-allowed opacity-50"
-                                            : "hover:bg-surface-subtle hover:border-primary/50 cursor-pointer"
-                                        }`}
+                                        ${isLocked
+                        ? "cursor-not-allowed opacity-50"
+                        : "hover:bg-surface-subtle hover:border-primary/50 cursor-pointer"
+                      }`}
                   >
                     <span
                       className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${badgeCls}`}
@@ -669,24 +730,22 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.05 }}
                         className={`bg-background rounded-2xl border shadow-sm overflow-hidden scroll-mt-4 transition-all
-                                            ${
-                                              isLocked
-                                                ? "border-border opacity-60"
-                                                : isComplete
-                                                  ? "border-success/20 bg-success/5"
-                                                  : "border-border"
-                                            }`}
+                                            ${isLocked
+                            ? "border-border opacity-60"
+                            : isComplete
+                              ? "border-emerald-200 bg-emerald-50/30"
+                              : "border-border"
+                          }`}
                       >
                         {/* Section header */}
                         <button
                           type="button"
                           onClick={() => toggleSection(sec.id)}
                           className={`w-full flex items-center gap-3 px-6 py-4 transition-colors text-left group
-                                                ${
-                                                  isLocked
-                                                    ? "bg-surface-subtle cursor-not-allowed"
-                                                    : "bg-background hover:bg-surface-subtle cursor-pointer"
-                                                }`}
+                                                ${isLocked
+                              ? "bg-surface-subtle cursor-not-allowed"
+                              : "bg-background hover:bg-surface-subtle cursor-pointer"
+                            }`}
                         >
                           <span
                             className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0
@@ -781,7 +840,8 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                               : 0
                                           }
                                           answeredChoices={answeredChoices}
-                                          onMark={onMark}
+                                          onMark={(qid, cid) => onMark(sec.id, qid, cid)}
+                                          token={token}
                                         />
                                       );
                                     });
@@ -797,11 +857,10 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                         onClick={() => completeSection(sec.id)}
                                         disabled={!canComplete}
                                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all
-                                                                            ${
-                                                                              canComplete
-                                                                                ? "bg-primary text-white hover:bg-primary shadow-md hover:shadow-lg active:scale-[0.97]"
-                                                                                : "bg-muted text-muted-foreground/70 cursor-not-allowed"
-                                                                            }`}
+                                                                            ${canComplete
+                                            ? "bg-primary text-white hover:bg-primary shadow-md hover:shadow-lg active:scale-[0.97]"
+                                            : "bg-muted text-muted-foreground/70 cursor-not-allowed"
+                                          }`}
                                       >
                                         <CheckCircle className="w-4 h-4" />
                                         Complete Section
@@ -818,9 +877,7 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                                       )}
                                       {!canComplete && qCount > 0 && (
                                         <p className="text-xs text-muted-foreground/70 italic">
-                                          {sec.requireCorrectAnswers
-                                            ? "Answer all questions correctly to continue"
-                                            : "Answer all questions to continue"}
+                                          Answer all questions correctly to continue
                                         </p>
                                       )}
                                     </>
@@ -849,21 +906,32 @@ export default function ModuleLearner({ module: mod, courseId }: Props) {
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="bg-primary rounded-2xl p-8 text-center text-primary-foreground shadow-xl border border-primary-foreground/20"
                       >
-                        <PartyPopper className="w-12 h-12 mx-auto mb-4 text-amber-300" />
                         <h2 className="text-2xl font-bold mb-2">
-                          Module Complete! 🎉
+                          {isRenewalMode ? "Refreshment Complete!" : "Module Complete!"}
                         </h2>
-                        <p className="text-primary-foreground/70 mb-6">
-                          You've successfully completed all sections in "
-                          {mod.title}".
+                        <p className="text-accent-secondary/60 mb-6">
+                          {isRenewalMode
+                            ? `You've successfully completed the refreshment for "${mod.title}".`
+                            : `You've successfully completed all sections in "${mod.title}".`}
                         </p>
-                        <Link
-                          to={"/courses/$courseId" as any}
-                          params={{ courseId } as any}
-                          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary-foreground text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary-foreground/90 transition-all"
-                        >
-                          ← Back to Course
-                        </Link>
+                        <div className="flex justify-center gap-4">
+                          <Link
+                            to={"/courses/$courseId" as any}
+                            params={{ courseId } as any}
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-background text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary/10 transition-all"
+                          >
+                            ← Back to Course
+                          </Link>
+
+                          {isRenewalMode && onRenewalComplete && (
+                            <button
+                              onClick={() => onRenewalComplete()}
+                              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-white font-semibold shadow-md hover:shadow-lg hover:bg-emerald-600 transition-all"
+                            >
+                              Renew Certificate
+                            </button>
+                          )}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

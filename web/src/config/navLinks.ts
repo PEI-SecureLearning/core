@@ -46,6 +46,7 @@ export interface NavGroupDef {
 const groupIcons: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
     "Phishing": Fish,
     "LMS": GraduationCap,
+    "Learning": BookOpen,
     "Management": FolderCog,
 };
 
@@ -130,9 +131,27 @@ export const userLinks: NavLinkDef[] = [
         label: "Courses",
         description: "Access and complete your security awareness training.",
         icon: BookOpen,
-        roles: ["DEFAULT_USER"],
+        roles: ["default-roles-$realmname"],
         feature: "lms",
         group: "LMS",
+    },
+    {
+        href: "/courses/manage",
+        label: "Manage Courses",
+        description: "Manage organization courses.",
+        icon: BookOpen,
+        roles: ["ORG_MANAGER"],
+        feature: "lms",
+        group: "Learning",
+    },
+    {
+        href: "/courses/assign",
+        label: "Assign Courses",
+        description: "Assign courses to users.",
+        icon: GraduationCap,
+        roles: ["ORG_MANAGER"],
+        feature: "lms",
+        group: "Learning",
     },
     {
         href: "/tenants-org-manager",
@@ -230,13 +249,21 @@ export const footerLinks: NavLinkDef[] = [
 export function filterLinks(
     links: NavLinkDef[],
     userRoles: string[],
-    realmFeatures: Record<string, boolean>
+    realmFeatures: Record<string, boolean>,
+    realmName?: string
 ): NavLinkDef[] {
     return links.filter((link) => {
         // Feature gate
         if (link.feature && !realmFeatures[link.feature]) return false;
         // Role gate (no roles = visible to all)
-        if (link.roles) return link.roles.some((r) => userRoles.includes(r));
+        if (link.roles) {
+            return link.roles.some((r) => {
+                const requiredRole = r === "default-roles-$realmname" && realmName 
+                    ? `default-roles-${realmName}` 
+                    : r;
+                return userRoles.includes(requiredRole);
+            });
+        }
         return true;
     });
 }

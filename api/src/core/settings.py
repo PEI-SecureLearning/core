@@ -35,6 +35,7 @@ class Settings(BaseSettings):
   MONGODB_COLLECTION_CONTENT: str = "content_pieces"
   MONGODB_COLLECTION_CONTENT_FOLDERS: str = "content_folders"
   MONGODB_COLLECTION_MODULES: str = "modules"
+  MONGODB_COLLECTION_COURSES: str = "courses"
   MONGODB_INLINE_FILE_MAX_BYTES: int = 8 * 1024 * 1024
 
   # Garage object storage (S3-compatible)

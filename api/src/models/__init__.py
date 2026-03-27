@@ -74,6 +74,7 @@ from .org_manager import (
     ComplianceQuizPayload,
     CompliancePolicyResponse,
     ComplianceQuizResponse,
+    CourseEnrollmentPayload,
 )
 from .module import (
     Difficulty,
@@ -92,6 +93,15 @@ from .module import (
     ModuleOut,
     PaginatedModules,
 )
+from .course import (
+    CourseDifficulty,
+    CourseCreate,
+    CourseUpdate,
+    CoursePatch,
+    CourseOut,
+    PaginatedCourses,
+)
+from .user_progress import UserProgress, AssignmentStatus
 
 
 __all__ = [
@@ -170,6 +180,7 @@ __all__ = [
     "ComplianceQuizPayload",
     "CompliancePolicyResponse",
     "ComplianceQuizResponse",
+    "CourseEnrollmentPayload",
     # Learning Module
     "Difficulty",
     "QuestionType",
@@ -186,4 +197,13 @@ __all__ = [
     "ModulePatch",
     "ModuleOut",
     "PaginatedModules",
+    # Course
+    "CourseDifficulty",
+    "CourseCreate",
+    "CourseUpdate",
+    "CoursePatch",
+    "CourseOut",
+    "PaginatedCourses",
+    "UserProgress",
+    "AssignmentStatus",
 ]

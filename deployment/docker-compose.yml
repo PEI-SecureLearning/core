@@ -72,7 +72,7 @@ services:
           "--authenticationDatabase",
           "admin",
           "--eval",
-          "db.adminCommand('ping')"
+          "db.adminCommand('ping')",
         ]
       interval: 5s
       timeout: 5s
@@ -95,7 +95,7 @@ services:
       - ./garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
-      test: [ "CMD", "/garage", "-c", "/etc/garage.toml", "status" ]
+      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
       interval: 15s
       timeout: 10s
       retries: 10

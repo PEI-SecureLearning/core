@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 
 class User(SQLModel, table=True):
-    __tablename__ = "useres"
+    __tablename__ = "users"
     keycloak_id: str = Field(primary_key=True)
     email: str
     is_org_manager: bool = Field(default=False, nullable=False)
