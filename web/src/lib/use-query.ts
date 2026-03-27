@@ -7,6 +7,7 @@ export function useQuery<T>({ queryKey, queryFn, enabled = true }: { queryKey: a
     const [isError, setIsError] = useState(false)
     const [error, setError] = useState<any>(null)
     const queryFnRef = useRef(queryFn)
+    const queryKeyRef = JSON.stringify(queryKey)
 
     useEffect(() => {
         queryFnRef.current = queryFn
@@ -31,7 +32,7 @@ export function useQuery<T>({ queryKey, queryFn, enabled = true }: { queryKey: a
         if (enabled) {
             void fetchData()
         }
-    }, [queryKey, enabled, fetchData])
+    }, [queryKeyRef, enabled, fetchData])
 
     useEffect(() => {
         const handleInvalidate = () => {
