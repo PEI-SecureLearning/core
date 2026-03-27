@@ -17,6 +17,6 @@ export const userApi = {
 
   deleteUser: (realm: string, userId: string) =>
     apiClient.delete(
-      `/realms/${encodeURIComponent(realm)}/users/${encodeURIComponent(userId)}`
+      `/realms/${encodeURIComponent(realm)}/users/${encodeURIComponent(userId)}/org-manager`
     ),
 };

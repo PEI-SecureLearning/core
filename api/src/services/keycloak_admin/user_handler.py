@@ -1,5 +1,5 @@
 import requests
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from src.models import Realm, User
 from src.services.keycloak_admin.base_handler import base_handler
@@ -24,13 +24,10 @@ class user_handler(base_handler):
 
         return r.json()
 
-    def delete_user(self, session: Session, realm_name: str, user_id: str):
-        """Delete a user from a realm."""
+    def delete_user(self, realm_name: str, user_id: str) -> None:
+        """Delete a user from a realm in Keycloak."""
         token = self._get_admin_token()
         self.keycloak_client.delete_user(realm_name, token, user_id)
-        session.delete(
-            session.exec(select(User).where(User.keycloak_id == user_id)).one()
-        )
 
     def get_user_realm_roles(self, realm_name: str, user_id: str) -> list[dict]:
         """Return realm roles assigned to the given user."""

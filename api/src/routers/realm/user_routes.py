@@ -99,6 +99,20 @@ def delete_user_in_realm(
     return None
 
 
+@router.delete(
+    "/realms/{realm}/users/{user_id}/org-manager",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
+)
+def delete_user_in_own_realm(
+    realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
+):
+    """Delete a user inside the caller's own Keycloak realm/tenant."""
+    realm_service.validate_realm_access(token, realm)
+    realm_service.delete_user_in_realm(realm, user_id, session)
+    return None
+
+
 @router.put(
     "/realms/{realm}/role/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
