@@ -2,12 +2,13 @@ import { ChevronRight, User, LogOut } from "lucide-react";
 import { useKeycloak } from "@react-keycloak/web";
 import { useRouterState, Link } from "@tanstack/react-router";
 import "../css/navbar.css";
+import { appAssetUrl } from '@/lib/app-path'
 
 export function Logo() {
   return (
     <div className="flex items-center gap-2 space-x-1 sm:space-x-2 -translate-x-4 -translate-y-1">
       <img
-        src="/Hatlogo.png"
+        src={appAssetUrl("Hatlogo.png")}
         alt="Logo"
         className="size-14 ml-4 sm:ml-2 lg:ml-0"
       />

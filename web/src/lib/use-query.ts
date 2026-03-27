@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 export function useQuery<T>({ queryKey, queryFn, enabled = true }: { queryKey: any[], queryFn: () => Promise<T>, enabled?: boolean }) {
     const [data, setData] = useState<T | undefined>(undefined)
@@ -6,11 +6,16 @@ export function useQuery<T>({ queryKey, queryFn, enabled = true }: { queryKey: a
     const [isFetching, setIsFetching] = useState(false)
     const [isError, setIsError] = useState(false)
     const [error, setError] = useState<any>(null)
+    const queryFnRef = useRef(queryFn)
+
+    useEffect(() => {
+        queryFnRef.current = queryFn
+    }, [queryFn])
 
     const fetchData = useCallback(async () => {
         setIsFetching(true)
         try {
-            const result = await queryFn()
+            const result = await queryFnRef.current()
             setData(result)
             setIsError(false)
         } catch (err) {
@@ -20,13 +25,13 @@ export function useQuery<T>({ queryKey, queryFn, enabled = true }: { queryKey: a
             setIsLoading(false)
             setIsFetching(false)
         }
-    }, [queryFn])
+    }, [])
 
     useEffect(() => {
         if (enabled) {
             void fetchData()
         }
-    }, [JSON.stringify(queryKey), enabled, fetchData])
+    }, [queryKey, enabled, fetchData])
 
     useEffect(() => {
         const handleInvalidate = () => {
