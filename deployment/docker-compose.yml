@@ -138,7 +138,7 @@ services:
       RATE_LIMITER_MAX_REQUESTS: ${RATE_LIMITER_MAX_REQUESTS}
       RATE_LIMITER_TIME_WINDOW_SECONDS: ${RATE_LIMITER_TIME_WINDOW_SECONDS}
       API_INTERNAL_URL: ${API_INTERNAL_URL}
-      API_URL: ${API_URL}
+      API_URL: ${PUBLIC_BASE_URL}
     depends_on:
       rabbitmq:
         condition: service_healthy
