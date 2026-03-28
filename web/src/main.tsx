@@ -1,4 +1,4 @@
-import { StrictMode, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ReactKeycloakProvider } from '@react-keycloak/web'

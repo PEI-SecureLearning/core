@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import type { BulkUser } from "./types";
-import { tenantOrgManagerApi } from "@/services/tenantOrgManagerApi";
+import { userApi } from "@/services/userApi";
 import { userGroupsApi } from "@/services/userGroupsApi";
 
 interface BulkImportModalProps {
@@ -16,7 +16,7 @@ export function BulkImportModal({
     initialBulkUsers,
     onClose,
     onBulkCreated,
-}: BulkImportModalProps) {
+}: Readonly<BulkImportModalProps>) {
     const [bulkUsers, setBulkUsers] = useState<BulkUser[]>(initialBulkUsers);
     const [isBulkLoading, setIsBulkLoading] = useState(false);
 
@@ -63,7 +63,7 @@ export function BulkImportModal({
                 continue;
             }
             try {
-                const data = await tenantOrgManagerApi.createUser(
+                const data = await userApi.createUser(
                     realm,
                     {
                         username: u.username,
@@ -82,7 +82,7 @@ export function BulkImportModal({
 
         // Assign groups
         try {
-            const data = await tenantOrgManagerApi.getUsers(realm);
+            const data = await userApi.getUsers(realm);
             const userMap: Record<string, string> = {};
             (data.users || []).forEach((usr: any) => {
                 if (usr.email && usr.id) userMap[usr.email.toLowerCase()] = usr.id;

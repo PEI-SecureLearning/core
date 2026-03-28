@@ -9,7 +9,7 @@ import { UserManagementHeader } from "../components/admin/tenant-org-manager/Use
 import { NewUserModal } from "../components/admin/tenant-org-manager/NewUserModal";
 import { BulkImportModal } from "../components/admin/tenant-org-manager/BulkImportModal";
 import { mapRole } from "../components/admin/tenant-org-manager/utils";
-import { tenantOrgManagerApi } from "../services/tenantOrgManagerApi";
+import { userApi } from "../services/userApi";
 import { userGroupsApi } from "../services/userGroupsApi";
 
 export const Route = createFileRoute("/tenants-org-manager")({
@@ -43,7 +43,7 @@ function UsersManagement() {
   const fetchUsers = async (targetRealm: string) => {
     setIsLoading(true);
     try {
-      const data = await tenantOrgManagerApi.getUsers(targetRealm);
+      const data = await userApi.getUsers(targetRealm);
       setUsers(data.users || []);
     } catch (err) {
       console.error("Failed to fetch users", err);
@@ -75,7 +75,7 @@ function UsersManagement() {
 
     setDeletingIds((prev) => ({ ...prev, [id]: true }));
     try {
-      await tenantOrgManagerApi.deleteUser(realm, id);
+      await userApi.deleteUser(realm, id);
       setUsers((prev) => prev.filter((u) => (u.id || u.username) !== id));
     } catch (err) {
       console.error("Failed to delete user", err);

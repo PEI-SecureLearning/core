@@ -3,7 +3,7 @@ import { X, User, Mail, AtSign, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 import type { Group, CreateUserField } from "./types";
-import { tenantOrgManagerApi } from "@/services/tenantOrgManagerApi";
+import { userApi } from "@/services/userApi";
 
 interface NewUserModalProps {
     realm: string;
@@ -71,7 +71,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         setCreateFieldError(null);
 
         try {
-            const data = await tenantOrgManagerApi.createUser(
+            const data = await userApi.createUser(
                 realm,
                 {
                     username: newUserUsername || newUserEmail.split("@")[0],
