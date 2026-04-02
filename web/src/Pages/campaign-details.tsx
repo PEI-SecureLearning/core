@@ -14,6 +14,7 @@ import { userGroupsApi } from "@/services/userGroupsApi";
 import type { PhishingKitDisplayInfo } from "@/types/phishingKit";
 import type { SendingProfileDisplayInfo } from "@/types/sendingProfile";
 import type { UserGroupMemberDto } from "@/types/userGroups";
+import { Separator } from "@/components/ui/separator";
 
 interface CampaignGroupWithMembers {
     id: string;
@@ -309,7 +310,12 @@ export default function CampaignDetails() {
             )}
 
 
-
+            <div className="flex items-center gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+                    Details
+                </span>
+                <Separator className="flex-1" />
+            </div>
             <div className="grid grid-cols-12 gap-4 text-sm">
 
                 <div className="col-span-4 rounded-xl border border-border bg-surface p-4">
@@ -377,7 +383,7 @@ export default function CampaignDetails() {
                 <SummaryCollapsibleCard
                     className="col-span-12 lg:col-span-6"
                     title={`Phishing kits: ${phishingKitDetails.length}`}
-                    subtitle="Name and description"
+
                 >
                     <div className="space-y-4">
                         {loadingPhishingKits && (
@@ -398,11 +404,14 @@ export default function CampaignDetails() {
 
                         <div className="space-y-3">
                             {phishingKitDetails.map((kit) => (
-                                <div key={kit.id} className="rounded-xl border border-border bg-surface p-4">
-                                    <p className="font-medium text-foreground">{kit.name}</p>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        {kit.description?.trim() || "No description"}
-                                    </p>
+                                <div key={kit.id} className="rounded-xl border border-border bg-surface p-4 flex items-start align-middle gap-3">
+
+                                    <div>
+                                        <p className="font-medium text-foreground">{kit.name}</p>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            {kit.description?.trim() || "No description"}
+                                        </p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -412,7 +421,6 @@ export default function CampaignDetails() {
                 <SummaryCollapsibleCard
                     className="col-span-12 lg:col-span-6"
                     title={`Sending profiles: ${sendingProfileDetails.length}`}
-                    subtitle="Address and SMTP host"
                 >
                     <div className="space-y-4">
                         {loadingSendingProfiles && (
@@ -433,19 +441,44 @@ export default function CampaignDetails() {
 
                         <div className="space-y-3">
                             {sendingProfileDetails.map((profile) => (
-                                <div key={profile.id} className="rounded-xl border border-border bg-surface p-4">
-                                    <p className="text-sm text-foreground">
-                                        <span className="font-medium">Address:</span> {profile.from_email}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground mt-1">
-                                        <span className="font-medium text-foreground">SMTP host:</span> {profile.smtp_host}
-                                    </p>
+                                <div key={profile.id} className="rounded-xl border border-border bg-surface p-4 flex items-center align-middle gap-3">
+                                    <div>
+                                        <Link
+                                            to={"/sending-profiles/$id"}
+                                            params={{ id: profile.id.toString() }}
+                                            className="font-medium text-primary underline"
+                                        >
+                                            {profile.name}
+                                        </Link>
+
+                                        <p className="text-sm text-foreground mt-1">
+                                            <span className="font-medium">Address:</span> {profile.from_email}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            <span className="font-medium text-foreground">SMTP config: </span>
+                                            {profile.smtp_host}:{profile.smtp_port}
+                                        </p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </SummaryCollapsibleCard>
 
+            </div>
+
+            <div className="flex items-center gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+                    Stats
+                </span>
+                <Separator className="flex-1" />
+            </div>
+
+            <div className="flex items-center gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+                    Email Sendings
+                </span>
+                <Separator className="flex-1" />
             </div>
 
 
