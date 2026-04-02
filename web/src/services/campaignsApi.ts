@@ -19,11 +19,39 @@ export interface Campaign {
 export interface CampaignDetail extends Campaign {
   description?: string | null;
   sending_interval_seconds: number;
+  realm_name?: string | null;
   user_group_ids: string[];
   phishing_kit_ids: number[];
   sending_profile_ids: number[];
   phishing_kit_names: string[];
+  creator_id?: string | null;
+  creator_email?: string | null;
   sending_profile_names: string[];
+  total_recipients: number;
+  total_failed: number;
+  delivery_rate: number;
+  open_rate: number;
+  click_rate: number;
+  phish_rate: number;
+  progress_percentage: number;
+  time_elapsed_percentage: number;
+  avg_time_to_open_seconds?: number | null;
+  avg_time_to_click_seconds?: number | null;
+  first_open_at?: string | null;
+  last_open_at?: string | null;
+  first_click_at?: string | null;
+  last_click_at?: string | null;
+  user_sendings: CampaignUserSending[];
+}
+
+export interface CampaignUserSending {
+  user_id: string;
+  email: string;
+  status: string;
+  sent_at?: string | null;
+  opened_at?: string | null;
+  clicked_at?: string | null;
+  phished_at?: string | null;
 }
 
 export interface CampaignUpdatePayload {
