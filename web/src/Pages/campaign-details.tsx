@@ -4,6 +4,13 @@ import { useKeycloak } from "@react-keycloak/web";
 import { AlertTriangle, ChevronLeft, Clock3, Lock, Pencil } from "lucide-react";
 
 import { SummaryCollapsibleCard } from "@/components/campaigns/SummaryCollapsibleCard";
+import RefreshButton from "@/components/shared/RefreshButton";
+import {
+    ChartContainer,
+    ChartTooltip,
+    ChartTooltipContent,
+    type ChartConfig,
+} from "@/components/ui/chart";
 import {
     fetchOrgManagerCampaignDetail,
     type CampaignDetail
@@ -15,12 +22,47 @@ import type { PhishingKitDisplayInfo } from "@/types/phishingKit";
 import type { SendingProfileDisplayInfo } from "@/types/sendingProfile";
 import type { UserGroupMemberDto } from "@/types/userGroups";
 import { Separator } from "@/components/ui/separator";
+import { Bar, BarChart, CartesianGrid, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 interface CampaignGroupWithMembers {
     id: string;
     name: string;
     members: UserGroupMemberDto[];
 }
+
+const statsChartConfig = {
+    phished: {
+        label: "Phished",
+        color: "var(--primary)",
+    },
+    clicked: {
+        label: "Clicked",
+        color: "var(--primary)",
+    },
+    opened: {
+        label: "Opened",
+        color: "var(--primary)",
+    },
+    sent: {
+        label: "Sent",
+        color: "var(--primary)",
+    },
+    failed: {
+        label: "Failed",
+        color: "var(--error)",
+    },
+} satisfies ChartConfig;
+
+const completionChartConfig = {
+    completed: {
+        label: "Sent",
+        color: "var(--primary)",
+    },
+    remaining: {
+        label: "Remaining",
+        color: "var(--muted)",
+    },
+} satisfies ChartConfig;
 
 function getRealmFromToken(tokenParsed: unknown): string | null {
     const iss = (tokenParsed as { iss?: string } | undefined)?.iss;
@@ -40,6 +82,10 @@ function formatDateTime(value?: string | null): string {
     }
 
     return parsed.toLocaleString();
+}
+
+function formatPercent(value: number): string {
+    return `${value.toFixed(2)}%`;
 }
 
 export default function CampaignDetails() {
@@ -219,7 +265,39 @@ export default function CampaignDetails() {
     const totalRecipients = campaign?.total_recipients ?? 0;
     const totalSendings = campaign?.user_sendings.length ?? 0;
     const successfullySent = campaign?.user_sendings.filter((sending) => Boolean(sending.sent_at)).length ?? 0;
-    const totalTargetedUsers = groupDetails.reduce((acc, group) => acc + group.members.length, 0)
+    const totalTargetedUsers = groupDetails.reduce((acc, group) => acc + group.members.length, 0);
+
+    const sentCount = campaign?.total_sent ?? campaign?.user_sendings.filter((sending) => Boolean(sending.sent_at)).length ?? 0;
+    const openedCount = campaign?.total_opened ?? campaign?.user_sendings.filter((sending) => Boolean(sending.opened_at)).length ?? 0;
+    const clickedCount = campaign?.total_clicked ?? campaign?.user_sendings.filter((sending) => Boolean(sending.clicked_at)).length ?? 0;
+    const phishedCount = campaign?.total_phished ?? campaign?.user_sendings.filter((sending) => Boolean(sending.phished_at)).length ?? 0;
+    const failedCount = campaign?.total_failed ?? campaign?.user_sendings.filter((sending) => sending.status?.toLowerCase() === "failed").length ?? 0;
+    const completionPercent = Math.max(0, Math.min(campaign?.progress_percentage ?? 0, 100));
+    const completedRecipients = Math.round((completionPercent / 100) * totalRecipients);
+    const remainingRecipients = Math.max(totalRecipients - completedRecipients, 0);
+
+    const statsChartData = [
+        { metric: "phished", label: "Phished", users: phishedCount, fill: "var(--color-phished)" },
+        { metric: "clicked", label: "Clicked", users: clickedCount, fill: "var(--color-clicked)" },
+        { metric: "opened", label: "Opened", users: openedCount, fill: "var(--color-opened)" },
+        { metric: "sent", label: "Sent", users: sentCount, fill: "var(--color-sent)" },
+        { metric: "failed", label: "Failed", users: failedCount, fill: "var(--color-failed)" },
+    ];
+
+    const completionChartData = [
+        {
+            key: "completed",
+            name: "Sent",
+            value: completedRecipients,
+            fill: "var(--color-completed)",
+        },
+        {
+            key: "remaining",
+            name: "Remaining",
+            value: remainingRecipients,
+            fill: "var(--color-remaining)",
+        },
+    ];
 
     if (loading) {
         return (
@@ -281,25 +359,34 @@ export default function CampaignDetails() {
                     </div>
                 </div>
 
-                {isEditable ? (
-                    <Link
-                        to="/campaigns/$id/edit"
-                        params={{ id: campaignId }}
-                        className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                        <Pencil size={14} />
-                        Edit campaign
-                    </Link>
-                ) : (
-                    <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-xl bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60 cursor-not-allowed"
-                        disabled
-                    >
-                        <Pencil size={14} />
-                        Edit campaign
-                    </button>
-                )}
+                <div className="flex items-center gap-2">
+                    <RefreshButton
+                        onClick={() => void fetchCampaign()}
+                        isRefreshing={loading}
+                        disabled={loading}
+                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
+                    />
+
+                    {isEditable ? (
+                        <Link
+                            to="/campaigns/$id/edit"
+                            params={{ id: campaignId }}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                            <Pencil size={14} />
+                            Edit campaign
+                        </Link>
+                    ) : (
+                        <button
+                            type="button"
+                            className="inline-flex items-center gap-2 rounded-xl bg-muted px-4 py-2 text-sm font-medium text-muted-foreground opacity-60 cursor-not-allowed"
+                            disabled
+                        >
+                            <Pencil size={14} />
+                            Edit campaign
+                        </button>
+                    )}
+                </div>
             </div>
 
             {loadError && (
@@ -314,25 +401,25 @@ export default function CampaignDetails() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
                     Details
                 </span>
-                <Separator className="flex-1" />
+                <Separator className="flex-1 bg-primary/70" />
             </div>
             <div className="grid grid-cols-12 gap-4 text-sm">
 
-                <div className="col-span-4 rounded-xl border border-border bg-surface p-4">
+                <div className="col-span-12 lg:col-span-4 sm:col-span-6 rounded-xl border border-border bg-surface p-4">
                     <p className="text-muted-foreground">Start</p>
                     <p className="text-foreground mt-1 text-wrap">
                         {new Date(campaign.begin_date).toLocaleString()}
                     </p>
                 </div>
 
-                <div className="col-span-4 rounded-xl border border-border bg-surface p-4">
+                <div className="col-span-12 lg:col-span-4 sm:col-span-6 rounded-xl border border-border bg-surface p-4">
                     <p className="text-muted-foreground">End</p>
                     <p className="text-foreground mt-1 text-wrap">
                         {new Date(campaign.end_date).toLocaleString()}
                     </p>
                 </div>
 
-                <div className="col-span-4 rounded-xl border border-border bg-surface p-4">
+                <div className="col-span-12 lg:col-span-4 rounded-xl border border-border bg-surface p-4">
                     <p className="text-muted-foreground">Send interval</p>
                     <p className="text-foreground mt-1">
                         Every {Math.max(1, Math.floor(campaign.sending_interval_seconds / 60))} minute(s)
@@ -340,7 +427,7 @@ export default function CampaignDetails() {
                 </div>
 
                 <SummaryCollapsibleCard
-                    className="col-span-12"
+                    className="col-span-12 lg:col-span-4"
                     title={`Target groups: ${groupDetails.length}`}
                     subtitle={`Targeted users: ${totalTargetedUsers}`}
                 >
@@ -361,7 +448,7 @@ export default function CampaignDetails() {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             {groupDetails.map((group) => (
                                 <div key={group.id} className="rounded-xl border border-border bg-surface p-4 flex justify-between items-center align-middle gap-2">
                                     <Link
@@ -381,7 +468,7 @@ export default function CampaignDetails() {
                 </SummaryCollapsibleCard>
 
                 <SummaryCollapsibleCard
-                    className="col-span-12 lg:col-span-6"
+                    className="col-span-12 md:col-span-6 lg:col-span-4"
                     title={`Phishing kits: ${phishingKitDetails.length}`}
 
                 >
@@ -419,7 +506,7 @@ export default function CampaignDetails() {
                 </SummaryCollapsibleCard>
 
                 <SummaryCollapsibleCard
-                    className="col-span-12 lg:col-span-6"
+                    className="col-span-12 md:col-span-6 lg:col-span-4"
                     title={`Sending profiles: ${sendingProfileDetails.length}`}
                 >
                     <div className="space-y-4">
@@ -471,14 +558,105 @@ export default function CampaignDetails() {
                 <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
                     Stats
                 </span>
-                <Separator className="flex-1" />
+                <Separator className="flex-1 bg-primary/70" />
             </div>
+
+            <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-2xl border border-border bg-card p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Open rate</p>
+                    <p className="mt-2 text-4xl font-semibold text-primary">{formatPercent(campaign.open_rate)}</p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Click rate</p>
+                    <p className="mt-2 text-4xl font-semibold text-primary">{formatPercent(campaign.click_rate)}</p>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card p-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Phish rate</p>
+                    <p className="mt-2 text-4xl font-semibold text-primary">{formatPercent(campaign.phish_rate)}</p>
+                </div>
+
+                <div className="col-span-full lg:col-span-2 rounded-2xl border border-border bg-card p-6 space-y-4">
+                    <div className="space-y-1">
+                        <h2 className="text-lg font-semibold text-foreground">Campaign activity</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Sent, engagement, and outcome totals for this campaign.
+                        </p>
+                    </div>
+
+                    <ChartContainer config={statsChartConfig} className="h-[260px] w-full">
+                        <BarChart
+                            accessibilityLayer
+                            data={statsChartData}
+                            layout="vertical"
+                            margin={{ top: 4, right: 30, left: 4, bottom: 4 }}
+                        >
+                            <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                            <XAxis type="number" hide />
+                            <YAxis
+                                dataKey="label"
+                                type="category"
+                                tickLine={false}
+                                axisLine={false}
+                                width={72}
+                                tickMargin={8}
+                                className="text-xs fill-muted-foreground"
+                            />
+                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                            <Bar dataKey="users" radius={8}>
+                                <LabelList
+                                    dataKey="users"
+                                    position="right"
+                                    offset={8}
+                                    className="fill-foreground text-xs"
+                                />
+                            </Bar>
+                        </BarChart>
+                    </ChartContainer>
+                </div>
+
+                <div className="col-span-full lg:col-span-1 rounded-2xl border border-border bg-card p-6 space-y-4">
+                    <h3 className="text-sm font-medium text-foreground">Completion progress</h3>
+
+                    <div className="relative mx-auto h-[230px] w-full max-w-[320px]">
+                        <ChartContainer config={completionChartConfig} className="h-full w-full">
+                            <PieChart>
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent hideLabel />}
+                                />
+                                <Pie
+                                    data={completionChartData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    innerRadius={64}
+                                    outerRadius={92}
+                                    strokeWidth={4}
+                                />
+                            </PieChart>
+                        </ChartContainer>
+
+                        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-semibold text-foreground">{formatPercent(completionPercent)}</span>
+                            <span className="text-xs uppercase tracking-wide text-muted-foreground"> {completedRecipients}/{totalRecipients} Sent</span>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+
+
 
             <div className="flex items-center gap-3">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
                     Email Sendings
                 </span>
-                <Separator className="flex-1" />
+                <Separator className="flex-1 bg-primary/70" />
             </div>
 
 
