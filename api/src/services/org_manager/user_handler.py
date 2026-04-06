@@ -5,7 +5,6 @@ from sqlmodel import Session
 from src.models import Realm, User
 
 
-
 class user_handler:
 
     def list_users(self, realm: str, token: str) -> dict:
@@ -16,11 +15,11 @@ class user_handler:
         for u in users:
             uid = u.get("id")
             is_org_manager = False
-            
+
             try:
                 roles = self.kc.get_user_realm_roles(realm, token, uid) if uid else []
                 is_org_manager = any(r.get("name") == "ORG_MANAGER" for r in roles)
-            
+
             except Exception:
                 is_org_manager = False
 
@@ -39,17 +38,16 @@ class user_handler:
         return {"realm": realm, "users": simplified}
 
     def create_user(
-            self,
-            session: Session,
-            realm: str,
-            token: str,
-            username: str,
-            name: str,
-            email: str,
-            role: str,
-            group_id: str | None = None,
-        ) -> dict:
-
+        self,
+        session: Session,
+        realm: str,
+        token: str,
+        username: str,
+        name: str,
+        email: str,
+        role: str,
+        group_id: str | None = None,
+    ) -> dict:
         """Create a new user in the realm."""
         username_clean = (username or "").strip()
         email_clean = (email or "").strip().lower()
@@ -167,7 +165,6 @@ class user_handler:
             )
         )
 
-
     def get_user_object(self, response) -> str:
         if response.status_code == 409:
             raise HTTPException(status_code=409, detail="User already exists.")
@@ -201,23 +198,31 @@ class user_handler:
             )
         return role_clean
 
-
     def is_valid_username(self, username: str) -> None:
 
         if len(username) < 3:
-            raise HTTPException(status_code=400, detail="Username must be at least 3 characters.")
+            raise HTTPException(
+                status_code=400, detail="Username must be at least 3 characters."
+            )
         if len(username) > 40:
-            raise HTTPException(status_code=400, detail="Username must be 40 characters or fewer.")
+            raise HTTPException(
+                status_code=400, detail="Username must be 40 characters or fewer."
+            )
 
-
-    def is_valid_email(self, realm: str, session: Session, token: str, email: str) -> None:
+    def is_valid_email(
+        self, realm: str, session: Session, token: str, email: str
+    ) -> None:
         if not email:
             raise HTTPException(status_code=400, detail="Email is required.")
-        
+
         kc_users = self.kc.list_users(realm, token)
-        
-        if any((u.get("email") or "").lower() == (email or "").lower() for u in kc_users):
-            raise HTTPException(status_code=400, detail="Email already exists in this organization.")
+
+        if any(
+            (u.get("email") or "").lower() == (email or "").lower() for u in kc_users
+        ):
+            raise HTTPException(
+                status_code=400, detail="Email already exists in this organization."
+            )
 
         realm_domain = self.get_realm_domain(realm, session)
 
@@ -231,7 +236,6 @@ class user_handler:
                     detail=f"Email must belong to the '{realm_domain}' domain.",
                 )
 
-
     def get_realm_domain(self, realm: str, session: Session) -> str:
         """Get the realm's domain."""
         try:
@@ -242,10 +246,11 @@ class user_handler:
             return ""
         return ""
 
-
-    def delete_user(self, realm: str, token: str, user_id: str, session: Session) -> None:
+    def delete_user(
+        self, realm: str, token: str, user_id: str, session: Session
+    ) -> None:
         """Delete a user from the realm."""
-        
+
         self.kc.delete_user(realm, token, user_id)
 
         db_user = session.get(User, user_id)
@@ -254,18 +259,24 @@ class user_handler:
             session.commit()
 
     def enroll_user(
-        self, session: Session, user_id: str, course_ids: list[str], start_date=None, deadline=None, cert_valid_days=365
+        self,
+        session: Session,
+        user_id: str,
+        course_ids: list[str],
+        start_date=None,
+        deadline=None,
+        cert_valid_days=365,
     ) -> dict:
         """Assign courses to a user."""
         from datetime import datetime, timedelta
         from src.models import UserProgress, AssignmentStatus
-        
+
         # Defaults
         if start_date is None:
             start_date = datetime.utcnow()
         if deadline is None:
             deadline = start_date + timedelta(days=30)
-            
+
         enrolled_count = 0
         for cid in course_ids:
             existing = session.get(UserProgress, {"user_id": user_id, "course_id": cid})
@@ -280,12 +291,15 @@ class user_handler:
                     overdue=False,
                     expired=False,
                     progress_data={},
-                    completed_sections=[]
+                    completed_sections=[],
                 )
                 session.add(up)
                 enrolled_count += 1
             else:
-                if existing.status != AssignmentStatus.COMPLETED or existing.is_certified:
+                if (
+                    existing.status != AssignmentStatus.COMPLETED
+                    or existing.is_certified
+                ):
                     existing.status = AssignmentStatus.SCHEDULED
                     existing.start_date = start_date
                     existing.deadline = deadline
@@ -297,8 +311,8 @@ class user_handler:
                         existing.completed_sections = []
                     session.add(existing)
                     enrolled_count += 1
-                
+
         if enrolled_count > 0:
             session.commit()
-            
+
         return {"status": "success", "enrolled": enrolled_count}

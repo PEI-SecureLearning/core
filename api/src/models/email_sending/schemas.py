@@ -15,8 +15,15 @@ class UserSendingInfo(SQLModel):
     phished_at: Optional[datetime] = None
 
 
+class CampaignSendingsResponse(SQLModel):
+    """Wrapper for campaign sendings endpoint response."""
+
+    sendings: list[UserSendingInfo] = []
+
+
 class SMTPConfig(SQLModel):
     """SMTP server configuration."""
+
     host: str
     port: int
     user: str
@@ -25,6 +32,7 @@ class SMTPConfig(SQLModel):
 
 class RabbitMQEmailMessage(SQLModel):
     """Email message payload from RabbitMQ."""
+
     smtp_config: SMTPConfig
     sender_email: str
     receiver_email: str

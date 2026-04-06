@@ -41,7 +41,6 @@ export interface CampaignDetail extends Campaign {
   last_open_at?: string | null;
   first_click_at?: string | null;
   last_click_at?: string | null;
-  user_sendings: CampaignUserSending[];
 }
 
 export interface CampaignUserSending {
@@ -67,6 +66,10 @@ export interface CampaignUpdatePayload {
 
 interface CampaignDetailResponse {
   campaign?: CampaignDetail;
+}
+
+interface CampaignSendingsResponse {
+  sendings?: CampaignUserSending[];
 }
 
 function isCampaignDetail(payload: unknown): payload is CampaignDetail {
@@ -215,4 +218,27 @@ export async function updateOrgManagerCampaign(
   }
 
   return (await res.json()) as { message: string };
+}
+
+export async function fetchOrgManagerCampaignSendings(
+  realm: string,
+  campaignId: string | number,
+  token?: string
+): Promise<CampaignUserSending[]> {
+  const res = await fetch(
+    `${API_URL}/org-manager/${encodeURIComponent(realm)}/campaigns/${campaignId}/sendings`,
+    { headers: buildHeaders(token) }
+  );
+
+  if (!res.ok) {
+    throw await parseApiError(
+      res,
+      `Failed to fetch campaign sendings (${res.status})`
+    );
+  }
+
+  const data = (await res.json()) as
+    | CampaignSendingsResponse
+    | CampaignUserSending[];
+  return Array.isArray(data) ? data : (data.sendings ?? []);
 }

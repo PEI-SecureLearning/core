@@ -33,7 +33,7 @@ export function SummaryCollapsibleCard({
                     <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
                 </div>
                 <ChevronDown
-                    className={`h-5 w-5 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : "rotate-0"}`}
+                    className={`h-5 w-5 shrink-0 transition-transform duration-300 text-primary ${isOpen ? "rotate-180" : "rotate-0"}`}
                 />
             </button>
             <div

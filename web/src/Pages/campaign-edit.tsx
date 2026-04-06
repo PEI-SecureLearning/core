@@ -10,8 +10,10 @@ import {
     type CampaignCreatePayload
 } from "@/components/campaigns/new-campaign/CampaignContext";
 import {
+    fetchOrgManagerCampaignSendings,
     fetchOrgManagerCampaignDetail,
     type CampaignDetail,
+    type CampaignUserSending,
     updateOrgManagerCampaign
 } from "@/services/campaignsApi";
 import { userGroupsApi } from "@/services/userGroupsApi";
@@ -71,6 +73,9 @@ export default function CampaignEditPage() {
     const [loadError, setLoadError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
+    const [sendings, setSendings] = useState<CampaignUserSending[]>([]);
+    const [sendingsLoadError, setSendingsLoadError] = useState<string | null>(null);
+    const [loadingSendings, setLoadingSendings] = useState(false);
     const [groupDetails, setGroupDetails] = useState<CampaignGroupWithMembers[]>([]);
     const [groupLoadError, setGroupLoadError] = useState<string | null>(null);
     const [loadingGroups, setLoadingGroups] = useState(false);
@@ -111,6 +116,38 @@ export default function CampaignEditPage() {
     useEffect(() => {
         void fetchCampaign();
     }, [fetchCampaign]);
+
+    const fetchSendings = useCallback(async () => {
+        if (!realm || !campaignId) {
+            setSendings([]);
+            setSendingsLoadError("Missing campaign context.");
+            setLoadingSendings(false);
+            return;
+        }
+
+        setLoadingSendings(true);
+        setSendingsLoadError(null);
+
+        try {
+            const campaignSendings = await fetchOrgManagerCampaignSendings(
+                realm,
+                campaignId,
+                keycloak.token
+            );
+            setSendings(campaignSendings);
+        } catch (error) {
+            setSendings([]);
+            setSendingsLoadError(
+                error instanceof Error ? error.message : "Failed to load campaign sendings."
+            );
+        } finally {
+            setLoadingSendings(false);
+        }
+    }, [campaignId, keycloak.token, realm]);
+
+    useEffect(() => {
+        void fetchSendings();
+    }, [fetchSendings]);
 
     useEffect(() => {
         const loadGroupsAndMembers = async () => {
@@ -173,8 +210,8 @@ export default function CampaignEditPage() {
     }, [campaign, realm]);
 
     const totalRecipients = campaign?.total_recipients ?? 0;
-    const totalSendings = campaign?.user_sendings.length ?? 0;
-    const successfullySent = campaign?.user_sendings.filter((sending) => Boolean(sending.sent_at)).length ?? 0;
+    const totalSendings = sendings.length;
+    const successfullySent = sendings.filter((sending) => Boolean(sending.sent_at)).length;
 
     const handleUpdateCampaign = useCallback(
         async (payload: CampaignCreatePayload): Promise<boolean> => {
@@ -416,6 +453,16 @@ export default function CampaignEditPage() {
                     {totalSendings} total records, {successfullySent} sent, {Math.max(totalRecipients - successfullySent, 0)} pending/unsent.
                 </p>
 
+                {loadingSendings && (
+                    <div className="text-sm text-muted-foreground">Loading sendings...</div>
+                )}
+
+                {sendingsLoadError && (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
+                        {sendingsLoadError}
+                    </div>
+                )}
+
                 <div className="overflow-x-auto rounded-xl border border-border">
                     <table className="min-w-full text-sm">
                         <thead className="bg-surface-subtle text-muted-foreground">
@@ -430,14 +477,14 @@ export default function CampaignEditPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
-                            {campaign.user_sendings.length === 0 ? (
+                            {!loadingSendings && sendings.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="p-4 text-muted-foreground">
                                         No sending records available for this campaign.
                                     </td>
                                 </tr>
                             ) : (
-                                campaign.user_sendings.map((sending) => (
+                                sendings.map((sending) => (
                                     <tr key={`${sending.user_id}-${sending.email}`}>
                                         <td className="p-3 text-foreground">{sending.user_id}</td>
                                         <td className="p-3 text-foreground">{sending.email}</td>

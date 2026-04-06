@@ -1,5 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { AlertTriangle, ChevronLeft, Clock3, Lock, Pencil } from "lucide-react";
 
@@ -12,8 +12,10 @@ import {
     type ChartConfig,
 } from "@/components/ui/chart";
 import {
+    fetchOrgManagerCampaignSendings,
     fetchOrgManagerCampaignDetail,
-    type CampaignDetail
+    type CampaignDetail,
+    type CampaignUserSending
 } from "@/services/campaignsApi";
 import { fetchPhishingKits } from "@/services/phishingKitsApi";
 import { fetchSendingProfiles } from "@/services/sendingProfilesApi";
@@ -88,6 +90,63 @@ function formatPercent(value: number): string {
     return `${value.toFixed(2)}%`;
 }
 
+const SectionSeparator = ({ title }: { title: string }) =>
+    <div className="flex items-center gap-3">
+        <span className="shrink-0 whitespace-nowrap text-xs font-semibold uppercase tracking-widest1 text-primary">
+            {title}
+        </span>
+        <Separator className="flex-1 bg-primary/70 self-center" />
+    </div>
+
+const StatDisplay = ({ label, value }: { label: string, value: string | number }) =>
+    <div className="rounded-2xl border border-border bg-card p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+        <p className="mt-2 text-4xl font-semibold text-primary">{value}</p>
+    </div>
+
+interface SummaryListStateProps<T> {
+    loading: boolean;
+    error: string | null;
+    items: T[];
+    loadingMessage: string;
+    emptyMessage: string;
+    itemsContainerClassName: string;
+    renderItem: (item: T, index: number) => ReactNode;
+}
+
+const SummaryListState = <T,>({
+    loading,
+    error,
+    items,
+    loadingMessage,
+    emptyMessage,
+    itemsContainerClassName,
+    renderItem,
+}: SummaryListStateProps<T>) => {
+    if (loading) {
+        return <div className="text-sm text-muted-foreground">{loadingMessage}</div>;
+    }
+
+    if (error) {
+        return (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
+                {error}
+            </div>
+        );
+    }
+
+    if (items.length === 0) {
+        return (
+            <div className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">
+                {emptyMessage}
+            </div>
+        );
+    }
+
+    return <div className={itemsContainerClassName}>{items.map((item, index) => renderItem(item, index))}</div>;
+};
+
+
 export default function CampaignDetails() {
     const { id: campaignId } = useParams({ from: "/campaigns/$id" });
     const { keycloak } = useKeycloak();
@@ -95,6 +154,9 @@ export default function CampaignDetails() {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
+    const [sendings, setSendings] = useState<CampaignUserSending[]>([]);
+    const [loadingSendings, setLoadingSendings] = useState(false);
+    const [sendingsLoadError, setSendingsLoadError] = useState<string | null>(null);
     const [groupDetails, setGroupDetails] = useState<CampaignGroupWithMembers[]>([]);
     const [groupLoadError, setGroupLoadError] = useState<string | null>(null);
     const [loadingGroups, setLoadingGroups] = useState(false);
@@ -141,6 +203,38 @@ export default function CampaignDetails() {
     useEffect(() => {
         void fetchCampaign();
     }, [fetchCampaign]);
+
+    const fetchSendings = useCallback(async () => {
+        if (!realm || !campaignId) {
+            setSendings([]);
+            setSendingsLoadError("Missing campaign context.");
+            setLoadingSendings(false);
+            return;
+        }
+
+        setLoadingSendings(true);
+        setSendingsLoadError(null);
+
+        try {
+            const campaignSendings = await fetchOrgManagerCampaignSendings(
+                realm,
+                campaignId,
+                keycloak.token
+            );
+            setSendings(campaignSendings);
+        } catch (error) {
+            setSendings([]);
+            setSendingsLoadError(
+                error instanceof Error ? error.message : "Failed to load campaign sendings."
+            );
+        } finally {
+            setLoadingSendings(false);
+        }
+    }, [campaignId, keycloak.token, realm]);
+
+    useEffect(() => {
+        void fetchSendings();
+    }, [fetchSendings]);
 
     useEffect(() => {
         const loadGroupsAndMembers = async () => {
@@ -263,15 +357,11 @@ export default function CampaignDetails() {
     }, [campaign, keycloak.token, realm]);
 
     const totalRecipients = campaign?.total_recipients ?? 0;
-    const totalSendings = campaign?.user_sendings.length ?? 0;
-    const successfullySent = campaign?.user_sendings.filter((sending) => Boolean(sending.sent_at)).length ?? 0;
-    const totalTargetedUsers = groupDetails.reduce((acc, group) => acc + group.members.length, 0);
-
-    const sentCount = campaign?.total_sent ?? campaign?.user_sendings.filter((sending) => Boolean(sending.sent_at)).length ?? 0;
-    const openedCount = campaign?.total_opened ?? campaign?.user_sendings.filter((sending) => Boolean(sending.opened_at)).length ?? 0;
-    const clickedCount = campaign?.total_clicked ?? campaign?.user_sendings.filter((sending) => Boolean(sending.clicked_at)).length ?? 0;
-    const phishedCount = campaign?.total_phished ?? campaign?.user_sendings.filter((sending) => Boolean(sending.phished_at)).length ?? 0;
-    const failedCount = campaign?.total_failed ?? campaign?.user_sendings.filter((sending) => sending.status?.toLowerCase() === "failed").length ?? 0;
+    const sentCount = campaign?.total_sent ?? sendings.filter((sending) => Boolean(sending.sent_at)).length ?? 0;
+    const openedCount = campaign?.total_opened ?? sendings.filter((sending) => Boolean(sending.opened_at)).length ?? 0;
+    const clickedCount = campaign?.total_clicked ?? sendings.filter((sending) => Boolean(sending.clicked_at)).length ?? 0;
+    const phishedCount = campaign?.total_phished ?? sendings.filter((sending) => Boolean(sending.phished_at)).length ?? 0;
+    const failedCount = campaign?.total_failed ?? sendings.filter((sending) => sending.status?.toLowerCase() === "failed").length ?? 0;
     const completionPercent = Math.max(0, Math.min(campaign?.progress_percentage ?? 0, 100));
     const completedRecipients = Math.round((completionPercent / 100) * totalRecipients);
     const remainingRecipients = Math.max(totalRecipients - completedRecipients, 0);
@@ -361,9 +451,12 @@ export default function CampaignDetails() {
 
                 <div className="flex items-center gap-2">
                     <RefreshButton
-                        onClick={() => void fetchCampaign()}
+                        onClick={() => {
+                            void fetchCampaign();
+                            void fetchSendings();
+                        }}
                         isRefreshing={loading}
-                        disabled={loading}
+                        disabled={loading || loadingSendings}
                         className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground/20 hover:text-foreground"
                     />
 
@@ -396,13 +489,8 @@ export default function CampaignDetails() {
                 </div>
             )}
 
+            <SectionSeparator title="Details" />
 
-            <div className="flex items-center gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-                    Details
-                </span>
-                <Separator className="flex-1 bg-primary/70" />
-            </div>
             <div className="grid grid-cols-12 gap-4 text-sm">
 
                 <div className="col-span-12 lg:col-span-4 sm:col-span-6 rounded-xl border border-border bg-surface p-4">
@@ -429,27 +517,17 @@ export default function CampaignDetails() {
                 <SummaryCollapsibleCard
                     className="col-span-12 lg:col-span-4"
                     title={`Target groups: ${groupDetails.length}`}
-                    subtitle={`Targeted users: ${totalTargetedUsers}`}
+                    subtitle={`Targeted users: ${totalRecipients}`}
                 >
                     <div className="space-y-4">
-                        {loadingGroups && (
-                            <div className="text-sm text-muted-foreground">Loading group memberships...</div>
-                        )}
-
-                        {groupLoadError && (
-                            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
-                                {groupLoadError}
-                            </div>
-                        )}
-
-                        {!loadingGroups && !groupLoadError && groupDetails.length === 0 && (
-                            <div className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">
-                                No user groups linked to this campaign.
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 gap-4">
-                            {groupDetails.map((group) => (
+                        <SummaryListState
+                            loading={loadingGroups}
+                            error={groupLoadError}
+                            items={groupDetails}
+                            loadingMessage="Loading group memberships..."
+                            emptyMessage="No user groups linked to this campaign."
+                            itemsContainerClassName="grid grid-cols-1 gap-4"
+                            renderItem={(group) => (
                                 <div key={group.id} className="rounded-xl border border-border bg-surface p-4 flex justify-between items-center align-middle gap-2">
                                     <Link
                                         to={"/usergroups/$id"}
@@ -462,8 +540,8 @@ export default function CampaignDetails() {
                                         {group.members.length} member{group.members.length > 1 ? "s" : ""}
                                     </span>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        />
                     </div>
                 </SummaryCollapsibleCard>
 
@@ -473,24 +551,14 @@ export default function CampaignDetails() {
 
                 >
                     <div className="space-y-4">
-                        {loadingPhishingKits && (
-                            <div className="text-sm text-muted-foreground">Loading phishing kits...</div>
-                        )}
-
-                        {phishingKitLoadError && (
-                            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
-                                {phishingKitLoadError}
-                            </div>
-                        )}
-
-                        {!loadingPhishingKits && !phishingKitLoadError && phishingKitDetails.length === 0 && (
-                            <div className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">
-                                No phishing kits linked to this campaign.
-                            </div>
-                        )}
-
-                        <div className="space-y-3">
-                            {phishingKitDetails.map((kit) => (
+                        <SummaryListState
+                            loading={loadingPhishingKits}
+                            error={phishingKitLoadError}
+                            items={phishingKitDetails}
+                            loadingMessage="Loading phishing kits..."
+                            emptyMessage="No phishing kits linked to this campaign."
+                            itemsContainerClassName="space-y-3"
+                            renderItem={(kit) => (
                                 <div key={kit.id} className="rounded-xl border border-border bg-surface p-4 flex items-start align-middle gap-3">
 
                                     <div>
@@ -500,8 +568,8 @@ export default function CampaignDetails() {
                                         </p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        />
                     </div>
                 </SummaryCollapsibleCard>
 
@@ -510,24 +578,14 @@ export default function CampaignDetails() {
                     title={`Sending profiles: ${sendingProfileDetails.length}`}
                 >
                     <div className="space-y-4">
-                        {loadingSendingProfiles && (
-                            <div className="text-sm text-muted-foreground">Loading sending profiles...</div>
-                        )}
-
-                        {sendingProfileLoadError && (
-                            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
-                                {sendingProfileLoadError}
-                            </div>
-                        )}
-
-                        {!loadingSendingProfiles && !sendingProfileLoadError && sendingProfileDetails.length === 0 && (
-                            <div className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">
-                                No sending profiles linked to this campaign.
-                            </div>
-                        )}
-
-                        <div className="space-y-3">
-                            {sendingProfileDetails.map((profile) => (
+                        <SummaryListState
+                            loading={loadingSendingProfiles}
+                            error={sendingProfileLoadError}
+                            items={sendingProfileDetails}
+                            loadingMessage="Loading sending profiles..."
+                            emptyMessage="No sending profiles linked to this campaign."
+                            itemsContainerClassName="space-y-3"
+                            renderItem={(profile) => (
                                 <div key={profile.id} className="rounded-xl border border-border bg-surface p-4 flex items-center align-middle gap-3">
                                     <div>
                                         <Link
@@ -547,35 +605,19 @@ export default function CampaignDetails() {
                                         </p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        />
                     </div>
                 </SummaryCollapsibleCard>
 
             </div>
 
-            <div className="flex items-center gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-                    Stats
-                </span>
-                <Separator className="flex-1 bg-primary/70" />
-            </div>
+            <SectionSeparator title="Stats" />
 
             <div className="grid grid-cols-3 gap-4">
-                <div className="rounded-2xl border border-border bg-card p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Open rate</p>
-                    <p className="mt-2 text-4xl font-semibold text-primary">{formatPercent(campaign.open_rate)}</p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-card p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Click rate</p>
-                    <p className="mt-2 text-4xl font-semibold text-primary">{formatPercent(campaign.click_rate)}</p>
-                </div>
-
-                <div className="rounded-2xl border border-border bg-card p-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Phish rate</p>
-                    <p className="mt-2 text-4xl font-semibold text-primary">{formatPercent(campaign.phish_rate)}</p>
-                </div>
+                <StatDisplay label="Open Rate" value={formatPercent(campaign.open_rate)} />
+                <StatDisplay label="Click Rate" value={formatPercent(campaign.click_rate)} />
+                <StatDisplay label="Phish Rate" value={formatPercent(campaign.phish_rate)} />
 
                 <div className="col-span-full lg:col-span-2 rounded-2xl border border-border bg-card p-6 space-y-4">
                     <div className="space-y-1">
@@ -648,61 +690,73 @@ export default function CampaignDetails() {
 
             </div>
 
+            <SectionSeparator title="Email sendings" />
 
-
-
-
-            <div className="flex items-center gap-3">
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
-                    Email Sendings
-                </span>
-                <Separator className="flex-1 bg-primary/70" />
-            </div>
-
-
-
-            <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
-                <h2 className="text-lg font-semibold text-foreground">Email sendings</h2>
-                <p className="text-sm text-muted-foreground">
-                    {totalSendings} total records, {successfullySent} sent, {Math.max(totalRecipients - successfullySent, 0)} pending/unsent.
-                </p>
-
-                <div className="overflow-x-auto rounded-xl border border-border">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-surface-subtle text-muted-foreground">
-                            <tr>
-                                <th className="text-left font-medium p-3">User</th>
-                                <th className="text-left font-medium p-3">Email</th>
-                                <th className="text-left font-medium p-3">Status</th>
-                                <th className="text-left font-medium p-3">Sent</th>
-                                <th className="text-left font-medium p-3">Opened</th>
-                                <th className="text-left font-medium p-3">Clicked</th>
-                                <th className="text-left font-medium p-3">Phished</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/60">
-                            {campaign.user_sendings.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="p-4 text-muted-foreground">
-                                        No sending records available for this campaign.
-                                    </td>
-                                </tr>
-                            ) : (
-                                campaign.user_sendings.map((sending) => (
-                                    <tr key={`${sending.user_id}-${sending.email}`}>
-                                        <td className="p-3 text-foreground">{sending.user_id}</td>
-                                        <td className="p-3 text-foreground">{sending.email}</td>
-                                        <td className="p-3 text-foreground">{sending.status}</td>
-                                        <td className="p-3 text-foreground">{formatDateTime(sending.sent_at)}</td>
-                                        <td className="p-3 text-foreground">{formatDateTime(sending.opened_at)}</td>
-                                        <td className="p-3 text-foreground">{formatDateTime(sending.clicked_at)}</td>
-                                        <td className="p-3 text-foreground">{formatDateTime(sending.phished_at)}</td>
+            <div className="overflow-x-auto rounded-xl border border-border">
+                <table className="min-w-full text-sm">
+                    <thead className="bg-surface-subtle text-muted-foreground">
+                        <tr>
+                            <th className="text-left font-medium p-3">Email</th>
+                            <th className="text-left font-medium p-3">Status</th>
+                            <th className="text-left font-medium p-3">Sent</th>
+                            <th className="text-left font-medium p-3">Opened</th>
+                            <th className="text-left font-medium p-3">Clicked</th>
+                            <th className="text-left font-medium p-3">Phished</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60">
+                        {(() => {
+                            if (loadingSendings) {
+                                return (
+                                    <tr>
+                                        <td colSpan={6} className="p-4 text-muted-foreground">
+                                            Loading sending records...
+                                        </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                );
+                            }
+
+                            if (sendingsLoadError) {
+                                return (
+                                    <tr>
+                                        <td colSpan={6} className="p-4 text-error">
+                                            {sendingsLoadError}
+                                        </td>
+                                    </tr>
+                                );
+                            }
+
+                            if (sendings.length === 0) {
+                                return (
+                                    <tr>
+                                        <td colSpan={6} className="p-4 text-muted-foreground">
+                                            No sending records available for this campaign.
+                                        </td>
+                                    </tr>
+                                );
+                            }
+
+                            return sendings.map((sending) => (
+                                <tr key={`${sending.user_id}-${sending.email}`}>
+                                    <td className="p-3 text-primary">
+                                        <Link
+                                            // TODO: Once user details page is implemented, link to user details instead of tenants org manager
+                                            to="/tenants-org-manager"
+                                            className="text-primary underline"
+                                        >
+                                            {sending.email}
+                                        </Link>
+                                    </td>
+                                    <td className="p-3 text-foreground">{sending.status}</td>
+                                    <td className="p-3 text-foreground">{formatDateTime(sending.sent_at)}</td>
+                                    <td className="p-3 text-foreground">{formatDateTime(sending.opened_at)}</td>
+                                    <td className="p-3 text-foreground">{formatDateTime(sending.clicked_at)}</td>
+                                    <td className="p-3 text-foreground">{formatDateTime(sending.phished_at)}</td>
+                                </tr>
+                            ));
+                        })()}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

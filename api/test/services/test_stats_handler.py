@@ -5,20 +5,22 @@ import os
 import sys
 
 # Set env vars BEFORE any imports from src
-os.environ.update({
-    "POSTGRES_SERVER": "localhost",
-    "POSTGRES_USER": "testuser",
-    "POSTGRES_PASSWORD": "testpassword",
-    "POSTGRES_DB": "test",
-    "RABBITMQ_HOST": "localhost",
-    "RABBITMQ_USER": "guest",
-    "RABBITMQ_PASS": "guest",
-    "RABBITMQ_QUEUE": "test_queue",
-    "KEYCLOAK_SERVER_URL": "http://localhost:8080",
-    "KEYCLOAK_REALM": "master",
-    "KEYCLOAK_CLIENT_ID": "test",
-    "KEYCLOAK_CLIENT_SECRET": "test",
-})
+os.environ.update(
+    {
+        "POSTGRES_SERVER": "localhost",
+        "POSTGRES_USER": "testuser",
+        "POSTGRES_PASSWORD": "testpassword",
+        "POSTGRES_DB": "test",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_USER": "guest",
+        "RABBITMQ_PASS": "guest",
+        "RABBITMQ_QUEUE": "test_queue",
+        "KEYCLOAK_SERVER_URL": "http://localhost:8080",
+        "KEYCLOAK_REALM": "master",
+        "KEYCLOAK_CLIENT_ID": "test",
+        "KEYCLOAK_CLIENT_SECRET": "test",
+    }
+)
 
 from unittest.mock import patch
 
@@ -36,9 +38,6 @@ from src.models import (
     SendingProfile,
     User,
 )
-
-
-
 
 
 from src.services.campaign.stats_handler import stats_handler
@@ -119,6 +118,7 @@ def sample_user(session: Session, sample_realm: Realm) -> User:
     """Create a test user."""
     user = User(
         keycloak_id="user-1",
+        email="user-1@example.com",
     )
     session.add(user)
     session.commit()
@@ -242,7 +242,9 @@ class TestFindRepeatOffenders:
         )
         assert result == []
 
-    def test_single_campaign_user_fell(self, handler, session: Session, sample_campaign: Campaign):
+    def test_single_campaign_user_fell(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
         """User with 100% fall rate (1/1) exceeds 0.5 threshold."""
         sending = EmailSending(
             user_id="user-1",
@@ -263,7 +265,11 @@ class TestFindRepeatOffenders:
         assert "user-1" in result
 
     def test_boundary_exactly_at_threshold(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """User with fall rate exactly equal to threshold should NOT be flagged (> not >=)."""
         campaign1 = Campaign(
@@ -313,7 +319,11 @@ class TestFindRepeatOffenders:
         assert "user-1" not in result
 
     def test_above_threshold(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """User with fall rate above threshold should be flagged."""
         campaign1 = Campaign(
@@ -363,7 +373,11 @@ class TestFindRepeatOffenders:
         assert "user-1" in result
 
     def test_multiple_users_mixed_rates(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """With threshold=0.5, user at 75% is flagged, user at 25% is not."""
         campaigns = []
@@ -390,7 +404,9 @@ class TestFindRepeatOffenders:
                 campaign_id=c.id,
                 status=status,
                 sent_at=c.begin_date,
-                clicked_at=c.begin_date + datetime.timedelta(minutes=5) if i < 3 else None,
+                clicked_at=(
+                    c.begin_date + datetime.timedelta(minutes=5) if i < 3 else None
+                ),
             )
             session.add(sending)
 
@@ -404,7 +420,9 @@ class TestFindRepeatOffenders:
                 campaign_id=c.id,
                 status=status,
                 sent_at=c.begin_date,
-                clicked_at=c.begin_date + datetime.timedelta(minutes=5) if i == 0 else None,
+                clicked_at=(
+                    c.begin_date + datetime.timedelta(minutes=5) if i == 0 else None
+                ),
             )
             session.add(sending)
         session.commit()
@@ -416,7 +434,11 @@ class TestFindRepeatOffenders:
         assert "user-2" not in result
 
     def test_custom_high_threshold(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """With threshold=0.8, user at 75% is no longer flagged."""
         campaigns = []
@@ -443,7 +465,9 @@ class TestFindRepeatOffenders:
                 campaign_id=c.id,
                 status=status,
                 sent_at=c.begin_date,
-                clicked_at=c.begin_date + datetime.timedelta(minutes=5) if i < 3 else None,
+                clicked_at=(
+                    c.begin_date + datetime.timedelta(minutes=5) if i < 3 else None
+                ),
             )
             session.add(sending)
         session.commit()
@@ -455,13 +479,15 @@ class TestFindRepeatOffenders:
         assert "user-1" in result_default
 
         # At higher threshold (0.8), 75% is NOT > 80%, so not flagged
-        result_strict = handler._find_repeat_offenders(
-            campaigns, threshold=0.8
-        )
+        result_strict = handler._find_repeat_offenders(campaigns, threshold=0.8)
         assert "user-1" not in result_strict
 
     def test_custom_low_threshold(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """With threshold=0.2, user at 25% is now flagged."""
         campaigns = []
@@ -488,7 +514,9 @@ class TestFindRepeatOffenders:
                 campaign_id=c.id,
                 status=status,
                 sent_at=c.begin_date,
-                clicked_at=c.begin_date + datetime.timedelta(minutes=5) if i == 0 else None,
+                clicked_at=(
+                    c.begin_date + datetime.timedelta(minutes=5) if i == 0 else None
+                ),
             )
             session.add(sending)
         session.commit()
@@ -500,9 +528,7 @@ class TestFindRepeatOffenders:
         assert "user-1" not in result_default
 
         # At lower threshold (0.2), 25% IS > 20%, so flagged
-        result_lenient = handler._find_repeat_offenders(
-            campaigns, threshold=0.2
-        )
+        result_lenient = handler._find_repeat_offenders(campaigns, threshold=0.2)
         assert "user-1" in result_lenient
 
 
@@ -514,7 +540,9 @@ class TestFindRepeatOffenders:
 class TestToDisplayInfo:
     """Test campaign display info conversion."""
 
-    def test_basic_conversion(self, handler, session: Session, sample_campaign: Campaign):
+    def test_basic_conversion(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
         """Should convert campaign to display info."""
         result = handler._to_display_info(sample_campaign)
         assert result.id == sample_campaign.id
@@ -570,7 +598,9 @@ class TestToDisplayInfo:
 class TestToDetailInfo:
     """Test detailed campaign info conversion."""
 
-    def test_basic_conversion(self, handler, session: Session, sample_campaign: Campaign):
+    def test_basic_conversion(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
         """Should convert campaign to detail info."""
         result = handler._to_detail_info(sample_campaign)
         assert result.id == sample_campaign.id
@@ -578,7 +608,11 @@ class TestToDetailInfo:
         assert result.status == sample_campaign.status
 
     def test_progress_percentage_calculation(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Progress should be total_sent / total_recipients * 100."""
         campaign = Campaign(
@@ -612,7 +646,11 @@ class TestToDetailInfo:
         assert result.progress_percentage == pytest.approx(50.0)  # 5/10 * 100
 
     def test_time_elapsed_percentage(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Time elapsed % should be calculated vs campaign end date."""
         # Campaign from 10:00 to 14:00 (4 hours)
@@ -636,7 +674,11 @@ class TestToDetailInfo:
         assert 0 <= result.time_elapsed_percentage <= 100
 
     def test_time_elapsed_bounded(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Time elapsed % should be bounded to [0, 100]."""
         # Campaign in the past
@@ -704,7 +746,7 @@ class TestToDetailInfo:
         assert result.first_open_at == open1
         assert result.last_open_at == open3
 
-    def test_first_last_click_timestamps( 
+    def test_first_last_click_timestamps(
         self, handler, session: Session, sample_campaign: Campaign
     ):
         """Should extract first and last click timestamps."""
@@ -740,7 +782,9 @@ class TestToDetailInfo:
         assert result.first_click_at == click1
         assert result.last_click_at == click2
 
-    def test_no_opens_no_clicks(self, handler, session: Session, sample_campaign: Campaign):
+    def test_no_opens_no_clicks(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
         """Should handle campaigns with no user engagement."""
         sending = EmailSending(
             user_id="user-1",
@@ -760,10 +804,17 @@ class TestToDetailInfo:
         assert result.first_click_at is None
         assert result.last_click_at is None
 
-    def test_user_sendings_list(self, handler, session: Session, sample_campaign: Campaign):
+    def test_campaign_sendings_list(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
         """Should build per-user sending info list."""
         sendings = []
         for i in range(3):
+            user = User(
+                keycloak_id=f"user-{i}",
+                email=f"user{i}@example.com",
+            )
+            session.add(user)
             s = EmailSending(
                 user_id=f"user-{i}",
                 scheduled_date=sample_campaign.begin_date,
@@ -777,10 +828,10 @@ class TestToDetailInfo:
         session.commit()
         session.refresh(sample_campaign)
 
-        result = handler._to_detail_info(sample_campaign)
-        assert len(result.user_sendings) == 3
-        assert all(u.user_id.startswith("user-") for u in result.user_sendings)
-        assert all(u.email.endswith("@example.com") for u in result.user_sendings)
+        result = handler.get_campaign_sendings(sample_campaign)
+        assert len(result) == 3
+        assert all(u.user_id.startswith("user-") for u in result)
+        assert all(u.email.endswith("@example.com") for u in result)
 
 
 # ============================================================================
@@ -800,7 +851,11 @@ class TestGetGlobalStats:
         assert result.unique_users_targeted == 0
 
     def test_single_campaign_no_sendings(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Should count campaign even with no sendings."""
         campaign = Campaign(
@@ -821,7 +876,11 @@ class TestGetGlobalStats:
         assert result.total_emails_scheduled == 10
 
     def test_campaign_status_counts(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Should correctly count campaigns by status."""
         statuses = [
@@ -852,7 +911,11 @@ class TestGetGlobalStats:
         assert result.canceled_campaigns == 1
 
     def test_email_engagement_stats(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Should aggregate email engagement across campaigns."""
         campaign = Campaign(
@@ -901,7 +964,11 @@ class TestGetGlobalStats:
         assert result.total_emails_phished == 1
 
     def test_delivery_rate_calculation(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Delivery rate = sent / scheduled * 100."""
         campaign = Campaign(
@@ -942,7 +1009,11 @@ class TestGetGlobalStats:
         assert result.delivery_rate == pytest.approx(70.0)  # 7/10 * 100
 
     def test_open_rate_calculation(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Open rate = opened / sent * 100."""
         campaign = Campaign(
@@ -974,7 +1045,11 @@ class TestGetGlobalStats:
         assert result.open_rate == pytest.approx(40.0)  # 4/10 * 100
 
     def test_unique_users_targeted(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Should count unique users across campaigns."""
         campaign1 = Campaign(
@@ -1040,7 +1115,11 @@ class TestGetGlobalStats:
         assert result.unique_users_targeted == 3
 
     def test_repeat_offenders_in_global_stats(
-        self, handler, session: Session, sample_realm: Realm, sample_sending_profile: SendingProfile
+        self,
+        handler,
+        session: Session,
+        sample_realm: Realm,
+        sample_sending_profile: SendingProfile,
     ):
         """Should identify repeat offenders in global stats."""
         campaign1 = Campaign(
