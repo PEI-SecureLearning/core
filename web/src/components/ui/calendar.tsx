@@ -5,6 +5,24 @@ import { DayPicker } from "react-day-picker"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
+type MonthButtonProps = React.ComponentProps<"button">;
+
+function PreviousMonthButton({ className, ...props }: MonthButtonProps) {
+    return (
+        <button className={cn(className)} {...props}>
+            <ChevronLeft className="h-4 w-4" />
+        </button>
+    )
+}
+
+function NextMonthButton({ className, ...props }: MonthButtonProps) {
+    return (
+        <button className={cn(className)} {...props}>
+            <ChevronRight className="h-4 w-4" />
+        </button>
+    )
+}
+
 function Calendar({
     className,
     classNames,
@@ -58,16 +76,8 @@ function Calendar({
                 ...classNames,
             }}
             components={{
-                PreviousMonthButton: ({ className: prevClassName, ...prevProps }) => (
-                    <button className={cn(prevClassName)} {...prevProps}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </button>
-                ),
-                NextMonthButton: ({ className: nextClassName, ...nextProps }) => (
-                    <button className={cn(nextClassName)} {...nextProps}>
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
-                ),
+                PreviousMonthButton,
+                NextMonthButton,
             }}
             {...props}
         />

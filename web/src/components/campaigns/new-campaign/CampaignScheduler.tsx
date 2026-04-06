@@ -38,6 +38,19 @@ export default function CampaignScheduler() {
     Math.floor(data.sending_interval_seconds / 60)
   );
 
+  let dateRangeLabel: React.ReactNode;
+  if (dateRange?.from) {
+    dateRangeLabel = dateRange.to ? (
+      <>
+        {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+      </>
+    ) : (
+      format(dateRange.from, "LLL dd, y")
+    );
+  } else {
+    dateRangeLabel = <span className="text-muted-foreground">Pick a start and end date</span>;
+  }
+
   // Update context when values change
   useEffect(() => {
     const beginDate = dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : null;
@@ -91,22 +104,12 @@ export default function CampaignScheduler() {
                     style={inputStyle}
                   >
                     <Calendar size={14} className="mr-2 text-muted-foreground" />
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>
-                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
-                        </>
-                      ) : (
-                        format(dateRange.from, "LLL dd, y")
-                      )
-                    ) : (
-                      <span className="text-muted-foreground">Pick a start and end date</span>
-                    )}
+                    {dateRangeLabel}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <CalendarPicker
-                    initialFocus
+                    autoFocus
                     mode="range"
                     defaultMonth={dateRange?.from}
                     selected={dateRange}

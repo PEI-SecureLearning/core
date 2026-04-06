@@ -233,7 +233,7 @@ export default function CampaignDetails() {
     }, [campaignId, keycloak.token, realm]);
 
     useEffect(() => {
-        void fetchSendings();
+        fetchSendings();
     }, [fetchSendings]);
 
     useEffect(() => {
@@ -452,8 +452,8 @@ export default function CampaignDetails() {
                 <div className="flex items-center gap-2">
                     <RefreshButton
                         onClick={() => {
-                            void fetchCampaign();
-                            void fetchSendings();
+                            fetchCampaign();
+                            fetchSendings();
                         }}
                         isRefreshing={loading}
                         disabled={loading || loadingSendings}
