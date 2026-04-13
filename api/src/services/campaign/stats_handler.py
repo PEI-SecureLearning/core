@@ -42,6 +42,25 @@ class StatsHandler:
     def __init__(self):
         self.calc = CampaignStatCalculator()
 
+    @staticmethod
+    def _to_user_sending_info(sending: EmailSending) -> UserSendingInfo:
+        return UserSendingInfo(
+            user_id=sending.user_id,
+            email=sending.email_to,
+            status=(
+                sending.status.value
+                if hasattr(sending.status, "value")
+                else str(sending.status)
+            ),
+            sent_at=sending.sent_at,
+            opened_at=sending.opened_at,
+            clicked_at=sending.clicked_at,
+            phished_at=sending.phished_at,
+        )
+
+    def get_campaign_sendings(self, campaign: Campaign) -> list[UserSendingInfo]:
+        return [self._to_user_sending_info(s) for s in campaign.email_sendings]
+
     def _extract_sending_metrics(
         self, sendings: Iterable[EmailSending]
     ) -> SendingMetrics:
@@ -62,24 +81,14 @@ class StatsHandler:
 
             if s.opened_at:
                 opened_dates.append(s.opened_at)
-                open_times.append((s.sent_at, s.opened_at))
+                if s.sent_at:
+                    open_times.append((s.sent_at, s.opened_at))
             if s.clicked_at:
                 clicked_dates.append(s.clicked_at)
-                click_times.append((s.opened_at, s.clicked_at))
+                if s.opened_at:
+                    click_times.append((s.opened_at, s.clicked_at))
 
-            user_sendings_data.append(
-                UserSendingInfo(
-                    user_id=s.user_id,
-                    email=s.email_to,
-                    status=(
-                        s.status.value if hasattr(s.status, "value") else str(s.status)
-                    ),
-                    sent_at=s.sent_at,
-                    opened_at=s.opened_at,
-                    clicked_at=s.clicked_at,
-                    phished_at=s.phished_at,
-                )
-            )
+            user_sendings_data.append(self._to_user_sending_info(s))
 
         return SendingMetrics(
             total_sent=total_sent,
@@ -285,8 +294,14 @@ class StatsHandler:
             status=campaign.status,
             realm_name=campaign.realm_name,
             user_group_ids=[group.keycloak_id for group in campaign.user_groups],
-            phishing_kit_ids=[kit.id for kit in campaign.phishing_kits],
-            sending_profile_ids=[profile.id for profile in campaign.sending_profiles],
+            phishing_kit_ids=[
+                kit.id for kit in campaign.phishing_kits if kit.id is not None
+            ],
+            sending_profile_ids=[
+                profile.id
+                for profile in campaign.sending_profiles
+                if profile.id is not None
+            ],
             sending_profile_names=[p.name for p in campaign.sending_profiles],
             phishing_kit_names=[kit.name for kit in campaign.phishing_kits],
             total_recipients=total_recipients,
@@ -307,7 +322,6 @@ class StatsHandler:
             last_open_at=last_open_at,
             first_click_at=first_click_at,
             last_click_at=last_click_at,
-            user_sendings=metrics.user_sendings_data,
         )
 
 

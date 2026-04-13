@@ -48,6 +48,7 @@ from .email_sending import (
     EmailSending,
     EmailSendingStatus,
     UserSendingInfo,
+    CampaignSendingsResponse,
     RabbitMQEmailMessage,
     SMTPConfig,
 )
@@ -133,6 +134,7 @@ __all__ = [
     "EmailSending",
     "EmailSendingStatus",
     "UserSendingInfo",
+    "CampaignSendingsResponse",
     "RabbitMQEmailMessage",
     "SMTPConfig",
     # Custom Header

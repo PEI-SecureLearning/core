@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 from src.models import (
     Campaign,
+    CampaignSendingsResponse,
     CampaignCreate,
     CampaignUpdate,
     CampaignStatus,
@@ -87,6 +88,14 @@ class CampaignHandler:
 
         campaign = self._get_campaign(id, current_realm, session)
         return get_stats_handler()._to_detail_info(campaign)
+
+    def get_campaign_sendings(
+        self, id: int, current_realm: str, session: Session
+    ) -> CampaignSendingsResponse:
+        """Fetch campaign sendings for the current realm."""
+        campaign = self._get_campaign(id, current_realm, session)
+        sendings = get_stats_handler().get_campaign_sendings(campaign)
+        return CampaignSendingsResponse(sendings=sendings)
 
     def cancel_campaign(
         self, id: int, current_realm: str, session: Session

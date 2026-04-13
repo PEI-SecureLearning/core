@@ -1,6 +1,7 @@
 username,name,email,role,groups
 ixsb,Igor Baltarejo,igorbaltarejo05@ua.pt,DEFAULT_USER,IGOR
-alice.williams,Alice Williams,alice.williams@ua.pt,CONTENT_MANAGER,"group-a,group-b"
+alice.williams,Alice Williams,alice.williams@ua.pt,DEFAULT_USER,"group-a,group-b"
 bob.miller,Bob Miller,bob.miller@ua.pt,DEFAULT_USER,group-a
 carol.jones,Carol Jones,carol.jones@ua.pt,DEFAULT_USER,
 david.smith,David Smith,david.smith@ua.pt,DEFAULT_USER,"group-admins,group-a"
+tigs,Tiago Oliveira,tiago.oliveira1@ua.pt,DEFAULT_USER,TIGS
