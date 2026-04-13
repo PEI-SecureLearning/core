@@ -1,0 +1,31 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Dependencies (rebuilt in container)
+node_modules
+
+# Build output
+dist
+
+# Tests
+tests
+playwright.config.ts
+playwright-report
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Docs
+README.md
+*.md
+DESIGN_SYSTEM.md
+
+# Misc
+simulation-oops.html

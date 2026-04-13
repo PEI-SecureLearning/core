@@ -1,0 +1,36 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64]
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate TLS certificates
+        run: |
+          set -euo pipefail
+          mkdir -p deployment/certs
+          ./deployment/scripts/generate-tls-certs.sh \
+            --domain "${{ vars.KC_HOSTNAME }}" \
+            --alt "${{ vars.KC_HOSTNAME }},localhost,127.0.0.1" \
+            --out-dir deployment/certs \
+            --cert-file "${{ vars.TLS_CERT_FILE }}" \
+            --key-file "${{ vars.TLS_KEY_FILE }}" \
+            --days 3650
+
+      - name: Rebuild and redeploy stack
+        env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker compose -f deployment/docker-compose.yml down
+          docker compose -f deployment/docker-compose.yml up -d

@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-      - ../db/init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
+      - ./services/db/init.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -31,7 +31,7 @@ services:
     volumes:
       - mongo_data:/data/db
       - mongo_configdb_data:/data/configdb
-      - ../mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./services/mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     healthcheck:
       test:
         [
@@ -64,7 +64,7 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
-      - ./garage.toml:/etc/garage.toml:ro
+      - ./services/garage/garage.template.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
       test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
@@ -74,7 +74,7 @@ services:
 
   rabbitmq:
     build:
-      context: ../rabbitmq
+      context: ./services/rabbitmq
       dockerfile: Dockerfile
     container_name: rabbitmq
     ports:
@@ -159,16 +159,17 @@ services:
         condition: service_healthy
 
     volumes:
-      - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
-      - ../keycloak/themes:/opt/keycloak/themes:ro
-      - ../keycloak/imports:/opt/keycloak/data/import:ro
-      - ../keycloak/providers:/opt/keycloak/providers:ro
+      - ./services/keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
+      - ./services/keycloak/themes:/opt/keycloak/themes:ro
+      - ./services/keycloak/imports:/opt/keycloak/data/import:ro
+      - ./services/keycloak/providers:/opt/keycloak/providers:ro
       - keycloak_data:/opt/keycloak/data
 
   api:
     build:
       context: ../api
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
     container_name: api
     environment:
       POSTGRES_SERVER: db
@@ -224,7 +225,8 @@ services:
   frontend:
     build:
       context: ../web
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
+      target: dev
     container_name: frontend
     environment:
       VITE_API_URL: ${API_URL}/api

@@ -1,10 +1,13 @@
-FROM python:alpine
+FROM python:3.12-alpine
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+COPY pyproject.toml uv.lock /app/
 
 WORKDIR /app
 
-COPY pyproject.toml .
-RUN pip install --no-cache-dir .
+RUN uv sync --frozen --no-cache
 
-COPY . .
+COPY . /app
 
-CMD ["python", "main.py"]
+CMD ["/app/.venv/bin/python", "main.py"]

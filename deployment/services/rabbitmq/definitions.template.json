@@ -1,0 +1,46 @@
+{
+    "vhosts": [
+        {
+            "name": "/"
+        }
+    ],
+    "users": [
+        {
+            "name": "${RABBITMQ_API_USER}",
+            "password": "${RABBITMQ_API_PASS}",
+            "password_hash": null,
+            "tags": ""
+        },
+        {
+            "name": "${RABBITMQ_SMTP_USER}",
+            "password": "${RABBITMQ_SMTP_PASS}",
+            "password_hash": null,
+            "tags": ""
+        }
+    ],
+    "permissions": [
+        {
+            "user": "${RABBITMQ_API_USER}",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        },
+        {
+            "user": "${RABBITMQ_SMTP_USER}",
+            "vhost": "/",
+            "configure": ".*",
+            "write": ".*",
+            "read": ".*"
+        }
+    ],
+    "queues": [
+        {
+            "name": "email_queue",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
+        }
+    ]
+}

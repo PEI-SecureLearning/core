@@ -26,7 +26,7 @@ services:
 
   db:
     build:
-      context: ../db
+      context: ./services/db
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
@@ -46,7 +46,7 @@ services:
 
   mongo:
     build:
-      context: ../mongo
+      context: ./services/mongo
       dockerfile: Dockerfile
     container_name: mongo
     restart: unless-stopped
@@ -79,10 +79,11 @@ services:
       retries: 5
 
   garage:
-    image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
+    build:
+      context: ./services/garage
+      dockerfile: Dockerfile
     container_name: garage
     restart: unless-stopped
-    command: /garage server --single-node --default-bucket
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
       GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_ACCESS_KEY_ID}
@@ -92,7 +93,6 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
-      - ./garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
       test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
@@ -102,7 +102,7 @@ services:
 
   rabbitmq:
     build:
-      context: ../rabbitmq
+      context: ./services/rabbitmq
       dockerfile: Dockerfile
     container_name: rabbitmq
     restart: unless-stopped
@@ -126,9 +126,7 @@ services:
       retries: 5
 
   smtp:
-    build:
-      context: ../smtp
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME}/securelearning-smtp:latest
     container_name: smtp
     environment:
       RABBITMQ_HOST: rabbitmq
@@ -145,7 +143,7 @@ services:
 
   keycloak:
     build:
-      context: ../keycloak
+      context: ./services/keycloak
       dockerfile: Dockerfile
     command: start --import-realm --proxy-headers=xforwarded --http-relative-path=/kc
     container_name: keycloak
@@ -192,9 +190,7 @@ services:
       - keycloak_data:/opt/keycloak/data
 
   api:
-    build:
-      context: ../api
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME}/securelearning-api:latest
     container_name: api
     restart: unless-stopped
     environment:
@@ -247,14 +243,7 @@ services:
         condition: service_healthy
 
   frontend:
-    build:
-      context: ../web
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${API_URL}
-        VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
-        VITE_BASE_PATH: ${VITE_BASE_PATH}
-        VITE_WEB_URL: ${WEB_URL}
+    image: ${DOCKERHUB_USERNAME}/securelearning-web:latest
     container_name: frontend
     expose:
       - "80"

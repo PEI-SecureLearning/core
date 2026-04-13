@@ -1,0 +1,20 @@
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Docs
+README.md
+*.md

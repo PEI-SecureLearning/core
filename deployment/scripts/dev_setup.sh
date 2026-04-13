@@ -1,1 +1,0 @@
-cd ../web && npx playwright test tests/dev_setup.spec.ts  --project=firefox 

@@ -1,0 +1,85 @@
+name: "CI - Web"
+
+on:
+  push:
+    branches: [dev]
+    paths: [web/**]
+  pull_request:
+    branches: [dev]
+    paths: [web/**]
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/securelearning-web
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck & Build
+        run: npm run build
+
+  sonar:
+    needs: check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          projectBaseDir: web
+          args: -Dproject.settings=sonar.properties
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build-and-push:
+    needs: [check, sonar]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: web
+          target: prod
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
+            VITE_KEYCLOAK_URL=${{ secrets.VITE_KEYCLOAK_URL }}
+            VITE_BASE_PATH=${{ secrets.VITE_BASE_PATH }}
+            VITE_WEB_URL=${{ secrets.VITE_WEB_URL }}
