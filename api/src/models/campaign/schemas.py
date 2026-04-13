@@ -3,7 +3,7 @@ from typing import Optional
 from sqlmodel import SQLModel
 
 from .table import CampaignStatus, MIN_INTERVAL_SECONDS
-from ..email_sending import UserSendingInfo
+
 
 class CampaignCreate(SQLModel):
     name: str
@@ -27,6 +27,7 @@ class CampaignUpdate(SQLModel):
     phishing_kit_ids: list[int] = []
     user_group_ids: list[str] = []
 
+
 class CampaignDisplayInfo(SQLModel):
     id: int
     name: str
@@ -36,6 +37,7 @@ class CampaignDisplayInfo(SQLModel):
     total_sent: int = 0
     total_opened: int = 0
     total_clicked: int = 0
+
 
 class CampaignDetailInfo(SQLModel):
     """Detailed campaign information for single campaign view."""
@@ -85,8 +87,6 @@ class CampaignDetailInfo(SQLModel):
     first_click_at: Optional[datetime] = None
     last_click_at: Optional[datetime] = None
 
-    # User breakdown
-    user_sendings: list[UserSendingInfo] = []
 
 class CampaignGlobalStats(SQLModel):
     """Global statistics across all campaigns for a realm."""
@@ -117,7 +117,9 @@ class CampaignGlobalStats(SQLModel):
     users_who_opened: int = 0
     users_who_clicked: int = 0
     users_who_phished: int = 0
-    repeat_offenders: list[str] = []  # Users who fell for > 50% of campaigns they were in
+    repeat_offenders: list[str] = (
+        []
+    )  # Users who fell for > 50% of campaigns they were in
 
     # Time-based
     avg_time_to_open_seconds: Optional[float] = None

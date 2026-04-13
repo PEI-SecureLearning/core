@@ -14,6 +14,8 @@ import {
     type CampaignDetail,
     updateOrgManagerCampaign
 } from "@/services/campaignsApi";
+import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 function getRealmFromToken(tokenParsed: unknown): string | null {
     const iss = (tokenParsed as { iss?: string } | undefined)?.iss;
@@ -129,7 +131,7 @@ export default function CampaignEditPage() {
     }
 
     return (
-        <div className="h-full w-full bg-background  space-y-6 overflow-auto">
+        <div className="h-full w-full bg-background space-y-6 overflow-auto">
             {loadError && (
                 <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm flex items-start gap-2">
                     <AlertTriangle size={16} className="mt-0.5" />
@@ -168,16 +170,33 @@ export default function CampaignEditPage() {
                     </div>
                 </CampaignProvider>
             ) : (
-                <div className="rounded-2xl border border-border bg-card p-6">
-                    <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 text-warning">
-                        <AlertTriangle size={16} className="mt-0.5" />
-                        <div>
-                            <p className="font-semibold">Editing is disabled</p>
-                            <p className="text-sm mt-1">
-                                Only campaigns with status <strong>scheduled</strong> can be edited.
-                            </p>
-                        </div>
-                    </div>
+                <div className="flex size-full items-center justify-center">
+                    <Card className="w-full max-w-sm mx-10">
+                        <CardHeader className="bg-primary">
+                            <div className="flex items-start justify-start align-middle gap-3 text-primary-foreground">
+                                <AlertTriangle size={18} />
+                                <CardTitle>
+                                    <span>Editing is not possible</span>
+                                </CardTitle>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <CardDescription className="text-center">
+                                This campaign is currently{" "}
+                                <span className="font-medium">
+                                    {campaign.status}
+                                </span>
+                            </CardDescription>
+
+                        </CardContent>
+
+                        <CardFooter className="bg-card flex gap-3 justify-around">
+                            <Button variant="default" size="sm">
+                                <Link to="/campaigns">Back to campaigns</Link>
+                            </Button>
+
+                        </CardFooter>
+                    </Card>
                 </div>
             )}
         </div>
