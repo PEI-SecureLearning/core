@@ -8,13 +8,11 @@
         {
             "name": "${RABBITMQ_API_USER}",
             "password": "${RABBITMQ_API_PASS}",
-            "password_hash": null,
             "tags": ""
         },
         {
             "name": "${RABBITMQ_SMTP_USER}",
             "password": "${RABBITMQ_SMTP_PASS}",
-            "password_hash": null,
             "tags": ""
         }
     ],
