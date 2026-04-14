@@ -38,20 +38,20 @@ jobs:
         continue-on-error: true
 
       - name: Upload lint log
-        if: always() && steps.lint.outcome != 'skipped'
+        if: steps.lint.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: web-lint-log
           path: web/lint-output.txt
 
       - name: Lint summary
-        if: always() && steps.lint.outcome != 'skipped'
+        if: steps.lint.outcome == 'failure' && hashFiles('web/lint-output.txt') != ''
         run: |
           SUMMARY=$(grep -oE '✖ [0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' lint-output.txt | tail -1)
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          echo "### Lint: ${SUMMARY:-✔ passed}" >> $GITHUB_STEP_SUMMARY
+          echo "### Lint: ${SUMMARY:-unknown}" >> $GITHUB_STEP_SUMMARY
           echo "[Full log]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.lint.outcome }}" = "failure" ]; then exit 1; fi
+          exit 1
 
       - name: Typecheck & Build
         run: npm run build
