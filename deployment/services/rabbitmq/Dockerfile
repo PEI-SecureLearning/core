@@ -8,7 +8,8 @@ COPY init.sh /scripts/init.sh
 RUN apt-get update && apt-get install -y --no-install-recommends gettext-base && \
     rm -rf /var/lib/apt/lists/* && \
     chmod +x /scripts/init.sh && \
-    echo "management.load_definitions = /etc/rabbitmq/definitions.json" >> /etc/rabbitmq/rabbitmq.conf
+    echo "management.load_definitions = /etc/rabbitmq/definitions.json" >> /etc/rabbitmq/rabbitmq.conf && \
+    rabbitmq-plugins enable --offline rabbitmq_prometheus
 
 # Health check to ensure RabbitMQ is ready
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \

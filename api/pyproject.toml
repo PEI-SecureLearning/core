@@ -20,13 +20,29 @@ dependencies = [
     "pika>=1.3.0",
     "pypdf",
     "cryptography>=46.0.3",
+    "prometheus-fastapi-instrumentator>=0.9.0",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
+    "ruff>=0.8.0",
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+indent-width = 2
+src = ["src"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
 
 [tool.setuptools.packages.find]
 where = ["."]
