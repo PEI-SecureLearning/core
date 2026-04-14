@@ -5,7 +5,9 @@ COPY definitions.template.json /etc/rabbitmq/definitions.template.json
 COPY init.sh /scripts/init.sh
 
 # Configure RabbitMQ to load definitions on startup and make init script executable
-RUN chmod +x /scripts/init.sh && \
+RUN apt-get update && apt-get install -y --no-install-recommends gettext-base && \
+    rm -rf /var/lib/apt/lists/* && \
+    chmod +x /scripts/init.sh && \
     echo "management.load_definitions = /etc/rabbitmq/definitions.json" >> /etc/rabbitmq/rabbitmq.conf
 
 # Health check to ensure RabbitMQ is ready
