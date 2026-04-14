@@ -44,16 +44,24 @@ jobs:
           name: web-lint-log
           path: web/lint-output.txt
 
-      - name: Lint summary
+      - name: Prepare Lint Summary
         if: steps.lint.outcome == 'failure'
+        id: lint_summary
         run: |
-          SUMMARY=$(grep -iE '[0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' lint-output.txt | tail -1)
-          
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          
-          echo "### Lint Results" >> $GITHUB_STEP_SUMMARY
-          echo "**Summary:** ${SUMMARY:-"No summary found in log"}" >> $GITHUB_STEP_SUMMARY
-          echo "[View Full Run Log]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
+          SUMMARY=$(sed 's/\x1b\[[0-9;]*m//g' lint-output.txt | grep -iE '[0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' | tail -1)
+          echo "summary=${SUMMARY:-"Linting failed with errors"}" >> $GITHUB_OUTPUT
+
+      - name: Post PR Comment
+        if: steps.lint.outcome == 'failure' && github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## Lint Report
+            **Result:** ${{ steps.lint_summary.outputs.summary }}
+            
+            [View full action logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          edit-mode: replace
 
       - name: Typecheck & Build
         run: npm run build
