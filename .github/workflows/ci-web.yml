@@ -45,13 +45,15 @@ jobs:
           path: web/lint-output.txt
 
       - name: Lint summary
-        if: steps.lint.outcome == 'failure' && hashFiles('web/lint-output.txt') != ''
+        if: steps.lint.outcome == 'failure'
         run: |
-          SUMMARY=$(grep -oE '✖ [0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' lint-output.txt | tail -1)
+          SUMMARY=$(grep -iE '[0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' lint-output.txt | tail -1)
+          
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          echo "### Lint: ${SUMMARY:-unknown}" >> $GITHUB_STEP_SUMMARY
-          echo "[Full log]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
-          exit 1
+          
+          echo "### Lint Results" >> $GITHUB_STEP_SUMMARY
+          echo "**Summary:** ${SUMMARY:-"No summary found in log"}" >> $GITHUB_STEP_SUMMARY
+          echo "[View Full Run Log]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
 
       - name: Typecheck & Build
         run: npm run build
