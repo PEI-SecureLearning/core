@@ -1,51 +1,19 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
 
-
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-<!-- [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![Unlicense License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url] -->
-
-
-
-<!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="./web/public/image.png" alt="Logo" width="500" height="180">
+  <a href="https://github.com/PEI-SecureLearning/core">
+    <img src="./web/public/Hatlogo.png" alt="SecureLearning" height="200" width="200">
   </a>
   <h3 align="center">SecureLearning</h3>
 
   <p align="center">
- Strengthening organizations through cybersecurity awareness.    <br />
-    <a href="securelearning.pt"><strong>Explore our sites »</strong></a>
+    Strengthening organizations through cybersecurity awareness.
     <br />
-    <br />
-
+    <a href="https://securelearning.pt"><strong>Explore our site »</strong></a>
+  </p>
 </div>
 
-
-
-<!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
@@ -56,174 +24,216 @@
       </ul>
     </li>
     <li>
+      <a href="#architecture">Architecture</a>
+    </li>
+    <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#environment-configuration">Environment Configuration</a></li>
+        <li><a href="#development">Development</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#project-structure">Project Structure</a></li>
+    <li><a href="#cicd">CI/CD</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
-
-
-<!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
 
 SecureLearning is a cybersecurity awareness platform designed to strengthen organizational resilience by addressing the human element of security. It enables teams to run realistic, periodic phishing simulations and deliver targeted, just-in-time training based on real user behaviour.
 
-The platform closes the loop between attack simulation, instant remediation, and measurable learning outcomes, giving security teams actionable insights into user susceptibility and improvement over time.
+The platform closes the loop between attack simulation, instant remediation, and measurable learning outcomes — giving security teams actionable insights into user susceptibility and improvement over time.
 
-Key capabilities include a campaign designer and scheduler, a safe and isolated phishing simulation engine, automated video-based training with short exams, remediation workflows triggered immediately after risky actions, and audit-ready reporting dashboards
+**Key capabilities:**
 
-
-
-
+- **Campaign Designer & Scheduler** — Create, schedule, and manage phishing campaigns with configurable sending intervals and target user groups.
+- **Phishing Simulation Engine** — Safely deliver simulated phishing emails via SMTP with pixel tracking for opens, clicks, and credential submissions.
+- **Content Management** — Upload and organize training materials (documents, videos, markdown) with S3-compatible object storage.
+- **Learning Modules & Courses** — Build structured training content with sections, quizzes, and progress tracking.
+- **Compliance Workflows** — Enforce organizational compliance policies with quizzes and document acceptance tracking.
+- **Multi-tenant Architecture** — Full tenant isolation through Keycloak realms with role-based access control (Admin, Org Manager, Content Manager).
+- **Audit-ready Dashboards** — Real-time campaign statistics, user vulnerability scores, and repeat offender detection.
+- **Accessibility** — Five theme modes including Deuteranopia, Protanopia, and Tritanopia support.
 
 ### Built With
 
-
-* [![Next][Next.js]][Next-url]
 * [![React][React.js]][React-url]
+* [![Vite][Vite.js]][Vite-url]
+* [![TailwindCSS][TailwindCSS]][TailwindCSS-url]
 * [![FastAPI][FastAPI]][FastAPI-url]
 * [![Keycloak][Keycloak]][Keycloak-url]
+* [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
+* [![MongoDB][MongoDB]][MongoDB-url]
 * [![RabbitMQ][RabbitMQ]][RabbitMQ-url]
 * [![Docker][Docker]][Docker-url]
 * [![Nginx][Nginx]][Nginx-url]
+* [![Garage][Garage]][Garage-url]
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Architecture
 
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                          Nginx (Reverse Proxy)                       │
+│                    TLS termination · routing · static                 │
+└──────────┬──────────────────────────────────┬────────────────────────┘
+           │                                  │
+    ┌──────▼──────┐                    ┌──────▼──────┐
+    │  Frontend   │                    │   API       │
+    │  React+Vite │                    │   FastAPI   │
+    │  :5173      │                    │   :8000     │
+    └─────────────┘                    └──────┬──────┘
+                                              │
+                    ┌─────────────┬────────────┼─────────────┬──────────────┐
+                    │             │            │             │              │
+             ┌──────▼─────┐ ┌────▼────┐ ┌─────▼─────┐ ┌────▼────┐  ┌─────▼─────┐
+             │ PostgreSQL │ │ MongoDB │ │ Keycloak  │ │ Garage  │  │ RabbitMQ  │
+             │  :5432     │ │  :27017 │ │   :8080   │ │  :3900  │  │  :5672    │
+             └────────────┘ └─────────┘ └───────────┘ └─────────┘  └─────┬─────┘
+                                                                         │
+                                                                   ┌─────▼─────┐
+                                                                   │   SMTP    │
+                                                                   │  Worker   │
+                                                                   └───────────┘
+```
 
-<!-- GETTING STARTED -->
+| Service | Purpose |
+| --- | --- |
+| **Frontend** | React 19 SPA with TanStack Router, Tailwind CSS v4, shadcn/ui components, Keycloak SSO |
+| **API** | FastAPI backend with SQLModel ORM, async MongoDB via Motor, S3 object storage |
+| **SMTP Worker** | RabbitMQ consumer that sends phishing simulation emails via SMTP |
+| **PostgreSQL** | Relational storage for campaigns, users, realms, sending profiles, compliance |
+| **MongoDB** | Document storage for email templates, content pieces, modules, courses |
+| **Keycloak** | Identity provider with multi-realm tenant isolation and RBAC |
+| **Garage** | S3-compatible object storage for content files and tenant logos |
+| **RabbitMQ** | Message broker for async email delivery and tracking event pipelines |
+| **Nginx** | Reverse proxy with TLS, static asset serving, and route forwarding |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Getting Started
-
-Step by step on how to start development
 
 ### Prerequisites
 
-From Core directory:
+| Tool | Version | Purpose |
+| --- | --- | --- |
+| [Docker](https://www.docker.com/) | 24+ | Container runtime |
+| [Docker Compose](https://docs.docker.com/compose/) | 2.20+ | Multi-service orchestration |
+| [Node.js](https://nodejs.org/) | 20+ | Frontend development |
+| [uv](https://docs.astral.sh/uv/) | Latest | Python package manager |
+| [Python](https://www.python.org/) | 3.12+ | API and SMTP services |
 
+**Install uv** (if not already installed):
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
-* npm
-  ```sh
-  cd web
-  npm install
-  ```
+### Environment Configuration
 
-* If uv not installed
+1. Copy the example environment file for development:
    ```sh
-   curl -LsSf https://astral.sh/uv/install.sh | sh
+   cp deployment/.env.dev.example deployment/.env
    ```
 
+2. Review and adjust values in `deployment/.env` to match your local setup. Key settings include database credentials, Keycloak admin credentials, and RabbitMQ configuration.
 
-### Default Values
+### Development
 
-Both compose files use these defaults:
+There are two ways to develop: **fully containerized** or **local frontend + API with containerized infrastructure**.
 
+#### Option A — Fully Containerized (recommended for first run)
 
-```env
-POSTGRES_USER=myuser
-POSTGRES_PASSWORD=mypassword
-POSTGRES_DB=mydatabase
-POSTGRES_SERVER=db
-POSTGRES_PORT=5432
-```
-
-### Override with .env File
-
-Create a `.env` file in the `deployment/` directory:
-
-```env
-# Database Configuration
-POSTGRES_USER=myuser
-POSTGRES_PASSWORD=mypassword
-POSTGRES_DB=mydatabase
-```
-
-And another `.env` file in the `api/` directory:
-```
-POSTGRES_USER=myuser
-POSTGRES_PASSWORD=mypassword
-POSTGRES_SERVER=localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=mydatabase
-```
-## Development
-To develop locally: <br>
-
-Launch a terminal in `/Core`
-   ```sh
-      cd web
-      npm run dev
-   ```
-In a second terminal:
-```bash
-# Start PostgreSQL only
+```sh
 cd deployment
 docker compose -f docker-compose.dev.yml up -d
 ```
-<br>
-Then run api
 
-<br>
+This starts all services including the frontend dev server with hot reload at `http://localhost:5173`.
 
+#### Option B — Local Frontend + API
 
-```sh
-cd..
-cd /api uv run fastapi dev src/main.py
+1. Start infrastructure services only:
+   ```sh
+   cd deployment
+   docker compose -f docker-compose.dev.yml up -d db mongo keycloak rabbitmq garage smtp
+   ```
+
+2. Start the frontend dev server:
+   ```sh
+   cd web
+   npm install
+   npm run dev
+   ```
+
+3. Start the API with hot reload:
+   ```sh
+   cd api
+   uv sync --group dev
+   uv run fastapi dev src/main.py
+   ```
+
+#### Default Ports
+
+| Service | URL |
+| --- | --- |
+| Frontend | `http://localhost:5173` |
+| API | `http://localhost:8000` |
+| API Docs (Swagger) | `http://localhost:8000/api/docs` |
+| Keycloak Admin | `http://localhost:8080` |
+| RabbitMQ Management | `http://localhost:15672` |
+| Garage S3 | `http://localhost:3900` |
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Project Structure
+
+```
+core/
+├── api/                        # FastAPI backend
+│   └── src/
+│       ├── core/               # Settings, DB, security, object storage
+│       ├── models/             # SQLModel tables + Pydantic schemas
+│       ├── routers/            # API route handlers
+│       ├── services/           # Business logic layer
+│       ├── tasks/              # Background scheduler + tracking consumer
+│       └── main.py             # App entry point
+│
+├── web/                        # React 19 SPA
+│   └── src/
+│       ├── components/         # UI components (ui/, shared/, feature dirs)
+│       ├── routes/             # TanStack Router file-based routes
+│       ├── services/           # API client functions per domain
+│       ├── lib/                # Hooks, providers, utilities
+│       └── main.tsx            # App entry point
+│
+├── smtp/                       # RabbitMQ email worker
+│   └── src/
+│       ├── core/               # RabbitMQ + API config
+│       ├── emails/             # Email sender + template renderer
+│       └── consumer.py         # Message consumer
+│
+├── deployment/                 # Docker Compose, Nginx configs, env templates
+└── .github/workflows/          # CI/CD pipelines (per-service CI + CD)
 ```
 
-
-### Installation
-
-To define...
-   ```
-   ...
-   ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## CI/CD
 
+The project uses **GitHub Actions** for continuous integration and deployment:
 
+- **CI (per-service):** Triggered on pushes and PRs to `dev` with path filtering. Each service (API, Web, SMTP) runs its own pipeline: test/lint → SonarQube analysis → Docker image build and push to Docker Hub.
+- **CD:** Triggered on release publish or manual dispatch. Runs on a self-hosted runner, generates TLS certificates, rebuilds, and redeploys the full stack using `docker-compose.yml`.
 
-<!-- USAGE EXAMPLES -->
-## Usage
-
-To define...
+Docker images are published to Docker Hub with multi-stage builds (separate `dev` and `prod` targets).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- ROADMAP -->
-## Roadmap
-
-| **Current (Q1)**                       | **Next (Q2)**                    | **Future (Q3–Q4)**                     |
-| -------------------------------------- | -------------------------------- | -------------------------------------- |
-| 🔹 Authentication (FastAPI + Keycloak) | 🔸 Phishing Campaign Builder     | 🟢 Machine-learning-based risk scoring |
-| 🔹 User Dashboard (React + Vite)       | 🔸 Role-based Access + Org Units | 🟢 SOC integration (SIEM export)       |
-| 🔹 Dockerized Dev Environment          | 🔸 RabbitMQ Message Pipelines    | 🟢 Mobile-friendly redesign            |
-| 🔹 Basic Reporting                     | 🔸 Nginx Production Deployment   | 🟢 Plugin marketplace                  |
-| 🔹 CI/CD Pipeline Setup                | 🔸 Advanced Analytics            | 🟢 Multi-tenant SaaS mode              |
-
-
-
-
-
-<!-- CONTRIBUTING -->
 ## Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -231,102 +241,34 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-### Top contributors:
-
-Not available while private...
-
-<!-- <a href="https://github.com/othneildrew/Best-README-Template/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=othneildrew/Best-README-Template" alt="contrib.rocks image" />
-</a>
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p> -->
-
-
-
-<!-- LICENSE -->
-## License
-
-To define...
-
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- CONTACT -->
 ## Contact
 
 Project Link: [https://github.com/PEI-SecureLearning/core](https://github.com/PEI-SecureLearning/core)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-Thinking about it...
-
-<!-- Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p> -->
-
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/Best-README-Template.svg?style=for-the-badge
-[contributors-url]: https://github.com/othneildrew/Best-README-Template/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
-[forks-url]: https://github.com/othneildrew/Best-README-Template/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
-[stars-url]: https://github.com/othneildrew/Best-README-Template/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/othneildrew/Best-README-Template/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/othneildrew
-[product-screenshot]: images/screenshot.png
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React.js]: https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
-[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
-[Vue-url]: https://vuejs.org/
-[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
-[Angular-url]: https://angular.io/
-[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
-[Svelte-url]: https://svelte.dev/
-[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
-[Laravel-url]: https://laravel.com
-[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
-[Bootstrap-url]: https://getbootstrap.com
-[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
-[JQuery-url]: https://jquery.com 
-[FastAPI]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white
-[FastAPI-url]: https://fastapi.tiangolo.com/
-
-[Keycloak]: https://img.shields.io/badge/Keycloak-3F51B5?style=for-the-badge&logo=keycloak&logoColor=white
-[Keycloak-url]: https://www.keycloak.org/
-
-[RabbitMQ]: https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white
-[RabbitMQ-url]: https://www.rabbitmq.com/
-
-[Docker]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
-[Docker-url]: https://www.docker.com/
-
 [Vite.js]: https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/
-
+[TailwindCSS]: https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white
+[TailwindCSS-url]: https://tailwindcss.com/
+[FastAPI]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white
+[FastAPI-url]: https://fastapi.tiangolo.com/
+[Keycloak]: https://img.shields.io/badge/Keycloak-3F51B5?style=for-the-badge&logo=keycloak&logoColor=white
+[Keycloak-url]: https://www.keycloak.org/
+[PostgreSQL]: https://img.shields.io/badge/PostgreSQL_18-4169E1?style=for-the-badge&logo=postgresql&logoColor=white
+[PostgreSQL-url]: https://www.postgresql.org/
+[MongoDB]: https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white
+[MongoDB-url]: https://www.mongodb.com/
+[RabbitMQ]: https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white
+[RabbitMQ-url]: https://www.rabbitmq.com/
+[Docker]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
+[Docker-url]: https://www.docker.com/
 [Nginx]: https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white
 [Nginx-url]: https://nginx.org/
+[Garage]: https://img.shields.io/badge/Garage_S3-232F3E?style=for-the-badge&logo=amazons3&logoColor=white
+[Garage-url]: https://garagehq.deuxfleurs.fr/
