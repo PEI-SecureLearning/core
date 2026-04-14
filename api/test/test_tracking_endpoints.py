@@ -85,7 +85,7 @@ def test_track_phish_success_redirect(client: TestClient, mock_data: dict, sessi
     
     # Should be 303 Redirect to frontend
     assert response.status_code == 303
-    assert response.headers["location"] == f"{settings.WEB_URL}/simulation-oops.html"
+    assert response.headers["location"] == f"{settings.WEB_URL}/oops"
     
     # Verify DB update
     session.refresh(mock_data["email_sending"])

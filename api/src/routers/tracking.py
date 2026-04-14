@@ -102,6 +102,6 @@ def track_phish(si: str, session: SessionDep):
     """
     service.record_phish(si, session)
     return RedirectResponse(
-        url=f"{settings.WEB_URL}/simulation-oops.html", 
+        url=f"{settings.WEB_URL}/oops",
         status_code=303
     )
