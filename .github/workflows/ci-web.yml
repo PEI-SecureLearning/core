@@ -33,7 +33,25 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: npm run lint
+        id: lint
+        run: npm run lint 2>&1 | tee lint-output.txt; exit ${PIPESTATUS[0]}
+        continue-on-error: true
+
+      - name: Upload lint log
+        if: always() && steps.lint.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-lint-log
+          path: web/lint-output.txt
+
+      - name: Lint summary
+        if: always() && steps.lint.outcome != 'skipped'
+        run: |
+          SUMMARY=$(grep -oE '✖ [0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' lint-output.txt | tail -1)
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "### Lint: ${SUMMARY:-✔ passed}" >> $GITHUB_STEP_SUMMARY
+          echo "[Full log]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.lint.outcome }}" = "failure" ]; then exit 1; fi
 
       - name: Typecheck & Build
         run: npm run build
