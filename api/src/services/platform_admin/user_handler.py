@@ -3,12 +3,14 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from src.models import (
+    CurrentUserProfileDTO,
     Realm,
     User,
     UserDTO,
     UserCreatedInRealmDTO,
     UserListInRealmDTO,
 )
+from src.services.compliance.token_helpers import decode_token_verified, get_realm_from_iss
 from src.services.platform_admin.base_handler import base_handler
 
 
@@ -134,6 +136,18 @@ class user_handler(base_handler):
 
         raise HTTPException(status_code=404, detail="User not found in realm")
 
+    def get_current_user_profile(self, token: str) -> CurrentUserProfileDTO:
+        """Resolve current user from bearer token and return base profile info."""
+        claims = decode_token_verified(token)
+        realm = get_realm_from_iss(claims.get("iss"))
+        profile = self.admin.keycloak_client.get_userinfo(realm, token)
+        user_id = profile.get("sub") or claims.get("sub")
+
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Unable to resolve current user")
+
+        return self._build_current_user_profile(realm, user_id, claims, profile, {})
+
     def delete_user_in_realm(self, realm: str, user_id: str, session: Session) -> None:
         """Delete a user from the realm."""
         if self._is_org_manager(realm, user_id) and self._count_org_managers(realm) <= 1:
@@ -174,6 +188,51 @@ class user_handler(base_handler):
             email_verified=user_data.get("emailVerified"),
             enabled=user_data.get("enabled"),
             is_org_manager=is_org_manager,
+        )
+
+    def _build_current_user_profile(
+        self,
+        realm: str,
+        user_id: str,
+        claims: dict,
+        userinfo: dict,
+        admin_user: dict,
+    ) -> CurrentUserProfileDTO:
+        username = (
+            admin_user.get("username")
+            or userinfo.get("preferred_username")
+            or claims.get("preferred_username")
+        )
+        email = admin_user.get("email") or userinfo.get("email") or claims.get("email")
+        first_name = (
+            admin_user.get("firstName")
+            or userinfo.get("given_name")
+            or claims.get("given_name")
+        )
+        last_name = (
+            admin_user.get("lastName")
+            or userinfo.get("family_name")
+            or claims.get("family_name")
+        )
+        full_name = (
+            userinfo.get("name")
+            or claims.get("name")
+            or " ".join(part for part in [first_name, last_name] if part).strip()
+            or None
+        )
+        email_verified = admin_user.get("emailVerified")
+        if email_verified is None:
+            email_verified = userinfo.get("email_verified")
+
+        return CurrentUserProfileDTO(
+            id=user_id,
+            realm=realm,
+            username=username,
+            email=email,
+            firstName=first_name,
+            lastName=last_name,
+            fullName=full_name,
+            email_verified=email_verified,
         )
 
     def _resolve_is_org_manager(

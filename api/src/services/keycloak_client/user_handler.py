@@ -36,6 +36,11 @@ class user_handler(base_handler):
             raise
         return resp.json()
 
+    def update_user(self, realm: str, token: str, user_id: str, user_data: dict) -> None:
+        """Update a single user representation."""
+        url = f"{self.keycloak_url}/admin/realms/{realm}/users/{user_id}"
+        self._make_request("PUT", url, token, json_data=user_data)
+
     def get_user_realm_roles(self, realm: str, token: str, user_id: str) -> list[dict]:
         """Get realm role mappings for a user."""
         url = f"{self.keycloak_url}/admin/realms/{realm}/users/{user_id}/role-mappings/realm"
@@ -46,6 +51,12 @@ class user_handler(base_handler):
                 return []
             raise
         return resp.json() or []
+
+    def get_userinfo(self, realm: str, token: str) -> dict:
+        """Resolve current user info using the caller token."""
+        url = f"{self.keycloak_url}/realms/{realm}/protocol/openid-connect/userinfo"
+        resp = self._make_request("GET", url, token)
+        return resp.json()
 
 
 _instance: user_handler | None = None
