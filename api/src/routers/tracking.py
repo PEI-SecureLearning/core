@@ -10,15 +10,6 @@ router = APIRouter()
 service = TrackingService()
 
 
-@router.post(
-    "/track/sent",
-    status_code=200,
-    description="Email sent tracking endpoint - records successful email delivery from SMTP",
-)
-def track_sent(si: str, session: SessionDep):
-    service.record_sent(si, session)
-
-
 # 1x1 transparent GIF for tracking pixel
 TRACKING_PIXEL = bytes(
     [

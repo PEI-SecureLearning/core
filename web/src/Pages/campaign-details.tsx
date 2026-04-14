@@ -698,6 +698,7 @@ export default function CampaignDetails() {
                         <tr>
                             <th className="text-left font-medium p-3">Email</th>
                             <th className="text-left font-medium p-3">Status</th>
+                            <th className="text-left font-medium p-3">Error</th>
                             <th className="text-left font-medium p-3">Sent</th>
                             <th className="text-left font-medium p-3">Opened</th>
                             <th className="text-left font-medium p-3">Clicked</th>
@@ -709,7 +710,7 @@ export default function CampaignDetails() {
                             if (loadingSendings) {
                                 return (
                                     <tr>
-                                        <td colSpan={6} className="p-4 text-muted-foreground">
+                                        <td colSpan={7} className="p-4 text-muted-foreground">
                                             Loading sending records...
                                         </td>
                                     </tr>
@@ -719,7 +720,7 @@ export default function CampaignDetails() {
                             if (sendingsLoadError) {
                                 return (
                                     <tr>
-                                        <td colSpan={6} className="p-4 text-error">
+                                        <td colSpan={7} className="p-4 text-error">
                                             {sendingsLoadError}
                                         </td>
                                     </tr>
@@ -729,7 +730,7 @@ export default function CampaignDetails() {
                             if (sendings.length === 0) {
                                 return (
                                     <tr>
-                                        <td colSpan={6} className="p-4 text-muted-foreground">
+                                        <td colSpan={7} className="p-4 text-muted-foreground">
                                             No sending records available for this campaign.
                                         </td>
                                     </tr>
@@ -748,6 +749,11 @@ export default function CampaignDetails() {
                                         </Link>
                                     </td>
                                     <td className="p-3 text-foreground">{sending.status}</td>
+                                    <td className="p-3 text-foreground">
+                                        {sending.status === "failed" && sending.error_cause
+                                            ? sending.error_cause
+                                            : "—"}
+                                    </td>
                                     <td className="p-3 text-foreground">{formatDateTime(sending.sent_at)}</td>
                                     <td className="p-3 text-foreground">{formatDateTime(sending.opened_at)}</td>
                                     <td className="p-3 text-foreground">{formatDateTime(sending.clicked_at)}</td>

@@ -13,6 +13,7 @@ class UserSendingInfo(SQLModel):
     opened_at: Optional[datetime] = None
     clicked_at: Optional[datetime] = None
     phished_at: Optional[datetime] = None
+    error_cause: Optional[str] = None
 
 
 class CampaignSendingsResponse(SQLModel):

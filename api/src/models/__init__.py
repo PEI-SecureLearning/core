@@ -67,6 +67,7 @@ from .compliance import (
     AcceptRequest,
     ComplianceStatusResponse,
 )
+from .user_progress import UserProgress, AssignmentStatus
 from .org_manager import (
     OrgUserCreate,
     OrgGroupCreate,
