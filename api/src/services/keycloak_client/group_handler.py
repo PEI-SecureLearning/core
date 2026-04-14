@@ -49,6 +49,12 @@ class group_handler(base_handler):
         resp = self._make_request("GET", url, token)
         return resp.json()
 
+    def list_user_groups(self, realm: str, token: str, user_id: str) -> list[dict]:
+        """List groups that a user belongs to."""
+        url = f"{self.keycloak_url}/admin/realms/{realm}/users/{user_id}/groups"
+        resp = self._make_request("GET", url, token)
+        return resp.json()
+
 
 _instance: group_handler | None = None
 

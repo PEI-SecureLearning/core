@@ -9,6 +9,8 @@ class UserSendingInfo(SQLModel):
     user_id: str
     email: str
     status: str
+    campaign_id: int
+    campaign_name: str
     sent_at: Optional[datetime] = None
     opened_at: Optional[datetime] = None
     clicked_at: Optional[datetime] = None

@@ -1,7 +1,8 @@
 import secrets
 from fastapi import HTTPException
 from sqlmodel import Session
-from src.models import Realm, User, UserDTO
+from src.models import Realm, User
+from src.models.org_manager.schemas import UserDetailsDTO, UserDetailsGroupDTO
 
 
 class user_handler:
@@ -36,7 +37,7 @@ class user_handler:
 
         return {"realm": realm, "users": simplified}
 
-    def list_user_details(self, realm: str, token: str, user_id: str) -> UserDTO:
+    def list_user_details(self, realm: str, token: str, user_id: str) -> UserDetailsDTO:
         """Return details for a single user in the realm."""
         user = self.kc.get_user(realm, token, user_id)
         if not user:
@@ -44,8 +45,9 @@ class user_handler:
 
         roles = self.kc.get_user_realm_roles(realm, token, user_id)
         is_org_manager = any(r.get("name") == "ORG_MANAGER" for r in roles)
+        groups = self.kc.list_user_groups(realm, token, user_id)
 
-        return UserDTO(
+        return UserDetailsDTO(
             id=user.get("id"),
             username=user.get("username"),
             email=user.get("email") or "",
@@ -55,6 +57,11 @@ class user_handler:
             active=user.get("enabled"),
             role="ORG_MANAGER" if is_org_manager else "USER",
             realm=realm,
+            groups=[
+                UserDetailsGroupDTO(id=group.get("id"), name=group.get("name"))
+                for group in groups
+                if group.get("id")
+            ],
         )
 
     def create_user(

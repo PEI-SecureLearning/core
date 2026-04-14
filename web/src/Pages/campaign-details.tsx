@@ -23,7 +23,7 @@ import { userGroupsApi } from "@/services/userGroupsApi";
 import type { PhishingKitDisplayInfo } from "@/types/phishingKit";
 import type { SendingProfileDisplayInfo } from "@/types/sendingProfile";
 import type { UserGroupMemberDto } from "@/types/userGroups";
-import { Separator } from "@/components/ui/separator";
+import { SectionSeparator } from "@/components/shared/SectionSeparator";
 import { Bar, BarChart, CartesianGrid, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 interface CampaignGroupWithMembers {
@@ -89,14 +89,6 @@ function formatDateTime(value?: string | null): string {
 function formatPercent(value: number): string {
     return `${value.toFixed(2)}%`;
 }
-
-const SectionSeparator = ({ title }: { title: string }) =>
-    <div className="flex items-center gap-3">
-        <span className="shrink-0 whitespace-nowrap text-xs font-semibold uppercase tracking-widest1 text-primary">
-            {title}
-        </span>
-        <Separator className="flex-1 bg-primary/70 self-center" />
-    </div>
 
 const StatDisplay = ({ label, value }: { label: string, value: string | number }) =>
     <div className="rounded-2xl border border-border bg-card p-6">
@@ -222,6 +214,7 @@ export default function CampaignDetails() {
                 keycloak.token
             );
             setSendings(campaignSendings);
+
         } catch (error) {
             setSendings([]);
             setSendingsLoadError(
@@ -740,8 +733,8 @@ export default function CampaignDetails() {
                                 <tr key={`${sending.user_id}-${sending.email}`}>
                                     <td className="p-3 text-primary">
                                         <Link
-                                            // TODO: Once user details page is implemented, link to user details instead of tenants org manager
                                             to="/users/$id"
+                                            params={{ id: sending.user_id }}
                                             className="text-primary underline"
                                         >
                                             {sending.email}

@@ -1,7 +1,7 @@
 import datetime
 import secrets
 
-from sqlmodel import Session
+from sqlmodel import Session, col, select
 
 from src.models import (
     Campaign,
@@ -10,6 +10,7 @@ from src.models import (
     RabbitMQEmailMessage,
     SMTPConfig,
     UserDTO,
+    UserSendingInfo,
 )
 from src.services.rabbit import RabbitMQService
 
@@ -17,6 +18,34 @@ rabbitmq_service = RabbitMQService()
 
 
 class EmailHandler:
+
+    @staticmethod
+    def _to_user_sending_info(sending: EmailSending) -> UserSendingInfo:
+        return UserSendingInfo(
+            user_id=sending.user_id,
+            email=sending.email_to,
+            status=(
+                sending.status.value
+                if hasattr(sending.status, "value")
+                else str(sending.status)
+            ),
+            campaign=sending.campaign.name,
+            sent_at=sending.sent_at,
+            opened_at=sending.opened_at,
+            clicked_at=sending.clicked_at,
+            phished_at=sending.phished_at,
+        )
+
+    def list_user_sendings(
+        self, session: Session, user_id: str
+    ) -> list[UserSendingInfo]:
+        """Return all email sendings for a specific user."""
+        sendings = session.exec(
+            select(EmailSending)
+            .where(EmailSending.user_id == user_id)
+            .order_by(col(EmailSending.scheduled_date))
+        ).all()
+        return [self._to_user_sending_info(sending) for sending in sendings]
 
     def _send_email_to_rabbitmq(
         self, email_sending: EmailSending, campaign: Campaign
@@ -74,9 +103,7 @@ class EmailHandler:
                 subject=subject,
                 template_id=template.content_link,
                 tracking_id=email_sending.tracking_token,
-                arguments={
-                    **(kit.args if kit.args else {})
-                },
+                arguments={**(kit.args if kit.args else {})},
             )
         )
 
