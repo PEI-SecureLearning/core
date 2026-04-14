@@ -9,39 +9,7 @@ on:
     paths: [api/**, web/**, smtp/**, sonar.properties]
 
 jobs:
-  test-coverage:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: api
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - name: Install Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --group dev
-
-      - name: Run tests
-        run: uv run pytest
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-coverage
-          path: api/coverage.xml
-
   sonar:
-    needs: test-coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -49,10 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/download-artifact@v4
+      - name: Download API coverage
+        uses: dawidd6/action-download-artifact@v6
         with:
+          workflow: ci-api.yml
+          workflow_conclusion: success
           name: api-coverage
           path: api/
+          if_no_artifact_found: warn
 
       - uses: SonarSource/sonarqube-scan-action@v5
         with:
