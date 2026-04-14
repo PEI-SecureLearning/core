@@ -3,6 +3,7 @@ name: SecureLearning-dev
 services:
   db:
     image: postgres:18-alpine
+    container_name: sl-db-dev
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -22,7 +23,7 @@ services:
 
   mongo:
     image: mongo:4.4.6
-    container_name: mongo
+    container_name: sl-mongo-dev
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
@@ -54,7 +55,7 @@ services:
 
   garage:
     image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
-    container_name: garage
+    container_name: sl-garage-dev
     command: /garage server --single-node --default-bucket
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
@@ -77,7 +78,7 @@ services:
     build:
       context: ./services/rabbitmq
       dockerfile: Dockerfile
-    container_name: rabbitmq
+    container_name: sl-rabbitmq-dev
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -101,7 +102,7 @@ services:
     build:
       context: ../smtp
       dockerfile: Dockerfile
-    container_name: smtp
+    container_name: sl-smtp-dev
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_SMTP_USER}
@@ -118,7 +119,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.4
     command: start-dev --import-realm --health-enabled=true
-    container_name: keycloak
+    container_name: sl-keycloak-dev
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -171,7 +172,7 @@ services:
       context: ../api
       dockerfile: Dockerfile
       target: dev
-    container_name: api
+    container_name: sl-api-dev
     environment:
       POSTGRES_SERVER: db
       POSTGRES_PORT: 5432
@@ -228,7 +229,7 @@ services:
       context: ../web
       dockerfile: Dockerfile
       target: dev
-    container_name: frontend
+    container_name: sl-frontend-dev
     environment:
       VITE_API_URL: ${API_URL}/api
       VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
