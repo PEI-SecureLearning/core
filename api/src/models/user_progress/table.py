@@ -5,6 +5,7 @@ from sqlalchemy import String, JSON
 from sqlalchemy.dialects import postgresql
 from enum import StrEnum
 
+
 class AssignmentStatus(StrEnum):
     SCHEDULED = "SCHEDULED"
     ACTIVE = "ACTIVE"
@@ -17,8 +18,14 @@ class UserProgress(SQLModel, table=True):
     __tablename__ = "user_progress"
     user_id: str = Field(primary_key=True)
     course_id: str = Field(primary_key=True)
-    progress_data: dict = Field(default={}, sa_column=Column(JSON().with_variant(postgresql.JSONB(), "postgresql")))
-    completed_sections: list[str] = Field(default=[], sa_column=Column(JSON().with_variant(postgresql.ARRAY(String), "postgresql")))
+    progress_data: dict = Field(
+        default={},
+        sa_column=Column(JSON().with_variant(postgresql.JSONB(), "postgresql")),
+    )
+    completed_sections: list[str] = Field(
+        default=[],
+        sa_column=Column(JSON().with_variant(postgresql.ARRAY(String), "postgresql")),
+    )
     total_completed_tasks: int = Field(default=0)
     is_certified: bool = Field(default=False)
     start_date: datetime | None = Field(default=None)

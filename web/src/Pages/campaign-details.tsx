@@ -741,7 +741,7 @@ export default function CampaignDetails() {
                                     <td className="p-3 text-primary">
                                         <Link
                                             // TODO: Once user details page is implemented, link to user details instead of tenants org manager
-                                            to="/tenants-org-manager"
+                                            to="/users/$id"
                                             className="text-primary underline"
                                         >
                                             {sending.email}

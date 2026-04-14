@@ -9,8 +9,9 @@ class UserDTO(SQLModel):
     firstName: Optional[str] = None
     lastName: Optional[str] = None
     email_verified: Optional[bool] = None
-    enabled: Optional[bool] = None
-    is_org_manager: bool = False
+    active: Optional[bool] = False
+    role: str = "USER"
+    realm: str
 
 
 class UserCreatedInRealmDTO(SQLModel):

@@ -64,7 +64,7 @@ class TestEmailHandlerCreateSendings:
             end_date=now + datetime.timedelta(days=1),
             sending_interval_seconds=60,
         )
-        users = [UserDTO(id="u1", email="u1@test.com")]
+        users = [UserDTO(id="u1", email="u1@test.com", role="USER", realm="test")]
 
         with pytest.raises(ValueError, match="Campaign must be running"):
             service._create_email_sendings(session, campaign, users)
@@ -91,9 +91,9 @@ class TestEmailHandlerCreateSendings:
         session.commit()
 
         users = [
-            UserDTO(id="u1", email="u1@test.com"),
-            UserDTO(id="u2", email="u2@test.com"),
-            UserDTO(id="u3", email="u3@test.com"),
+            UserDTO(id="u1", email="u1@test.com", role="USER", realm="test"),
+            UserDTO(id="u2", email="u2@test.com", role="USER", realm="test"),
+            UserDTO(id="u3", email="u3@test.com", role="USER", realm="test"),
         ]
 
         emails = service._create_email_sendings(session, campaign, users)

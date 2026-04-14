@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from src.core.dependencies import SessionDep, OAuth2Scheme
-from src.models import OrgUserCreate, CourseEnrollmentPayload
+from src.models import OrgUserCreate, CourseEnrollmentPayload, UserDTO
 from src.core.security import Roles, Resource, Scope
 from src.services.org_manager import get_org_manager_service
 from src.services.org_manager.validation_handler import validate_realm_access
@@ -73,7 +73,8 @@ def upload_user_csv(file: Annotated[UploadFile, File(...)]):
 
 
 @router.post(
-    "/{realm}/users/{user_id}/enroll", dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))]
+    "/{realm}/users/{user_id}/enroll",
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],
 )
 def enroll_user_endpoint(
     realm: str,
@@ -93,3 +94,13 @@ def enroll_user_endpoint(
         cert_valid_days=payload.cert_valid_days,
     )
 
+
+@router.get(
+    "/{realm}/users/{user_id}",
+    response_model=UserDTO,
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))],
+)
+def list_user_details(realm: str, user_id: str, token: OAuth2Scheme) -> UserDTO:
+    """List details for a specific user."""
+    validate_realm_access(token, realm)
+    return org_manager_service.list_user_details(realm, token, user_id)

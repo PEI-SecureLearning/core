@@ -1,8 +1,7 @@
 import secrets
 from fastapi import HTTPException
 from sqlmodel import Session
-
-from src.models import Realm, User
+from src.models import Realm, User, UserDTO
 
 
 class user_handler:
@@ -36,6 +35,27 @@ class user_handler:
             )
 
         return {"realm": realm, "users": simplified}
+
+    def list_user_details(self, realm: str, token: str, user_id: str) -> UserDTO:
+        """Return details for a single user in the realm."""
+        user = self.kc.get_user(realm, token, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        roles = self.kc.get_user_realm_roles(realm, token, user_id)
+        is_org_manager = any(r.get("name") == "ORG_MANAGER" for r in roles)
+
+        return UserDTO(
+            id=user.get("id"),
+            username=user.get("username"),
+            email=user.get("email") or "",
+            firstName=user.get("firstName"),
+            lastName=user.get("lastName"),
+            email_verified=user.get("emailVerified"),
+            active=user.get("enabled"),
+            role="ORG_MANAGER" if is_org_manager else "USER",
+            realm=realm,
+        )
 
     def create_user(
         self,
@@ -154,7 +174,7 @@ class user_handler:
         existing = session.get(User, user_id)
         if existing:
             existing.email = email
-            existing.is_org_manager = role_clean == "ORG_MANAGER"
+            existing.role = role_clean
             return
 
         session.add(
