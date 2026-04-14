@@ -39,8 +39,8 @@ cd deployment && docker compose -f docker-compose.dev.yml up -d
 Router (routers/) → Service (services/) → Model/DB (models/ + core/)
 ```
 
-- **Routers** — HTTP concerns, status codes, `Roles` dependency for auth
-- **Services** — Business logic, module-level singleton instances
+- **Routers** — HTTP concerns, status codes, `Roles` dep for auth
+- **Services** — Business logic, module-level singletons
 - **Models** — `table.py` (SQLModel) + `schemas.py` (Pydantic) per domain subpackage
 
 ### Dual-Database Pattern
@@ -83,7 +83,7 @@ Each tenant = Keycloak realm. `realm_name` scopes all data. `CurrentRealm` dep e
 - **Semicolons:** Always
 - **Quotes:** Double quotes
 - **Components:** Functional + hooks only
-- **CSS:** Tailwind utilities. **Never** hardcode hex — use theme variables (`text-primary`, not `text-purple-600`)
+- **CSS:** Tailwind utilities. **Never** hardcode hex — use theme vars (`text-primary`, not `text-purple-600`)
 - **Null:** `| null` or `?` optional
 
 ---
@@ -148,6 +148,6 @@ Each tenant = Keycloak realm. `realm_name` scopes all data. `CurrentRealm` dep e
 - **MongoDB `_id` → `id`.** All docs go through `serialize_*` fns.
 - **RabbitMQ separate users.** API uses `RABBITMQ_API_USER`, SMTP uses `RABBITMQ_SMTP_USER`.
 - **Garage dual client.** Internal endpoint for writes, public for presigned URLs.
-- **`Pages/` is PascalCase**, feature dirs are kebab-case. Intentional.
-- **`routeTree.gen.ts` is auto-generated.** Never edit manually.
-- **SMTP worker is blocking pika.** Single-threaded, auto-reconnect loop.
+- **`Pages/` is PascalCase**, feature dirs kebab-case. Intentional.
+- **`routeTree.gen.ts` auto-generated.** Never edit manually.
+- **SMTP worker blocking pika.** Single-threaded, auto-reconnect loop.
