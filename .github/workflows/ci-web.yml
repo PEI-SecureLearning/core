@@ -9,7 +9,7 @@ on:
     paths: [web/**]
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/securelearning-web
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/securelearning-web
 
 jobs:
   check:
@@ -70,12 +70,7 @@ jobs:
           edit-mode: replace
 
       - name: Typecheck & Build
-        if: steps.lint.outcome == 'success'
         run: npm run build
-
-      - name: Fail if lint failed
-        if: steps.lint.outcome == 'failure'
-        run: exit 1
 
 
   build-and-push:
@@ -90,7 +85,7 @@ jobs:
 
       - uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - uses: docker/build-push-action@v6

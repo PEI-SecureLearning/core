@@ -9,7 +9,7 @@ on:
     paths: [smtp/**]
 
 env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/securelearning-smtp
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/securelearning-smtp
 
 jobs:
 
@@ -24,7 +24,7 @@ jobs:
       - uses: docker/login-action@v3
         if: github.event_name == 'push'
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - uses: docker/build-push-action@v6
