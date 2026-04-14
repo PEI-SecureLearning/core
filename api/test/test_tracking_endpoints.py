@@ -1,9 +1,24 @@
+import os
+
+os.environ.update(
+    {
+        "POSTGRES_SERVER": "localhost",
+        "POSTGRES_USER": "testuser",
+        "POSTGRES_PASSWORD": "testpassword",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_USER": "guest",
+        "RABBITMQ_PASS": "guest",
+        "RABBITMQ_QUEUE": "email_queue",
+        "KEYCLOAK_URL": "http://fake-keycloak:8080",
+        "CLIENT_SECRET": "fake-secret",
+    }
+)
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 from datetime import datetime
-import os
 
 from src.main import app
 from src.core.dependencies import get_db
