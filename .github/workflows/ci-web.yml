@@ -14,6 +14,11 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
+    
+    permissions:
+      pull-requests: write
+      contents: read
+
     defaults:
       run:
         working-directory: web
@@ -34,7 +39,7 @@ jobs:
 
       - name: Lint
         id: lint
-        run: npm run lint 2>&1 | tee lint-output.txt; exit ${PIPESTATUS[0]}
+        run: npm run lint -- --no-color 2>&1 | tee lint-output.txt; exit ${PIPESTATUS[0]}
         continue-on-error: true
 
       - name: Upload lint log
@@ -44,12 +49,12 @@ jobs:
           name: web-lint-log
           path: web/lint-output.txt
 
-      - name: Prepare Lint Summary
+      - name: Prepare Summary
         if: steps.lint.outcome == 'failure'
         id: lint_summary
         run: |
           SUMMARY=$(sed 's/\x1b\[[0-9;]*m//g' lint-output.txt | grep -iE '[0-9]+ problems \([0-9]+ errors?, [0-9]+ warnings?\)' | tail -1)
-          echo "summary=${SUMMARY:-"Linting failed with errors"}" >> $GITHUB_OUTPUT
+          echo "summary=${SUMMARY:-"Linting failed (check logs for details)"}" >> $GITHUB_OUTPUT
 
       - name: Post PR Comment
         if: steps.lint.outcome == 'failure' && github.event_name == 'pull_request'
@@ -58,13 +63,19 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Lint Report
-            **Result:** ${{ steps.lint_summary.outputs.summary }}
+            **Result:** `${{ steps.lint_summary.outputs.summary }}`
             
-            [View full action logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            **[Download Full Lint Log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts)**
+            *(Log available in the Artifacts section at the bottom of the page)*
           edit-mode: replace
 
       - name: Typecheck & Build
+        if: steps.lint.outcome == 'success'
         run: npm run build
+
+      - name: Fail if lint failed
+        if: steps.lint.outcome == 'failure'
+        run: exit 1
 
 
   build-and-push:
