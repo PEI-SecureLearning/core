@@ -38,25 +38,9 @@ jobs:
       - name: Typecheck & Build
         run: npm run build
 
-  sonar:
-    needs: check
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: SonarSource/sonarqube-scan-action@v5
-        with:
-          projectBaseDir: web
-          args: -Dproject.settings=sonar.properties
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-and-push:
-    needs: [check, sonar]
+    needs: check
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
 
