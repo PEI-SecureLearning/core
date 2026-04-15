@@ -52,6 +52,8 @@ class StatsHandler:
                 if hasattr(sending.status, "value")
                 else str(sending.status)
             ),
+            campaign_id=sending.campaign.id if sending.campaign.id else -1,
+            campaign_name=sending.campaign.name,
             sent_at=sending.sent_at,
             opened_at=sending.opened_at,
             clicked_at=sending.clicked_at,

@@ -77,13 +77,33 @@ def mock_platform_admin_service():
         mock_service.list_group_members_in_realm.side_effect = (
             lambda _realm, group_id: (
                 [
-                    UserDTO(id="user-1", email=USER_1_EMAIL),
-                    UserDTO(id="user-2", email=USER_2_EMAIL),
+                    UserDTO(
+                        id="user-1",
+                        email=USER_1_EMAIL,
+                        role="USER",
+                        realm="test-realm",
+                    ),
+                    UserDTO(
+                        id="user-2",
+                        email=USER_2_EMAIL,
+                        role="USER",
+                        realm="test-realm",
+                    ),
                 ]
                 if group_id == "group-1"
                 else [
-                    UserDTO(id="user-2", email=USER_2_EMAIL),
-                    UserDTO(id="user-3", email=USER_3_EMAIL),
+                    UserDTO(
+                        id="user-2",
+                        email=USER_2_EMAIL,
+                        role="USER",
+                        realm="test-realm",
+                    ),
+                    UserDTO(
+                        id="user-3",
+                        email=USER_3_EMAIL,
+                        role="USER",
+                        realm="test-realm",
+                    ),
                 ]
             )
         )

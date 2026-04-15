@@ -1,14 +1,15 @@
 import { Mail, Shield, Trash2, Loader2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import type { UserRecord } from "./types";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface UserTableProps {
-    users: UserRecord[];
-    deletingIds: Record<string, boolean>;
+    readonly users: UserRecord[];
+    readonly deletingIds: Record<string, boolean>;
     onDeleteUser: (id: string) => Promise<void>;
 }
 
-export function UserTable({ users, deletingIds, onDeleteUser }: UserTableProps) {
+export function UserTable({ users, deletingIds, onDeleteUser }: Readonly<UserTableProps>) {
     const getRoleBadge = (user: UserRecord) => {
         const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
         if (isOrgManager) {
@@ -73,19 +74,28 @@ export function UserTable({ users, deletingIds, onDeleteUser }: UserTableProps) 
                                 </td>
                                 <td className="px-6 py-4">{getRoleBadge(user)}</td>
                                 <td className="px-6 py-4 text-right">
-                                    {!isOrgManager && (
-                                        <button
-                                            onClick={() => onDeleteUser(id)}
-                                            disabled={isDeleting}
-                                            className="p-2 text-muted-foreground/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    <div className="inline-flex items-center gap-1">
+                                        <Link
+                                            to="/users/$id"
+                                            params={{ id }}
+                                            className="px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 rounded-md transition-colors"
                                         >
-                                            {isDeleting ? (
-                                                <Loader2 size={16} className="animate-spin" />
-                                            ) : (
-                                                <Trash2 size={16} />
-                                            )}
-                                        </button>
-                                    )}
+                                            Details
+                                        </Link>
+                                        {!isOrgManager && (
+                                            <button
+                                                onClick={() => onDeleteUser(id)}
+                                                disabled={isDeleting}
+                                                className="p-2 text-muted-foreground/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isDeleting ? (
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                ) : (
+                                                    <Trash2 size={16} />
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         );
