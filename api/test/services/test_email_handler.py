@@ -64,7 +64,7 @@ class TestEmailHandlerCreateSendings:
             end_date=now + datetime.timedelta(days=1),
             sending_interval_seconds=60,
         )
-        users = [UserDTO(id="u1", email="u1@test.com")]
+        users = [UserDTO(id="u1", email="u1@test.com", role="USER", realm="test")]
 
         with pytest.raises(ValueError, match="Campaign must be running"):
             service._create_email_sendings(session, campaign, users)
@@ -91,9 +91,9 @@ class TestEmailHandlerCreateSendings:
         session.commit()
 
         users = [
-            UserDTO(id="u1", email="u1@test.com"),
-            UserDTO(id="u2", email="u2@test.com"),
-            UserDTO(id="u3", email="u3@test.com"),
+            UserDTO(id="u1", email="u1@test.com", role="USER", realm="test"),
+            UserDTO(id="u2", email="u2@test.com", role="USER", realm="test"),
+            UserDTO(id="u3", email="u3@test.com", role="USER", realm="test"),
         ]
 
         emails = service._create_email_sendings(session, campaign, users)
@@ -257,3 +257,53 @@ class TestEmailHandlerSendToRabbitMQ:
         # We expect this to fail because template is mandatory
         with pytest.raises(ValueError, match="No email template"):
             service._send_email_to_rabbitmq(email, campaign)
+
+
+class TestEmailHandlerListUserSendings:
+
+    def test_list_user_sendings_returns_ordered_mapped_records(
+        self, service: CampaignService, session: Session
+    ):
+        now = datetime.datetime.now()
+        campaign = Campaign(
+            id=10,
+            name="Campaign A",
+            status=CampaignStatus.RUNNING,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        session.add(campaign)
+        session.commit()
+
+        sending_late = EmailSending(
+            user_id="u1",
+            campaign_id=campaign.id,
+            scheduled_date=now + datetime.timedelta(hours=1),
+            email_to="u1@test.com",
+            status="sent",
+        )
+        sending_early = EmailSending(
+            user_id="u1",
+            campaign_id=campaign.id,
+            scheduled_date=now,
+            email_to="u1@test.com",
+            status="opened",
+        )
+        other_user = EmailSending(
+            user_id="u2",
+            campaign_id=campaign.id,
+            scheduled_date=now,
+            email_to="u2@test.com",
+            status="clicked",
+        )
+        session.add_all([sending_late, sending_early, other_user])
+        session.commit()
+
+        results = service.list_user_sendings(session, "u1")
+
+        assert len(results) == 2
+        assert results[0].status == "opened"
+        assert results[1].status == "sent"
+        assert results[0].campaign_id == campaign.id
+        assert results[0].campaign_name == campaign.name
+        assert all(r.user_id == "u1" for r in results)

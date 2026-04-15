@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Literal
 
 
 class SMTPConfig(BaseModel):
@@ -19,3 +19,10 @@ class EmailMessage(BaseModel):
     template_id: str
     tracking_id: str
     arguments: dict[str, str] = {}
+
+
+class TrackingEvent(BaseModel):
+    """Tracking event to publish to tracking queue."""
+    action: Literal["sent", "failed"]
+    tracking_id: str
+    error: str | None = None

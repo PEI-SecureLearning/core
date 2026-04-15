@@ -102,6 +102,12 @@ class group_handler(base_handler):
             email=member_data.get("email") or "",
             firstName=member_data.get("firstName"),
             lastName=member_data.get("lastName"),
+            role=(
+                "ORG_MANAGER"
+                if member_data.get("is_org_manager") == ["true"]
+                else "USER"
+            ),
+            realm=member_data.get("realm", [""])[0],
         )
 
 

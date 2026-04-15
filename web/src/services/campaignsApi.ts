@@ -47,10 +47,13 @@ export interface CampaignUserSending {
   user_id: string;
   email: string;
   status: string;
+  campaign_id?: number;
+  campaign_name?: string;
   sent_at?: string | null;
   opened_at?: string | null;
   clicked_at?: string | null;
   phished_at?: string | null;
+  error_cause?: string | null;
 }
 
 export interface CampaignUpdatePayload {

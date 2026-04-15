@@ -140,6 +140,19 @@ class TrackingService:
 
         return sending
 
+    def record_failed(self, tracking_token: str, error_cause: str, session: Session) -> EmailSending:
+        """Record that an email failed to send."""
+        sending = self._get_sending_by_token(tracking_token, session)
+
+        if sending.status != EmailSendingStatus.FAILED:
+            sending.status = EmailSendingStatus.FAILED
+            sending.error_cause = error_cause
+            session.add(sending)
+            session.commit()
+            session.refresh(sending)
+
+        return sending
+
     def _get_sending_by_token(
         self, tracking_token: str, session: Session
     ) -> EmailSending:

@@ -1,0 +1,34 @@
+name: "Sonar Analysis"
+
+on:
+  push:
+    branches: [dev]
+    paths: [api/**, web/**, smtp/**, sonar.properties]
+  pull_request:
+    branches: [dev]
+    paths: [api/**, web/**, smtp/**, sonar.properties]
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download API coverage
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: ci-api.yml
+          workflow_conclusion: success
+          name: api-coverage
+          path: api/
+          if_no_artifact_found: warn
+
+      - uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          args: -Dproject.settings=sonar.properties
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

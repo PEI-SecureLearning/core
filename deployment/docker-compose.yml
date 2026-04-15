@@ -3,12 +3,14 @@ name: SecureLearning
 services:
   nginx:
     image: nginx:alpine
+    container_name: sl-nginx
     restart: unless-stopped
     ports:
-      - "8081:8081"
       - "${NGINX_PORT}:8081"
+    expose:
+      - "8080"
     volumes:
-      - ./nginx.mednat.conf:/etc/nginx/nginx.conf:ro
+      - ./${NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro
     depends_on:
       frontend:
@@ -26,8 +28,9 @@ services:
 
   db:
     build:
-      context: ../db
+      context: ./services/db
       dockerfile: Dockerfile
+    container_name: sl-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -39,16 +42,16 @@ services:
       - db_runtime_data:/var/lib/postgresql
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   mongo:
     build:
-      context: ../mongo
+      context: ./services/mongo
       dockerfile: Dockerfile
-    container_name: mongo
+    container_name: sl-mongo
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
@@ -60,29 +63,17 @@ services:
       - mongo_data:/data/db
       - mongo_configdb_data:/data/configdb
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mongo",
-          "--quiet",
-          "-u",
-          "${MONGO_ROOT_USER}",
-          "-p",
-          "${MONGO_ROOT_PASSWORD}",
-          "--authenticationDatabase",
-          "admin",
-          "--eval",
-          "db.adminCommand('ping')",
-        ]
+      test: [ "CMD", "mongo", "--quiet", "-u", "${MONGO_ROOT_USER}", "-p", "${MONGO_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   garage:
-    image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
-    container_name: garage
+    build:
+      context: ./services/garage
+      dockerfile: Dockerfile
+    container_name: sl-garage
     restart: unless-stopped
-    command: /garage server --single-node --default-bucket
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
       GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_ACCESS_KEY_ID}
@@ -92,19 +83,18 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
-      - ./garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
-      test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
+      test: [ "CMD", "/garage", "-c", "/etc/garage.toml", "status" ]
       interval: 15s
       timeout: 10s
       retries: 10
 
   rabbitmq:
     build:
-      context: ../rabbitmq
+      context: ./services/rabbitmq
       dockerfile: Dockerfile
-    container_name: rabbitmq
+    container_name: sl-rabbitmq
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
@@ -117,26 +107,23 @@ services:
     expose:
       - "5672"
       - "15672"
+      - "15692"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   smtp:
-    build:
-      context: ../smtp
-      dockerfile: Dockerfile
-    container_name: smtp
+    image: ${DOCKERHUB_USERNAME}/securelearning-smtp:latest
+    container_name: sl-smtp
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_SMTP_USER}
       RABBITMQ_PASS: ${RABBITMQ_SMTP_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
-      RATE_LIMITER_MAX_REQUESTS: ${RATE_LIMITER_MAX_REQUESTS}
-      RATE_LIMITER_TIME_WINDOW_SECONDS: ${RATE_LIMITER_TIME_WINDOW_SECONDS}
       API_INTERNAL_URL: ${API_INTERNAL_URL}
       API_URL: ${PUBLIC_BASE_URL}
     depends_on:
@@ -145,10 +132,10 @@ services:
 
   keycloak:
     build:
-      context: ../keycloak
+      context: ./services/keycloak
       dockerfile: Dockerfile
     command: start --import-realm --proxy-headers=xforwarded --http-relative-path=/kc
-    container_name: keycloak
+    container_name: sl-keycloak
     restart: unless-stopped
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
@@ -157,6 +144,7 @@ services:
       KC_IMPORT: /opt/keycloak/data/import/
       KC_LOG_LEVEL: INFO
       KC_HTTP_ACCESS_LOG_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
 
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
@@ -177,7 +165,7 @@ services:
       KC_DB_POOL_INITIAL_SIZE: 5
       KC_DB_POOL_MAX_SIZE: 10
     healthcheck:
-      test: ["CMD", "true"]
+      test: [ "CMD", "true" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -192,10 +180,8 @@ services:
       - keycloak_data:/opt/keycloak/data
 
   api:
-    build:
-      context: ../api
-      dockerfile: Dockerfile
-    container_name: api
+    image: ${DOCKERHUB_USERNAME}/securelearning-api:latest
+    container_name: sl-api
     restart: unless-stopped
     environment:
       POSTGRES_SERVER: db
@@ -229,7 +215,7 @@ services:
     expose:
       - "80"
     healthcheck:
-      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:80/health"]
+      test: [ "CMD", "wget", "-qO", "/dev/null", "http://localhost:80/health" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -247,19 +233,12 @@ services:
         condition: service_healthy
 
   frontend:
-    build:
-      context: ../web
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${API_URL}
-        VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
-        VITE_BASE_PATH: ${VITE_BASE_PATH}
-        VITE_WEB_URL: ${WEB_URL}
-    container_name: frontend
+    image: ${DOCKERHUB_USERNAME}/securelearning-web:latest
+    container_name: sl-frontend
     expose:
       - "80"
     healthcheck:
-      test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:80"]
+      test: [ "CMD", "wget", "-qO", "/dev/null", "http://localhost:80" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -281,3 +260,5 @@ volumes:
   mongo_data:
   mongo_configdb_data:
   keycloak_data:
+  prometheus_data:
+  grafana_data:

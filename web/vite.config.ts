@@ -34,13 +34,5 @@ export default defineConfig(() => {
         },
       },
     },
-    build: {
-      rollupOptions: {
-        input: {
-          main: path.resolve(__dirname, 'index.html'),
-          simulationOops: path.resolve(__dirname, 'simulation-oops.html'),
-        },
-      },
-    },
   }
 })

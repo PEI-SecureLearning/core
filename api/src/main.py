@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 import os
 from jwt import PyJWKClient
 import jwt
@@ -51,6 +52,8 @@ app = FastAPI(
     docs_url="/api/docs",
     lifespan=lifespan,
 )
+
+Instrumentator().instrument(app).expose(app)
 
 origins = [
     settings.WEB_URL,

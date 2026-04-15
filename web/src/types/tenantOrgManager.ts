@@ -7,6 +7,19 @@ export interface TenantUserDto {
   is_org_manager?: boolean;
 }
 
+export interface TenantUserDetailDto extends TenantUserDto {
+  email_verified?: boolean;
+  active?: boolean;
+  role?: string;
+  realm?: string;
+  groups?: TenantUserGroupDto[];
+}
+
+export interface TenantUserGroupDto {
+  id?: string;
+  name?: string;
+}
+
 export interface TenantUserListResponse {
   realm: string;
   total?: number;

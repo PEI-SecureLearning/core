@@ -114,7 +114,7 @@ class user_handler(base_handler):
 
         session.commit()
         total = self.admin.get_user_count(realm)
-        org_managers = [u for u in parsed_users if u.is_org_manager]
+        org_managers = [u for u in parsed_users if u.role == "ORG_MANAGER"]
 
         return UserListInRealmDTO(
             realm=realm,
@@ -150,7 +150,10 @@ class user_handler(base_handler):
 
     def delete_user_in_realm(self, realm: str, user_id: str, session: Session) -> None:
         """Delete a user from the realm."""
-        if self._is_org_manager(realm, user_id) and self._count_org_managers(realm) <= 1:
+        if (
+            self._is_org_manager(realm, user_id)
+            and self._count_org_managers(realm) <= 1
+        ):
             raise HTTPException(
                 status_code=400, detail="Cannot delete the last org manager."
             )
@@ -182,12 +185,13 @@ class user_handler(base_handler):
         return UserDTO(
             id=user_id,
             username=user_data.get("username"),
-            email=user_data.get("email"),
+            email=user_data.get("email", ""),
             firstName=user_data.get("firstName"),
             lastName=user_data.get("lastName"),
             email_verified=user_data.get("emailVerified"),
-            enabled=user_data.get("enabled"),
-            is_org_manager=is_org_manager,
+            active=user_data.get("enabled"),
+            role="ORG_MANAGER" if is_org_manager else "USER",
+            realm=user_data.get("realm", [""])[0],
         )
 
     def _build_current_user_profile(

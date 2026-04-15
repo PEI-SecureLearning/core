@@ -34,7 +34,7 @@ def _to_object_id(id_str: str) -> ObjectId:
         return ObjectId(id_str)
     except (InvalidId, TypeError) as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Invalid course id: {id_str}",
         ) from exc
 
@@ -51,10 +51,11 @@ def _doc_to_out(doc: dict[str, Any]) -> CourseOut:
 
 # ── Query helpers ─────────────────────────────────────────────────────────────
 
+
 def _apply_search(query: dict[str, Any], search: str | None) -> None:
     if search:
         query["$or"] = [
-            {"title":       {"$regex": search, "$options": "i"}},
+            {"title": {"$regex": search, "$options": "i"}},
             {"description": {"$regex": search, "$options": "i"}},
         ]
 
@@ -71,6 +72,7 @@ def _apply_difficulty(query: dict[str, Any], difficulty: str | None) -> None:
 
 # ── Service functions ─────────────────────────────────────────────────────────
 
+
 async def create_course(payload: CourseCreate, created_by: str) -> CourseOut:
     """Insert a new course document and return it."""
     now = _now()
@@ -85,15 +87,15 @@ async def create_course(payload: CourseCreate, created_by: str) -> CourseOut:
 
 
 async def list_courses(
-    search:     str | None = None,
-    category:   str | None = None,
+    search: str | None = None,
+    category: str | None = None,
     difficulty: str | None = None,
-    page:       int = 1,
-    limit:      int = _DEFAULT_PAGE_LIMIT,
+    page: int = 1,
+    limit: int = _DEFAULT_PAGE_LIMIT,
 ) -> PaginatedCourses:
     """Return a paginated, filtered list of courses."""
     limit = min(limit, _MAX_PAGE_LIMIT)
-    skip  = (page - 1) * limit
+    skip = (page - 1) * limit
 
     query: dict[str, Any] = {}
     _apply_search(query, search)
@@ -118,17 +120,17 @@ async def list_enrolled_courses(course_ids: list[str]) -> list[CourseOut]:
     """Return a list of courses by their ObjectIds."""
     if not course_ids:
         return []
-        
+
     oids = []
     for cid in course_ids:
         try:
             oids.append(ObjectId(cid))
         except (InvalidId, TypeError):
             pass
-            
+
     if not oids:
         return []
-        
+
     col = get_courses_collection()
     cursor = col.find({"_id": {"$in": oids}})
     items = [_doc_to_out(doc) async for doc in cursor]
@@ -140,7 +142,9 @@ async def get_course(course_id: str) -> CourseOut:
     col = get_courses_collection()
     doc = await col.find_one({"_id": _to_object_id(course_id)})
     if doc is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND
+        )
     return _doc_to_out(doc)
 
 
@@ -151,7 +155,9 @@ async def update_course(course_id: str, payload: CourseUpdate) -> CourseOut:
 
     existing = await col.find_one({"_id": oid})
     if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND
+        )
 
     data = payload.model_dump()
     data["updated_at"] = _now()
@@ -168,7 +174,9 @@ async def patch_course(course_id: str, payload: CoursePatch) -> CourseOut:
 
     existing = await col.find_one({"_id": oid})
     if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND
+        )
 
     delta = payload.model_dump(exclude_unset=True)
     if not delta:
@@ -187,6 +195,8 @@ async def delete_course(course_id: str) -> None:
 
     existing = await col.find_one({"_id": oid})
     if existing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=COURSE_NOT_FOUND
+        )
 
     await col.delete_one({"_id": oid})
