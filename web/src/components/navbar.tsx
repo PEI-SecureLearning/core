@@ -103,7 +103,11 @@ export function Navbar() {
 
           {/* User Profile & Logout */}
           <div className="flex items-center gap-2">
-            <button className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors shrink-0 cursor-pointer">
+            <Link
+              to="/settings"
+              hash="account"
+              className="flex flex-row items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors shrink-0 cursor-pointer"
+            >
               {/* User info */}
               <div className="flex flex-col items-end">
                 <span className="text-xs lg:text-sm font-medium whitespace-nowrap">
@@ -125,7 +129,7 @@ export function Navbar() {
               <div className="lg:h-10 lg:w-10 sm:h-8 sm:w-8 rounded-r rounded-l bg-foreground flex items-center justify-center shrink-0">
                 <User className="h-3 w-3 sm:h-4 sm:w-4 text-background" />
               </div>
-            </button>
+            </Link>
 
             <button
               onClick={() => handleLogout()}

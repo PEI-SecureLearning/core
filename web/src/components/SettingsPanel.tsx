@@ -133,81 +133,79 @@ export function SettingsPanel() {
     return (
         <div className="h-full w-full overflow-y-auto bg-background text-foreground">
             <div className="max-w-3xl mx-auto px-6 py-10">
-                <div className="mb-10">
+                <div id="account" className="mb-10 scroll-mt-6">
                     <div className="mb-4">
                         <h1 className="text-2xl font-bold tracking-tight text-foreground">Account</h1>
-                        <p className="text-sm text-muted-foreground mt-1">Base information resolved from your Keycloak session.</p>
+                        <p className="text-sm text-muted-foreground mt-1">Your profile</p>
                     </div>
 
-                    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-                        {profileLoading ? (
-                            <div className="space-y-3">
-                                <div className="h-5 w-40 rounded bg-muted animate-pulse" />
-                                <div className="grid gap-2 sm:grid-cols-2">
-                                    <div className="h-12 rounded-xl bg-muted animate-pulse" />
-                                    <div className="h-12 rounded-xl bg-muted animate-pulse" />
-                                    <div className="h-12 rounded-xl bg-muted animate-pulse" />
-                                    <div className="h-12 rounded-xl bg-muted animate-pulse" />
+                    {profileLoading ? (
+                        <div className="space-y-3">
+                            <div className="h-5 w-40 rounded bg-muted animate-pulse" />
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                <div className="h-12 rounded-xl bg-muted animate-pulse" />
+                                <div className="h-12 rounded-xl bg-muted animate-pulse" />
+                                <div className="h-12 rounded-xl bg-muted animate-pulse" />
+                                <div className="h-12 rounded-xl bg-muted animate-pulse" />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-foreground">{displayName}</h2>
+                                </div>
+
+                                <Button
+                                    type="button"
+                                    onClick={() => void handleChangePassword()}
+                                    disabled={isRedirectingToPasswordFlow}
+                                    className="sm:self-start"
+                                >
+                                    <KeyRound className="h-4 w-4" />
+                                    {isRedirectingToPasswordFlow ? "Redirecting..." : "Change password"}
+                                </Button>
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div className="rounded-xl border border-border bg-background px-4 py-3">
+                                    <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                                        <UserRound className="h-3.5 w-3.5" />
+                                        First name
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">{profile?.firstName || "Not available"}</p>
+                                </div>
+
+                                <div className="rounded-xl border border-border bg-background px-4 py-3">
+                                    <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                                        <UserRound className="h-3.5 w-3.5" />
+                                        Last name
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">{profile?.lastName || "Not available"}</p>
+                                </div>
+
+                                <div className="rounded-xl border border-border bg-background px-4 py-3">
+                                    <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                                        <UserRound className="h-3.5 w-3.5" />
+                                        Username
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">{profile?.username || "Not available"}</p>
+                                </div>
+
+                                <div className="rounded-xl border border-border bg-background px-4 py-3">
+                                    <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                                        <Mail className="h-3.5 w-3.5" />
+                                        Email
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">{profile?.email || "Not available"}</p>
                                 </div>
                             </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                    <div>
-                                        <h2 className="text-lg font-semibold text-foreground">{displayName}</h2>
-                                    </div>
 
-                                    <Button
-                                        type="button"
-                                        onClick={() => void handleChangePassword()}
-                                        disabled={isRedirectingToPasswordFlow}
-                                        className="sm:self-start"
-                                    >
-                                        <KeyRound className="h-4 w-4" />
-                                        {isRedirectingToPasswordFlow ? "Redirecting..." : "Change password"}
-                                    </Button>
-                                </div>
-
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <div className="rounded-xl border border-border bg-background px-4 py-3">
-                                        <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                                            <UserRound className="h-3.5 w-3.5" />
-                                            First name
-                                        </div>
-                                        <p className="text-sm font-medium text-foreground">{profile?.firstName || "Not available"}</p>
-                                    </div>
-
-                                    <div className="rounded-xl border border-border bg-background px-4 py-3">
-                                        <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                                            <UserRound className="h-3.5 w-3.5" />
-                                            Last name
-                                        </div>
-                                        <p className="text-sm font-medium text-foreground">{profile?.lastName || "Not available"}</p>
-                                    </div>
-
-                                    <div className="rounded-xl border border-border bg-background px-4 py-3">
-                                        <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                                            <UserRound className="h-3.5 w-3.5" />
-                                            Username
-                                        </div>
-                                        <p className="text-sm font-medium text-foreground">{profile?.username || "Not available"}</p>
-                                    </div>
-
-                                    <div className="rounded-xl border border-border bg-background px-4 py-3">
-                                        <div className="mb-1 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-                                            <Mail className="h-3.5 w-3.5" />
-                                            Email
-                                        </div>
-                                        <p className="text-sm font-medium text-foreground">{profile?.email || "Not available"}</p>
-                                    </div>
-                                </div>
-
-                                {profileError && (
-                                    <p className="text-sm text-rose-500">{profileError}</p>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                            {profileError && (
+                                <p className="text-sm text-rose-500">{profileError}</p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="mb-6">
