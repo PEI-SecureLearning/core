@@ -1,9 +1,24 @@
+import os
+
+os.environ.update(
+    {
+        "POSTGRES_SERVER": "localhost",
+        "POSTGRES_USER": "testuser",
+        "POSTGRES_PASSWORD": "testpassword",
+        "RABBITMQ_HOST": "localhost",
+        "RABBITMQ_USER": "guest",
+        "RABBITMQ_PASS": "guest",
+        "RABBITMQ_QUEUE": "email_queue",
+        "KEYCLOAK_URL": "http://fake-keycloak:8080",
+        "CLIENT_SECRET": "fake-secret",
+    }
+)
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 from datetime import datetime
-import os
 
 from src.main import app
 from src.core.dependencies import get_db
@@ -85,7 +100,7 @@ def test_track_phish_success_redirect(client: TestClient, mock_data: dict, sessi
     
     # Should be 303 Redirect to frontend
     assert response.status_code == 303
-    assert response.headers["location"] == f"{settings.WEB_URL}/simulation-oops.html"
+    assert response.headers["location"] == f"{settings.WEB_URL}/oops"
     
     # Verify DB update
     session.refresh(mock_data["email_sending"])

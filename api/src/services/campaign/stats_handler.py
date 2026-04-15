@@ -58,6 +58,7 @@ class StatsHandler:
             opened_at=sending.opened_at,
             clicked_at=sending.clicked_at,
             phished_at=sending.phished_at,
+            error_cause=sending.error_cause,
         )
 
     def get_campaign_sendings(self, campaign: Campaign) -> list[UserSendingInfo]:

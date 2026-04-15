@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from src.models import User, Campaign, EmailSending, EmailSendingStatus
 from src.core.db import engine
-from src.tasks.tracking_consumer import process_tracking_message
+from src.tasks.tracking_consumer import TrackingConsumer
 
 # Create an in-memory database for testing
 engine = create_engine(
@@ -74,9 +74,10 @@ def test_tracking_consumer_updates_database(session: Session):
         mock_channel = MagicMock()
         mock_method = MagicMock()
         mock_method.delivery_tag = 1
-        
+
+        consumer = TrackingConsumer()
         # ACT: simulate a message consumption
-        process_tracking_message(mock_channel, mock_method, None, json.dumps(payload).encode('utf-8'))
+        consumer._process(mock_channel, mock_method, None, json.dumps(payload).encode('utf-8'))
         
         # Verify message was acknowledged
         mock_channel.basic_ack.assert_called_once_with(1)

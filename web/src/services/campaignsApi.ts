@@ -53,6 +53,7 @@ export interface CampaignUserSending {
   opened_at?: string | null;
   clicked_at?: string | null;
   phished_at?: string | null;
+  error_cause?: string | null;
 }
 
 export interface CampaignUpdatePayload {
