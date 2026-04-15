@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class CourseEnrollmentPayload(BaseModel):
@@ -16,6 +16,24 @@ class OrgUserCreate(BaseModel):
     email: str
     role: str
     group_id: str | None = None
+
+
+class UserDetailsGroupDTO(BaseModel):
+    id: str
+    name: str | None = None
+
+
+class UserDetailsDTO(BaseModel):
+    id: str
+    username: str | None = None
+    email: str
+    firstName: str | None = None
+    lastName: str | None = None
+    email_verified: bool | None = None
+    active: bool | None = False
+    role: str = "USER"
+    realm: str
+    groups: list[UserDetailsGroupDTO] = Field(default_factory=list)
 
 
 class OrgGroupCreate(BaseModel):

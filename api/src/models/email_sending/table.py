@@ -28,9 +28,7 @@ class EmailSending(SQLModel, table=True):
     scheduled_date: datetime
     status: EmailSendingStatus = Field(default=EmailSendingStatus.SCHEDULED)
     email_to: str
-    tracking_token: str = Field(
-        default_factory=lambda: token.generate_tracking_token()
-    )
+    tracking_token: str = Field(default_factory=lambda: token.generate_tracking_token())
     sent_at: Optional[datetime] = Field(default=None)
     opened_at: Optional[datetime] = Field(default=None)
     clicked_at: Optional[datetime] = Field(default=None)
@@ -39,6 +37,8 @@ class EmailSending(SQLModel, table=True):
     campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")
     phishing_kit_id: Optional[int] = Field(default=None, foreign_key="phishingkit.id")
 
-    campaign: Optional["Campaign"] = Relationship(back_populates="email_sendings")
-    phishing_kit: Optional["PhishingKit"] = Relationship(back_populates="email_sendings")
+    campaign: "Campaign" = Relationship(back_populates="email_sendings")
+    phishing_kit: Optional["PhishingKit"] = Relationship(
+        back_populates="email_sendings"
+    )
     user: Optional["User"] = Relationship(back_populates="email_sendings")

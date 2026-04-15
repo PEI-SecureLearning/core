@@ -154,7 +154,7 @@ export const userLinks: NavLinkDef[] = [
         group: "Learning",
     },
     {
-        href: "/tenants-org-manager",
+        href: "/users",
         label: "User Management",
         description: "Manage user accounts, roles, and access permissions.",
         icon: User,

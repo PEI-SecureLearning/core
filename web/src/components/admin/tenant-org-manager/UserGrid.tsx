@@ -1,14 +1,15 @@
 import { Mail, Shield, Trash2, Loader2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import type { UserRecord } from "./types";
 import { UserAvatar } from "@/components/shared/UserAvatar";
 
 interface UserGridProps {
-    users: UserRecord[];
-    deletingIds: Record<string, boolean>;
+    readonly users: UserRecord[];
+    readonly deletingIds: Record<string, boolean>;
     onDeleteUser: (id: string) => Promise<void>;
 }
 
-export function UserGrid({ users, deletingIds, onDeleteUser }: UserGridProps) {
+export function UserGrid({ users, deletingIds, onDeleteUser }: Readonly<UserGridProps>) {
     const getRoleBadge = (user: UserRecord) => {
         const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
         if (isOrgManager) {
@@ -75,7 +76,16 @@ export function UserGrid({ users, deletingIds, onDeleteUser }: UserGridProps) {
                             <Mail size={12} />
                             {user.email || "—"}
                         </p>
-                        <div className="mt-3">{getRoleBadge(user)}</div>
+                        <div className="mt-3 flex items-center justify-between gap-2">
+                            {getRoleBadge(user)}
+                            <Link
+                                to="/users/$id"
+                                params={{ id }}
+                                className="text-xs font-medium text-primary hover:text-primary/80"
+                            >
+                                Details
+                            </Link>
+                        </div>
                     </div>
                 );
             })}
