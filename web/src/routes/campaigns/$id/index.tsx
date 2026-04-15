@@ -1,10 +1,10 @@
-import { Link, useParams } from "@tanstack/react-router";
+import { Link, createFileRoute, useParams } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { AlertTriangle, ChevronLeft, Clock3, Lock, Pencil } from "lucide-react";
-import { createFileRoute } from "@tanstack/react-router";
 
 import { SummaryCollapsibleCard } from "@/components/campaigns/SummaryCollapsibleCard";
+import { SectionSeparator } from "@/components/shared/SectionSeparator";
 import RefreshButton from "@/components/shared/RefreshButton";
 import {
     ChartContainer,
@@ -24,7 +24,6 @@ import { userGroupsApi } from "@/services/userGroupsApi";
 import type { PhishingKitDisplayInfo } from "@/types/phishingKit";
 import type { SendingProfileDisplayInfo } from "@/types/sendingProfile";
 import type { UserGroupMemberDto } from "@/types/userGroups";
-import { Separator } from "@/components/ui/separator";
 import { Bar, BarChart, CartesianGrid, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 export const Route = createFileRoute("/campaigns/$id/")({
@@ -94,14 +93,6 @@ function formatDateTime(value?: string | null): string {
 function formatPercent(value: number): string {
     return `${value.toFixed(2)}%`;
 }
-
-const SectionSeparator = ({ title }: { title: string }) =>
-    <div className="flex items-center gap-3">
-        <span className="shrink-0 whitespace-nowrap text-xs font-semibold uppercase tracking-widest1 text-primary">
-            {title}
-        </span>
-        <Separator className="flex-1 bg-primary/70 self-center" />
-    </div>
 
 const StatDisplay = ({ label, value }: { label: string, value: string | number }) =>
     <div className="rounded-2xl border border-border bg-card p-6">
@@ -699,7 +690,6 @@ function CampaignDetails() {
                         <tr>
                             <th className="text-left font-medium p-3">Email</th>
                             <th className="text-left font-medium p-3">Status</th>
-                            <th className="text-left font-medium p-3">Error</th>
                             <th className="text-left font-medium p-3">Sent</th>
                             <th className="text-left font-medium p-3">Opened</th>
                             <th className="text-left font-medium p-3">Clicked</th>
@@ -711,7 +701,7 @@ function CampaignDetails() {
                             if (loadingSendings) {
                                 return (
                                     <tr>
-                                        <td colSpan={7} className="p-4 text-muted-foreground">
+                                        <td colSpan={6} className="p-4 text-muted-foreground">
                                             Loading sending records...
                                         </td>
                                     </tr>
@@ -721,7 +711,7 @@ function CampaignDetails() {
                             if (sendingsLoadError) {
                                 return (
                                     <tr>
-                                        <td colSpan={7} className="p-4 text-error">
+                                        <td colSpan={6} className="p-4 text-error">
                                             {sendingsLoadError}
                                         </td>
                                     </tr>
@@ -731,7 +721,7 @@ function CampaignDetails() {
                             if (sendings.length === 0) {
                                 return (
                                     <tr>
-                                        <td colSpan={7} className="p-4 text-muted-foreground">
+                                        <td colSpan={6} className="p-4 text-muted-foreground">
                                             No sending records available for this campaign.
                                         </td>
                                     </tr>
@@ -742,18 +732,14 @@ function CampaignDetails() {
                                 <tr key={`${sending.user_id}-${sending.email}`}>
                                     <td className="p-3 text-primary">
                                         <Link
-                                            to="/tenants-org-manager"
+                                            to="/users/$id"
+                                            params={{ id: sending.user_id }}
                                             className="text-primary underline"
                                         >
                                             {sending.email}
                                         </Link>
                                     </td>
                                     <td className="p-3 text-foreground">{sending.status}</td>
-                                    <td className="p-3 text-foreground">
-                                        {sending.status === "failed" && sending.error_cause
-                                            ? sending.error_cause
-                                            : "—"}
-                                    </td>
                                     <td className="p-3 text-foreground">{formatDateTime(sending.sent_at)}</td>
                                     <td className="p-3 text-foreground">{formatDateTime(sending.opened_at)}</td>
                                     <td className="p-3 text-foreground">{formatDateTime(sending.clicked_at)}</td>
