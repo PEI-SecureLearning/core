@@ -12,7 +12,7 @@ import { userApi } from "../../../services/userApi";
 import { userGroupsApi } from "../../../services/userGroupsApi";
 
 type UsersManagementPageProps = {
-    initialOpenNewUserModal?: boolean;
+    readonly initialOpenNewUserModal?: boolean;
 };
 
 export function UsersManagementPage({
@@ -71,7 +71,7 @@ export function UsersManagementPage({
 
     const handleDeleteUser = async (id: string) => {
         if (!id || !realm) return;
-        const confirmed = window.confirm("Are you sure you want to delete this user?");
+        const confirmed = globalThis.confirm("Are you sure you want to delete this user?");
         if (!confirmed) return;
 
         setDeletingIds((prev) => ({ ...prev, [id]: true }));
@@ -133,6 +133,49 @@ export function UsersManagementPage({
         );
     });
 
+    let usersContent;
+
+    if (isLoading) {
+        usersContent = (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-primary/90" />
+                <span className="ml-2 text-muted-foreground">Loading users...</span>
+            </div>
+        );
+    } else if (!realm) {
+        usersContent = (
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/70" />
+                <span className="ml-2 text-muted-foreground">Resolving realm...</span>
+            </div>
+        );
+    } else if (filteredUsers.length === 0) {
+        usersContent = (
+            <div className="flex flex-col items-center justify-center py-16">
+                <Users size={48} className="text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground text-[15px]">
+                    {searchQuery ? "No users match search" : "No users found"}
+                </p>
+            </div>
+        );
+    } else if (view === "table") {
+        usersContent = (
+            <UserTable
+                users={filteredUsers}
+                deletingIds={deletingIds}
+                onDeleteUser={handleDeleteUser}
+            />
+        );
+    } else {
+        usersContent = (
+            <UserGrid
+                users={filteredUsers}
+                deletingIds={deletingIds}
+                onDeleteUser={handleDeleteUser}
+            />
+        );
+    }
+
     return (
         <div className="h-full w-full flex flex-col animate-fade-in">
             <UserManagementHeader
@@ -157,36 +200,7 @@ export function UsersManagementPage({
             />
 
             <div className="flex-1 overflow-y-auto px-4 mt-4 pb-6 themed-scrollbar">
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-6 h-6 animate-spin text-primary/90" />
-                        <span className="ml-2 text-muted-foreground">Loading users...</span>
-                    </div>
-                ) : !realm ? (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/70" />
-                        <span className="ml-2 text-muted-foreground">Resolving realm...</span>
-                    </div>
-                ) : filteredUsers.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16">
-                        <Users size={48} className="text-muted-foreground/50 mb-4" />
-                        <p className="text-muted-foreground text-[15px]">
-                            {searchQuery ? "No users match search" : "No users found"}
-                        </p>
-                    </div>
-                ) : view === "table" ? (
-                    <UserTable
-                        users={filteredUsers}
-                        deletingIds={deletingIds}
-                        onDeleteUser={handleDeleteUser}
-                    />
-                ) : (
-                    <UserGrid
-                        users={filteredUsers}
-                        deletingIds={deletingIds}
-                        onDeleteUser={handleDeleteUser}
-                    />
-                )}
+                {usersContent}
             </div>
 
             {showNewUserModal && (

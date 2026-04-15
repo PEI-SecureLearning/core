@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { useKeycloak } from "@react-keycloak/web";
-import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Mail, Section, User } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, Loader2, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 

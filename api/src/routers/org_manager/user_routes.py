@@ -101,7 +101,6 @@ def enroll_user_endpoint(
 
 @router.get(
     "/{realm}/users/{user_id}",
-    response_model=UserDetailsDTO,
     dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))],
 )
 def list_user_details(realm: str, user_id: str, token: OAuth2Scheme) -> UserDetailsDTO:
