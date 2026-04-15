@@ -96,6 +96,43 @@ def test_list_users_exception(service, mock_kc):
     res = service.list_users("r", "t")
     assert res["users"][0]["is_org_manager"] is False
 
+def test_list_user_details_success(service, mock_kc):
+    mock_kc.get_user.return_value = {
+        "id": "u1",
+        "username": "user1",
+        "email": "u1@test.com",
+        "firstName": "User",
+        "lastName": "One",
+        "emailVerified": True,
+        "enabled": True,
+    }
+    mock_kc.get_user_realm_roles.return_value = [{"name": "ORG_MANAGER"}]
+    mock_kc.list_user_groups.return_value = [
+        {"id": "g1", "name": "Managers"},
+        {"name": "NoIdGroup"},
+    ]
+
+    details = service.list_user_details("realm-a", "token", "u1")
+
+    assert details.id == "u1"
+    assert details.username == "user1"
+    assert details.email_verified is True
+    assert details.role == "ORG_MANAGER"
+    assert details.realm == "realm-a"
+    assert len(details.groups) == 1
+    assert details.groups[0].id == "g1"
+    assert details.groups[0].name == "Managers"
+
+
+def test_list_user_details_not_found_raises_404(service, mock_kc):
+    mock_kc.get_user.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        service.list_user_details("realm-a", "token", "missing")
+
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "User not found."
+
 def test_create_user_with_group(service, mock_kc, session):
     realm_name = "test-realm"
     session.add(Realm(name=realm_name, domain="test.com"))

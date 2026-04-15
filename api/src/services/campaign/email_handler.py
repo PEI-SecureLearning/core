@@ -29,7 +29,8 @@ class EmailHandler:
                 if hasattr(sending.status, "value")
                 else str(sending.status)
             ),
-            campaign=sending.campaign.name,
+            campaign_id=sending.campaign_id or 0,
+            campaign_name=sending.campaign.name if sending.campaign else "",
             sent_at=sending.sent_at,
             opened_at=sending.opened_at,
             clicked_at=sending.clicked_at,
