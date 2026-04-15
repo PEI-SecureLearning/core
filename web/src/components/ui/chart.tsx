@@ -1,10 +1,9 @@
 import * as React from "react";
 import {
     ResponsiveContainer,
-    type TooltipProps,
-    type NameType,
-    type ValueType,
+    type TooltipContentProps,
 } from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 import { cn } from "@/lib/utils";
 
@@ -59,8 +58,8 @@ export function ChartContainer({ config, className, children }: Readonly<ChartCo
 export { Tooltip as ChartTooltip } from "recharts";
 
 interface ChartTooltipContentProps
-    extends React.HTMLAttributes<HTMLDivElement>,
-    TooltipProps<ValueType, NameType> {
+    extends Omit<React.HTMLAttributes<HTMLDivElement>, keyof TooltipContentProps<ValueType, NameType>>,
+    Partial<TooltipContentProps<ValueType, NameType>> {
     hideLabel?: boolean;
 }
 
@@ -89,7 +88,7 @@ export function ChartTooltipContent({
             ) : null}
 
             <div className="space-y-1">
-                {payload.map((item) => {
+                {payload.map((item: TooltipContentProps<ValueType, NameType>["payload"][number]) => {
                     const key = String(item.dataKey ?? item.name ?? "value");
                     const value = item.value;
                     const itemConfig = config[key];

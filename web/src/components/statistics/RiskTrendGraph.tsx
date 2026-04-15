@@ -8,6 +8,7 @@ import {
   AreaChart
 } from "recharts";
 import { TrendingUp } from "lucide-react";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 export default function RiskTrendChart() {
   const data = [
@@ -28,6 +29,10 @@ export default function RiskTrendChart() {
   const latestValue = data.at(-1)?.value;
   const previousValue = data.at(-2)?.value;
   const trend = latestValue && previousValue ? latestValue - previousValue : 0;
+  const formatTooltipValue = (
+    value: ValueType | undefined,
+    _name: NameType | undefined
+  ): [string, NameType] => [`${value ?? 0}%`, "Risk Level"];
 
   return (
     <div className="w-full bg-background/60 backdrop-blur-xl rounded-2xl border-2 border-border/40 shadow-lg shadow-muted/50 p-6 hover:shadow-xl transition-all duration-300">
@@ -109,7 +114,7 @@ export default function RiskTrendChart() {
                 marginBottom: "4px"
               }}
               itemStyle={{ color: "var(--primary)" }}
-              formatter={(value: number) => [`${value}%`, "Risk Level"]}
+              formatter={formatTooltipValue}
             />
             <Area
               type="monotone"
