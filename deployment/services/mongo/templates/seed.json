@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Lancamento das notas",
+    "path": "/templates/emails/",
+    "subject": "Notas do teste teórico e do primeiro milestone",
+    "category": "Notas",
+    "description": "Email com as notas do teste teórico e do primeiro milestone.",
+    "htmlFile": "emails/lancamento-notas.html"
+  },
+  {
+    "name": "IDP UA",
+    "path": "/templates/pages/",
+    "subject": "Authenticate in the id.ua.pt",
+    "category": "Authentication",
+    "description": "IDP UA page.",
+    "htmlFile": "pages/idp-ua.html"
+  }
+]

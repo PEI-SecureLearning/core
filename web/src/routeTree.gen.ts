@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TenantsOrgManagerRouteImport } from './routes/tenants-org-manager'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -19,6 +18,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ComplianceOrgManagerRouteImport } from './routes/compliance-org-manager'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
 import { Route as TenantsIndexRouteImport } from './routes/tenants/index'
 import { Route as SendingProfilesIndexRouteImport } from './routes/sending-profiles/index'
@@ -27,6 +27,9 @@ import { Route as CoursesIndexRouteImport } from './routes/courses/index'
 import { Route as ContentManagerIndexRouteImport } from './routes/content-manager/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as UsersNewRouteImport } from './routes/users/new'
+import { Route as UsersEditRouteImport } from './routes/users/edit'
+import { Route as UsersIdRouteImport } from './routes/users/$id'
 import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
 import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
 import { Route as TenantsNewTenantRouteImport } from './routes/tenants/new-tenant'
@@ -69,11 +72,6 @@ import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants
 import { Route as CoursesCourseIdModulesModuleIdRouteImport } from './routes/courses/$courseId/modules/$moduleId'
 import { Route as ContentManagerCoursesCourseIdEditRouteImport } from './routes/content-manager/courses_.$courseId_.edit'
 
-const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
-  id: '/tenants-org-manager',
-  path: '/tenants-org-manager',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -119,6 +117,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsersIndexRoute = UsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsergroupsIndexRoute = UsergroupsIndexRouteImport.update({
   id: '/usergroups/',
   path: '/usergroups/',
@@ -158,6 +161,21 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const UsersNewRoute = UsersNewRouteImport.update({
+  id: '/users/new',
+  path: '/users/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersEditRoute = UsersEditRouteImport.update({
+  id: '/users/edit',
+  path: '/users/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersIdRoute = UsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const UsergroupsNewGroupRoute = UsergroupsNewGroupRouteImport.update({
   id: '/usergroups/new-group',
@@ -382,7 +400,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/report': typeof AdminReportRoute
@@ -409,14 +426,18 @@ export interface FileRoutesByFullPath {
   '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/edit': typeof UsersEditRoute
+  '/users/new': typeof UsersNewRoute
   '/admin/': typeof AdminIndexRoute
-  '/campaigns/': typeof CampaignsIndexRoute
-  '/content-manager/': typeof ContentManagerIndexRoute
-  '/courses/': typeof CoursesIndexRoute
-  '/phishing-kits/': typeof PhishingKitsIndexRoute
-  '/sending-profiles/': typeof SendingProfilesIndexRoute
-  '/tenants/': typeof TenantsIndexRoute
-  '/usergroups/': typeof UsergroupsIndexRoute
+  '/campaigns': typeof CampaignsIndexRoute
+  '/content-manager': typeof ContentManagerIndexRoute
+  '/courses': typeof CoursesIndexRoute
+  '/phishing-kits': typeof PhishingKitsIndexRoute
+  '/sending-profiles': typeof SendingProfilesIndexRoute
+  '/tenants': typeof TenantsIndexRoute
+  '/usergroups': typeof UsergroupsIndexRoute
+  '/users': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/campaigns/$id/edit': typeof CampaignsIdEditRoute
@@ -442,7 +463,6 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/report': typeof AdminReportRoute
@@ -466,6 +486,9 @@ export interface FileRoutesByTo {
   '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/edit': typeof UsersEditRoute
+  '/users/new': typeof UsersNewRoute
   '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/content-manager': typeof ContentManagerIndexRoute
@@ -474,6 +497,7 @@ export interface FileRoutesByTo {
   '/sending-profiles': typeof SendingProfilesIndexRoute
   '/tenants': typeof TenantsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
+  '/users': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/campaigns/$id/edit': typeof CampaignsIdEditRoute
@@ -501,7 +525,6 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
   '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/report': typeof AdminReportRoute
@@ -528,6 +551,9 @@ export interface FileRoutesById {
   '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/edit': typeof UsersEditRoute
+  '/users/new': typeof UsersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/content-manager/': typeof ContentManagerIndexRoute
@@ -536,6 +562,7 @@ export interface FileRoutesById {
   '/sending-profiles/': typeof SendingProfilesIndexRoute
   '/tenants/': typeof TenantsIndexRoute
   '/usergroups/': typeof UsergroupsIndexRoute
+  '/users/': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/campaigns/$id/edit': typeof CampaignsIdEditRoute
@@ -564,7 +591,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/tenants-org-manager'
     | '/admin/help'
     | '/admin/logs'
     | '/admin/report'
@@ -591,14 +617,18 @@ export interface FileRouteTypes {
     | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
+    | '/users/$id'
+    | '/users/edit'
+    | '/users/new'
     | '/admin/'
-    | '/campaigns/'
-    | '/content-manager/'
-    | '/courses/'
-    | '/phishing-kits/'
-    | '/sending-profiles/'
-    | '/tenants/'
-    | '/usergroups/'
+    | '/campaigns'
+    | '/content-manager'
+    | '/courses'
+    | '/phishing-kits'
+    | '/sending-profiles'
+    | '/tenants'
+    | '/usergroups'
+    | '/users'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/campaigns/$id/edit'
@@ -624,7 +654,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/tenants-org-manager'
     | '/admin/help'
     | '/admin/logs'
     | '/admin/report'
@@ -648,6 +677,9 @@ export interface FileRouteTypes {
     | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
+    | '/users/$id'
+    | '/users/edit'
+    | '/users/new'
     | '/admin'
     | '/campaigns'
     | '/content-manager'
@@ -656,6 +688,7 @@ export interface FileRouteTypes {
     | '/sending-profiles'
     | '/tenants'
     | '/usergroups'
+    | '/users'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/campaigns/$id/edit'
@@ -682,7 +715,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/tenants-org-manager'
     | '/admin/help'
     | '/admin/logs'
     | '/admin/report'
@@ -709,6 +741,9 @@ export interface FileRouteTypes {
     | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
+    | '/users/$id'
+    | '/users/edit'
+    | '/users/new'
     | '/admin/'
     | '/campaigns/'
     | '/content-manager/'
@@ -717,6 +752,7 @@ export interface FileRouteTypes {
     | '/sending-profiles/'
     | '/tenants/'
     | '/usergroups/'
+    | '/users/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/campaigns/$id/edit'
@@ -744,7 +780,6 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
-  TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
   CampaignsIdRoute: typeof CampaignsIdRouteWithChildren
   CampaignsNewRoute: typeof CampaignsNewRoute
   CampaignsTimelineRoute: typeof CampaignsTimelineRoute
@@ -766,6 +801,9 @@ export interface RootRouteChildren {
   TenantsNewTenantRoute: typeof TenantsNewTenantRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
   UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
+  UsersIdRoute: typeof UsersIdRoute
+  UsersEditRoute: typeof UsersEditRoute
+  UsersNewRoute: typeof UsersNewRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   ContentManagerIndexRoute: typeof ContentManagerIndexRoute
   CoursesIndexRoute: typeof CoursesIndexRoute
@@ -773,6 +811,7 @@ export interface RootRouteChildren {
   SendingProfilesIndexRoute: typeof SendingProfilesIndexRoute
   TenantsIndexRoute: typeof TenantsIndexRoute
   UsergroupsIndexRoute: typeof UsergroupsIndexRoute
+  UsersIndexRoute: typeof UsersIndexRoute
   ContentManagerCoursesCourseIdRoute: typeof ContentManagerCoursesCourseIdRoute
   ContentManagerCoursesNewRoute: typeof ContentManagerCoursesNewRoute
   ContentManagerModulesModuleIdRoute: typeof ContentManagerModulesModuleIdRoute
@@ -782,13 +821,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tenants-org-manager': {
-      id: '/tenants-org-manager'
-      path: '/tenants-org-manager'
-      fullPath: '/tenants-org-manager'
-      preLoaderRoute: typeof TenantsOrgManagerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/templates': {
       id: '/templates'
       path: '/templates'
@@ -852,6 +884,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/users/': {
+      id: '/users/'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/usergroups/': {
       id: '/usergroups/'
       path: '/usergroups'
@@ -907,6 +946,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/users/new': {
+      id: '/users/new'
+      path: '/users/new'
+      fullPath: '/users/new'
+      preLoaderRoute: typeof UsersNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users/edit': {
+      id: '/users/edit'
+      path: '/users/edit'
+      fullPath: '/users/edit'
+      preLoaderRoute: typeof UsersEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users/$id': {
+      id: '/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof UsersIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/usergroups/new-group': {
       id: '/usergroups/new-group'
@@ -1290,7 +1350,6 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
-  TenantsOrgManagerRoute: TenantsOrgManagerRoute,
   CampaignsIdRoute: CampaignsIdRouteWithChildren,
   CampaignsNewRoute: CampaignsNewRoute,
   CampaignsTimelineRoute: CampaignsTimelineRoute,
@@ -1312,6 +1371,9 @@ const rootRouteChildren: RootRouteChildren = {
   TenantsNewTenantRoute: TenantsNewTenantRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
   UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
+  UsersIdRoute: UsersIdRoute,
+  UsersEditRoute: UsersEditRoute,
+  UsersNewRoute: UsersNewRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
   ContentManagerIndexRoute: ContentManagerIndexRoute,
   CoursesIndexRoute: CoursesIndexRoute,
@@ -1319,6 +1381,7 @@ const rootRouteChildren: RootRouteChildren = {
   SendingProfilesIndexRoute: SendingProfilesIndexRoute,
   TenantsIndexRoute: TenantsIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,
+  UsersIndexRoute: UsersIndexRoute,
   ContentManagerCoursesCourseIdRoute: ContentManagerCoursesCourseIdRoute,
   ContentManagerCoursesNewRoute: ContentManagerCoursesNewRoute,
   ContentManagerModulesModuleIdRoute: ContentManagerModulesModuleIdRoute,

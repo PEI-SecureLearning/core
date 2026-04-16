@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@/lib/use-query";
 import { fetchPhishingKits, deletePhishingKit } from "@/services/phishingKitsApi";
 import { useConfirm } from "@/components/ui/confirm-modal";

@@ -19,11 +19,41 @@ export interface Campaign {
 export interface CampaignDetail extends Campaign {
   description?: string | null;
   sending_interval_seconds: number;
+  realm_name?: string | null;
   user_group_ids: string[];
   phishing_kit_ids: number[];
   sending_profile_ids: number[];
   phishing_kit_names: string[];
+  creator_id?: string | null;
+  creator_email?: string | null;
   sending_profile_names: string[];
+  total_recipients: number;
+  total_failed: number;
+  delivery_rate: number;
+  open_rate: number;
+  click_rate: number;
+  phish_rate: number;
+  progress_percentage: number;
+  time_elapsed_percentage: number;
+  avg_time_to_open_seconds?: number | null;
+  avg_time_to_click_seconds?: number | null;
+  first_open_at?: string | null;
+  last_open_at?: string | null;
+  first_click_at?: string | null;
+  last_click_at?: string | null;
+}
+
+export interface CampaignUserSending {
+  user_id: string;
+  email: string;
+  status: string;
+  campaign_id?: number;
+  campaign_name?: string;
+  sent_at?: string | null;
+  opened_at?: string | null;
+  clicked_at?: string | null;
+  phished_at?: string | null;
+  error_cause?: string | null;
 }
 
 export interface CampaignUpdatePayload {
@@ -39,6 +69,10 @@ export interface CampaignUpdatePayload {
 
 interface CampaignDetailResponse {
   campaign?: CampaignDetail;
+}
+
+interface CampaignSendingsResponse {
+  sendings?: CampaignUserSending[];
 }
 
 function isCampaignDetail(payload: unknown): payload is CampaignDetail {
@@ -187,4 +221,27 @@ export async function updateOrgManagerCampaign(
   }
 
   return (await res.json()) as { message: string };
+}
+
+export async function fetchOrgManagerCampaignSendings(
+  realm: string,
+  campaignId: string | number,
+  token?: string
+): Promise<CampaignUserSending[]> {
+  const res = await fetch(
+    `${API_URL}/org-manager/${encodeURIComponent(realm)}/campaigns/${campaignId}/sendings`,
+    { headers: buildHeaders(token) }
+  );
+
+  if (!res.ok) {
+    throw await parseApiError(
+      res,
+      `Failed to fetch campaign sendings (${res.status})`
+    );
+  }
+
+  const data = (await res.json()) as
+    | CampaignSendingsResponse
+    | CampaignUserSending[];
+  return Array.isArray(data) ? data : (data.sendings ?? []);
 }

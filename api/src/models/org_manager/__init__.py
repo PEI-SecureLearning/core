@@ -1,5 +1,6 @@
 from .schemas import (
     OrgUserCreate,
+    UserDetailsDTO,
     OrgGroupCreate,
     CourseEnrollmentPayload,
     CompliancePolicyPayload,
@@ -7,10 +8,12 @@ from .schemas import (
     ComplianceQuizPayload,
     CompliancePolicyResponse,
     ComplianceQuizResponse,
+    UserDetailsGroupDTO,
 )
 
 __all__ = [
     "OrgUserCreate",
+    "UserDetailsDTO",
     "OrgGroupCreate",
     "CourseEnrollmentPayload",
     "CompliancePolicyPayload",
@@ -18,4 +21,5 @@ __all__ = [
     "ComplianceQuizPayload",
     "CompliancePolicyResponse",
     "ComplianceQuizResponse",
+    "UserDetailsGroupDTO",
 ]

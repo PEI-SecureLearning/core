@@ -3,6 +3,7 @@ name: SecureLearning-dev
 services:
   db:
     image: postgres:18-alpine
+    container_name: sl-db-dev
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -10,8 +11,9 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - db_runtime_data:/var/lib/postgresql
       - db_data:/var/lib/postgresql/data
-      - ../db/init-dbs.sql:/docker-entrypoint-initdb.d/init-dbs.sql
+      - ./services/db/init.sql:/docker-entrypoint-initdb.d/init-dbs.sql
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -21,17 +23,20 @@ services:
 
   mongo:
     image: mongo:4.4.6
-    container_name: mongo
+    container_name: sl-mongo-dev
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
       MONGO_INITDB_DATABASE: ${MONGO_DB}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWORD: ${MONGO_PASSWORD}
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
       - mongo_configdb_data:/data/configdb
-      - ../mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./services/mongo/init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./services/mongo/templates:/docker-entrypoint-initdb.d/templates:ro
     healthcheck:
       test:
         [
@@ -53,7 +58,7 @@ services:
 
   garage:
     image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
-    container_name: garage
+    container_name: sl-garage-dev
     command: /garage server --single-node --default-bucket
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
@@ -64,7 +69,7 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
-      - ./garage.toml:/etc/garage.toml:ro
+      - ./services/garage/garage.template.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
       test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
@@ -74,9 +79,9 @@ services:
 
   rabbitmq:
     build:
-      context: ../rabbitmq
+      context: ./services/rabbitmq
       dockerfile: Dockerfile
-    container_name: rabbitmq
+    container_name: sl-rabbitmq-dev
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -100,14 +105,12 @@ services:
     build:
       context: ../smtp
       dockerfile: Dockerfile
-    container_name: smtp
+    container_name: sl-smtp-dev
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_SMTP_USER}
       RABBITMQ_PASS: ${RABBITMQ_SMTP_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
-      RATE_LIMITER_MAX_REQUESTS: ${RATE_LIMITER_MAX_REQUESTS}
-      RATE_LIMITER_TIME_WINDOW_SECONDS: ${RATE_LIMITER_TIME_WINDOW_SECONDS}
       API_INTERNAL_URL: ${API_INTERNAL_URL}
       API_URL: ${API_URL}
     depends_on:
@@ -117,7 +120,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.4
     command: start-dev --import-realm --health-enabled=true
-    container_name: keycloak
+    container_name: sl-keycloak-dev
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -159,17 +162,18 @@ services:
         condition: service_healthy
 
     volumes:
-      - ../keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
-      - ../keycloak/themes:/opt/keycloak/themes:ro
-      - ../keycloak/imports:/opt/keycloak/data/import:ro
-      - ../keycloak/providers:/opt/keycloak/providers:ro
+      - ./services/keycloak/conf/keycloak.conf:/opt/keycloak/conf/keycloak.conf:ro
+      - ./services/keycloak/themes:/opt/keycloak/themes:ro
+      - ./services/keycloak/imports:/opt/keycloak/data/import:ro
+      - ./services/keycloak/providers:/opt/keycloak/providers:ro
       - keycloak_data:/opt/keycloak/data
 
   api:
     build:
       context: ../api
-      dockerfile: Dockerfile.dev
-    container_name: api
+      dockerfile: Dockerfile
+      target: dev
+    container_name: sl-api-dev
     environment:
       POSTGRES_SERVER: db
       POSTGRES_PORT: 5432
@@ -224,8 +228,9 @@ services:
   frontend:
     build:
       context: ../web
-      dockerfile: Dockerfile.dev
-    container_name: frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: sl-frontend-dev
     environment:
       VITE_API_URL: ${API_URL}/api
       VITE_KEYCLOAK_URL: ${KC_HOSTNAME_URL}
@@ -235,7 +240,7 @@ services:
       - "5173:5173"
     volumes:
       - ../web:/app:rw
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     depends_on:
       api:
         condition: service_healthy
@@ -248,3 +253,4 @@ volumes:
   mongo_configdb_data:
   garage_data:
   keycloak_data:
+  frontend_node_modules:

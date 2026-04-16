@@ -1,4 +1,4 @@
-import { StrictMode, useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ReactKeycloakProvider } from '@react-keycloak/web'
@@ -8,6 +8,7 @@ import { routeTree } from './routeTree.gen'
 import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
+import { SimulationOops } from './components/SimulationOops'
 import { appBasePath, isAppRoute } from './lib/app-path'
 
 const isSecureContext = globalThis.isSecureContext || globalThis.location.hostname === 'localhost';
@@ -102,18 +103,18 @@ const App = () => {
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const path = globalThis.location.pathname || '/'
+  const isOopsRoute = isAppRoute(path, "/oops");
   const isAdminRoute =
     isAppRoute(path, "/admin") || isAppRoute(path, "/content-manager");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 
-  if (!hasValidRealm) {
-    const root = ReactDOM.createRoot(rootElement)
-    root.render(
-      <EmailEntry />
-    )
+  const root = ReactDOM.createRoot(rootElement)
+  if (isOopsRoute) {
+    root.render(<SimulationOops />)
+  } else if (!hasValidRealm) {
+    root.render(<EmailEntry />)
   } else {
-    const root = ReactDOM.createRoot(rootElement)
     root.render(<App />)
   }
 }

@@ -44,6 +44,20 @@ async def get_realm_campaign_detail(
     }
 
 
+@router.get(
+    "/{realm}/campaigns/{campaign_id}/sendings",
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))],
+    responses={404: {"description": "Campaign not found"}},
+)
+def get_realm_campaign_sendings(
+    realm: str, campaign_id: int, session: SessionDep, token: OAuth2Scheme
+):
+    """Get sendings for a specific campaign in the specified realm."""
+    validate_realm_access(token, realm)
+    service = CampaignService()
+    return service.get_campaign_sendings(campaign_id, realm, session)
+
+
 @router.put(
     "/{realm}/campaigns/{campaign_id}",
     dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.MANAGE))],

@@ -49,6 +49,7 @@ from .email_sending import (
     EmailSending,
     EmailSendingStatus,
     UserSendingInfo,
+    CampaignSendingsResponse,
     RabbitMQEmailMessage,
     SMTPConfig,
 )
@@ -67,6 +68,7 @@ from .compliance import (
     AcceptRequest,
     ComplianceStatusResponse,
 )
+from .user_progress import UserProgress, AssignmentStatus
 from .org_manager import (
     OrgUserCreate,
     OrgGroupCreate,
@@ -134,6 +136,7 @@ __all__ = [
     "EmailSending",
     "EmailSendingStatus",
     "UserSendingInfo",
+    "CampaignSendingsResponse",
     "RabbitMQEmailMessage",
     "SMTPConfig",
     # Custom Header

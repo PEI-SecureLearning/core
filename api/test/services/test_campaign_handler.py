@@ -91,13 +91,33 @@ def mock_platform_admin():
         mock_service.list_group_members_in_realm.side_effect = (
             lambda _realm, group_id: (
                 [
-                    UserDTO(id="user-1", email="u1@example.com"),
-                    UserDTO(id="user-2", email="u2@example.com"),
+                    UserDTO(
+                        id="user-1",
+                        email="u1@example.com",
+                        role="USER",
+                        realm="test-realm",
+                    ),
+                    UserDTO(
+                        id="user-2",
+                        email="u2@example.com",
+                        role="USER",
+                        realm="test-realm",
+                    ),
                 ]
                 if group_id == "group-1"
                 else [
-                    UserDTO(id="user-2", email="u2@example.com"),
-                    UserDTO(id="user-3", email="u3@example.com"),
+                    UserDTO(
+                        id="user-2",
+                        email="u2@example.com",
+                        role="USER",
+                        realm="test-realm",
+                    ),
+                    UserDTO(
+                        id="user-3",
+                        email="u3@example.com",
+                        role="USER",
+                        realm="test-realm",
+                    ),
                 ]
             )
         )
@@ -381,6 +401,71 @@ class TestGetCampaigns:
         # Fetch for empty realm
         results_empty = service.get_campaigns("realm-empty", session)
         assert len(results_empty) == 0
+
+    def test_get_campaign_sendings_returns_sendings_for_campaign(
+        self, service: CampaignService, session: Session
+    ):
+        """Verify sendings are returned from the dedicated endpoint method."""
+        _setup_realm_and_user(session, realm_name="realm-a")
+        now = datetime.datetime.now()
+
+        session.add(
+            User(
+                keycloak_id="user-1",
+                email="u1@example.com",
+            )
+        )
+
+        campaign = Campaign(
+            name="Camp A",
+            realm_name="realm-a",
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        session.add(campaign)
+        session.commit()
+        session.refresh(campaign)
+
+        session.add(
+            EmailSending(
+                campaign_id=campaign.id,
+                user_id="user-1",
+                scheduled_date=now,
+                email_to="u1@example.com",
+                status=EmailSendingStatus.SENT,
+                sent_at=now,
+            )
+        )
+        session.commit()
+
+        result = service.get_campaign_sendings(campaign.id, "realm-a", session)
+        assert len(result.sendings) == 1
+        assert result.sendings[0].user_id == "user-1"
+
+    def test_get_campaign_sendings_respects_realm_scope(
+        self, service: CampaignService, session: Session
+    ):
+        """Verify sendings lookup fails when campaign realm does not match."""
+        _setup_realm_and_user(session, realm_name="realm-a")
+        now = datetime.datetime.now()
+
+        campaign = Campaign(
+            name="Camp A",
+            realm_name="realm-a",
+            total_recipients=1,
+            sending_interval_seconds=60,
+            begin_date=now,
+            end_date=now + datetime.timedelta(days=1),
+        )
+        session.add(campaign)
+        session.commit()
+
+        with pytest.raises(HTTPException) as exc:
+            service.get_campaign_sendings(campaign.id, "realm-b", session)
+
+        assert exc.value.status_code == 404
 
 
 # ============================================================================

@@ -169,7 +169,7 @@ export function TenantDetails() {
     setError(null);
     try {
       const res = await fetch(
-        `${API_BASE}/realms/admin/${encodeURIComponent(realmName)}/users/${encodeURIComponent(userId)}`,
+        `${API_BASE}/realms/${encodeURIComponent(realmName)}/users/${encodeURIComponent(userId)}`,
         {
           method: "DELETE",
           headers: {

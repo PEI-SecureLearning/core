@@ -1,0 +1,59 @@
+name: CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "GitHub environment to deploy to"
+        required: true
+        default: production
+        type: environment
+      nginx_config:
+        description: "Nginx config filename (relative to deployment/)"
+        required: true
+        default: nginx.mednat.conf
+        type: string
+      enable_observability:
+        description: "Deploy observability stack (Prometheus + Grafana)"
+        required: false
+        default: "false"
+        type: boolean
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64]
+    environment: ${{ inputs.environment || 'production' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate TLS certificates
+        run: |
+          set -euo pipefail
+          mkdir -p deployment/certs
+          ./deployment/scripts/generate-tls-certs.sh \
+            --domain "${{ vars.KC_HOSTNAME }}" \
+            --alt "${{ vars.KC_HOSTNAME }},localhost,127.0.0.1" \
+            --out-dir deployment/certs \
+            --cert-file "${{ vars.TLS_CERT_FILE }}" \
+            --key-file "${{ vars.TLS_KEY_FILE }}" \
+            --days 3650
+
+      - name: Rebuild and redeploy stack
+        env:
+          DOCKER_BUILDKIT: 1
+          NGINX_CONF_PATH: ${{ inputs.nginx_config || 'nginx.mednat.conf' }}
+        run: |
+          set -euo pipefail
+          COMPOSE_FILES="-f deployment/docker-compose.yml"
+          if [ "${{ inputs.enable_observability }}" = "true" ]; then
+            COMPOSE_FILES="$COMPOSE_FILES -f deployment/docker-compose.observability.yml"
+          fi
+          docker compose $COMPOSE_FILES pull
+          docker compose $COMPOSE_FILES down --remove-orphans
+          docker compose $COMPOSE_FILES up -d --remove-orphans

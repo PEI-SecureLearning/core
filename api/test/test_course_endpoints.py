@@ -9,6 +9,8 @@ os.environ.update(
         "RABBITMQ_USER": "guest",
         "RABBITMQ_PASS": "guest",
         "RABBITMQ_QUEUE": "email_queue",
+        "KEYCLOAK_URL": "http://fake-keycloak:8080",
+        "CLIENT_SECRET": "fake-secret",
     }
 )
 

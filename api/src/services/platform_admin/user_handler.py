@@ -112,7 +112,7 @@ class user_handler(base_handler):
 
         session.commit()
         total = self.admin.get_user_count(realm)
-        org_managers = [u for u in parsed_users if u.is_org_manager]
+        org_managers = [u for u in parsed_users if u.role == "ORG_MANAGER"]
 
         return UserListInRealmDTO(
             realm=realm,
@@ -136,55 +136,16 @@ class user_handler(base_handler):
 
     def delete_user_in_realm(self, realm: str, user_id: str, session: Session) -> None:
         """Delete a user from the realm."""
+        if (
+            self._is_org_manager(realm, user_id)
+            and self._count_org_managers(realm) <= 1
+        ):
+            raise HTTPException(
+                status_code=400, detail="Cannot delete the last org manager."
+            )
 
-        roles = self.admin.get_user_realm_roles(realm, user_id)
-
-        is_target_org_manager = any(
-            str((r.get("name", r) if isinstance(r, dict) else r)).upper()
-            == "ORG_MANAGER"
-            for r in (roles or [])
-        )
-        if is_target_org_manager:
-
-            kc_users = self.admin.list_users(realm)
-
-            org_count = 0
-            for u in kc_users:
-                uid = u.get("id")
-                if not uid:
-                    continue
-                inline = u.get("realmRoles") or []
-                has_role = (
-                    any(str(r).upper() == "ORG_MANAGER" for r in inline)
-                    if isinstance(inline, list)
-                    else False
-                )
-                if not has_role:
-                    try:
-                        user_roles = self.admin.get_user_realm_roles(realm, uid)
-                        has_role = any(
-                            str(
-                                (r.get("name", r) if isinstance(r, dict) else r)
-                            ).upper()
-                            == "ORG_MANAGER"
-                            for r in (user_roles or [])
-                        )
-                    except Exception:
-                        has_role = False
-                if has_role:
-                    org_count += 1
-
-            if org_count <= 1:
-                raise HTTPException(
-                    status_code=400, detail="Cannot delete the last org manager."
-                )
-
-        self.admin.delete_user(session, realm, user_id)
-
-        db_user = session.get(User, user_id)
-        if db_user:
-            session.delete(db_user)
-            session.commit()
+        self.admin.delete_user(realm, user_id)
+        self._delete_local_user(session, user_id)
 
     def update_user_role_in_realm(
         self, realm: str, user_id: str, new_role: str
@@ -210,12 +171,13 @@ class user_handler(base_handler):
         return UserDTO(
             id=user_id,
             username=user_data.get("username"),
-            email=user_data.get("email"),
+            email=user_data.get("email", ""),
             firstName=user_data.get("firstName"),
             lastName=user_data.get("lastName"),
             email_verified=user_data.get("emailVerified"),
-            enabled=user_data.get("enabled"),
-            is_org_manager=is_org_manager,
+            active=user_data.get("enabled"),
+            role="ORG_MANAGER" if is_org_manager else "USER",
+            realm=user_data.get("realm", [""])[0],
         )
 
     def _resolve_is_org_manager(
@@ -234,15 +196,34 @@ class user_handler(base_handler):
 
         try:
             user_roles = self.admin.get_user_realm_roles(realm, user_id)
-            return any(
-                str(
-                    (role.get("name", role) if isinstance(role, dict) else role)
-                ).upper()
-                == "ORG_MANAGER"
-                for role in (user_roles or [])
-            )
+            return self._has_org_manager_role(user_roles)
         except Exception:
             return fallback
+
+    def _has_org_manager_role(self, roles: list[dict] | list[str] | None) -> bool:
+        return any(
+            str((role.get("name", role) if isinstance(role, dict) else role)).upper()
+            == "ORG_MANAGER"
+            for role in (roles or [])
+        )
+
+    def _is_org_manager(self, realm: str, user_id: str) -> bool:
+        return self._has_org_manager_role(
+            self.admin.get_user_realm_roles(realm, user_id)
+        )
+
+    def _count_org_managers(self, realm: str) -> int:
+        return sum(
+            1
+            for user in self.admin.list_users(realm)
+            if self._resolve_is_org_manager(realm, user, False)
+        )
+
+    def _delete_local_user(self, session: Session, user_id: str) -> None:
+        db_user = session.get(User, user_id)
+        if db_user:
+            session.delete(db_user)
+            session.commit()
 
 
 _instance: user_handler | None = None
