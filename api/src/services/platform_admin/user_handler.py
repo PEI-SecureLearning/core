@@ -10,6 +10,7 @@ from src.models import (
     UserListInRealmDTO,
 )
 from src.services.platform_admin.base_handler import base_handler
+from src.services.org_manager.user_handler import validate_email_domain
 
 
 class user_handler(base_handler):
@@ -28,17 +29,35 @@ class user_handler(base_handler):
         group_id: str | None = None,
     ) -> UserCreatedInRealmDTO:
         """Create a new user inside the specified Keycloak realm/tenant."""
+        username_clean = (username or "").strip()
+        name_clean = (name or "").strip()
+        email_clean = (email or "").strip().lower()
+        role_clean = (role or "").strip().upper()
+
+        validate_email_domain(email_clean, self._get_realm_domain(realm, session))
+
         temporary_password = secrets.token_urlsafe(12)
 
-        response = self.admin.add_user(
-            session,
-            realm,
-            username,
-            temporary_password,
-            full_name=name,
-            email=email,
-            role=role,
-        )
+        try:
+            response = self.admin.add_user(
+                session,
+                realm,
+                username_clean,
+                temporary_password,
+                full_name=name_clean,
+                email=email_clean,
+                role=role_clean,
+            )
+        except HTTPException as exc:
+            if exc.status_code == 409:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "A user with this username or email already exists in "
+                        "this organization."
+                    ),
+                )
+            raise
 
         user_id = None
         location = response.headers.get("Location")
@@ -59,21 +78,21 @@ class user_handler(base_handler):
         self._ensure_realm(session, realm, f"{realm}.local")
         existing = session.get(User, user_id)
         if existing:
-            existing.email = email
-            existing.is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"
+            existing.email = email_clean
+            existing.is_org_manager = role_clean == "ORG_MANAGER"
         else:
             session.add(
                 User(
                     keycloak_id=user_id,
-                    email=email,
-                    is_org_manager=(role or "").strip().upper() == "ORG_MANAGER",
+                    email=email_clean,
+                    is_org_manager=role_clean == "ORG_MANAGER",
                 )
             )
         session.commit()
 
         return UserCreatedInRealmDTO(
             realm=realm,
-            username=username,
+            username=username_clean,
             status="created",
             temporary_password=temporary_password,
         )
@@ -218,6 +237,16 @@ class user_handler(base_handler):
             for user in self.admin.list_users(realm)
             if self._resolve_is_org_manager(realm, user, False)
         )
+
+    def _get_realm_domain(self, realm: str, session: Session) -> str | None:
+        db_realm = session.get(Realm, realm)
+        if db_realm and db_realm.domain:
+            return db_realm.domain
+
+        try:
+            return self.admin.get_domain_for_realm(realm)
+        except Exception:
+            return None
 
     def _delete_local_user(self, session: Session, user_id: str) -> None:
         db_user = session.get(User, user_id)

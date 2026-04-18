@@ -3,6 +3,12 @@ import { X, Loader2 } from "lucide-react";
 import type { BulkUser } from "./types";
 import { userApi } from "@/services/userApi";
 import { userGroupsApi } from "@/services/userGroupsApi";
+import {
+    createRealmEmailDomainValidator,
+    deriveUsername,
+    getUserCreationValidation,
+    toUserFriendlyCreationError,
+} from "./userCreationValidation";
 
 interface BulkImportModalProps {
     realm: string;
@@ -23,12 +29,41 @@ export function BulkImportModal({
     const handleBulkCreate = async () => {
         if (!realm) return;
         setIsBulkLoading(true);
-        const updated = [...bulkUsers];
+        const updated = bulkUsers.map((user) => {
+            const { normalized } = getUserCreationValidation(user);
+            return {
+                ...user,
+                ...normalized,
+            };
+        });
+        const validateEmailDomainAgainstRealm = createRealmEmailDomainValidator(realm);
 
-        // Build group map and ensure groups exist up front
+        for (let i = 0; i < updated.length; i++) {
+            const row = updated[i];
+            if (row.status !== "pending") continue;
+
+            const { nameError, emailError, usernameError, roleError, normalized } = getUserCreationValidation(row);
+            const validationMessage = nameError || emailError || usernameError || roleError;
+            if (validationMessage) {
+                updated[i] = { ...row, status: `Validation failed: ${validationMessage}` };
+                continue;
+            }
+
+            const emailDomainError = await validateEmailDomainAgainstRealm(normalized.email);
+            if (emailDomainError) {
+                updated[i] = { ...row, status: `Validation failed: ${emailDomainError}` };
+                continue;
+            }
+
+            updated[i] = { ...row, ...normalized, username: deriveUsername(normalized.email, normalized.username) };
+        }
+
+        setBulkUsers([...updated]);
+
+        // Build group map and ensure groups exist up front for valid rows only
         const groupNames = new Set<string>();
-        bulkUsers.forEach((u) => {
-            if (u.groups && Array.isArray(u.groups)) {
+        updated.forEach((u) => {
+            if (u.status === "pending" && u.groups && Array.isArray(u.groups)) {
                 u.groups.filter(Boolean).forEach((g) => groupNames.add(g.trim()));
             }
         });
@@ -58,25 +93,20 @@ export function BulkImportModal({
         for (let i = 0; i < updated.length; i++) {
             const u = updated[i];
             if (u.status !== "pending") continue;
-            if (!u.username || !u.name || !u.email || !u.role) {
-                updated[i] = { ...u, status: "missing fields" };
-                continue;
-            }
             try {
                 const data = await userApi.createUser(
                     realm,
                     {
-                        username: u.username,
+                        username: deriveUsername(u.email, u.username),
                         name: u.name,
                         email: u.email,
                         role: u.role,
                     }
                 );
-                updated[i] = { ...u, status: `created (pwd: ${data?.temporary_password ?? "N/A"})` };
+                updated[i] = { ...u, status: `Created successfully. Temporary password: ${data?.temporary_password ?? "N/A"}` };
                 if (u.groups?.length) createdUsers.push({ email: u.email, groups: u.groups });
             } catch (error) {
-                const message = error instanceof Error ? error.message : "error";
-                updated[i] = { ...u, status: message };
+                updated[i] = { ...u, status: `Creation failed: ${toUserFriendlyCreationError(error)}` };
             }
         }
 
@@ -92,10 +122,27 @@ export function BulkImportModal({
                 if (!uid) continue;
                 for (const gName of entry.groups) {
                     const gid = groupIdMap[gName];
-                    if (!gid) continue;
+                    if (!gid) {
+                        const rowIndex = updated.findIndex((user) => user.email === entry.email);
+                        if (rowIndex >= 0) {
+                            updated[rowIndex] = {
+                                ...updated[rowIndex],
+                                status: `Created, but group "${gName}" could not be found or created.`,
+                            };
+                        }
+                        continue;
+                    }
                     try {
                         await userGroupsApi.addUserToGroup(realm, gid, uid);
-                    } catch { /* ignore */ }
+                    } catch {
+                        const rowIndex = updated.findIndex((user) => user.email === entry.email);
+                        if (rowIndex >= 0) {
+                            updated[rowIndex] = {
+                                ...updated[rowIndex],
+                                status: `Created, but could not add all groups. Check group "${gName}".`,
+                            };
+                        }
+                    }
                 }
             }
         } catch { /* ignore */ }
@@ -145,7 +192,7 @@ export function BulkImportModal({
                                         {u.groups && u.groups.length ? u.groups.join(", ") : "—"}
                                     </td>
                                     <td className="py-3">
-                                        <span className={`text-xs ${u.status.includes("created") ? "text-green-600" : u.status.includes("error") ? "text-rose-600" : "text-muted-foreground/70"}`}>
+                                        <span className={`text-xs ${u.status.startsWith("Created") ? "text-green-600" : u.status.includes("failed") || u.status.includes("could not") ? "text-rose-600" : "text-muted-foreground/70"}`}>
                                             {u.status}
                                         </span>
                                     </td>
