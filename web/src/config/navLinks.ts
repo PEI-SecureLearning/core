@@ -57,6 +57,7 @@ export const adminLinks: NavLinkDef[] = [
         href: "/admin",
         label: "Dashboard",
         icon: LayoutDashboard,
+        roles: ["admin"],
         exact: true,
         showOnWelcome: false,
     },
@@ -65,18 +66,21 @@ export const adminLinks: NavLinkDef[] = [
         label: "Tenant Management",
         description: "Create and manage organizations, configure features and access controls.",
         icon: Building2,
+        roles: ["admin"],
     },
     {
         href: "/admin/logs",
         label: "System Logs",
         description: "Monitor real-time platform activity and system events.",
         icon: ScrollText,
+        roles: ["admin"],
     },
     {
         href: "/admin/settings",
         label: "Settings",
         description: "Configure theme.",
         icon: Settings,
+        roles: ["admin"],
     },
 ];
 
@@ -198,6 +202,7 @@ export const contentManagerLinks: NavLinkDef[] = [
         href: "/content-manager",
         label: "Dashboard",
         icon: LayoutDashboard,
+        roles: ["CONTENT_MANAGER"],
         exact: true,
         showOnWelcome: false,
     },
@@ -206,6 +211,7 @@ export const contentManagerLinks: NavLinkDef[] = [
         label: "Courses",
         description: "Create and manage training courses.",
         icon: BookOpen,
+        roles: ["CONTENT_MANAGER"],
         group: "LMS",
     },
     {
@@ -213,6 +219,7 @@ export const contentManagerLinks: NavLinkDef[] = [
         label: "Modules",
         description: "Organise content into reusable modules.",
         icon: Blocks,
+        roles: ["CONTENT_MANAGER"],
         group: "LMS",
     },
     {
@@ -220,6 +227,7 @@ export const contentManagerLinks: NavLinkDef[] = [
         label: "Content",
         description: "Upload and manage media and learning materials.",
         icon: FileStack,
+        roles: ["CONTENT_MANAGER"],
         group: "LMS",
     },
     {
@@ -227,12 +235,14 @@ export const contentManagerLinks: NavLinkDef[] = [
         label: "Templates",
         description: "Design and maintain reusable email and page templates.",
         icon: FileText,
+        roles: ["CONTENT_MANAGER"],
         group: "Phishing",
     },
     {
         href: "/content-manager/settings",
         label: "Settings",
         icon: Settings,
+        roles: ["CONTENT_MANAGER"],
         showOnWelcome: false,
     },
 ];
