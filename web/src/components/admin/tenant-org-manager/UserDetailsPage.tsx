@@ -416,7 +416,8 @@ export function UserDetailsPage() {
                         onClick={handleRefresh}
                         label="Refresh"
                         variant="outline"
-                        className="shrink-0"
+                        className="shrink-0 rounded-full"
+                        isRefreshing={loading || loadingSendings || loadingCertificates}
                     />
                 </div>
             </div>

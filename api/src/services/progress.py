@@ -1,4 +1,4 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 from fastapi import HTTPException
 from sqlalchemy import or_
 from datetime import datetime, timedelta
@@ -38,7 +38,9 @@ def assign_course(
                 existing.deadline = deadline
                 existing.cert_valid_days = cert_valid_days
                 existing.overdue = False
+                existing.is_certified = False
                 existing.expired = False
+                existing.cert_expires_at = None
                 existing.realm_name = realm_name
                 if existing.status != AssignmentStatus.COMPLETED:
                     existing.progress_data = {}
@@ -201,6 +203,7 @@ async def complete_refreshment(
 
     progress.is_certified = True
     progress.expired = False
+    progress.overdue = False
     progress.status = AssignmentStatus.COMPLETED
     progress.cert_expires_at = datetime.utcnow() + timedelta(
         days=progress.cert_valid_days
@@ -239,14 +242,26 @@ async def list_certificates(
     include_expired: bool = False,
 ) -> list[CertificateDTO]:
 
-    query = select(UserProgress).where(
-        UserProgress.user_id == user_id, UserProgress.is_certified
-    )
+    query = select(UserProgress).where(UserProgress.user_id == user_id)
+
+    if include_expired:
+        query = query.where(
+            or_(
+                col(UserProgress.is_certified) == True,
+                col(UserProgress.expired) == True,
+            )
+        )
+    else:
+        query = query.where(
+            col(UserProgress.is_certified) == True,
+            col(UserProgress.expired) == False,
+        )
+
     if realm_name:
         query = query.where(
             or_(
-                UserProgress.realm_name == realm_name,
-                UserProgress.realm_name.is_(None),
+                col(UserProgress.realm_name) == realm_name,
+                col(UserProgress.realm_name).is_(None),
             )
         )
 
@@ -254,10 +269,6 @@ async def list_certificates(
 
     certificates = []
     for progress in certified_progresses:
-        # Skip expired certificates unless explicitly requested
-        if progress.expired and not include_expired:
-            continue
-
         try:
             course = await get_course(progress.course_id)
         except HTTPException:

@@ -334,7 +334,9 @@ class user_handler:
                     existing.deadline = deadline
                     existing.cert_valid_days = cert_valid_days
                     existing.overdue = False
+                    existing.is_certified = False
                     existing.expired = False
+                    existing.cert_expires_at = None
                     existing.realm_name = realm_name
                     if existing.status != AssignmentStatus.COMPLETED:
                         existing.progress_data = {}

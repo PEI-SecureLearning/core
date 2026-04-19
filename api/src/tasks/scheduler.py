@@ -74,6 +74,7 @@ def process_course_assignments() -> None:
 
         for assignment in completed_assignments:
             assignment.status = AssignmentStatus.RENEWAL_REQUIRED
+            assignment.is_certified = False
             assignment.expired = True
             assignment.completed_sections = []
             assignment.progress_data = {}
