@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
 from fastapi import HTTPException
+from sqlalchemy import or_
 from datetime import datetime, timedelta
 from src.models import UserProgress, AssignmentStatus, CertificateDTO
 import asyncio
@@ -240,7 +241,12 @@ async def list_certificates(
         UserProgress.user_id == user_id, UserProgress.is_certified
     )
     if realm_name:
-        query = query.where(UserProgress.realm_name == realm_name)
+        query = query.where(
+            or_(
+                UserProgress.realm_name == realm_name,
+                UserProgress.realm_name.is_(None),
+            )
+        )
 
     certified_progresses = session.exec(query).all()
 
