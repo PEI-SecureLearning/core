@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from fastapi import HTTPException
 from datetime import datetime, timedelta
-from src.models import UserProgress, AssignmentStatus
+from src.models import UserProgress, AssignmentStatus, CertificateDTO
 import asyncio
 from src.services.courses import get_course
 from src.services.modules import get_module
@@ -227,3 +227,53 @@ def mark_overdue(user_id: str, course_id: str, session: Session) -> UserProgress
     session.commit()
     session.refresh(progress)
     return progress
+
+
+async def list_certificates(
+    user_id: str,
+    session: Session,
+    realm_name: str | None = None,
+    include_expired: bool = False,
+) -> list[CertificateDTO]:
+
+    query = select(UserProgress).where(
+        UserProgress.user_id == user_id, UserProgress.is_certified
+    )
+    if realm_name:
+        query = query.where(UserProgress.realm_name == realm_name)
+
+    certified_progresses = session.exec(query).all()
+
+    certificates = []
+    for progress in certified_progresses:
+        # Skip expired certificates unless explicitly requested
+        if progress.expired and not include_expired:
+            continue
+
+        try:
+            course = await get_course(progress.course_id)
+        except HTTPException:
+            # Course was deleted; skip this certificate
+            continue
+
+        # Format dates as ISO strings
+        emission_date = progress.updated_at.isoformat() if progress.updated_at else ""
+        expiration_date = (
+            progress.cert_expires_at.isoformat() if progress.cert_expires_at else ""
+        )
+
+        cert_dto = CertificateDTO(
+            user_id=progress.user_id,
+            course_id=progress.course_id,
+            last_emission_date=emission_date,
+            expiration_date=expiration_date,
+            expired=progress.expired,
+            course_name=course.title,
+            course_cover_image_link=course.cover_image,
+            difficulty=course.difficulty,
+            category=course.category,
+            realm=progress.realm_name or "",
+        )
+        certificates.append(cert_dto)
+
+    return certificates
