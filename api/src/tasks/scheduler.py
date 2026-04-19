@@ -9,11 +9,19 @@ from pydantic import ValidationError
 from sqlmodel import Session, col, select
 
 from src.core.db import engine
-from src.models import Campaign, CampaignStatus, EmailSending, EmailSendingStatus, UserProgress, AssignmentStatus
+from src.models import (
+    Campaign,
+    CampaignStatus,
+    EmailSending,
+    EmailSendingStatus,
+    UserProgress,
+    AssignmentStatus,
+)
 
 from src.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
+
 
 def process_course_assignments() -> None:
     """Process course assignments lifecycle (SCHEDULED -> ACTIVE -> OVERDUE)."""
@@ -25,7 +33,7 @@ def process_course_assignments() -> None:
         scheduled_assignments = session.exec(
             select(UserProgress).where(
                 UserProgress.status == AssignmentStatus.SCHEDULED,
-                UserProgress.start_date <= now
+                UserProgress.start_date <= now,
             )
         ).all()
 
@@ -33,7 +41,9 @@ def process_course_assignments() -> None:
             assignment.status = AssignmentStatus.ACTIVE
             assignment.notified_at = now
             # TODO: trigger direct notification service here
-            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> ACTIVE")
+            logger.info(
+                f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> ACTIVE"
+            )
             updated_count += 1
 
         # Active -> Overdue
@@ -41,31 +51,35 @@ def process_course_assignments() -> None:
             select(UserProgress).where(
                 UserProgress.status == AssignmentStatus.ACTIVE,
                 UserProgress.deadline <= now,
-                UserProgress.is_certified == False
+                UserProgress.is_certified == False,
             )
         ).all()
 
         for assignment in active_assignments:
             assignment.status = AssignmentStatus.OVERDUE
             assignment.overdue = True
-            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> OVERDUE")
+            logger.info(
+                f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> OVERDUE"
+            )
             updated_count += 1
-            
+
         # Completed -> Renewal Required
         completed_assignments = session.exec(
             select(UserProgress).where(
                 UserProgress.status == AssignmentStatus.COMPLETED,
                 UserProgress.is_certified == True,
-                UserProgress.cert_expires_at <= now
+                UserProgress.cert_expires_at <= now,
             )
         ).all()
 
         for assignment in completed_assignments:
             assignment.status = AssignmentStatus.RENEWAL_REQUIRED
-            assignment.is_certified = False
+            assignment.expired = True
             assignment.completed_sections = []
             assignment.progress_data = {}
-            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> RENEWAL_REQUIRED")
+            logger.info(
+                f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> RENEWAL_REQUIRED"
+            )
             updated_count += 1
 
         if updated_count > 0:
@@ -73,8 +87,7 @@ def process_course_assignments() -> None:
             logger.info(f"Processed {updated_count} course assignment(s)")
 
 
-# Global scheduler 
-
+# Global scheduler
 
 
 _scheduler: BackgroundScheduler | None = None
@@ -233,11 +246,11 @@ def process_pending_emails() -> None:
                 try:
                     # Send email to RabbitMQ
                     campaign_service._send_email_to_rabbitmq(email, campaign)
-                    
+
                     # Update status to queued
                     email.status = EmailSendingStatus.QUEUED
                     session.commit()
-                    
+
                 except (ValueError, ValidationError) as e:
                     # Irrecoverable payload/configuration issue for this email.
                     email.status = EmailSendingStatus.FAILED
@@ -246,7 +259,7 @@ def process_pending_emails() -> None:
                     logger.error(
                         f"Failed email {email.id} for campaign {email.campaign_id} marked FAILED: {e}"
                     )
-                    
+
                 except Exception as e:
                     logger.error(
                         f"Failed to process email {email.id} for campaign {email.campaign_id}: {e}"

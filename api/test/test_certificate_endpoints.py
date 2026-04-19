@@ -122,3 +122,26 @@ async def test_get_my_certificates_missing_sub_returns_401():
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid token"
+
+
+@pytest.mark.anyio
+async def test_get_my_certificates_include_expired_true_is_forwarded():
+    expected = []
+
+    with patch("src.routers.certificates.decode_token_verified") as mock_decode:
+        with patch(
+            "src.services.progress.list_certificates", new_callable=AsyncMock
+        ) as mock_list:
+            mock_decode.return_value = {"sub": "user-123"}
+            mock_list.return_value = expected
+
+            response = client.get("/api/users/me/certificates?include_expired=true")
+
+    assert response.status_code == 200
+    assert response.json() == expected
+    mock_list.assert_awaited_once_with(
+        user_id="user-123",
+        session=app.dependency_overrides[get_db](),
+        realm_name="test-realm",
+        include_expired=True,
+    )

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { SectionSeparator } from "@/components/shared/SectionSeparator";
+import RefreshButton from "@/components/shared/RefreshButton";
 import { userApi } from "@/services/userApi";
 import type { CampaignUserSending } from "@/services/campaignsApi";
 import type { TenantUserDetailDto, UserCertificateDto } from "@/types/tenantOrgManager";
@@ -118,6 +119,7 @@ export function UserDetailsPage() {
     const [error, setError] = useState<string | null>(null);
     const [sendingsError, setSendingsError] = useState<string | null>(null);
     const [certificatesError, setCertificatesError] = useState<string | null>(null);
+    const [refreshCount, setRefreshCount] = useState(0);
 
     const realm = useMemo(() => {
         const iss = (keycloak.tokenParsed as { iss?: string } | undefined)?.iss;
@@ -147,7 +149,7 @@ export function UserDetailsPage() {
         };
 
         void loadUser();
-    }, [realm, userId, keycloak.token]);
+    }, [realm, userId, keycloak.token, refreshCount]);
 
     useEffect(() => {
         const loadSendings = async () => {
@@ -170,7 +172,7 @@ export function UserDetailsPage() {
         };
 
         void loadSendings();
-    }, [realm, userId, keycloak.token]);
+    }, [realm, userId, keycloak.token, refreshCount]);
 
     useEffect(() => {
         const loadCertificates = async () => {
@@ -183,7 +185,6 @@ export function UserDetailsPage() {
 
             try {
                 const details = await userApi.getUserCertificates(userId, true);
-                console.log(details)
                 setCertificates(details);
             } catch (err) {
                 console.error("Failed to load user certificates", err);
@@ -194,7 +195,11 @@ export function UserDetailsPage() {
         };
 
         void loadCertificates();
-    }, [userId, keycloak.token]);
+    }, [userId, keycloak.token, refreshCount]);
+
+    const handleRefresh = () => {
+        setRefreshCount((currentCount) => currentCount + 1);
+    };
 
     const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim()
         || user?.username
@@ -396,14 +401,23 @@ export function UserDetailsPage() {
     return (
         <div className="h-full w-full flex flex-col bg-surface-subtle animate-fade-in">
             <div className="bg-background border-b border-border px-4 sm:px-6 py-4">
-                <div className="flex items-center gap-3">
-                    <Link to="/users" className="p-2 rounded-md hover:bg-muted transition-colors">
-                        <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-                    </Link>
-                    <div className="min-w-0">
-                        <h1 className="text-lg font-semibold text-foreground truncate">{displayName}</h1>
-                        <p className="text-sm text-muted-foreground truncate">User details</p>
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Link to="/users" className="p-2 rounded-md hover:bg-muted transition-colors">
+                            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
+                        </Link>
+                        <div className="min-w-0">
+                            <h1 className="text-lg font-semibold text-foreground truncate">{displayName}</h1>
+                            <p className="text-sm text-muted-foreground truncate">User details</p>
+                        </div>
                     </div>
+
+                    <RefreshButton
+                        onClick={handleRefresh}
+                        label="Refresh"
+                        variant="outline"
+                        className="shrink-0"
+                    />
                 </div>
             </div>
 

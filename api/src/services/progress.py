@@ -151,6 +151,7 @@ async def complete_section(
 
         if len(progress.completed_sections) >= total_sections and total_sections > 0:
             progress.is_certified = True
+            progress.expired = False
             progress.status = AssignmentStatus.COMPLETED
             progress.cert_expires_at = datetime.utcnow() + timedelta(
                 days=progress.cert_valid_days
@@ -199,6 +200,7 @@ async def complete_refreshment(
         )
 
     progress.is_certified = True
+    progress.expired = False
     progress.status = AssignmentStatus.COMPLETED
     progress.cert_expires_at = datetime.utcnow() + timedelta(
         days=progress.cert_valid_days
