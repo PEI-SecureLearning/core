@@ -31,7 +31,7 @@ function CertificateCard({ certificate }: { certificate: UserCertificateDto }) {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <Link
-                to="/courses/$courseId"
+                to="/courses/manage/$courseId"
                 params={{ courseId: certificate.course_id.toString() }}
                 className="truncate text-sm font-semibold text-primary hover:underline"
               >
@@ -48,7 +48,7 @@ function CertificateCard({ certificate }: { certificate: UserCertificateDto }) {
                       }
                     >
                       {certificate.expired ? (
-                        <AlertTriangle className="h-4 w-4 text-error" />
+                        <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                       ) : (
                         <CheckCircle2 className="h-4 w-4 text-success" />
                       )}
@@ -114,7 +114,7 @@ export function UserCertificatesList({ certificates, loading, error }: UserCerti
     );
   } else {
     content = (
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-2 border-0">
         {certificates.map((certificate) => (
           <CertificateCard
             key={`${certificate.user_id}-${certificate.course_id}`}
@@ -125,9 +125,5 @@ export function UserCertificatesList({ certificates, loading, error }: UserCerti
     );
   }
 
-  return (
-    <section className="rounded-xl border border-border/60 shadow-sm overflow-hidden">
-      {content}
-    </section>
-  );
+  return <section className="rounded-xl overflow-hidden">{content}</section>;
 }
