@@ -72,6 +72,7 @@ services:
     image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
     container_name: sl-garage
     restart: unless-stopped
+    entrypoint: ["/garage"]
     command: ["server", "--single-node", "--default-bucket"]
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
