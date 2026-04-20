@@ -2,8 +2,8 @@ import { CheckCircle2 } from "lucide-react";
 import type { TenantUserDetailDto } from "@/types/tenantOrgManager";
 
 interface UserProfileCardProps {
-    user: TenantUserDetailDto | null;
-    displayName: string;
+    readonly user: TenantUserDetailDto | null;
+    readonly displayName: string;
 }
 
 export function UserProfileCard({ user, displayName }: UserProfileCardProps) {
@@ -19,11 +19,10 @@ export function UserProfileCard({ user, displayName }: UserProfileCardProps) {
 
                 <div className="flex flex-wrap items-center gap-2">
                     <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${
-                            isActive
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium ${isActive
                                 ? "border-success/20 bg-success/10 text-success"
                                 : "border-warning/20 bg-warning/10 text-warning"
-                        }`}
+                            }`}
                     >
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         {isActive ? "Active" : "Inactive"}

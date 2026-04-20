@@ -4,9 +4,9 @@ import type { CampaignUserSending } from "@/services/campaignsApi";
 import { getStatusBadgeVariant, getMostRecentStatusDate } from "./userDetailsUtils";
 
 interface UserSendingsTableProps {
-    sendings: CampaignUserSending[];
-    loading: boolean;
-    error: string | null;
+    readonly sendings: CampaignUserSending[];
+    readonly loading: boolean;
+    readonly error: string | null;
 }
 
 function SendingsTableBody({ sendings, loading, error }: UserSendingsTableProps) {

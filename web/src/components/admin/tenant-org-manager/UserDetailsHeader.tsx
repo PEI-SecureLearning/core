@@ -3,9 +3,9 @@ import { ArrowLeft } from "lucide-react";
 import RefreshButton from "@/components/shared/RefreshButton";
 
 interface UserDetailsHeaderProps {
-    displayName: string;
-    isRefreshing: boolean;
-    onRefresh: () => void;
+    readonly displayName: string;
+    readonly isRefreshing: boolean;
+    readonly onRefresh: () => void;
 }
 
 export function UserDetailsHeader({ displayName, isRefreshing, onRefresh }: UserDetailsHeaderProps) {

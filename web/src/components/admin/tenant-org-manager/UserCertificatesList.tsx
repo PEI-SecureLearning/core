@@ -6,7 +6,7 @@ import { formatCertificateDate } from "./userDetailsUtils";
 
 // ─── Individual certificate card ──────────────────────────────────────────────
 
-function CertificateCard({ certificate }: { certificate: UserCertificateDto }) {
+function CertificateCard({ certificate }: { readonly certificate: UserCertificateDto }) {
   return (
     <div
       key={`${certificate.user_id}-${certificate.course_id}`}
@@ -87,9 +87,9 @@ function CertificateCard({ certificate }: { certificate: UserCertificateDto }) {
 // ─── Public component ─────────────────────────────────────────────────────────
 
 interface UserCertificatesListProps {
-  certificates: UserCertificateDto[];
-  loading: boolean;
-  error: string | null;
+  readonly certificates: UserCertificateDto[];
+  readonly loading: boolean;
+  readonly error: string | null;
 }
 
 export function UserCertificatesList({ certificates, loading, error }: UserCertificatesListProps) {

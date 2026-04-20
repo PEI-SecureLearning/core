@@ -24,7 +24,7 @@ function renderDetailValue(value: DetailRowValue) {
     return value;
 }
 
-function RoleBadge({ role }: { role?: string | null }) {
+function RoleBadge({ role }: { readonly role?: string | null }) {
     if (!role) {
         return <span className="text-muted-foreground">Not set</span>;
     }
@@ -37,7 +37,7 @@ function RoleBadge({ role }: { role?: string | null }) {
     );
 }
 
-function EmailVerificationIcon({ verified }: { verified?: boolean }) {
+function EmailVerificationIcon({ verified }: { readonly verified?: boolean }) {
     return (
         <TooltipProvider>
             <Tooltip>
@@ -61,7 +61,7 @@ function EmailVerificationIcon({ verified }: { verified?: boolean }) {
     );
 }
 
-function DetailRowCard({ row, user }: { row: DetailRow; user: TenantUserDetailDto | null }) {
+function DetailRowCard({ row, user }: { readonly row: DetailRow; readonly user: TenantUserDetailDto | null }) {
     const isEmail = row.label === "Email";
     const isRole = row.label === "Role";
 
@@ -98,7 +98,7 @@ function DetailRowCard({ row, user }: { row: DetailRow; user: TenantUserDetailDt
 
 // ─── Groups panel ─────────────────────────────────────────────────────────────
 
-function GroupsPanel({ user }: { user: TenantUserDetailDto | null }) {
+function GroupsPanel({ user }: { readonly user: TenantUserDetailDto | null }) {
     return (
         <div className="rounded-lg border border-border/60 bg-background p-4 shadow-sm lg:col-start-3 lg:row-span-2 lg:h-full">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -146,8 +146,8 @@ function GroupsPanel({ user }: { user: TenantUserDetailDto | null }) {
 // ─── Public component ─────────────────────────────────────────────────────────
 
 interface UserDetailsGridProps {
-    user: TenantUserDetailDto | null;
-    detailRows: DetailRow[];
+    readonly user: TenantUserDetailDto | null;
+    readonly detailRows: DetailRow[];
 }
 
 export function UserDetailsGrid({ user, detailRows }: UserDetailsGridProps) {
