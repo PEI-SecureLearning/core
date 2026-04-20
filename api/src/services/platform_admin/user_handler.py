@@ -77,6 +77,7 @@ class user_handler(base_handler):
                 status_code=500, detail="Failed to create user in Keycloak"
             )
 
+        self._assign_roles(realm, user_id, role_clean)
         self._ensure_realm(session, realm, f"{realm}.local")
         existing = session.get(User, user_id)
         if existing:
@@ -167,8 +168,20 @@ class user_handler(base_handler):
 
         return self._build_current_user_profile(realm, user_id, claims, profile, {})
 
-    def delete_user_in_realm(self, realm: str, user_id: str, session: Session) -> None:
+    def delete_user_in_realm(
+        self, realm: str, user_id: str, session: Session, token: str
+    ) -> None:
         """Delete a user from the realm."""
+        claims = decode_token_verified(token)
+        current_realm = get_realm_from_iss(claims.get("iss"))
+        current_user_id = claims.get("sub")
+
+        if current_realm == realm and current_user_id == user_id:
+            raise HTTPException(
+                status_code=400,
+                detail="You cannot delete your own account.",
+            )
+
         if (
             self._is_org_manager(realm, user_id)
             and self._count_org_managers(realm) <= 1
@@ -296,6 +309,28 @@ class user_handler(base_handler):
             for user in self.admin.list_users(realm)
             if self._resolve_is_org_manager(realm, user, False)
         )
+
+    def _assign_roles(self, realm: str, user_id: str, role_clean: str) -> None:
+        self.admin.assign_realm_role_to_user(realm, user_id, role_clean)
+
+        if role_clean != "ORG_MANAGER":
+            return
+
+        token = self.admin._get_admin_token()
+        client = self.admin.keycloak_client.get_client_by_client_id(
+            realm, token, "realm-management"
+        )
+        client_id = client.get("id") if client else None
+        if not client_id:
+            return
+
+        client_role = self.admin.keycloak_client.get_client_role(
+            realm, token, client_id, "realm-admin"
+        )
+        if client_role:
+            self.admin.keycloak_client.assign_client_roles(
+                realm, token, user_id, client_id, [client_role]
+            )
 
     def _get_realm_domain(self, realm: str, session: Session) -> str | None:
         db_realm = session.get(Realm, realm)

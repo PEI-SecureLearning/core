@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from sqlmodel import Session
 from src.models import Realm, User
 from src.models.org_manager.schemas import UserDetailsDTO, UserDetailsGroupDTO
+from src.services.compliance.token_helpers import decode_token_verified, get_realm_from_iss
 from src.services.keycloak_admin import get_keycloak_admin
 
 
@@ -312,6 +313,15 @@ class user_handler:
         self, realm: str, token: str, user_id: str, session: Session
     ) -> None:
         """Delete a user from the realm."""
+        claims = decode_token_verified(token)
+        current_realm = get_realm_from_iss(claims.get("iss"))
+        current_user_id = claims.get("sub")
+
+        if current_realm == realm and current_user_id == user_id:
+            raise HTTPException(
+                status_code=400,
+                detail="You cannot delete your own account.",
+            )
 
         self.kc.delete_user(realm, token, user_id)
 
