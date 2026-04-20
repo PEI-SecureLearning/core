@@ -15,6 +15,9 @@ from src.models import (
     EmailSending,
     EmailSendingStatus,
     UserSendingInfo,
+    UserCampaignStatsResponse,
+    UserCampaignStatDetail,
+    UserRisk,
 )
 
 from src.services.campaign.stats_calculator import CampaignStatCalculator
@@ -325,6 +328,52 @@ class StatsHandler:
             last_open_at=last_open_at,
             first_click_at=first_click_at,
             last_click_at=last_click_at,
+        )
+
+    def get_user_campaign_stats(self, user_id: str, session: Session) -> UserCampaignStatsResponse:
+        """Fetch all campaign interaction stats for a specific user."""
+        sendings = session.exec(
+            select(EmailSending).where(EmailSending.user_id == user_id)
+        ).all()
+        
+        details = []
+        for s in sendings:
+            if not s.campaign_id:
+                continue
+                
+            status_str = "ignored"
+            if s.status == EmailSendingStatus.REPORTED or s.reported_at:
+                status_str = "reported"
+            elif s.status == EmailSendingStatus.PHISHED or s.phished_at:
+                status_str = "phished"
+            elif s.status == EmailSendingStatus.CLICKED or s.clicked_at:
+                status_str = "clicked"
+            elif s.status == EmailSendingStatus.OPENED or s.opened_at:
+                status_str = "opened"
+            elif s.status == EmailSendingStatus.FAILED:
+                status_str = "failed"
+            elif not s.sent_at:
+                status_str = "pending"
+
+            details.append(
+                UserCampaignStatDetail(
+                    campaign_id=s.campaign_id,
+                    campaign_name=s.campaign.name if s.campaign else "Unknown",
+                    interaction_status=status_str,
+                    sent_at=s.sent_at
+                )
+            )
+            
+        # Fetch risk data
+        risk = session.get(UserRisk, user_id)
+            
+        return UserCampaignStatsResponse(
+            total_campaigns=len(details),
+            campaigns=details,
+            risk_score=risk.risk_score if risk else 1.0,
+            k_score=risk.k_score if risk else 0.0,
+            s_score=risk.s_score if risk else 0.5,
+            e_score=risk.e_score if risk else 0.5
         )
 
 

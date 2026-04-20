@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Field
+from src.models.user.schemas import UserDTO
 
 
 class RealmCreate(SQLModel):
@@ -20,7 +21,7 @@ class RealmInfo(SQLModel):
     features: dict[str, bool] = Field(default_factory=dict)
     logoUpdatedAt: str | None = None
     user_count: int = 0
-    users: list[dict] = Field(default_factory=list)
+    users: list[UserDTO] = Field(default_factory=list)
 
 
 class RealmInfoResponse(SQLModel):

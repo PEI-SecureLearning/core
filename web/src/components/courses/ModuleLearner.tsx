@@ -381,9 +381,10 @@ type Props = {
   readonly onTaskComplete?: (sectionId: string, taskId: string) => void;
   readonly isRenewalMode?: boolean;
   readonly onRenewalComplete?: () => void;
+  readonly onWrongAnswer?: () => void;
 };
 
-export default function ModuleLearner({ module: mod, courseId, token, initialCompletedSections = [], onSectionComplete, onTaskComplete, isRenewalMode, onRenewalComplete }: Props) {
+export default function ModuleLearner({ module: mod, courseId, token, initialCompletedSections = [], onSectionComplete, onTaskComplete, isRenewalMode, onRenewalComplete, onWrongAnswer }: Props) {
   const sections = mod.sections ?? [];
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -422,6 +423,26 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
 
   // ── Handlers ──
   const onMark = useCallback((sectionId: string, qid: string, cid: string) => {
+    // Find the question block to check correctness
+    const section = sections.find(s => s.id === sectionId);
+    const qBlock = section?.blocks.find(b => b.kind === 'question' && (b as any).question?.id === qid) as any;
+    
+    if (qBlock) {
+      const q = qBlock.question;
+      let isCorrect = false;
+      if (q.type === 'short_answer') {
+        isCorrect = cid.trim().toLowerCase() === (q.answer || "").trim().toLowerCase();
+      } else {
+        const choices = (q.type === 'true_false' ? TF_CHOICES : q.choices) || [];
+        const correctChoice = choices.find((c: any) => c.is_correct ?? (c as any).isCorrect);
+        isCorrect = cid === correctChoice?.id;
+      }
+
+      if (!isCorrect && onWrongAnswer) {
+         onWrongAnswer();
+      }
+    }
+
     setAnsweredChoices((prev) => {
       // Only trigger onTaskComplete if this is a new answer
       if (prev[qid] !== cid && onTaskComplete) {
@@ -429,7 +450,7 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
       }
       return { ...prev, [qid]: cid };
     });
-  }, [onTaskComplete]);
+  }, [onTaskComplete, onWrongAnswer, sections]);
 
   const toggleSection = useCallback(
     (id: string) => {

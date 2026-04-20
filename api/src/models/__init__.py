@@ -15,6 +15,7 @@ from .realm import (
     RealmGroupCreate,
 )
 from .user import User, UserDTO, UserCreatedInRealmDTO, UserListInRealmDTO
+from .user_risk.table import UserRisk
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
 from .phishing_kit import (
@@ -43,6 +44,8 @@ from .campaign import (
     CampaignGlobalStats,
     CampaignUpdate,
     MIN_INTERVAL_SECONDS,
+    UserCampaignStatDetail,
+    UserCampaignStatsResponse,
 )
 from .email_sending import (
     EmailSending,
@@ -112,6 +115,7 @@ __all__ = [
     "UserDTO",
     "UserCreatedInRealmDTO",
     "UserListInRealmDTO",
+    "UserRisk",
     # Campaign
     "Campaign",
     "CampaignCreate",
@@ -121,6 +125,8 @@ __all__ = [
     "CampaignDetailInfo",
     "CampaignGlobalStats",
     "MIN_INTERVAL_SECONDS",
+    "UserCampaignStatDetail",
+    "UserCampaignStatsResponse",
     "CampaignUserGroupLink",
     "CampaignPhishingKitLink",
     "CampaignSendingProfileLink",

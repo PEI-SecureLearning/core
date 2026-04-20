@@ -160,6 +160,11 @@ async def complete_section(
         from sqlalchemy.orm.attributes import flag_modified
 
         flag_modified(progress, "completed_sections")
+        
+        # Calculate risk model course score
+        if total_sections > 0:
+            progress.course_score = (1 / (1 + progress.errors_count)) + (len(progress.completed_sections) / total_sections)
+            
         session.commit()
         session.refresh(progress)
         print(
@@ -223,6 +228,36 @@ def mark_overdue(user_id: str, course_id: str, session: Session) -> UserProgress
 
     progress.overdue = True
     progress.status = AssignmentStatus.OVERDUE
+    session.add(progress)
+    session.commit()
+    session.refresh(progress)
+    return progress
+
+
+async def record_error(user_id: str, course_id: str, session: Session) -> UserProgress:
+    print(f"DEBUG: record_error user={user_id}, course={course_id}")
+    progress = session.get(UserProgress, {"user_id": user_id, "course_id": course_id})
+    if not progress:
+        raise HTTPException(status_code=404, detail="Course progress not found")
+
+    progress.errors_count += 1
+    
+    # Recalculate course score
+    try:
+        course = await get_course(course_id)
+        modules = await asyncio.gather(
+            *[get_module(m_id) for m_id in course.modules]
+        )
+        total_sections = sum(len(m.sections) for m in modules)
+    except Exception:
+        total_sections = 0
+
+    if total_sections > 0:
+        progress.course_score = (1 / (1 + progress.errors_count)) + (len(progress.completed_sections) / total_sections)
+    else:
+        # If total_sections is 0 or failed to fetch, just update based on errors
+        progress.course_score = (1 / (1 + progress.errors_count))
+
     session.add(progress)
     session.commit()
     session.refresh(progress)
