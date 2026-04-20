@@ -172,15 +172,19 @@ class user_handler(base_handler):
         self, realm: str, user_id: str, session: Session, token: str
     ) -> None:
         """Delete a user from the realm."""
-        claims = decode_token_verified(token)
-        current_realm = get_realm_from_iss(claims.get("iss"))
-        current_user_id = claims.get("sub")
+        try:
+            claims = decode_token_verified(token)
+            current_realm = get_realm_from_iss(claims.get("iss"))
+            current_user_id = claims.get("sub")
 
-        if current_realm == realm and current_user_id == user_id:
-            raise HTTPException(
-                status_code=400,
-                detail="You cannot delete your own account.",
-            )
+            if current_realm == realm and current_user_id == user_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="You cannot delete your own account.",
+                )
+        except HTTPException as exc:
+            if exc.status_code != 401:
+                raise
 
         if (
             self._is_org_manager(realm, user_id)
