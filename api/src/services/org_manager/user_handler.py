@@ -293,6 +293,7 @@ class user_handler:
         start_date=None,
         deadline=None,
         cert_valid_days=365,
+        realm_name: str | None = None,
     ) -> dict:
         """Assign courses to a user."""
         from datetime import datetime, timedelta
@@ -315,6 +316,7 @@ class user_handler:
                     deadline=deadline,
                     cert_valid_days=cert_valid_days,
                     status=AssignmentStatus.SCHEDULED,
+                    realm_name=realm_name,
                     overdue=False,
                     expired=False,
                     progress_data={},
@@ -332,7 +334,10 @@ class user_handler:
                     existing.deadline = deadline
                     existing.cert_valid_days = cert_valid_days
                     existing.overdue = False
+                    existing.is_certified = False
                     existing.expired = False
+                    existing.cert_expires_at = None
+                    existing.realm_name = realm_name
                     if existing.status != AssignmentStatus.COMPLETED:
                         existing.progress_data = {}
                         existing.completed_sections = []

@@ -14,7 +14,13 @@ from .realm import (
     RealmUserCreate,
     RealmGroupCreate,
 )
-from .user import User, UserDTO, UserCreatedInRealmDTO, UserListInRealmDTO
+from .user import (
+    User,
+    UserDTO,
+    UserCreatedInRealmDTO,
+    UserListInRealmDTO,
+    CurrentUserProfileDTO,
+)
 from .user_risk.table import UserRisk
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
@@ -70,7 +76,7 @@ from .compliance import (
     AcceptRequest,
     ComplianceStatusResponse,
 )
-from .user_progress import UserProgress, AssignmentStatus
+from .user_progress import UserProgress, AssignmentStatus, CertificateDTO
 from .org_manager import (
     OrgUserCreate,
     OrgGroupCreate,
@@ -116,6 +122,7 @@ __all__ = [
     "UserCreatedInRealmDTO",
     "UserListInRealmDTO",
     "UserRisk",
+    "CurrentUserProfileDTO",
     # Campaign
     "Campaign",
     "CampaignCreate",
@@ -215,4 +222,5 @@ __all__ = [
     "PaginatedCourses",
     "UserProgress",
     "AssignmentStatus",
+    "CertificateDTO",
 ]

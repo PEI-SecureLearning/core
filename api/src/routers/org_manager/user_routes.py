@@ -96,6 +96,7 @@ def enroll_user_endpoint(
         start_date=payload.start_date,
         deadline=payload.deadline,
         cert_valid_days=payload.cert_valid_days,
+        realm_name=realm,
     )
 
 
