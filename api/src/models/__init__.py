@@ -14,7 +14,13 @@ from .realm import (
     RealmUserCreate,
     RealmGroupCreate,
 )
-from .user import User, UserDTO, UserCreatedInRealmDTO, UserListInRealmDTO
+from .user import (
+    User,
+    UserDTO,
+    UserCreatedInRealmDTO,
+    UserListInRealmDTO,
+    CurrentUserProfileDTO,
+)
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
 from .phishing_kit import (
@@ -112,6 +118,7 @@ __all__ = [
     "UserDTO",
     "UserCreatedInRealmDTO",
     "UserListInRealmDTO",
+    "CurrentUserProfileDTO",
     # Campaign
     "Campaign",
     "CampaignCreate",

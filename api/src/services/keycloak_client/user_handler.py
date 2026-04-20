@@ -47,6 +47,12 @@ class user_handler(base_handler):
             raise
         return resp.json() or []
 
+    def get_userinfo(self, realm: str, token: str) -> dict:
+        """Resolve current user info using the caller token."""
+        url = f"{self.keycloak_url}/realms/{realm}/protocol/openid-connect/userinfo"
+        resp = self._make_request("GET", url, token)
+        return resp.json()
+
 
 _instance: user_handler | None = None
 
