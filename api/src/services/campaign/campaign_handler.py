@@ -1,0 +1,340 @@
+from datetime import datetime
+import math
+from fastapi import HTTPException
+from sqlmodel import Session, select
+
+from src.models import (
+    Campaign,
+    CampaignSendingsResponse,
+    CampaignCreate,
+    CampaignUpdate,
+    CampaignStatus,
+    EmailSendingStatus,
+    MIN_INTERVAL_SECONDS,
+    PhishingKit,
+    Realm,
+    SendingProfile,
+    User,
+    UserGroup,
+    UserDTO,
+)
+
+
+from src.services.platform_admin import get_platform_admin_service
+from src.services.campaign.stats_handler import get_stats_handler
+
+
+class CampaignHandler:
+
+    def create_campaign(
+        self, campaign: CampaignCreate, current_realm: str, session: Session
+    ) -> Campaign:
+        """Create a new campaign"""
+        self._validate_realm_exists(session, current_realm)
+
+        self._validate_campaign(campaign, session)
+
+        users = self._collect_users_from_groups(campaign.user_group_ids, current_realm)
+        interval = self._calculate_interval(campaign, len(users))
+
+        new_campaign = Campaign(
+            **campaign.model_dump(
+                exclude={
+                    "user_group_ids",
+                    "sending_interval_seconds",
+                    "phishing_kit_ids",
+                    "sending_profile_ids",
+                }
+            ),
+            sending_interval_seconds=interval,
+            total_recipients=len(users),
+            realm_name=current_realm,
+        )
+        session.add(new_campaign)
+        session.flush()
+
+        # Link phishing kits (M2M)
+        self._update_m2m_relationship(
+            session, UserGroup, new_campaign.user_groups, campaign.user_group_ids
+        )
+
+        self._update_m2m_relationship(
+            session, PhishingKit, new_campaign.phishing_kits, campaign.phishing_kit_ids
+        )
+
+        self._update_m2m_relationship(
+            session,
+            SendingProfile,
+            new_campaign.sending_profiles,
+            campaign.sending_profile_ids,
+        )
+
+        session.flush()
+        session.commit()
+
+        return new_campaign
+
+    def get_campaigns(self, current_realm: str, session: Session) -> list:
+        """Fetch all campaigns for the current realm."""
+
+        campaigns = session.exec(
+            select(Campaign).where(Campaign.realm_name == current_realm)
+        ).all()
+        stats = get_stats_handler()
+        return [stats._to_display_info(c) for c in campaigns]
+
+    def get_campaign_by_id(self, id: int, current_realm: str, session: Session):
+        """Fetch detailed campaign info by ID for the current realm."""
+
+        campaign = self._get_campaign(id, current_realm, session)
+        return get_stats_handler()._to_detail_info(campaign)
+
+    def get_campaign_sendings(
+        self, id: int, current_realm: str, session: Session
+    ) -> CampaignSendingsResponse:
+        """Fetch campaign sendings for the current realm."""
+        campaign = self._get_campaign(id, current_realm, session)
+        sendings = get_stats_handler().get_campaign_sendings(campaign)
+        return CampaignSendingsResponse(sendings=sendings)
+
+    def cancel_campaign(
+        self, id: int, current_realm: str, session: Session
+    ) -> Campaign:
+        """Cancel a campaign and all its pending email sendings.
+
+        Only SCHEDULED or RUNNING campaigns can be canceled.
+        """
+        campaign = self._get_campaign(id, current_realm, session)
+
+        if campaign.status == CampaignStatus.CANCELED:
+            raise HTTPException(status_code=400, detail="Campaign is already canceled")
+
+        if campaign.status == CampaignStatus.COMPLETED:
+            raise HTTPException(
+                status_code=400, detail="Cannot cancel a completed campaign"
+            )
+
+        campaign.status = CampaignStatus.CANCELED
+
+        for sending in campaign.email_sendings:
+            if sending.status == EmailSendingStatus.SCHEDULED:
+                sending.status = EmailSendingStatus.FAILED
+
+        session.commit()
+        session.refresh(campaign)
+
+        return campaign
+
+    def update_campaign(
+        self,
+        id: int,
+        campaign_update: CampaignUpdate,
+        current_realm: str,
+        session: Session,
+    ) -> Campaign:
+        """Update a campaign. Only for SCHEDULED campaigns."""
+        campaign = self._get_campaign(id, current_realm, session)
+
+        if campaign.status != CampaignStatus.SCHEDULED:
+            raise HTTPException(
+                status_code=400, detail="Cannot update a running or completed campaign"
+            )
+
+        self._validate_campaign_update(campaign_update, session)
+
+        for k, v in campaign_update.model_dump(
+            exclude={
+                "user_group_ids",
+                "phishing_kit_ids",
+                "sending_profile_ids",
+                "creator_id",
+            }
+        ).items():
+            setattr(campaign, k, v)
+
+        self._update_m2m_relationship(
+            session, UserGroup, campaign.user_groups, campaign_update.user_group_ids
+        )
+        self._update_m2m_relationship(
+            session,
+            PhishingKit,
+            campaign.phishing_kits,
+            campaign_update.phishing_kit_ids,
+        )
+        self._update_m2m_relationship(
+            session,
+            SendingProfile,
+            campaign.sending_profiles,
+            campaign_update.sending_profile_ids,
+        )
+
+        campaign.updated_at = datetime.now()
+        session.commit()
+        session.refresh(campaign)
+
+        return campaign
+
+    def delete_campaign(self, id: int, current_realm: str, session: Session) -> str:
+        """Delete a campaign and all its associated email sendings.
+
+        Returns the campaign name for confirmation.
+        """
+        campaign = self._get_campaign(id, current_realm, session)
+
+        campaign_name = campaign.name
+
+        for sending in campaign.email_sendings:
+            session.delete(sending)
+
+        session.delete(campaign)
+        session.commit()
+
+        return campaign_name
+
+    # ======================================================================
+    # Private helpers for campaign creation
+    # ======================================================================
+
+    def _get_campaign(self, id: int, realm: str, session: Session) -> Campaign:
+        campaign = session.exec(
+            select(Campaign).where(Campaign.id == id, Campaign.realm_name == realm)
+        ).first()
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        return campaign
+
+    def _update_m2m_relationship(
+        self, session: Session, model_class, collection, item_ids
+    ):
+        """Helper to update many-to-many relationships."""
+        if item_ids:
+            collection.clear()
+            for item_id in item_ids:
+                item = session.get(model_class, item_id)
+                if not item and model_class is UserGroup:
+                    item = UserGroup(keycloak_id=item_id)
+                    session.add(item)
+                    session.flush()
+                if item:
+                    collection.append(item)
+
+    def _collect_users_from_groups(
+        self, group_ids: list[str], realm: str
+    ) -> list[UserDTO]:
+        """Collect unique users from multiple groups.
+
+        Returns a list of unique User entities across all groups.
+        """
+        users: list[UserDTO] = []
+        for group_id in group_ids:
+            members = get_platform_admin_service().list_group_members_in_realm(
+                realm, group_id
+            )
+            current_ids = {u.id for u in users}
+            users.extend([m for m in members if m.id not in current_ids])
+
+        return users
+
+    def _calculate_interval(self, campaign: CampaignCreate, user_count: int) -> int:
+        """Calculate the sending interval based on campaign duration and user count."""
+        total_seconds = (campaign.end_date - campaign.begin_date).total_seconds()
+        return max(
+            campaign.sending_interval_seconds,
+            (
+                math.ceil(total_seconds / user_count)
+                if user_count
+                else MIN_INTERVAL_SECONDS
+            ),
+            MIN_INTERVAL_SECONDS,
+        )
+
+    def _validate_realm_exists(self, session: Session, realm_name: str) -> None:
+        """Verify if a Realm exists."""
+        if not session.get(Realm, realm_name):
+            raise HTTPException(status_code=400, detail="Realm does not exist")
+
+    def _validate_campaign(self, campaign: CampaignCreate, session: Session) -> None:
+        """Validate campaign data."""
+        self._validate_campaign_fields(
+            **campaign.model_dump(exclude={"name", "description"}),
+            session=session,
+        )
+
+    def _validate_campaign_update(
+        self, campaign_update: CampaignUpdate, session: Session
+    ) -> None:
+        """Validate campaign update data."""
+        self._validate_campaign_fields(
+            **campaign_update.model_dump(exclude={"name", "description"}),
+            creator_id=None,
+            session=session,
+        )
+
+    def _validate_campaign_fields(
+        self,
+        sending_interval_seconds: int,
+        begin_date: datetime,
+        end_date: datetime,
+        creator_id: str | None,
+        sending_profile_ids: list[int],
+        phishing_kit_ids: list[int],
+        user_group_ids: list[str],
+        session: Session,
+    ) -> None:
+        """Validate campaign field values."""
+        if sending_interval_seconds <= 0:
+            raise HTTPException(
+                status_code=400, detail="Sending interval must be positive"
+            )
+
+        if end_date <= begin_date:
+            raise HTTPException(
+                status_code=400, detail="End date must be after begin date"
+            )
+
+        # validate creator id
+        if creator_id is not None and not session.get(User, creator_id):
+            raise HTTPException(status_code=400, detail="Invalid creator ID")
+
+        # validate sending profile ids
+        for profile_id in sending_profile_ids:
+            if not session.get(SendingProfile, profile_id):
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid sending profile ID: {profile_id}"
+                )
+
+        # validate phishing kit ids
+        if not phishing_kit_ids:
+            raise HTTPException(
+                status_code=400, detail="At least one phishing kit must be selected"
+            )
+
+        for kit_id in phishing_kit_ids:
+            if not session.get(PhishingKit, kit_id):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid phishing kit ID: {kit_id}",
+                )
+
+        # validate user group ids
+        if not user_group_ids:
+            raise HTTPException(
+                status_code=400, detail="At least one user group must be selected"
+            )
+
+        for group_id in user_group_ids:
+            if not session.get(UserGroup, group_id):
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid user group ID: {group_id}",
+                )
+
+
+_instance: CampaignHandler | None = None
+
+
+def get_campaign_handler() -> CampaignHandler:
+    global _instance
+    if _instance is None:
+        _instance = CampaignHandler()
+    return _instance

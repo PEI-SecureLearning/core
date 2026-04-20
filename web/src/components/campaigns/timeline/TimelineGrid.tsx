@@ -26,13 +26,13 @@ export const TimelineGrid = memo(function TimelineGrid({
   });
 
   return (
-    <div className="h-full flex flex-col bg-white/60 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg shadow-slate-200/50 overflow-hidden">
+    <div className="h-full flex flex-col bg-background/60 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg shadow-slate-200/50 overflow-hidden">
       <TimelineHeader
         weeks={weeks}
         campaignColumnWidth={CAMPAIGN_COLUMN_WIDTH}
       />
 
-      <div className="flex-1 overflow-y-auto divide-y divide-slate-100/60 purple-scrollbar">
+      <div className="flex-1 overflow-y-auto divide-y divide-border/60 themed-scrollbar">
         {visibleCampaigns.length > 0 ? (
           visibleCampaigns.map((campaign) => (
             <TimelineRow
@@ -46,7 +46,7 @@ export const TimelineGrid = memo(function TimelineGrid({
           ))
         ) : (
           <div className="text-center py-12 flex flex-col items-center justify-center h-full">
-            <p className="text-slate-400 text-[14px]">
+            <p className="text-muted-foreground/70 text-[14px]">
               No campaigns scheduled for this period
             </p>
           </div>

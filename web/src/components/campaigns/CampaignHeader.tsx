@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 interface CampaignHeaderProps {
-    title?: string;
-    subtitle?: string;
+    readonly title?: string;
+    readonly subtitle?: string;
 }
 
 export function CampaignHeader({
@@ -13,12 +13,12 @@ export function CampaignHeader({
     return (
         <div className="flex items-center justify-between">
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                <p className="text-gray-500 mt-1">{subtitle}</p>
+                <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+                <p className="text-muted-foreground mt-1">{subtitle}</p>
             </div>
             <Link
                 to="/campaigns/new"
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary transition-colors font-medium"
             >
                 <Plus size={20} />
                 New Campaign

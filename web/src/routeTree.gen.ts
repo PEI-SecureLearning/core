@@ -9,47 +9,69 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TenantsOrgManagerRouteImport } from './routes/tenants-org-manager'
-import { Route as ComplianceOrgManagerRouteImport } from './routes/compliance-org-manager'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StatisticsRouteImport } from './routes/statistics'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ComplianceOrgManagerRouteImport } from './routes/compliance-org-manager'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as UsergroupsIndexRouteImport } from './routes/usergroups/index'
 import { Route as TenantsIndexRouteImport } from './routes/tenants/index'
 import { Route as SendingProfilesIndexRouteImport } from './routes/sending-profiles/index'
+import { Route as PhishingKitsIndexRouteImport } from './routes/phishing-kits/index'
+import { Route as CoursesIndexRouteImport } from './routes/courses/index'
+import { Route as ContentManagerIndexRouteImport } from './routes/content-manager/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as UsersNewRouteImport } from './routes/users/new'
+import { Route as UsersEditRouteImport } from './routes/users/edit'
+import { Route as UsersIdRouteImport } from './routes/users/$id'
 import { Route as UsergroupsNewGroupRouteImport } from './routes/usergroups/new-group'
 import { Route as UsergroupsIdRouteImport } from './routes/usergroups/$id'
 import { Route as TenantsNewTenantRouteImport } from './routes/tenants/new-tenant'
 import { Route as TenantsIdRouteImport } from './routes/tenants/$id'
 import { Route as SendingProfilesNewRouteImport } from './routes/sending-profiles/new'
 import { Route as SendingProfilesIdRouteImport } from './routes/sending-profiles/$id'
+import { Route as PhishingKitsNewRouteImport } from './routes/phishing-kits/new'
+import { Route as PhishingKitsIdRouteImport } from './routes/phishing-kits/$id'
+import { Route as CoursesManageRouteImport } from './routes/courses/manage'
+import { Route as CoursesAssignRouteImport } from './routes/courses/assign'
+import { Route as CoursesCourseIdRouteImport } from './routes/courses/$courseId'
+import { Route as ContentManagerTemplatesRouteImport } from './routes/content-manager/templates'
+import { Route as ContentManagerSettingsRouteImport } from './routes/content-manager/settings'
+import { Route as ContentManagerReportRouteImport } from './routes/content-manager/report'
+import { Route as ContentManagerModulesRouteImport } from './routes/content-manager/modules'
+import { Route as ContentManagerHelpRouteImport } from './routes/content-manager/help'
+import { Route as ContentManagerCoursesRouteImport } from './routes/content-manager/courses'
+import { Route as ContentManagerContentRouteImport } from './routes/content-manager/content'
 import { Route as CampaignsTimelineRouteImport } from './routes/campaigns/timeline'
 import { Route as CampaignsNewRouteImport } from './routes/campaigns/new'
 import { Route as CampaignsIdRouteImport } from './routes/campaigns/$id'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminTermsRouteImport } from './routes/admin/terms'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminReportRouteImport } from './routes/admin/report'
 import { Route as AdminLogsRouteImport } from './routes/admin/logs'
+import { Route as AdminHelpRouteImport } from './routes/admin/help'
+import { Route as CoursesManageIndexRouteImport } from './routes/courses/manage.index'
+import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses/$courseId/index'
+import { Route as CampaignsIdIndexRouteImport } from './routes/campaigns/$id/index'
 import { Route as AdminTenantsIndexRouteImport } from './routes/admin/tenants/index'
+import { Route as CoursesManageCourseIdRouteImport } from './routes/courses/manage.$courseId'
+import { Route as ContentManagerModulesNewRouteImport } from './routes/content-manager/modules_.new'
+import { Route as ContentManagerModulesModuleIdRouteImport } from './routes/content-manager/modules_.$moduleId'
+import { Route as ContentManagerCoursesNewRouteImport } from './routes/content-manager/courses_.new'
+import { Route as ContentManagerCoursesCourseIdRouteImport } from './routes/content-manager/courses_.$courseId'
+import { Route as ContentManagerContentContentPieceIdRouteImport } from './routes/content-manager/content.$contentPieceId'
+import { Route as CampaignsIdEditRouteImport } from './routes/campaigns/$id/edit'
 import { Route as AdminTenantsNewTenantRouteImport } from './routes/admin/tenants/new-tenant'
 import { Route as AdminTenantsTenantIdRouteImport } from './routes/admin/tenants/$tenantId'
+import { Route as CoursesCourseIdModulesModuleIdRouteImport } from './routes/courses/$courseId/modules/$moduleId'
+import { Route as ContentManagerCoursesCourseIdEditRouteImport } from './routes/content-manager/courses_.$courseId_.edit'
 
-const TenantsOrgManagerRoute = TenantsOrgManagerRouteImport.update({
-  id: '/tenants-org-manager',
-  path: '/tenants-org-manager',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ComplianceOrgManagerRoute = ComplianceOrgManagerRouteImport.update({
-  id: '/compliance-org-manager',
-  path: '/compliance-org-manager',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -80,6 +102,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComplianceOrgManagerRoute = ComplianceOrgManagerRouteImport.update({
+  id: '/compliance-org-manager',
+  path: '/compliance-org-manager',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -88,6 +115,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersIndexRoute = UsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UsergroupsIndexRoute = UsergroupsIndexRouteImport.update({
@@ -105,6 +137,21 @@ const SendingProfilesIndexRoute = SendingProfilesIndexRouteImport.update({
   path: '/sending-profiles/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhishingKitsIndexRoute = PhishingKitsIndexRouteImport.update({
+  id: '/phishing-kits/',
+  path: '/phishing-kits/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesIndexRoute = CoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerIndexRoute = ContentManagerIndexRouteImport.update({
+  id: '/content-manager/',
+  path: '/content-manager/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
   id: '/campaigns/',
   path: '/campaigns/',
@@ -114,6 +161,21 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const UsersNewRoute = UsersNewRouteImport.update({
+  id: '/users/new',
+  path: '/users/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersEditRoute = UsersEditRouteImport.update({
+  id: '/users/edit',
+  path: '/users/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UsersIdRoute = UsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const UsergroupsNewGroupRoute = UsergroupsNewGroupRouteImport.update({
   id: '/usergroups/new-group',
@@ -145,6 +207,66 @@ const SendingProfilesIdRoute = SendingProfilesIdRouteImport.update({
   path: '/sending-profiles/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhishingKitsNewRoute = PhishingKitsNewRouteImport.update({
+  id: '/phishing-kits/new',
+  path: '/phishing-kits/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhishingKitsIdRoute = PhishingKitsIdRouteImport.update({
+  id: '/phishing-kits/$id',
+  path: '/phishing-kits/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesManageRoute = CoursesManageRouteImport.update({
+  id: '/courses/manage',
+  path: '/courses/manage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesAssignRoute = CoursesAssignRouteImport.update({
+  id: '/courses/assign',
+  path: '/courses/assign',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
+  id: '/courses/$courseId',
+  path: '/courses/$courseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerTemplatesRoute = ContentManagerTemplatesRouteImport.update({
+  id: '/content-manager/templates',
+  path: '/content-manager/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerSettingsRoute = ContentManagerSettingsRouteImport.update({
+  id: '/content-manager/settings',
+  path: '/content-manager/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerReportRoute = ContentManagerReportRouteImport.update({
+  id: '/content-manager/report',
+  path: '/content-manager/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerModulesRoute = ContentManagerModulesRouteImport.update({
+  id: '/content-manager/modules',
+  path: '/content-manager/modules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerHelpRoute = ContentManagerHelpRouteImport.update({
+  id: '/content-manager/help',
+  path: '/content-manager/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerCoursesRoute = ContentManagerCoursesRouteImport.update({
+  id: '/content-manager/courses',
+  path: '/content-manager/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagerContentRoute = ContentManagerContentRouteImport.update({
+  id: '/content-manager/content',
+  path: '/content-manager/content',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CampaignsTimelineRoute = CampaignsTimelineRouteImport.update({
   id: '/campaigns/timeline',
   path: '/campaigns/timeline',
@@ -165,9 +287,14 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminTermsRoute = AdminTermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportRoute = AdminReportRouteImport.update({
+  id: '/report',
+  path: '/report',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLogsRoute = AdminLogsRouteImport.update({
@@ -175,10 +302,70 @@ const AdminLogsRoute = AdminLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminHelpRoute = AdminHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AdminRoute,
+} as any)
+const CoursesManageIndexRoute = CoursesManageIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CoursesManageRoute,
+} as any)
+const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CoursesCourseIdRoute,
+} as any)
+const CampaignsIdIndexRoute = CampaignsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CampaignsIdRoute,
+} as any)
 const AdminTenantsIndexRoute = AdminTenantsIndexRouteImport.update({
   id: '/tenants/',
   path: '/tenants/',
   getParentRoute: () => AdminRoute,
+} as any)
+const CoursesManageCourseIdRoute = CoursesManageCourseIdRouteImport.update({
+  id: '/$courseId',
+  path: '/$courseId',
+  getParentRoute: () => CoursesManageRoute,
+} as any)
+const ContentManagerModulesNewRoute =
+  ContentManagerModulesNewRouteImport.update({
+    id: '/content-manager/modules_/new',
+    path: '/content-manager/modules/new',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ContentManagerModulesModuleIdRoute =
+  ContentManagerModulesModuleIdRouteImport.update({
+    id: '/content-manager/modules_/$moduleId',
+    path: '/content-manager/modules/$moduleId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ContentManagerCoursesNewRoute =
+  ContentManagerCoursesNewRouteImport.update({
+    id: '/content-manager/courses_/new',
+    path: '/content-manager/courses/new',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ContentManagerCoursesCourseIdRoute =
+  ContentManagerCoursesCourseIdRouteImport.update({
+    id: '/content-manager/courses_/$courseId',
+    path: '/content-manager/courses/$courseId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ContentManagerContentContentPieceIdRoute =
+  ContentManagerContentContentPieceIdRouteImport.update({
+    id: '/$contentPieceId',
+    path: '/$contentPieceId',
+    getParentRoute: () => ContentManagerContentRoute,
+  } as any)
+const CampaignsIdEditRoute = CampaignsIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => CampaignsIdRoute,
 } as any)
 const AdminTenantsNewTenantRoute = AdminTenantsNewTenantRouteImport.update({
   id: '/tenants/new-tenant',
@@ -190,243 +377,450 @@ const AdminTenantsTenantIdRoute = AdminTenantsTenantIdRouteImport.update({
   path: '/tenants/$tenantId',
   getParentRoute: () => AdminRoute,
 } as any)
+const CoursesCourseIdModulesModuleIdRoute =
+  CoursesCourseIdModulesModuleIdRouteImport.update({
+    id: '/modules/$moduleId',
+    path: '/modules/$moduleId',
+    getParentRoute: () => CoursesCourseIdRoute,
+  } as any)
+const ContentManagerCoursesCourseIdEditRoute =
+  ContentManagerCoursesCourseIdEditRouteImport.update({
+    id: '/content-manager/courses_/$courseId_/edit',
+    path: '/content-manager/courses/$courseId/edit',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
-  '/admin/terms': typeof AdminTermsRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/campaigns/$id': typeof CampaignsIdRoute
+  '/campaigns/$id': typeof CampaignsIdRouteWithChildren
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
+  '/content-manager/content': typeof ContentManagerContentRouteWithChildren
+  '/content-manager/courses': typeof ContentManagerCoursesRoute
+  '/content-manager/help': typeof ContentManagerHelpRoute
+  '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
+  '/content-manager/templates': typeof ContentManagerTemplatesRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRouteWithChildren
+  '/phishing-kits/$id': typeof PhishingKitsIdRoute
+  '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/tenants/$id': typeof TenantsIdRoute
   '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/edit': typeof UsersEditRoute
+  '/users/new': typeof UsersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/content-manager': typeof ContentManagerIndexRoute
+  '/courses': typeof CoursesIndexRoute
+  '/phishing-kits': typeof PhishingKitsIndexRoute
   '/sending-profiles': typeof SendingProfilesIndexRoute
   '/tenants': typeof TenantsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
+  '/users': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/campaigns/$id/edit': typeof CampaignsIdEditRoute
+  '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
+  '/content-manager/courses/$courseId': typeof ContentManagerCoursesCourseIdRoute
+  '/content-manager/courses/new': typeof ContentManagerCoursesNewRoute
+  '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
+  '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
+  '/courses/manage/$courseId': typeof CoursesManageCourseIdRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
+  '/campaigns/$id/': typeof CampaignsIdIndexRoute
+  '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
+  '/courses/manage/': typeof CoursesManageIndexRoute
+  '/content-manager/courses/$courseId/edit': typeof ContentManagerCoursesCourseIdEditRoute
+  '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
-  '/admin/terms': typeof AdminTermsRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/campaigns/$id': typeof CampaignsIdRoute
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
+  '/content-manager/content': typeof ContentManagerContentRouteWithChildren
+  '/content-manager/courses': typeof ContentManagerCoursesRoute
+  '/content-manager/help': typeof ContentManagerHelpRoute
+  '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
+  '/content-manager/templates': typeof ContentManagerTemplatesRoute
+  '/courses/assign': typeof CoursesAssignRoute
+  '/phishing-kits/$id': typeof PhishingKitsIdRoute
+  '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/tenants/$id': typeof TenantsIdRoute
   '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/edit': typeof UsersEditRoute
+  '/users/new': typeof UsersNewRoute
   '/admin': typeof AdminIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
+  '/content-manager': typeof ContentManagerIndexRoute
+  '/courses': typeof CoursesIndexRoute
+  '/phishing-kits': typeof PhishingKitsIndexRoute
   '/sending-profiles': typeof SendingProfilesIndexRoute
   '/tenants': typeof TenantsIndexRoute
   '/usergroups': typeof UsergroupsIndexRoute
+  '/users': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/campaigns/$id/edit': typeof CampaignsIdEditRoute
+  '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
+  '/content-manager/courses/$courseId': typeof ContentManagerCoursesCourseIdRoute
+  '/content-manager/courses/new': typeof ContentManagerCoursesNewRoute
+  '/content-manager/modules/$moduleId': typeof ContentManagerModulesModuleIdRoute
+  '/content-manager/modules/new': typeof ContentManagerModulesNewRoute
+  '/courses/manage/$courseId': typeof CoursesManageCourseIdRoute
   '/admin/tenants': typeof AdminTenantsIndexRoute
+  '/campaigns/$id': typeof CampaignsIdIndexRoute
+  '/courses/$courseId': typeof CoursesCourseIdIndexRoute
+  '/courses/manage': typeof CoursesManageIndexRoute
+  '/content-manager/courses/$courseId/edit': typeof ContentManagerCoursesCourseIdEditRoute
+  '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/report': typeof ReportRoute
   '/settings': typeof SettingsRoute
   '/statistics': typeof StatisticsRoute
   '/templates': typeof TemplatesRoute
-  '/compliance-org-manager': typeof ComplianceOrgManagerRoute
-  '/tenants-org-manager': typeof TenantsOrgManagerRoute
+  '/admin/help': typeof AdminHelpRoute
   '/admin/logs': typeof AdminLogsRoute
-  '/admin/terms': typeof AdminTermsRoute
+  '/admin/report': typeof AdminReportRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
-  '/campaigns/$id': typeof CampaignsIdRoute
+  '/campaigns/$id': typeof CampaignsIdRouteWithChildren
   '/campaigns/new': typeof CampaignsNewRoute
   '/campaigns/timeline': typeof CampaignsTimelineRoute
+  '/content-manager/content': typeof ContentManagerContentRouteWithChildren
+  '/content-manager/courses': typeof ContentManagerCoursesRoute
+  '/content-manager/help': typeof ContentManagerHelpRoute
+  '/content-manager/modules': typeof ContentManagerModulesRoute
+  '/content-manager/report': typeof ContentManagerReportRoute
+  '/content-manager/settings': typeof ContentManagerSettingsRoute
+  '/content-manager/templates': typeof ContentManagerTemplatesRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/assign': typeof CoursesAssignRoute
+  '/courses/manage': typeof CoursesManageRouteWithChildren
+  '/phishing-kits/$id': typeof PhishingKitsIdRoute
+  '/phishing-kits/new': typeof PhishingKitsNewRoute
   '/sending-profiles/$id': typeof SendingProfilesIdRoute
   '/sending-profiles/new': typeof SendingProfilesNewRoute
   '/tenants/$id': typeof TenantsIdRoute
   '/tenants/new-tenant': typeof TenantsNewTenantRoute
   '/usergroups/$id': typeof UsergroupsIdRoute
   '/usergroups/new-group': typeof UsergroupsNewGroupRoute
+  '/users/$id': typeof UsersIdRoute
+  '/users/edit': typeof UsersEditRoute
+  '/users/new': typeof UsersNewRoute
   '/admin/': typeof AdminIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
+  '/content-manager/': typeof ContentManagerIndexRoute
+  '/courses/': typeof CoursesIndexRoute
+  '/phishing-kits/': typeof PhishingKitsIndexRoute
   '/sending-profiles/': typeof SendingProfilesIndexRoute
   '/tenants/': typeof TenantsIndexRoute
   '/usergroups/': typeof UsergroupsIndexRoute
+  '/users/': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
+  '/campaigns/$id/edit': typeof CampaignsIdEditRoute
+  '/content-manager/content/$contentPieceId': typeof ContentManagerContentContentPieceIdRoute
+  '/content-manager/courses_/$courseId': typeof ContentManagerCoursesCourseIdRoute
+  '/content-manager/courses_/new': typeof ContentManagerCoursesNewRoute
+  '/content-manager/modules_/$moduleId': typeof ContentManagerModulesModuleIdRoute
+  '/content-manager/modules_/new': typeof ContentManagerModulesNewRoute
+  '/courses/manage/$courseId': typeof CoursesManageCourseIdRoute
   '/admin/tenants/': typeof AdminTenantsIndexRoute
+  '/campaigns/$id/': typeof CampaignsIdIndexRoute
+  '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
+  '/courses/manage/': typeof CoursesManageIndexRoute
+  '/content-manager/courses_/$courseId_/edit': typeof ContentManagerCoursesCourseIdEditRoute
+  '/courses/$courseId/modules/$moduleId': typeof CoursesCourseIdModulesModuleIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/admin'
+    | '/compliance-org-manager'
     | '/dashboard'
     | '/help'
     | '/report'
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/compliance-org-manager'
-    | '/tenants-org-manager'
+    | '/admin/help'
     | '/admin/logs'
-    | '/admin/terms'
+    | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
     | '/campaigns/timeline'
+    | '/content-manager/content'
+    | '/content-manager/courses'
+    | '/content-manager/help'
+    | '/content-manager/modules'
+    | '/content-manager/report'
+    | '/content-manager/settings'
+    | '/content-manager/templates'
+    | '/courses/$courseId'
+    | '/courses/assign'
+    | '/courses/manage'
+    | '/phishing-kits/$id'
+    | '/phishing-kits/new'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
     | '/tenants/$id'
     | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
+    | '/users/$id'
+    | '/users/edit'
+    | '/users/new'
     | '/admin/'
     | '/campaigns'
+    | '/content-manager'
+    | '/courses'
+    | '/phishing-kits'
     | '/sending-profiles'
     | '/tenants'
     | '/usergroups'
+    | '/users'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
+    | '/campaigns/$id/edit'
+    | '/content-manager/content/$contentPieceId'
+    | '/content-manager/courses/$courseId'
+    | '/content-manager/courses/new'
+    | '/content-manager/modules/$moduleId'
+    | '/content-manager/modules/new'
+    | '/courses/manage/$courseId'
     | '/admin/tenants'
+    | '/campaigns/$id/'
+    | '/courses/$courseId/'
+    | '/courses/manage/'
+    | '/content-manager/courses/$courseId/edit'
+    | '/courses/$courseId/modules/$moduleId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/compliance-org-manager'
     | '/dashboard'
     | '/help'
     | '/report'
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/compliance-org-manager'
-    | '/tenants-org-manager'
+    | '/admin/help'
     | '/admin/logs'
-    | '/admin/terms'
+    | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
-    | '/campaigns/$id'
     | '/campaigns/new'
     | '/campaigns/timeline'
+    | '/content-manager/content'
+    | '/content-manager/courses'
+    | '/content-manager/help'
+    | '/content-manager/modules'
+    | '/content-manager/report'
+    | '/content-manager/settings'
+    | '/content-manager/templates'
+    | '/courses/assign'
+    | '/phishing-kits/$id'
+    | '/phishing-kits/new'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
     | '/tenants/$id'
     | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
+    | '/users/$id'
+    | '/users/edit'
+    | '/users/new'
     | '/admin'
     | '/campaigns'
+    | '/content-manager'
+    | '/courses'
+    | '/phishing-kits'
     | '/sending-profiles'
     | '/tenants'
     | '/usergroups'
+    | '/users'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
+    | '/campaigns/$id/edit'
+    | '/content-manager/content/$contentPieceId'
+    | '/content-manager/courses/$courseId'
+    | '/content-manager/courses/new'
+    | '/content-manager/modules/$moduleId'
+    | '/content-manager/modules/new'
+    | '/courses/manage/$courseId'
     | '/admin/tenants'
+    | '/campaigns/$id'
+    | '/courses/$courseId'
+    | '/courses/manage'
+    | '/content-manager/courses/$courseId/edit'
+    | '/courses/$courseId/modules/$moduleId'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/compliance-org-manager'
     | '/dashboard'
     | '/help'
     | '/report'
     | '/settings'
     | '/statistics'
     | '/templates'
-    | '/compliance-org-manager'
-    | '/tenants-org-manager'
+    | '/admin/help'
     | '/admin/logs'
-    | '/admin/terms'
+    | '/admin/report'
+    | '/admin/settings'
     | '/admin/users'
     | '/campaigns/$id'
     | '/campaigns/new'
     | '/campaigns/timeline'
+    | '/content-manager/content'
+    | '/content-manager/courses'
+    | '/content-manager/help'
+    | '/content-manager/modules'
+    | '/content-manager/report'
+    | '/content-manager/settings'
+    | '/content-manager/templates'
+    | '/courses/$courseId'
+    | '/courses/assign'
+    | '/courses/manage'
+    | '/phishing-kits/$id'
+    | '/phishing-kits/new'
     | '/sending-profiles/$id'
     | '/sending-profiles/new'
     | '/tenants/$id'
     | '/tenants/new-tenant'
     | '/usergroups/$id'
     | '/usergroups/new-group'
+    | '/users/$id'
+    | '/users/edit'
+    | '/users/new'
     | '/admin/'
     | '/campaigns/'
+    | '/content-manager/'
+    | '/courses/'
+    | '/phishing-kits/'
     | '/sending-profiles/'
     | '/tenants/'
     | '/usergroups/'
+    | '/users/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
+    | '/campaigns/$id/edit'
+    | '/content-manager/content/$contentPieceId'
+    | '/content-manager/courses_/$courseId'
+    | '/content-manager/courses_/new'
+    | '/content-manager/modules_/$moduleId'
+    | '/content-manager/modules_/new'
+    | '/courses/manage/$courseId'
     | '/admin/tenants/'
+    | '/campaigns/$id/'
+    | '/courses/$courseId/'
+    | '/courses/manage/'
+    | '/content-manager/courses_/$courseId_/edit'
+    | '/courses/$courseId/modules/$moduleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ComplianceOrgManagerRoute: typeof ComplianceOrgManagerRoute
   DashboardRoute: typeof DashboardRoute
   HelpRoute: typeof HelpRoute
   ReportRoute: typeof ReportRoute
   SettingsRoute: typeof SettingsRoute
   StatisticsRoute: typeof StatisticsRoute
   TemplatesRoute: typeof TemplatesRoute
-  ComplianceOrgManagerRoute: typeof ComplianceOrgManagerRoute
-  TenantsOrgManagerRoute: typeof TenantsOrgManagerRoute
-  CampaignsIdRoute: typeof CampaignsIdRoute
+  CampaignsIdRoute: typeof CampaignsIdRouteWithChildren
   CampaignsNewRoute: typeof CampaignsNewRoute
   CampaignsTimelineRoute: typeof CampaignsTimelineRoute
+  ContentManagerContentRoute: typeof ContentManagerContentRouteWithChildren
+  ContentManagerCoursesRoute: typeof ContentManagerCoursesRoute
+  ContentManagerHelpRoute: typeof ContentManagerHelpRoute
+  ContentManagerModulesRoute: typeof ContentManagerModulesRoute
+  ContentManagerReportRoute: typeof ContentManagerReportRoute
+  ContentManagerSettingsRoute: typeof ContentManagerSettingsRoute
+  ContentManagerTemplatesRoute: typeof ContentManagerTemplatesRoute
+  CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
+  CoursesAssignRoute: typeof CoursesAssignRoute
+  CoursesManageRoute: typeof CoursesManageRouteWithChildren
+  PhishingKitsIdRoute: typeof PhishingKitsIdRoute
+  PhishingKitsNewRoute: typeof PhishingKitsNewRoute
   SendingProfilesIdRoute: typeof SendingProfilesIdRoute
   SendingProfilesNewRoute: typeof SendingProfilesNewRoute
   TenantsIdRoute: typeof TenantsIdRoute
   TenantsNewTenantRoute: typeof TenantsNewTenantRoute
   UsergroupsIdRoute: typeof UsergroupsIdRoute
   UsergroupsNewGroupRoute: typeof UsergroupsNewGroupRoute
+  UsersIdRoute: typeof UsersIdRoute
+  UsersEditRoute: typeof UsersEditRoute
+  UsersNewRoute: typeof UsersNewRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
+  ContentManagerIndexRoute: typeof ContentManagerIndexRoute
+  CoursesIndexRoute: typeof CoursesIndexRoute
+  PhishingKitsIndexRoute: typeof PhishingKitsIndexRoute
   SendingProfilesIndexRoute: typeof SendingProfilesIndexRoute
   TenantsIndexRoute: typeof TenantsIndexRoute
   UsergroupsIndexRoute: typeof UsergroupsIndexRoute
+  UsersIndexRoute: typeof UsersIndexRoute
+  ContentManagerCoursesCourseIdRoute: typeof ContentManagerCoursesCourseIdRoute
+  ContentManagerCoursesNewRoute: typeof ContentManagerCoursesNewRoute
+  ContentManagerModulesModuleIdRoute: typeof ContentManagerModulesModuleIdRoute
+  ContentManagerModulesNewRoute: typeof ContentManagerModulesNewRoute
+  ContentManagerCoursesCourseIdEditRoute: typeof ContentManagerCoursesCourseIdEditRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/compliance-org-manager': {
-      id: '/compliance-org-manager'
-      path: '/compliance-org-manager'
-      fullPath: '/compliance-org-manager'
-      preLoaderRoute: typeof ComplianceOrgManagerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tenants-org-manager': {
-      id: '/tenants-org-manager'
-      path: '/tenants-org-manager'
-      fullPath: '/tenants-org-manager'
-      preLoaderRoute: typeof TenantsOrgManagerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/templates': {
       id: '/templates'
       path: '/templates'
@@ -469,6 +863,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compliance-org-manager': {
+      id: '/compliance-org-manager'
+      path: '/compliance-org-manager'
+      fullPath: '/compliance-org-manager'
+      preLoaderRoute: typeof ComplianceOrgManagerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -481,6 +882,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users/': {
+      id: '/users/'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof UsersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/usergroups/': {
@@ -504,6 +912,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SendingProfilesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/phishing-kits/': {
+      id: '/phishing-kits/'
+      path: '/phishing-kits'
+      fullPath: '/phishing-kits'
+      preLoaderRoute: typeof PhishingKitsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/': {
+      id: '/courses/'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/': {
+      id: '/content-manager/'
+      path: '/content-manager'
+      fullPath: '/content-manager'
+      preLoaderRoute: typeof ContentManagerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/': {
       id: '/campaigns/'
       path: '/campaigns'
@@ -517,6 +946,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/users/new': {
+      id: '/users/new'
+      path: '/users/new'
+      fullPath: '/users/new'
+      preLoaderRoute: typeof UsersNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users/edit': {
+      id: '/users/edit'
+      path: '/users/edit'
+      fullPath: '/users/edit'
+      preLoaderRoute: typeof UsersEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/users/$id': {
+      id: '/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof UsersIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/usergroups/new-group': {
       id: '/usergroups/new-group'
@@ -560,6 +1010,90 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SendingProfilesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/phishing-kits/new': {
+      id: '/phishing-kits/new'
+      path: '/phishing-kits/new'
+      fullPath: '/phishing-kits/new'
+      preLoaderRoute: typeof PhishingKitsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phishing-kits/$id': {
+      id: '/phishing-kits/$id'
+      path: '/phishing-kits/$id'
+      fullPath: '/phishing-kits/$id'
+      preLoaderRoute: typeof PhishingKitsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/manage': {
+      id: '/courses/manage'
+      path: '/courses/manage'
+      fullPath: '/courses/manage'
+      preLoaderRoute: typeof CoursesManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/assign': {
+      id: '/courses/assign'
+      path: '/courses/assign'
+      fullPath: '/courses/assign'
+      preLoaderRoute: typeof CoursesAssignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/$courseId': {
+      id: '/courses/$courseId'
+      path: '/courses/$courseId'
+      fullPath: '/courses/$courseId'
+      preLoaderRoute: typeof CoursesCourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/templates': {
+      id: '/content-manager/templates'
+      path: '/content-manager/templates'
+      fullPath: '/content-manager/templates'
+      preLoaderRoute: typeof ContentManagerTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/settings': {
+      id: '/content-manager/settings'
+      path: '/content-manager/settings'
+      fullPath: '/content-manager/settings'
+      preLoaderRoute: typeof ContentManagerSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/report': {
+      id: '/content-manager/report'
+      path: '/content-manager/report'
+      fullPath: '/content-manager/report'
+      preLoaderRoute: typeof ContentManagerReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/modules': {
+      id: '/content-manager/modules'
+      path: '/content-manager/modules'
+      fullPath: '/content-manager/modules'
+      preLoaderRoute: typeof ContentManagerModulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/help': {
+      id: '/content-manager/help'
+      path: '/content-manager/help'
+      fullPath: '/content-manager/help'
+      preLoaderRoute: typeof ContentManagerHelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/courses': {
+      id: '/content-manager/courses'
+      path: '/content-manager/courses'
+      fullPath: '/content-manager/courses'
+      preLoaderRoute: typeof ContentManagerCoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/content': {
+      id: '/content-manager/content'
+      path: '/content-manager/content'
+      fullPath: '/content-manager/content'
+      preLoaderRoute: typeof ContentManagerContentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/campaigns/timeline': {
       id: '/campaigns/timeline'
       path: '/campaigns/timeline'
@@ -588,11 +1122,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/terms': {
-      id: '/admin/terms'
-      path: '/terms'
-      fullPath: '/admin/terms'
-      preLoaderRoute: typeof AdminTermsRouteImport
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/report': {
+      id: '/admin/report'
+      path: '/report'
+      fullPath: '/admin/report'
+      preLoaderRoute: typeof AdminReportRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/logs': {
@@ -602,12 +1143,89 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLogsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/help': {
+      id: '/admin/help'
+      path: '/help'
+      fullPath: '/admin/help'
+      preLoaderRoute: typeof AdminHelpRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/courses/manage/': {
+      id: '/courses/manage/'
+      path: '/'
+      fullPath: '/courses/manage/'
+      preLoaderRoute: typeof CoursesManageIndexRouteImport
+      parentRoute: typeof CoursesManageRoute
+    }
+    '/courses/$courseId/': {
+      id: '/courses/$courseId/'
+      path: '/'
+      fullPath: '/courses/$courseId/'
+      preLoaderRoute: typeof CoursesCourseIdIndexRouteImport
+      parentRoute: typeof CoursesCourseIdRoute
+    }
+    '/campaigns/$id/': {
+      id: '/campaigns/$id/'
+      path: '/'
+      fullPath: '/campaigns/$id/'
+      preLoaderRoute: typeof CampaignsIdIndexRouteImport
+      parentRoute: typeof CampaignsIdRoute
+    }
     '/admin/tenants/': {
       id: '/admin/tenants/'
       path: '/tenants'
       fullPath: '/admin/tenants'
       preLoaderRoute: typeof AdminTenantsIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/courses/manage/$courseId': {
+      id: '/courses/manage/$courseId'
+      path: '/$courseId'
+      fullPath: '/courses/manage/$courseId'
+      preLoaderRoute: typeof CoursesManageCourseIdRouteImport
+      parentRoute: typeof CoursesManageRoute
+    }
+    '/content-manager/modules_/new': {
+      id: '/content-manager/modules_/new'
+      path: '/content-manager/modules/new'
+      fullPath: '/content-manager/modules/new'
+      preLoaderRoute: typeof ContentManagerModulesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/modules_/$moduleId': {
+      id: '/content-manager/modules_/$moduleId'
+      path: '/content-manager/modules/$moduleId'
+      fullPath: '/content-manager/modules/$moduleId'
+      preLoaderRoute: typeof ContentManagerModulesModuleIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/courses_/new': {
+      id: '/content-manager/courses_/new'
+      path: '/content-manager/courses/new'
+      fullPath: '/content-manager/courses/new'
+      preLoaderRoute: typeof ContentManagerCoursesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/courses_/$courseId': {
+      id: '/content-manager/courses_/$courseId'
+      path: '/content-manager/courses/$courseId'
+      fullPath: '/content-manager/courses/$courseId'
+      preLoaderRoute: typeof ContentManagerCoursesCourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-manager/content/$contentPieceId': {
+      id: '/content-manager/content/$contentPieceId'
+      path: '/$contentPieceId'
+      fullPath: '/content-manager/content/$contentPieceId'
+      preLoaderRoute: typeof ContentManagerContentContentPieceIdRouteImport
+      parentRoute: typeof ContentManagerContentRoute
+    }
+    '/campaigns/$id/edit': {
+      id: '/campaigns/$id/edit'
+      path: '/edit'
+      fullPath: '/campaigns/$id/edit'
+      preLoaderRoute: typeof CampaignsIdEditRouteImport
+      parentRoute: typeof CampaignsIdRoute
     }
     '/admin/tenants/new-tenant': {
       id: '/admin/tenants/new-tenant'
@@ -623,12 +1241,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTenantsTenantIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/courses/$courseId/modules/$moduleId': {
+      id: '/courses/$courseId/modules/$moduleId'
+      path: '/modules/$moduleId'
+      fullPath: '/courses/$courseId/modules/$moduleId'
+      preLoaderRoute: typeof CoursesCourseIdModulesModuleIdRouteImport
+      parentRoute: typeof CoursesCourseIdRoute
+    }
+    '/content-manager/courses_/$courseId_/edit': {
+      id: '/content-manager/courses_/$courseId_/edit'
+      path: '/content-manager/courses/$courseId/edit'
+      fullPath: '/content-manager/courses/$courseId/edit'
+      preLoaderRoute: typeof ContentManagerCoursesCourseIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminHelpRoute: typeof AdminHelpRoute
   AdminLogsRoute: typeof AdminLogsRoute
-  AdminTermsRoute: typeof AdminTermsRoute
+  AdminReportRoute: typeof AdminReportRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminTenantsTenantIdRoute: typeof AdminTenantsTenantIdRoute
@@ -637,8 +1271,10 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminHelpRoute: AdminHelpRoute,
   AdminLogsRoute: AdminLogsRoute,
-  AdminTermsRoute: AdminTermsRoute,
+  AdminReportRoute: AdminReportRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminTenantsTenantIdRoute: AdminTenantsTenantIdRoute,
@@ -648,30 +1284,110 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface CampaignsIdRouteChildren {
+  CampaignsIdEditRoute: typeof CampaignsIdEditRoute
+  CampaignsIdIndexRoute: typeof CampaignsIdIndexRoute
+}
+
+const CampaignsIdRouteChildren: CampaignsIdRouteChildren = {
+  CampaignsIdEditRoute: CampaignsIdEditRoute,
+  CampaignsIdIndexRoute: CampaignsIdIndexRoute,
+}
+
+const CampaignsIdRouteWithChildren = CampaignsIdRoute._addFileChildren(
+  CampaignsIdRouteChildren,
+)
+
+interface ContentManagerContentRouteChildren {
+  ContentManagerContentContentPieceIdRoute: typeof ContentManagerContentContentPieceIdRoute
+}
+
+const ContentManagerContentRouteChildren: ContentManagerContentRouteChildren = {
+  ContentManagerContentContentPieceIdRoute:
+    ContentManagerContentContentPieceIdRoute,
+}
+
+const ContentManagerContentRouteWithChildren =
+  ContentManagerContentRoute._addFileChildren(
+    ContentManagerContentRouteChildren,
+  )
+
+interface CoursesCourseIdRouteChildren {
+  CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
+  CoursesCourseIdModulesModuleIdRoute: typeof CoursesCourseIdModulesModuleIdRoute
+}
+
+const CoursesCourseIdRouteChildren: CoursesCourseIdRouteChildren = {
+  CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
+  CoursesCourseIdModulesModuleIdRoute: CoursesCourseIdModulesModuleIdRoute,
+}
+
+const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
+  CoursesCourseIdRouteChildren,
+)
+
+interface CoursesManageRouteChildren {
+  CoursesManageCourseIdRoute: typeof CoursesManageCourseIdRoute
+  CoursesManageIndexRoute: typeof CoursesManageIndexRoute
+}
+
+const CoursesManageRouteChildren: CoursesManageRouteChildren = {
+  CoursesManageCourseIdRoute: CoursesManageCourseIdRoute,
+  CoursesManageIndexRoute: CoursesManageIndexRoute,
+}
+
+const CoursesManageRouteWithChildren = CoursesManageRoute._addFileChildren(
+  CoursesManageRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  ComplianceOrgManagerRoute: ComplianceOrgManagerRoute,
   DashboardRoute: DashboardRoute,
   HelpRoute: HelpRoute,
   ReportRoute: ReportRoute,
   SettingsRoute: SettingsRoute,
   StatisticsRoute: StatisticsRoute,
   TemplatesRoute: TemplatesRoute,
-  ComplianceOrgManagerRoute: ComplianceOrgManagerRoute,
-  TenantsOrgManagerRoute: TenantsOrgManagerRoute,
-  CampaignsIdRoute: CampaignsIdRoute,
+  CampaignsIdRoute: CampaignsIdRouteWithChildren,
   CampaignsNewRoute: CampaignsNewRoute,
   CampaignsTimelineRoute: CampaignsTimelineRoute,
+  ContentManagerContentRoute: ContentManagerContentRouteWithChildren,
+  ContentManagerCoursesRoute: ContentManagerCoursesRoute,
+  ContentManagerHelpRoute: ContentManagerHelpRoute,
+  ContentManagerModulesRoute: ContentManagerModulesRoute,
+  ContentManagerReportRoute: ContentManagerReportRoute,
+  ContentManagerSettingsRoute: ContentManagerSettingsRoute,
+  ContentManagerTemplatesRoute: ContentManagerTemplatesRoute,
+  CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
+  CoursesAssignRoute: CoursesAssignRoute,
+  CoursesManageRoute: CoursesManageRouteWithChildren,
+  PhishingKitsIdRoute: PhishingKitsIdRoute,
+  PhishingKitsNewRoute: PhishingKitsNewRoute,
   SendingProfilesIdRoute: SendingProfilesIdRoute,
   SendingProfilesNewRoute: SendingProfilesNewRoute,
   TenantsIdRoute: TenantsIdRoute,
   TenantsNewTenantRoute: TenantsNewTenantRoute,
   UsergroupsIdRoute: UsergroupsIdRoute,
   UsergroupsNewGroupRoute: UsergroupsNewGroupRoute,
+  UsersIdRoute: UsersIdRoute,
+  UsersEditRoute: UsersEditRoute,
+  UsersNewRoute: UsersNewRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
+  ContentManagerIndexRoute: ContentManagerIndexRoute,
+  CoursesIndexRoute: CoursesIndexRoute,
+  PhishingKitsIndexRoute: PhishingKitsIndexRoute,
   SendingProfilesIndexRoute: SendingProfilesIndexRoute,
   TenantsIndexRoute: TenantsIndexRoute,
   UsergroupsIndexRoute: UsergroupsIndexRoute,
+  UsersIndexRoute: UsersIndexRoute,
+  ContentManagerCoursesCourseIdRoute: ContentManagerCoursesCourseIdRoute,
+  ContentManagerCoursesNewRoute: ContentManagerCoursesNewRoute,
+  ContentManagerModulesModuleIdRoute: ContentManagerModulesModuleIdRoute,
+  ContentManagerModulesNewRoute: ContentManagerModulesNewRoute,
+  ContentManagerCoursesCourseIdEditRoute:
+    ContentManagerCoursesCourseIdEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

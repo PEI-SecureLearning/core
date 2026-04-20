@@ -1,5 +1,8 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import RequiredAsterisk from '@/components/shared/RequiredAsterisk'
+import { getEmailDomain, isValidEmail } from '@/lib/emailValidation'
+import { isValidTenantDomain, normalizeTenantDomain } from '@/lib/tenantDomainValidation'
 
 interface TenantFormOrganizationProps {
     realmName: string
@@ -14,44 +17,71 @@ export function TenantFormOrganization({
     realmName, setRealmName,
     domain, setDomain,
     adminEmail, setAdminEmail
-}: TenantFormOrganizationProps) {
+}: Readonly<TenantFormOrganizationProps>) {
+
+    const normalizedDomain = normalizeTenantDomain(domain)
+    const normalizedEmail = adminEmail.trim().toLowerCase()
+    const isDomainFormatValid = isValidTenantDomain(normalizedDomain)
+    const isAdminEmailFormatValid = !!normalizedEmail && isValidEmail(normalizedEmail)
+    const adminEmailDomain = getEmailDomain(normalizedEmail) ?? ''
+    const isAdminEmailDomainMatching =
+        !normalizedDomain || !adminEmailDomain || adminEmailDomain === normalizedDomain
+    const isAdminEmailValid = isAdminEmailFormatValid && isAdminEmailDomainMatching
+
     return (
-        <div className="space-y-6">
-            <div className="h-20">
-                <Label htmlFor="org-name" className="text-gray-700 block mb-2">Organization name<span className="text-red-500">*</span></Label>
+        <div className="flex-1 space-y-4">
+            <div>
+                <Label htmlFor="org-name" className="text-foreground/90 block mb-1.5 text-xs font-semibold">Organization name <RequiredAsterisk isValid={!!realmName.trim()} /></Label>
                 <Input
                     id="org-name"
-                    placeholder="Enter organization name"
+                    placeholder="Enter name"
                     value={realmName}
                     onChange={(e) => setRealmName(e.target.value)}
-                    className="h-12 bg-gray-50 border-gray-200"
+                    className="h-10 bg-surface-subtle border-border"
                     required
                 />
             </div>
 
-            <div className="h-20">
-                <Label htmlFor="domain" className="text-gray-700 block mb-2">Tenant domain/email pattern<span className="text-red-500">*</span></Label>
+            <div>
+                <Label htmlFor="domain" className="text-foreground/90 block mb-1.5 text-xs font-semibold">Domain pattern <RequiredAsterisk isValid={!!normalizedDomain} /></Label>
                 <Input
                     id="domain"
                     placeholder="company.com"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
-                    className="h-12 bg-gray-50 border-gray-200"
+                    className="h-10 bg-surface-subtle border-border"
+                    aria-invalid={!!domain.trim() && !isDomainFormatValid}
                     required
                 />
+                {!!domain.trim() && !isDomainFormatValid && (
+                    <p className="mt-1 text-xs text-destructive">
+                        Please enter a valid domain name.
+                    </p>
+                )}
             </div>
 
-            <div className="h-20">
-                <Label htmlFor="admin-email" className="text-gray-700 block mb-2">Admin email<span className="text-red-500">*</span></Label>
+            <div>
+                <Label htmlFor="admin-email" className="text-foreground/90 block mb-1.5 text-xs font-semibold">Admin email <RequiredAsterisk isValid={isAdminEmailValid} /></Label>
                 <Input
                     id="admin-email"
                     placeholder="admin@company.com"
                     type="email"
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    className="h-12 bg-gray-50 border-gray-200"
+                    className="h-10 bg-surface-subtle border-border"
+                    aria-invalid={!!normalizedEmail && !isAdminEmailValid}
                     required
                 />
+                {!!normalizedEmail && !isAdminEmailFormatValid && (
+                    <p className="mt-1 text-xs text-destructive">
+                        Please enter a valid admin email address.
+                    </p>
+                )}
+                {!!normalizedEmail && isAdminEmailFormatValid && !isAdminEmailDomainMatching && (
+                    <p className="mt-1 text-xs text-destructive">
+                        Admin email domain must match organization domain ({normalizedDomain}).
+                    </p>
+                )}
             </div>
         </div>
     )

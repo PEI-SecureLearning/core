@@ -2,9 +2,43 @@
 import {
   type SendingProfile,
   type SendingProfileCreate,
+  type SendingProfileDisplayInfo,
 } from "@/types/sendingProfile";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+export async function testSendingProfileConfiguration(
+  data: SendingProfileCreate,
+  token?: string
+) {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${API_URL}/sending-profiles/test`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const contentType = res.headers.get("content-type") ?? "";
+
+    if (contentType.includes("application/json")) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(
+        errorData.detail || "Failed to test profile configuration"
+      );
+    }
+
+    const message = await res.text().catch(() => "");
+    throw new Error(message || "Failed to test profile configuration");
+  }
+
+  const message = await res.text();
+  return { success: true, message };
+}
 
 // 1. CREATE (POST)
 export async function createSendingProfile(
@@ -40,7 +74,7 @@ export async function fetchSendingProfiles(_realm: string, token?: string) {
   const res = await fetch(`${API_URL}/sending-profiles`, { headers });
 
   if (!res.ok) throw new Error("Failed to fetch profiles");
-  return res.json() as Promise<SendingProfile[]>;
+  return res.json() as Promise<SendingProfileDisplayInfo[]>;
 }
 
 // 3. READ ONE (GET)

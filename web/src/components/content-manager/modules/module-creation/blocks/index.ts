@@ -1,0 +1,5 @@
+export { BlockWarning } from './BlockWarning'
+export { SortableBlock } from './SortableBlock'
+export { AddBlockMenu } from './AddBlockMenu'
+export { BlockDragPreview } from './BlockDragPreview'
+export { useModuleTheme } from '../theme-context'

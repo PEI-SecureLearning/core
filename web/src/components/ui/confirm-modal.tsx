@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, type ReactNode } from 'react'
+import { useState, useCallback, useMemo, createContext, useContext, type ReactNode } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
 
 interface ConfirmOptions {
@@ -17,17 +17,21 @@ const ConfirmContext = createContext<ConfirmContextType | null>(null)
 
 export function useConfirm() {
     const context = useContext(ConfirmContext)
-    if (!context) {
-        throw new Error('useConfirm must be used within a ConfirmProvider')
-    }
-    return context.confirm
+
+    return useCallback((options: ConfirmOptions) => {
+        if (!context) {
+            const accepted = globalThis.confirm(`${options.title}\n\n${options.message}`)
+            return Promise.resolve(accepted)
+        }
+        return context.confirm(options)
+    }, [context])
 }
 
 interface ConfirmState extends ConfirmOptions {
     resolve: (value: boolean) => void
 }
 
-export function ConfirmProvider({ children }: { children: ReactNode }) {
+export function ConfirmProvider({ children }: Readonly<{ children: ReactNode }>) {
     const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
 
     const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
@@ -67,9 +71,10 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     }
 
     const styles = getVariantStyles()
+    const contextValue = useMemo(() => ({ confirm }), [confirm])
 
     return (
-        <ConfirmContext.Provider value={{ confirm }}>
+        <ConfirmContext.Provider value={contextValue}>
             {children}
 
             {/* Modal Overlay */}
@@ -82,33 +87,33 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                     />
 
                     {/* Modal */}
-                    <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="relative bg-background rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         {/* Header */}
                         <div className="flex items-start gap-4 p-6 pb-4">
                             <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${styles.icon}`}>
                                 <AlertTriangle size={24} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-semibold text-gray-900">
+                                <h3 className="text-lg font-semibold text-foreground">
                                     {confirmState.title}
                                 </h3>
-                                <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
                                     {confirmState.message}
                                 </p>
                             </div>
                             <button
                                 onClick={handleCancel}
-                                className="flex-shrink-0 text-gray-400 hover:text-gray-500 transition-colors"
+                                className="flex-shrink-0 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-3 p-6 pt-4 bg-gray-50 border-t border-gray-100">
+                        <div className="flex gap-3 p-6 pt-4 bg-surface-subtle border-t border-border/40">
                             <button
                                 onClick={handleCancel}
-                                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                                className="flex-1 px-4 py-2.5 text-sm font-medium text-foreground/90 bg-background border border-border/60 rounded-lg hover:bg-surface-subtle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring/30 transition-colors"
                             >
                                 {confirmState.cancelText || 'Cancel'}
                             </button>

@@ -1,25 +1,42 @@
 import json
+import smtplib
+import socket
 import time
 import pika
 from pydantic import ValidationError
 
-from .core.config import RabbitMQConfig, RateLimiterConfig
-from .models import EmailMessage
+from .core.config import RabbitMQConfig
+from .models import EmailMessage, TrackingEvent
 from .emails.email_sender import EmailSender
-from .rate_limiter import RateLimiter
+
+_SMTP_ERROR_CAUSES: list[tuple[type, str]] = [
+    (smtplib.SMTPAuthenticationError, "auth_error"),
+    (smtplib.SMTPConnectError, "network_error"),
+    (smtplib.SMTPServerDisconnected, "network_error"),
+    (ConnectionRefusedError, "network_error"),
+    (TimeoutError, "network_error"),
+    (socket.gaierror, "network_error"),
+    (socket.timeout, "network_error"),
+    (OSError, "network_error"),
+]
+
+
+def _classify_smtp_error(e: Exception) -> str:
+    for exc_type, cause in _SMTP_ERROR_CAUSES:
+        if isinstance(e, exc_type):
+            return cause
+    return "unknown_error"
 
 
 class RabbitMQConsumer:
-    """RabbitMQ consumer that processes email messages with rate limiting."""
+    """RabbitMQ consumer that processes email messages."""
 
     def __init__(
         self,
         rabbitmq_config: RabbitMQConfig,
-        rate_limiter: RateLimiter,
         email_sender: EmailSender,
     ):
         self.rabbitmq_config = rabbitmq_config
-        self.rate_limiter = rate_limiter
         self.email_sender = email_sender
         self._connection: pika.BlockingConnection | None = None
         self._channel: pika.adapters.blocking_connection.BlockingChannel | None = None
@@ -30,6 +47,7 @@ class RabbitMQConsumer:
         self._connection = pika.BlockingConnection(self.rabbitmq_config.connection_parameters)
         self._channel = self._connection.channel()
         self._channel.queue_declare(queue=self.rabbitmq_config.RABBITMQ_QUEUE, durable=True)
+        self._channel.queue_declare(queue=self.rabbitmq_config.RABBITMQ_TRACKING_QUEUE, durable=True)
         self._channel.basic_qos(prefetch_count=1)
 
     def _handle_message(
@@ -39,16 +57,34 @@ class RabbitMQConsumer:
         properties: pika.spec.BasicProperties,
         body: bytes
     ) -> None:
-        """Process a single message from the queue with rate limiting."""
-        print(f"Received message: {body.decode()}")
-        
+        """Process a single message from the queue."""
+
+        email_message: EmailMessage | None = None
         try:
-            # Wait for rate limit slot before processing
-            self.rate_limiter.acquire()
-            
             data = json.loads(body)
             email_message = EmailMessage(**data)
-            self.email_sender.send(email_message)
+
+            try:
+                self.email_sender.send(email_message)
+                event = TrackingEvent(action="sent", tracking_id=email_message.tracking_id)
+                tracking_msg = event.model_dump_json()
+            except Exception as send_err:
+                cause = _classify_smtp_error(send_err)
+                print(f"Error sending email (tracking_id={email_message.tracking_id}): {send_err} [{cause}]")
+                event = TrackingEvent(
+                    action="failed",
+                    tracking_id=email_message.tracking_id,
+                    error=cause,
+                )
+                tracking_msg = event.model_dump_json(exclude_none=True)
+
+            if self._channel and self._channel.is_open:
+                self._channel.basic_publish(
+                    exchange="",
+                    routing_key=self.rabbitmq_config.RABBITMQ_TRACKING_QUEUE,
+                    body=tracking_msg
+                )
+
         except json.JSONDecodeError:
             print("Error: Failed to decode JSON body")
         except ValidationError as e:
@@ -62,8 +98,6 @@ class RabbitMQConsumer:
 
     def start(self) -> None:
         """Start consuming messages from the queue."""
-        print(f"Rate limit: {self.rate_limiter.max_requests} emails per {self.rate_limiter.time_window}s")
-        
         while True:
             try:
                 self._connect()

@@ -16,6 +16,7 @@ class RabbitMQConfig(BaseSettings):
     RABBITMQ_USER: str
     RABBITMQ_PASS: str
     RABBITMQ_QUEUE: str
+    RABBITMQ_TRACKING_QUEUE: str = "tracking_queue"
 
     @property
     def credentials(self) -> pika.PlainCredentials:

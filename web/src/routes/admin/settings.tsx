@@ -1,0 +1,10 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { SettingsPanel } from '@/components/SettingsPanel'
+
+export const Route = createFileRoute('/admin/settings')({
+    component: RouteComponent,
+})
+
+function RouteComponent() {
+    return <SettingsPanel />
+}

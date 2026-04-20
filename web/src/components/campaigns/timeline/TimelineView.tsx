@@ -163,18 +163,18 @@ export const TimelineView = memo(function TimelineView({
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigatePeriod(-1)}
-            className="p-2 rounded-lg hover:bg-slate-100/80 transition-colors cursor-pointer"
+            className="p-2 rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
           >
-            <ChevronLeft size={20} className="text-slate-500" />
+            <ChevronLeft size={20} className="text-muted-foreground" />
           </button>
-          <span className="text-[15px] font-semibold text-slate-700 min-w-[180px] text-center">
+          <span className="text-[15px] font-semibold text-foreground/90 min-w-[180px] text-center">
             {periodLabel}
           </span>
           <button
             onClick={() => navigatePeriod(1)}
-            className="p-2 rounded-lg hover:bg-slate-100/80 transition-colors cursor-pointer"
+            className="p-2 rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
           >
-            <ChevronRight size={20} className="text-slate-500" />
+            <ChevronRight size={20} className="text-muted-foreground" />
           </button>
         </div>
 
@@ -193,11 +193,10 @@ export const TimelineView = memo(function TimelineView({
               <button
                 key={period}
                 onClick={() => setViewPeriod(period)}
-                className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer capitalize ${
-                  viewPeriod === period
-                    ? "bg-white shadow-md text-purple-600"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-                }`}
+                className={`px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-pointer capitalize ${viewPeriod === period
+                    ? "bg-background shadow-md text-primary"
+                    : "text-muted-foreground hover:text-foreground/90 hover:bg-background/50"
+                  }`}
               >
                 {period}
               </button>

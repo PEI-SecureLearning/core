@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Search, Filter, Shield, Trash2, Edit2 } from 'lucide-react'
+import { Filter, Shield, Trash2, Edit2 } from 'lucide-react'
+import SearchBar from '@/components/shared/SearchBar'
 
 interface User {
     id: string
@@ -33,31 +34,30 @@ export function UserList() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-                    <p className="text-gray-500 mt-1">Manage users, roles, and permissions</p>
+                    <h2 className="text-2xl font-bold text-foreground">User Management</h2>
+                    <p className="text-muted-foreground mt-1">Manage users, roles, and permissions</p>
                 </div>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-sm">
                     <Shield size={18} />
                     Add User
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                <div className="p-4 border-b border-gray-200 flex gap-4">
+            <div className="bg-background rounded-xl border border-border shadow-sm">
+                <div className="p-4 border-b border-border flex gap-4">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        <SearchBar
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={setSearchTerm}
+                            placeholder="Search users..."
+                            iconClassName="text-primary"
+                            inputClassName="h-10 rounded-lg border-border focus-visible:ring-primary/50"
                         />
                     </div>
                     <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70" size={20} />
                         <select
-                            className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                            className="pl-10 pr-8 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-transparent appearance-none bg-background"
                             value={selectedGroup}
                             onChange={(e) => setSelectedGroup(e.target.value)}
                         >
@@ -73,59 +73,64 @@ export function UserList() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200">
-                                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Group</th>
-                                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Active</th>
-                                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                            <tr className="bg-surface-subtle border-b border-border">
+                                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
+                                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role</th>
+                                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Group</th>
+                                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Last Active</th>
+                                <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                        <tbody className="divide-y divide-border">
+                            {filteredUsers.map((user) => {
+                                let roleBadgeClass = 'bg-muted text-foreground'
+                                if (user.role === 'Admin') {
+                                    roleBadgeClass = 'bg-primary/20 text-primary/80'
+                                } else if (user.role === 'Manager') {
+                                    roleBadgeClass = 'bg-info/10 text-info'
+                                }
+
+                                return (
+                                <tr key={user.id} className="hover:bg-surface-subtle transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                                                 {user.name.charAt(0)}
                                             </div>
                                             <div>
-                                                <div className="font-medium text-gray-900">{user.name}</div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
+                                                <div className="font-medium text-foreground">{user.name}</div>
+                                                <div className="text-sm text-muted-foreground">{user.email}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                                            user.role === 'Manager' ? 'bg-blue-100 text-blue-800' :
-                                                'bg-gray-100 text-gray-800'
-                                            }`}>
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleBadgeClass}`}>
                                             {user.role}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{user.group}</td>
+                                    <td className="px-6 py-4 text-sm text-muted-foreground">{user.group}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-success/10 text-success' : 'bg-muted text-foreground'
                                             }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-green-600' : 'bg-gray-500'
+                                            <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-success' : 'bg-muted-foreground/50'
                                                 }`} />
                                             {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">{user.lastActive}</td>
+                                    <td className="px-6 py-4 text-sm text-muted-foreground">{user.lastActive}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <button className="p-2 text-muted-foreground/70 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
                                                 <Edit2 size={16} />
                                             </button>
-                                            <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                            <button className="p-2 text-muted-foreground/70 hover:text-error hover:bg-error/10 rounded-lg transition-colors">
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )})}
                         </tbody>
                     </table>
                 </div>

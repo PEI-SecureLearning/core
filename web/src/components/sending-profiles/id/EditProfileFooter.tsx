@@ -1,6 +1,8 @@
 import { memo } from "react";
+import type { ReactElement } from "react";
 import { Link } from "@tanstack/react-router";
 import { Save, Loader2, Trash2 } from "lucide-react";
+import { StatusMessage } from "@/components/sending-profiles/shared/statusMessage";
 
 interface Props {
   onSave: () => void;
@@ -10,42 +12,39 @@ interface Props {
   status?: string | null;
 }
 
-const StatusMessage = memo(function StatusMessage({
-  status,
-}: {
-  status: string;
-}) {
-  const isError =
-    status.toLowerCase().includes("failed") ||
-    status.toLowerCase().includes("error");
-  return (
-    <div
-      className={`text-sm px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl border ${isError ? "text-red-600 border-red-200/30" : "text-gray-600 border-blue-200/30"}`}
-    >
-      <span
-        className={`inline-block w-2 h-2 rounded-full mr-2 animate-pulse ${isError ? "bg-red-500" : "bg-blue-400"}`}
-      ></span>
-      {status}
-    </div>
-  );
-});
+interface ButtonContent {
+  icon: ReactElement;
+  text: string;
+}
+
+const getButtonContent = (isLoading: boolean | undefined): ButtonContent => {
+  if (isLoading) {
+    return {
+      icon: <Loader2 className="h-4 w-4 animate-spin" />,
+      text: "Updating..."
+    };
+  }
+  return { icon: <Save className="h-4 w-4" />, text: "Save Changes" };
+};
 
 function EditProfileFooter({
   onSave,
   onDelete,
   isValid,
   isLoading,
-  status,
-}: Props) {
+  status
+}: Readonly<Props>) {
+  const buttonContent = getButtonContent(isLoading);
+
   return (
     <div className="flex flex-col gap-3 px-6 relative z-10">
       {status && <StatusMessage status={status} />}
 
-      <div className="flex gap-4 justify-between items-center">
-        {/* Botão de Perigo (Apagar) */}
+      <div className="flex gap-4 justify-between items-center flex-wrap">
         <button
           onClick={onDelete}
-          className="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          disabled={isLoading}
+          className="text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
         >
           <Trash2 className="h-4 w-4" />
@@ -55,26 +54,18 @@ function EditProfileFooter({
         <div className="flex gap-4">
           <Link
             to="/sending-profiles"
-            className="liquid-glass-button-secondary px-6 py-2.5 text-sm"
+            className="px-6 py-2.5 rounded-lg text-sm font-medium border border-border bg-surface hover:bg-surface-subtle text-foreground transition-colors"
           >
             Cancel
           </Link>
+
           <button
             onClick={onSave}
             disabled={!isValid || isLoading}
-            className="liquid-glass-button bg-blue-600 hover:bg-blue-700 flex items-center gap-2 px-6 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Updating...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Save Changes
-              </>
-            )}
+            {buttonContent.icon}
+            {buttonContent.text}
           </button>
         </div>
       </div>

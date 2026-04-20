@@ -13,7 +13,7 @@ type Props = {
 
 export default function BulkUserImport({ bulkUsers, isBulkLoading, onCsvUpload, onBulkCreate }: Props) {
   return (
-    <Card className="shadow-sm border border-gray-100">
+    <Card className="shadow-sm border border-border/40">
       <CardHeader>
         <CardTitle className="text-lg">Bulk User Registration</CardTitle>
         <CardDescription>
@@ -52,7 +52,7 @@ export default function BulkUserImport({ bulkUsers, isBulkLoading, onCsvUpload, 
                     {u.name} ({u.email}) — {u.role}
                     {u.groups && u.groups.length ? ` · groups: ${u.groups.join(", ")}` : ""}
                   </div>
-                  <div className="text-xs text-gray-500 truncate">{u.status || "pending"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{u.status || "pending"}</div>
                 </div>
               ))}
             </div>

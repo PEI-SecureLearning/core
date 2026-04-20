@@ -1,0 +1,197 @@
+[
+  {
+    "realm": "master",
+    "enabled": true,
+    "displayName": "Keycloak",
+    "clients": [
+      {
+        "clientId": "SecureLearning-admin",
+        "enabled": true,
+        "secret": "${CLIENT_SECRET}",
+        "serviceAccountsEnabled": true,
+        "redirectUris": [
+          "${WEB_URL}/admin/*",
+          "${WEB_URL}/admin"
+        ],
+        "webOrigins": [
+          "${KEYCLOAK_URL}"
+        ]
+      }
+    ],
+    "users": [
+      {
+        "username": "service-account-securelearning-admin",
+        "enabled": true,
+        "serviceAccountClientId": "SecureLearning-admin",
+        "realmRoles": [
+          "admin",
+          "create-realm"
+        ]
+      }
+    ]
+  },
+  {
+    "realm": "platform",
+    "enabled": true,
+    "loginTheme": "keycloakify-starter",
+    "roles": {
+      "realm": [
+        {
+          "name": "admin",
+          "description": "Platform administrator role"
+        },
+        {
+          "name": "CONTENT_MANAGER",
+          "description": "Content manager role"
+        }
+      ]
+    },
+    "users": [
+      {
+        "username": "platform_admin",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "admin"
+          }
+        ],
+        "realmRoles": [
+          "admin"
+        ]
+      },
+      {
+        "username": "content_manager",
+        "enabled": true,
+        "credentials": [
+          {
+            "type": "password",
+            "value": "admin"
+          }
+        ],
+        "realmRoles": [
+          "CONTENT_MANAGER"
+        ]
+      }
+    ],
+    "clients": [
+      {
+        "clientId": "react-admin",
+        "enabled": true,
+        "publicClient": true,
+        "redirectUris": [
+          "${WEB_URL}/*",
+          "${WEB_URL}/admin/*",
+          "${WEB_URL}/content-manager/*"
+        ],
+        "webOrigins": [
+          "${WEB_URL}"
+        ],
+        "protocolMappers": [
+          {
+            "name": "api-audience",
+            "protocol": "openid-connect",
+            "protocolMapper": "oidc-audience-mapper",
+            "config": {
+              "included.client.audience": "api",
+              "access.token.claim": "true"
+            }
+          }
+        ]
+      },
+      {
+        "clientId": "api",
+        "enabled": true,
+        "serviceAccountsEnabled": false,
+        "authorizationServicesEnabled": true,
+        "authorizationSettings": {
+          "allowRemoteResourceManagement": true,
+          "policyEnforcementMode": "ENFORCING",
+          "resources": [
+            {
+              "name": "admin",
+              "type": "urn:api:resources:admin",
+              "displayName": "Platform Admin Resource",
+              "uris": [
+                "/api/admin/*",
+                "/api/realms/*"
+              ],
+              "scopes": [
+                {
+                  "name": "view"
+                },
+                {
+                  "name": "manage"
+                }
+              ]
+            },
+            {
+              "name": "content-manager",
+              "type": "urn:api:resources:content-manager",
+              "displayName": "Content Manager Resource",
+              "uris": [
+                "/api/content/*"
+              ],
+              "scopes": [
+                {
+                  "name": "view"
+                },
+                {
+                  "name": "manage"
+                }
+              ]
+            }
+          ],
+          "policies": [
+            {
+              "name": "admin Role Policy",
+              "type": "role",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "roles": "[{\"id\":\"admin\",\"required\":false}]"
+              }
+            },
+            {
+              "name": "admin Permission",
+              "type": "resource",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "resources": "[\"admin\"]",
+                "applyPolicies": "[\"admin Role Policy\"]"
+              }
+            },
+            {
+              "name": "content-manager Role Policy",
+              "type": "role",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "roles": "[{\"id\":\"CONTENT_MANAGER\",\"required\":false}]"
+              }
+            },
+            {
+              "name": "content-manager Permission",
+              "type": "resource",
+              "logic": "POSITIVE",
+              "decisionStrategy": "UNANIMOUS",
+              "config": {
+                "resources": "[\"content-manager\"]",
+                "applyPolicies": "[\"content-manager Role Policy\"]"
+              }
+            }
+          ],
+          "scopes": [
+            {
+              "name": "view"
+            },
+            {
+              "name": "manage"
+            }
+          ]
+        }
+      }
+    ]
+  }
+]

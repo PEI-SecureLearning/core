@@ -1,9 +1,10 @@
 from datetime import datetime
 from fastapi import HTTPException
-from sqlmodel import Session, select, text
+from sqlmodel import Session, select, text, update
 
-from src.models.campaign import Campaign
-from src.models.email_sending import EmailSending, EmailSendingStatus
+from src.models import Campaign, EmailSending, EmailSendingStatus
+
+from src.services import templates as TemplateService
 
 
 class TrackingService:
@@ -17,14 +18,16 @@ class TrackingService:
         if sending.sent_at is None:
             sending.sent_at = datetime.now()
             sending.status = EmailSendingStatus.SENT
+            session.add(sending)
 
-            # Increment campaign counter
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_sent += 1
-                session.add(campaign)
-                session.commit()
-                session.refresh(sending)
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_sent=Campaign.total_sent + 1)
+            )
+            session.commit()
+            session.refresh(sending)
 
         return sending
 
@@ -36,14 +39,16 @@ class TrackingService:
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
             sending.status = EmailSendingStatus.OPENED
+            session.add(sending)
 
-            # Increment campaign counter using ORM
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_opened += 1
-                session.add(campaign)
-                session.commit()
-                session.refresh(sending)
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_opened=Campaign.total_opened + 1)
+            )
+            session.commit()
+            session.refresh(sending)
 
         return sending
 
@@ -54,51 +59,96 @@ class TrackingService:
         # Record open if not already recorded (click implies open)
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
-            # Increment campaign counter using ORM
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_opened += 1
-                session.add(campaign)
-                session.commit()
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_opened=Campaign.total_opened + 1)
+            )
 
         # Only count first click
         if sending.clicked_at is None:
             sending.clicked_at = datetime.now()
             sending.status = EmailSendingStatus.CLICKED
-            # Increment campaign counter using ORM
-            campaign = session.get(Campaign, sending.campaign_id)
-            if campaign:
-                campaign.total_clicked += 1
-                session.add(campaign)
-                session.commit()
-            session.refresh(sending)
+            session.add(sending)
+            
+            # Increment campaign counter atomically
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_clicked=Campaign.total_clicked + 1)
+            )
+            
+        session.commit()
+        session.refresh(sending)
 
         return sending
+
+    async def get_click_response(self, sending: EmailSending, tracking_token: str) -> str:
+        """Retrieve and render the landing page template for a click tracking event."""
+        kit = sending.phishing_kit
+        if not kit or not kit.landing_page_template:
+            raise HTTPException(status_code=404, detail="Phishing kit not found")
+
+        template = await TemplateService.get_template_internal(kit.landing_page_template.content_link)
+
+        if template is None:
+            raise HTTPException(status_code=404, detail="Page not found")
+
+        # Render template with phish endpoint as redirect
+        rendered_html = TemplateService.render_template(template.html, {
+            "redirect": f"/api/track/phish?si={tracking_token}"
+        })
+
+        return rendered_html
 
     def record_phish(self, tracking_token: str, session: Session) -> EmailSending:
         """Record a phishing event (user submitted credentials) and increment campaign counter."""
         sending = self._get_sending_by_token(tracking_token, session)
 
         # Record open and click if not already recorded (phish implies both)
-        campaign = session.get(Campaign, sending.campaign_id)
         if sending.opened_at is None:
             sending.opened_at = datetime.now()
-            if campaign:
-                campaign.total_opened += 1
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_opened=Campaign.total_opened + 1)
+            )
+            
         if sending.clicked_at is None:
             sending.clicked_at = datetime.now()
-            if campaign:
-                campaign.total_clicked += 1
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_clicked=Campaign.total_clicked + 1)
+            )
 
         # Only count first phish
         if sending.phished_at is None:
             sending.phished_at = datetime.now()
             sending.status = EmailSendingStatus.PHISHED
-            if campaign:
-                campaign.total_phished += 1
-            if campaign:
-                session.add(campaign)
-                session.commit()
+            session.add(sending)
+            
+            session.exec(
+                update(Campaign)
+                .where(Campaign.id == sending.campaign_id)
+                .values(total_phished=Campaign.total_phished + 1)
+            )
+            
+        session.commit()
+        session.refresh(sending)
+
+        return sending
+
+    def record_failed(self, tracking_token: str, error_cause: str, session: Session) -> EmailSending:
+        """Record that an email failed to send."""
+        sending = self._get_sending_by_token(tracking_token, session)
+
+        if sending.status != EmailSendingStatus.FAILED:
+            sending.status = EmailSendingStatus.FAILED
+            sending.error_cause = error_cause
+            session.add(sending)
+            session.commit()
             session.refresh(sending)
 
         return sending

@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ReactKeycloakProvider } from '@react-keycloak/web'
@@ -8,18 +8,23 @@ import { routeTree } from './routeTree.gen'
 import { Providers } from './lib/providers'
 import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
+import { SimulationOops } from './components/SimulationOops'
+import { appBasePath, isAppRoute } from './lib/app-path'
 
-// PKCE requires Web Crypto API which is only available in secure contexts (https or localhost)
-const isSecureContext = window.isSecureContext || window.location.hostname === 'localhost';
+const isSecureContext = globalThis.isSecureContext || globalThis.location.hostname === 'localhost';
 
 const initOptions: Keycloak.KeycloakInitOptions = {
   onLoad: "login-required",
   pkceMethod: isSecureContext ? "S256" : undefined,
+  responseMode: "query",
   checkLoginIframe: false,
 };
 
 // Create a new router instance
-const router = createRouter({ routeTree })
+const router = createRouter({
+  routeTree,
+  basepath: appBasePath,
+})
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -29,9 +34,9 @@ declare module '@tanstack/react-router' {
 }
 
 // Render the app
-import { useState, useEffect } from 'react'
 import { ServiceUnavailable } from './components/ServiceUnavailable'
 import ErrorBoundary from './components/ErrorBoundary'
+import { AppLoader } from './components/AppLoader'
 
 const App = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -41,13 +46,7 @@ const App = () => {
     const checkConnection = async () => {
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 800) // 800ms timeout for "instant" feel
-
-        // Construct the URL manually to be safe, or use keycloak instance properties if reliable
-        // keycloak.authServerUrl might be undefined if not initialized, so we use the config from keycloak.ts logic if possible, 
-        // but here we only have the instance. 
-        // Let's assume the instance has the config we passed.
-        // Actually, keycloak-js instance usually has 'authServerUrl' set from config.
+        const timeoutId = setTimeout(() => controller.abort(), 800)
 
         const url = `${keycloak.authServerUrl}/realms/${keycloak.realm}/.well-known/openid-configuration`
         const response = await fetch(url, {
@@ -85,38 +84,37 @@ const App = () => {
     return <ServiceUnavailable error={errorMessage} />
   }
 
-  if (isLoading) {
-    return null // Or a minimal loading spinner
-  }
-
   return (
-    <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
-      <ErrorBoundary>
-        <StrictMode>
-          <Providers>
-            <RouterProvider router={router} />
-          </Providers>
-        </StrictMode>
-      </ErrorBoundary>
-    </ReactKeycloakProvider>
+    <>
+      <AppLoader visible={isLoading} label="Connecting to SecureLearning…" />
+      {!isLoading && (
+        <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
+          <ErrorBoundary>
+            <Providers>
+              <RouterProvider router={router} />
+            </Providers>
+          </ErrorBoundary>
+        </ReactKeycloakProvider>
+      )}
+    </>
   )
 }
 
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
-  const isAdminRoute = window.location.pathname.startsWith("/admin");
+  const path = globalThis.location.pathname || '/'
+  const isOopsRoute = isAppRoute(path, "/oops");
+  const isAdminRoute =
+    isAppRoute(path, "/admin") || isAppRoute(path, "/content-manager");
   const userRealm = localStorage.getItem('user_realm');
   const hasValidRealm = isAdminRoute || !!userRealm;
 
-  if (!hasValidRealm) {
-    const root = ReactDOM.createRoot(rootElement)
-    root.render(
-      <StrictMode>
-        <EmailEntry />
-      </StrictMode>
-    )
+  const root = ReactDOM.createRoot(rootElement)
+  if (isOopsRoute) {
+    root.render(<SimulationOops />)
+  } else if (!hasValidRealm) {
+    root.render(<EmailEntry />)
   } else {
-    const root = ReactDOM.createRoot(rootElement)
     root.render(<App />)
   }
 }

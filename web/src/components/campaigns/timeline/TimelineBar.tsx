@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Settings2 } from "lucide-react";
-import type { CampaignStatus } from "@/services/campaignsApi"; // Importa do serviço
+export type CampaignStatus = "scheduled" | "running" | "active" | "completed" | "canceled" | "expired" | "overdue"; // Importa do serviço
 
 interface TimelineBarProps {
   startPercent: number;
@@ -10,22 +10,34 @@ interface TimelineBarProps {
 }
 
 // Mapeamento atualizado para os status do Backend Python
-const statusColors: Record<CampaignStatus, { bg: string; border: string }> = {
+const statusColors: Record<string, { bg: string; border: string }> = {
   running: {
+    bg: "bg-info",
+    border: "border-info/30",
+  },
+  active: {
     bg: "bg-gradient-to-r from-blue-400 to-blue-500",
     border: "border-blue-400/30",
   },
   scheduled: {
-    bg: "bg-gradient-to-r from-amber-300 to-amber-400",
-    border: "border-amber-400/30",
+    bg: "bg-warning",
+    border: "border-warning/30",
   },
   completed: {
-    bg: "bg-gradient-to-r from-emerald-400 to-emerald-500",
-    border: "border-emerald-400/30",
+    bg: "bg-success",
+    border: "border-success/30",
   },
   canceled: {
-    bg: "bg-gradient-to-r from-slate-300 to-slate-400",
-    border: "border-slate-400/30",
+    bg: "bg-muted-foreground/40", // Simplificado de gradiente para cor única
+    border: "border-border/30",
+  },
+  expired: {
+    bg: "bg-gradient-to-r from-red-400 to-red-500",
+    border: "border-red-400/30",
+  },
+  overdue: {
+    bg: "bg-gradient-to-r from-red-400 to-red-500",
+    border: "border-red-400/30",
   },
 };
 
@@ -52,7 +64,7 @@ export const TimelineBar = memo(function TimelineBar({
       </span>
       <Settings2
         size={14}
-        className="text-white/70 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-1"
+        className="text-white/70 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-1"
       />
     </div>
   );

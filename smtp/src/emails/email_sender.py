@@ -1,6 +1,5 @@
 import smtplib
 import os
-import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -49,22 +48,6 @@ class EmailSender:
         
         print(f"Email sent successfully to {receiver}")
 
-    def _notify_tracking(self, tracking_id: str) -> None:
-        """Notify the API that an email was successfully sent."""
-        config = APIConfig()
-        api_internal_url = config.API_INTERNAL_URL
-        try:
-            response = requests.post(
-                f"{api_internal_url}/api/track/sent?si={tracking_id}",
-                timeout=5
-            )
-            if response.ok:
-                print(f"Tracking recorded for {tracking_id}")
-            else:
-                print(f"Failed to record tracking: {response.status_code}")
-        except Exception as e:
-            print(f"Failed to notify tracking API: {e}")
-
 
     def send(self, email_message: EmailMessage) -> None:
         """Process and send an email from an EmailMessage payload."""
@@ -105,6 +88,3 @@ class EmailSender:
             receiver=email_message.receiver_email,
             message=message
         )
-        
-        # Notify tracking API that email was sent
-        self._notify_tracking(tracking_id)

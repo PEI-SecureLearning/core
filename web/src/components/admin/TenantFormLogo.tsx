@@ -42,14 +42,14 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
         }
     }
 
-    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    const handleDrop = (event: React.DragEvent<HTMLElement>) => {
         event.preventDefault()
         const file = event.dataTransfer.files?.[0] || null
         handleFile(file)
     }
 
     const handleClick = () => fileInputRef.current?.click()
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
             handleClick()
@@ -57,14 +57,13 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
     }
 
     return (
-        <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 p-5 rounded-2xl border border-blue-100/50 flex flex-col h-full">
-            <div className="flex items-center gap-2.5 mb-5">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-200/50">
-                    <Image className="w-4 h-4 text-white" />
+        <div className="translate-y-5 max-w-80 bg-gradient-to-br from-surface to-primary/5 p-4 rounded-2xl border border-primary/20 flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow shadow-primary/20">
+                    <Image className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
                 <div>
-                    <h3 className="text-sm font-semibold text-gray-900">Brand Logo</h3>
-                    <p className="text-xs text-gray-500">Upload your organization's logo</p>
+                    <h3 className="text-xs font-bold text-foreground">Brand Logo</h3>
                 </div>
             </div>
 
@@ -77,7 +76,7 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
             />
             <button
                 type="button"
-                className="flex-1 border-2 border-dashed border-blue-200/70 rounded-2xl flex flex-col items-center justify-center p-6 bg-white/60 backdrop-blur-sm cursor-pointer hover:bg-blue-50/50 hover:border-blue-300 transition-all duration-300 group min-h-[140px] overflow-hidden"
+                className="flex-1 border-2 border-dashed border-primary/30 rounded-xl flex flex-col items-center justify-center p-4 bg-background/60 backdrop-blur-sm cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all duration-300 group min-h-[120px] overflow-hidden"
                 onClick={handleClick}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={handleDrop}
@@ -88,17 +87,17 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
                     <img
                         src={logoPreviewUrl}
                         alt="Organization logo preview"
-                        className="max-h-28 max-w-full object-contain"
+                        className="max-h-23 max-w-full object-contain"
                     />
                 ) : (
                     <>
-                        <div className="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-50 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-100/50">
-                            <Upload className="w-6 h-6 text-blue-500" />
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary/15 to-primary/5 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300 shadow shadow-primary/10">
+                            <Upload className="w-4 h-4 text-primary" />
                         </div>
-                        <p className="text-sm font-medium text-gray-700 text-center">
-                            Click to upload or drag and drop
+                        <p className="text-xs font-semibold text-foreground/90 text-center">
+                            Upload Logo
                         </p>
-                        <p className="text-xs text-gray-400 mt-1.5">
+                        <p className="text-[10px] text-muted-foreground/70 mt-1">
                             SVG, PNG, JPG (max. 2MB)
                         </p>
                     </>
@@ -106,15 +105,9 @@ export function TenantFormLogo({ logoPreviewUrl, onLogoSelect }: TenantFormLogoP
             </button>
 
             {error && (
-                <p className="text-xs text-red-600 mt-2">{error}</p>
+                <p className="text-xs text-error mt-2">{error}</p>
             )}
 
-            {/* Tip */}
-            <div className="mt-4 pt-4 border-t border-blue-100/50">
-                <p className="text-xs text-gray-500">
-                    <span className="font-medium text-blue-600">Tip:</span> Use a square logo with transparent background for best results
-                </p>
-            </div>
         </div>
     )
 }

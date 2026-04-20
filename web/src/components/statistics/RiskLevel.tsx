@@ -1,5 +1,4 @@
-import React from 'react';
-import { Shield, ShieldCheck, ShieldAlert, ShieldX } from 'lucide-react';
+import React, { useState } from "react";
 
 interface RiskLevelProps {
   percentage?: number;
@@ -10,93 +9,161 @@ interface RiskLevelProps {
 export const RiskLevel: React.FC<RiskLevelProps> = ({
   percentage = 15,
   title = "Risk Level",
-  className = "",
+  className = ""
 }) => {
-  // Determine color and icon based on percentage
+  const [isHovered, setIsHovered] = useState(false);
+
   const getConfig = (pct: number) => {
-    if (pct <= 25) return {
-      color: 'emerald',
-      label: 'Low Risk',
-      Icon: ShieldCheck,
-      gradient: 'from-emerald-500 to-emerald-600'
-    };
-    if (pct <= 50) return {
-      color: 'amber',
-      label: 'Moderate Risk',
-      Icon: Shield,
-      gradient: 'from-amber-500 to-amber-600'
-    };
-    if (pct <= 75) return {
-      color: 'orange',
-      label: 'High Risk',
-      Icon: ShieldAlert,
-      gradient: 'from-orange-500 to-orange-600'
-    };
+    if (pct <= 25)
+      return {
+        color: "success",
+        label: "Low Risk",
+        gradient: "from-success to-success/80",
+        glowColor: "rgba(var(--success-rgb), 0.35)"
+      };
+    if (pct <= 50)
+      return {
+        color: "warning",
+        label: "Moderate Risk",
+        gradient: "from-warning to-warning/80",
+        glowColor: "rgba(var(--warning-rgb), 0.35)"
+      };
+    if (pct <= 75)
+      return {
+        color: "orange",
+        label: "High Risk",
+        gradient: "from-warning to-error",
+        glowColor: "rgba(var(--warning-rgb), 0.35)"
+      };
     return {
-      color: 'rose',
-      label: 'Critical Risk',
-      Icon: ShieldX,
-      gradient: 'from-rose-500 to-rose-600'
+      color: "error",
+      label: "Critical Risk",
+      gradient: "from-error to-error/80",
+      glowColor: "rgba(var(--error-rgb), 0.35)"
     };
   };
 
   const config = getConfig(percentage);
-  const Icon = config.Icon;
 
-  const colorClasses: Record<string, { bg: string; text: string; bar: string; glow: string }> = {
-    emerald: {
-      bg: 'bg-emerald-500/10',
-      text: 'text-emerald-600',
-      bar: 'bg-gradient-to-r from-emerald-400 to-emerald-500',
-      glow: 'shadow-emerald-500/30'
+  const colorClasses: Record<
+    string,
+    { bg: string; text: string; bar: string; badge: string }
+  > = {
+    success: {
+      bg: "bg-success/10",
+      text: "text-success",
+      bar: "bg-success",
+      badge: "bg-success/10 border-success/20 text-success"
     },
-    amber: {
-      bg: 'bg-amber-500/10',
-      text: 'text-amber-600',
-      bar: 'bg-gradient-to-r from-amber-400 to-amber-500',
-      glow: 'shadow-amber-500/30'
+    warning: {
+      bg: "bg-warning/10",
+      text: "text-warning",
+      bar: "bg-warning",
+      badge: "bg-warning/10 border-warning/20 text-warning"
     },
     orange: {
-      bg: 'bg-orange-500/10',
-      text: 'text-orange-600',
-      bar: 'bg-gradient-to-r from-orange-400 to-orange-500',
-      glow: 'shadow-orange-500/30'
+      bg: "bg-warning/10",
+      text: "text-warning",
+      bar: "bg-linear-to-r from-warning to-error",
+      badge: "bg-warning/10 border-warning/20 text-warning"
     },
-    rose: {
-      bg: 'bg-rose-500/10',
-      text: 'text-rose-600',
-      bar: 'bg-gradient-to-r from-rose-400 to-rose-500',
-      glow: 'shadow-rose-500/30'
-    },
+    error: {
+      bg: "bg-error/10",
+      text: "text-error",
+      bar: "bg-error",
+      badge: "bg-error/10 border-error/20 text-error"
+    }
   };
 
   const colors = colorClasses[config.color];
 
   return (
-    <div className={`flex-1 bg-white/60 backdrop-blur-xl rounded-2xl border border-white/40 shadow-lg shadow-slate-200/50 p-5 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 ${className}`}>
+    <div
+      className={`flex-1 bg-background/60 backdrop-blur-xl rounded-b-xl border-t-3 border-primary
+        shadow-lg shadow-muted/50 p-5
+        hover:shadow-2xl hover:shadow-primary/25
+        transition-all duration-500 hover:-translate-y-1 group ${className}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <style>{`
+        @keyframes barShimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes iconWiggle {
+          0%, 100% { transform: rotate(0deg) scale(1); }
+          25% { transform: rotate(-8deg) scale(1.1); }
+          75% { transform: rotate(8deg) scale(1.1); }
+        }
+        @keyframes countUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .icon-hover-wiggle:hover {
+          animation: iconWiggle 0.5s ease-in-out;
+        }
+      `}</style>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[15px] font-semibold text-slate-800">{title}</h3>
-        <div className={`p-2 rounded-xl ${colors.bg}`}>
-          <Icon size={18} className={colors.text} />
-        </div>
+        <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
       </div>
 
       {/* Percentage Display */}
-      <div className="flex items-baseline gap-2 mb-3">
-        <span className={`text-4xl font-bold ${colors.text}`}>{percentage}</span>
-        <span className="text-xl text-slate-400">%</span>
+      <div className="flex items-baseline gap-1.5 mb-2">
+        <span
+          className={`text-4xl sm:text-5xl font-bold ${colors.text} transition-all duration-300
+            ${isHovered ? "scale-105 drop-shadow-sm" : ""}`}
+          style={{
+            display: "inline-block",
+            textShadow: isHovered ? `0 0 20px ${config.glowColor}` : "none",
+            transition: "text-shadow 0.4s ease, transform 0.3s ease"
+          }}
+        >
+          {percentage}
+        </span>
+        <span className="text-xl text-muted-foreground/70 font-medium">%</span>
       </div>
 
-      {/* Status Label */}
-      <p className={`text-[13px] font-medium ${colors.text} mb-4`}>{config.label}</p>
+      {/* Status Badge */}
+      <div className="mb-4">
+        <span
+          className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-full border ${colors.badge}
+          transition-all duration-300 group-hover:scale-105`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
+          {config.label}
+        </span>
+      </div>
 
       {/* Progress Bar */}
-      <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+      <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden">
         <div
-          className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-out ${colors.bar} shadow-lg ${colors.glow}`}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
+          className={`absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-out ${colors.bar}`}
+          style={{
+            width: `${Math.min(percentage, 100)}%`,
+            boxShadow: isHovered
+              ? `0 0 12px ${config.glowColor}, 0 0 6px ${config.glowColor}`
+              : "none",
+            backgroundSize: "200% auto",
+            animation: isHovered ? "barShimmer 1.8s linear infinite" : "none"
+          }}
         />
+        {/* Track markers */}
+        {[25, 50, 75].map((mark) => (
+          <div
+            key={mark}
+            className="absolute top-0 bottom-0 w-px bg-background/60"
+            style={{ left: `${mark}%` }}
+          />
+        ))}
+      </div>
+
+      {/* Scale labels */}
+      <div className="flex justify-between mt-1.5">
+        <span className="text-[10px] text-muted-foreground/70">0%</span>
+        <span className="text-[10px] text-muted-foreground/70">100%</span>
       </div>
     </div>
   );

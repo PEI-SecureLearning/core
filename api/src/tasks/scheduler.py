@@ -2,17 +2,93 @@
 
 import logging
 from datetime import datetime
+from typing import Sequence
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-from sqlmodel import Session, select
+from pydantic import ValidationError
+from sqlmodel import Session, col, select
 
 from src.core.db import engine
-from src.models.campaign import Campaign, CampaignStatus
+from src.models import Campaign, CampaignStatus, EmailSending, EmailSendingStatus, UserProgress, AssignmentStatus
+
+from src.services.campaign import CampaignService
 
 logger = logging.getLogger(__name__)
 
-# Global scheduler instance
+def process_course_assignments() -> None:
+    """Process course assignments lifecycle (SCHEDULED -> ACTIVE -> OVERDUE)."""
+    with Session(engine) as session:
+        now = datetime.now()
+        updated_count = 0
+
+        # Scheduled -> Active
+        scheduled_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.SCHEDULED,
+                UserProgress.start_date <= now
+            )
+        ).all()
+
+        for assignment in scheduled_assignments:
+            assignment.status = AssignmentStatus.ACTIVE
+            assignment.notified_at = now
+            # TODO: trigger direct notification service here
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> ACTIVE")
+            updated_count += 1
+
+        # Active -> Overdue
+        active_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.ACTIVE,
+                UserProgress.deadline <= now,
+                UserProgress.is_certified == False
+            )
+        ).all()
+
+        for assignment in active_assignments:
+            assignment.status = AssignmentStatus.OVERDUE
+            assignment.overdue = True
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> OVERDUE")
+            updated_count += 1
+            
+        # Completed -> Renewal Required
+        completed_assignments = session.exec(
+            select(UserProgress).where(
+                UserProgress.status == AssignmentStatus.COMPLETED,
+                UserProgress.is_certified == True,
+                UserProgress.cert_expires_at <= now
+            )
+        ).all()
+
+        for assignment in completed_assignments:
+            assignment.status = AssignmentStatus.RENEWAL_REQUIRED
+            assignment.is_certified = False
+            assignment.completed_sections = []
+            assignment.progress_data = {}
+            logger.info(f"Course assignment for user {assignment.user_id} and course {assignment.course_id} -> RENEWAL_REQUIRED")
+            updated_count += 1
+
+        if updated_count > 0:
+            session.commit()
+            logger.info(f"Processed {updated_count} course assignment(s)")
+
+
+# Global scheduler 
+
+
+
 _scheduler: BackgroundScheduler | None = None
+
+# Batch size for email processing
+EMAILS_PER_BATCH = 10
+
+
+def _get_campaigns(session: Session, *conditions: bool) -> Sequence[Campaign]:
+    """Helper to query all campaigns."""
+    query = select(Campaign)
+    for condition in conditions:
+        query = query.where(condition)
+    return session.exec(query).all()
 
 
 def update_campaign_statuses() -> None:
@@ -25,24 +101,22 @@ def update_campaign_statuses() -> None:
         now = datetime.now()
         updated_count = 0
 
-        # Scheduled -> Running
-        scheduled_campaigns = session.exec(
-            select(Campaign).where(
-                Campaign.status == CampaignStatus.SCHEDULED, Campaign.begin_date <= now
-            )
-        ).all()
+        # SCHEDULED -> RUNNING
+        scheduled_campaigns = _get_campaigns(
+            session,
+            Campaign.status == CampaignStatus.SCHEDULED,
+            Campaign.begin_date <= now,
+        )
 
         for campaign in scheduled_campaigns:
             campaign.status = CampaignStatus.RUNNING
             updated_count += 1
             logger.info(f"Campaign '{campaign.name}' (id={campaign.id}) -> RUNNING")
 
-        # Running -> Completed
-        running_campaigns = session.exec(
-            select(Campaign).where(
-                Campaign.status == CampaignStatus.RUNNING, Campaign.end_date <= now
-            )
-        ).all()
+        # RUNNING -> COMPLETED
+        running_campaigns = _get_campaigns(
+            session, Campaign.status == CampaignStatus.RUNNING, Campaign.end_date <= now
+        )
 
         for campaign in running_campaigns:
             campaign.status = CampaignStatus.COMPLETED
@@ -54,11 +128,143 @@ def update_campaign_statuses() -> None:
             logger.info(f"Updated {updated_count} campaign status(es)")
 
 
+def create_emails_for_ready_campaigns() -> None:
+    """Create email sending records for campaigns that are ready to begin.
+
+    - Queries campaigns with status RUNNING and begin_date <= now
+    - Creates email_sendings for all users in the campaign
+    - Ensures campaign status is RUNNING before creating sendings
+    - Skips campaigns that already have sendings (idempotent)
+    """
+    with Session(engine) as session:
+        now = datetime.now()
+        campaign_service = CampaignService()
+        created_count = 0
+
+        # Find campaigns that should have emails created
+        ready_campaigns = _get_campaigns(
+            session,
+            Campaign.status == CampaignStatus.RUNNING,
+            Campaign.begin_date <= now,
+        )
+
+        for campaign in ready_campaigns:
+            try:
+                # Prevent duplicate sendings on subsequent scheduler runs.
+                if campaign.email_sendings:
+                    continue
+
+                if campaign.realm_name is None:
+                    logger.error(
+                        f"Campaign '{campaign.name}' (id={campaign.id}) has no realm_name, skipping"
+                    )
+                    continue
+
+                # Collect users from groups
+                users = campaign_service._collect_users_from_groups(
+                    [ug.keycloak_id for ug in campaign.user_groups], campaign.realm_name
+                )
+
+                if not users:
+                    logger.warning(
+                        f"Campaign '{campaign.name}' (id={campaign.id}) has no resolved users from linked groups"
+                    )
+                    continue
+
+                # Create email sendings
+                email_sendings = campaign_service._create_email_sendings(
+                    session, campaign, users
+                )
+
+                # Update total_recipients now that emails are created
+                campaign.total_recipients = len(users)
+
+                created_count += len(email_sendings)
+                logger.info(
+                    f"Campaign '{campaign.name}' (id={campaign.id}): "
+                    f"created {len(email_sendings)} email sendings"
+                )
+
+                session.commit()
+            except Exception as e:
+                logger.error(
+                    f"Failed to create emails for campaign '{campaign.name}' (id={campaign.id}): {e}"
+                )
+                session.rollback()
+
+        if created_count > 0:
+            logger.info(f"Created {created_count} email sending record(s) total")
+
+
+def process_pending_emails() -> None:
+    """Process pending emails in batches and send to RabbitMQ.
+
+    - Queries EmailSending records with status SCHEDULED and scheduled_date <= now
+    - Sorts by scheduled_date (oldest to newest)
+    - Processes EMAILS_PER_BATCH emails per run
+    - Sends to RabbitMQ and marks as SENT
+    """
+    with Session(engine) as session:
+        campaign_service = CampaignService()
+        now = datetime.now()
+
+        try:
+            # Query pending emails that are scheduled to be sent by now, sorted by scheduled_date
+            pending_emails = session.exec(
+                select(EmailSending)
+                .where(EmailSending.status == EmailSendingStatus.SCHEDULED)
+                .where(EmailSending.scheduled_date <= now)
+                .order_by(col(EmailSending.scheduled_date))
+                .limit(EMAILS_PER_BATCH)
+            ).all()
+
+            if not pending_emails:
+                return
+
+            # Process each email
+            for email in pending_emails:
+                campaign = session.get(Campaign, email.campaign_id)
+                if not campaign:
+                    logger.warning(
+                        f"Campaign {email.campaign_id} not found, skipping email {email.id}"
+                    )
+                    continue
+
+                try:
+                    # Send email to RabbitMQ
+                    campaign_service._send_email_to_rabbitmq(email, campaign)
+                    
+                    # Update status to queued
+                    email.status = EmailSendingStatus.QUEUED
+                    session.commit()
+                    
+                except (ValueError, ValidationError) as e:
+                    # Irrecoverable payload/configuration issue for this email.
+                    email.status = EmailSendingStatus.FAILED
+                    session.add(email)
+                    session.commit()
+                    logger.error(
+                        f"Failed email {email.id} for campaign {email.campaign_id} marked FAILED: {e}"
+                    )
+                    
+                except Exception as e:
+                    logger.error(
+                        f"Failed to process email {email.id} for campaign {email.campaign_id}: {e}"
+                    )
+                    session.rollback()
+
+            logger.info(f"Processed {len(pending_emails)} pending email(s)")
+
+        except Exception as e:
+            logger.error(f"Error in process_pending_emails: {e}")
+            session.rollback()
+
+
 def start_scheduler(interval_minutes: int = 1) -> BackgroundScheduler:
     """Start the background scheduler.
 
     Args:
-        interval_minutes: How often to run the status update job (default: 1 minute)
+        interval_minutes: How often to run the scheduled jobs (default: 1 minute)
 
     Returns:
         The scheduler instance
@@ -80,13 +286,41 @@ def start_scheduler(interval_minutes: int = 1) -> BackgroundScheduler:
         replace_existing=True,
     )
 
-    _scheduler.start()
-    logger.info(
-        f"Scheduler started (campaign status check every {interval_minutes} min)"
+    # Add job to process course assignments
+    _scheduler.add_job(
+        process_course_assignments,
+        trigger=IntervalTrigger(minutes=interval_minutes),
+        id="process_course_assignments",
+        name="Process course assignments based on time",
+        replace_existing=True,
     )
+
+    # Add job to create emails for ready campaigns
+    _scheduler.add_job(
+        create_emails_for_ready_campaigns,
+        trigger=IntervalTrigger(minutes=interval_minutes),
+        id="create_emails_for_ready_campaigns",
+        name="Create email sendings for ready campaigns",
+        replace_existing=True,
+    )
+
+    # Add job to process pending emails in batches
+    _scheduler.add_job(
+        process_pending_emails,
+        trigger=IntervalTrigger(minutes=interval_minutes),
+        id="process_pending_emails",
+        name="Process pending emails and send to RabbitMQ",
+        replace_existing=True,
+    )
+
+    _scheduler.start()
+    logger.info(f"Scheduler started (jobs run every {interval_minutes} min)")
 
     # Run once immediately on startup
     update_campaign_statuses()
+    process_course_assignments()
+    create_emails_for_ready_campaigns()
+    process_pending_emails()
 
     return _scheduler
 

@@ -3,10 +3,11 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { TimelineView } from "../../components/campaigns/timeline";
-import { fetchCampaigns, type Campaign } from "@/services/campaignsApi"; // Importa do serviço que criámos acima
+import { fetchCampaigns, type Campaign } from "@/services/campaignsApi";
+import { fetchAllAssignments } from "@/services/coursesApi";
 
 export const Route = createFileRoute("/campaigns/timeline")({
-  component: TimelinePage,
+  component: TimelinePage
 });
 
 function TimelinePage() {
@@ -33,13 +34,17 @@ function TimelinePage() {
       try {
         setIsLoading(true);
         // Chama a função que bate no endpoint GET /campaigns
-        const data = await fetchCampaigns(realm, keycloak.token);
+        const [campaignData, assignmentData] = await Promise.all([
+          fetchCampaigns(realm, keycloak.token),
+          fetchAllAssignments(keycloak.token!)
+        ]);
 
-        // Opcional: Converter IDs para string se o TimelineView refilar com números
-        // Mas se o backend mandar números, o TypeScript vai ajudar-te.
-        setCampaigns(data);
+        const combined = [...campaignData, ...assignmentData].sort((a, b) => 
+          new Date(a.begin_date).getTime() - new Date(b.begin_date).getTime()
+        );
+        setCampaigns(combined as any);
       } catch (err) {
-        console.error("Deu barraca ao carregar as campanhas:", err);
+        console.error("Deu barraca ao carregar os dados:", err);
         setError("Failed to load timeline data.");
       } finally {
         setIsLoading(false);
@@ -50,7 +55,7 @@ function TimelinePage() {
   }, [realm, keycloak.token]);
 
   return (
-    <div className="w-full p-6 flex flex-col h-full font-[Inter,system-ui,sans-serif] bg-gradient-to-br from-slate-50 via-white to-purple-50/30 animate-[fadeIn_0.5s_ease-out]">
+    <div className="w-full p-6 flex flex-col h-full font-[Inter,system-ui,sans-serif] bg-background animate-[fadeIn_0.5s_ease-out]">
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -59,18 +64,18 @@ function TimelinePage() {
       `}</style>
 
       {/* Header with Back Button */}
-      <div className="h-[6%] flex items-center gap-4 mb-4 flex-shrink-0">
+      <div className="h-[6%] flex items-center gap-4 mb-4 shrink-0">
         <Link
           to="/campaigns"
-          className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg shadow-slate-200/50 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
+          className="flex items-center justify-center w-10 h-10 rounded-xl bg-background/60 backdrop-blur-xl border border-border shadow-lg shadow-primary/5 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5"
         >
-          <ArrowLeft size={20} className="text-slate-600" />
+          <ArrowLeft size={20} className="text-muted-foreground" />
         </Link>
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Campaign Timeline
           </h1>
-          <p className="text-slate-500 mt-0.5 text-[14px] font-normal">
+          <p className="text-muted-foreground mt-0.5 text-[14px] font-normal">
             View scheduled campaigns across time
           </p>
         </div>
@@ -80,8 +85,8 @@ function TimelinePage() {
       <div className="h-[90%] flex-1 min-h-0 relative">
         {isLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2 text-slate-400">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+            <div className="flex flex-col items-center gap-2 text-muted-foreground/70">
+              <Loader2 className="h-8 w-8 animate-spin text-primary/90" />
               <p>Loading timeline...</p>
             </div>
           </div>
@@ -90,7 +95,7 @@ function TimelinePage() {
             {error}
           </div>
         ) : campaigns.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/70">
             Não há campanhas para mostrar, mô. Cria uma!
           </div>
         ) : (

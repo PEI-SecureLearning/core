@@ -33,7 +33,7 @@ const GroupSelect = memo(function GroupSelect({
       <Label htmlFor="group">Group (optional)</Label>
       <select
         id="group"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+        className="w-full rounded-md border border-border/60 px-3 py-2 text-sm"
         value={selectedGroupId}
         onChange={(e) => onChange(e.target.value)}
       >
@@ -93,14 +93,13 @@ const FormFields = memo(function FormFields({
         <Label htmlFor="role">Role</Label>
         <select
           id="role"
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded-md border border-border/60 px-3 py-2 text-sm"
           value={role}
           onChange={(e) => onChange("role", e.target.value)}
           required
         >
           <option value="">Select a role</option>
           <option value="ORG_MANAGER">Organization manager</option>
-          <option value="CONTENT_MANAGER">Content manager</option>
           <option value="DEFAULT_USER">User</option>
         </select>
       </div>
@@ -127,7 +126,7 @@ function AddUserForm({
   );
 
   return (
-    <Card className="shadow-sm border border-gray-100">
+    <Card className="shadow-sm border border-border/40">
       <CardHeader>
         <CardTitle className="text-lg">Add User to Realm</CardTitle>
         <CardDescription>Create user within your realm.</CardDescription>

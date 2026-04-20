@@ -1,12 +1,18 @@
 export function PreviewPanelHeader() {
     return (
-        <div className="bg-blue-50 rounded-t-xl p-6 border-b border-blue-100 h-20 flex items-center">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <div className="p-1 bg-purple-600 rounded">
-                    <div className="w-4 h-4 border-2 border-white rounded-full" />
+        <div className="bg-surface-subtle/50 p-6 border-b border-border/40 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div>
+                    <h3 className="text-lg font-bold text-foreground/90 tracking-tight uppercase">
+                        Tenant Preview
+                    </h3>
                 </div>
-                Preview
-            </h3>
+            </div>
+            <div className="flex gap-1">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-muted/60" />
+                ))}
+            </div>
         </div>
     )
 }

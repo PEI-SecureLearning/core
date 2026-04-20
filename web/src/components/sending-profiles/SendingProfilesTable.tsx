@@ -1,46 +1,35 @@
-import {
-  Send,
-  Mail,
-  MoreVertical,
-  Trash2,
-  Edit,
-  ChevronRight,
-  Server,
-} from "lucide-react";
-import { useState } from "react";
+import { Send, Mail, Trash2, Edit, Server } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { type SendingProfile } from "@/types/sendingProfile";
+import { type SendingProfileDisplayInfo } from "@/types/sendingProfile";
 
 interface TableProps {
-  profiles: SendingProfile[];
-  onDelete?: (id: number) => void;
+  readonly profiles: SendingProfileDisplayInfo[];
+  readonly onDelete?: (id: number) => void;
 }
 
 function TableRow({
   profile,
-  onDelete,
+  onDelete
 }: {
-  profile: SendingProfile;
-  onDelete?: (id: number) => void;
+  readonly profile: SendingProfileDisplayInfo;
+  readonly onDelete?: (id: number) => void;
 }) {
-  const [showMenu, setShowMenu] = useState(false);
-
   return (
-    <tr className="group hover:bg-blue-50/50 transition-colors border-b border-gray-100 last:border-0">
+    <tr className="hover:bg-surface-subtle/60 transition-colors border-b border-border/60 last:border-0">
       {/* Profile Name with Icon */}
-      <td className="px-4 py-4">
+      <td className="px-6 py-4">
         <Link
           to={`/sending-profiles/${profile.id}` as any}
-          className="flex items-center gap-3 hover:text-blue-600 transition-colors"
+          className="flex items-center gap-3 hover:text-primary transition-colors"
         >
-          <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
-            <Send className="h-5 w-5 pl-0.5" />
+          <div className="h-9 w-9 rounded-md bg-primary/20 flex items-center justify-center flex-shrink-0">
+            <Send className="h-4 w-4 text-primary pl-0.5" />
           </div>
           <div>
-            <span className="font-medium text-gray-900 group-hover:text-blue-600 block">
+            <span className="font-medium text-[14px] text-foreground hover:text-primary block">
               {profile.name}
             </span>
-            <span className="text-xs text-gray-400 md:hidden">
+            <span className="text-[12px] text-muted-foreground/70 md:hidden">
               {profile.from_email}
             </span>
           </div>
@@ -48,77 +37,38 @@ function TableRow({
       </td>
 
       {/* From Email */}
-      <td className="px-4 py-4 hidden md:table-cell">
-        <div className="flex items-center gap-2 text-gray-600">
+      <td className="px-6 py-4 hidden md:table-cell">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Mail className="h-4 w-4" />
-          <span className="text-sm">{profile.from_email}</span>
+          <span className="text-[14px]">{profile.from_email}</span>
         </div>
       </td>
 
       {/* SMTP Host */}
-      <td className="px-4 py-4 hidden sm:table-cell">
-        <div className="flex items-center gap-2 text-gray-500">
+      <td className="px-6 py-4 hidden sm:table-cell">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Server className="h-4 w-4" />
-          <span className="text-sm">
+          <span className="text-[14px]">
             {profile.smtp_host}:{profile.smtp_port}
           </span>
         </div>
       </td>
 
       {/* Actions */}
-      <td className="px-4 py-4">
-        <div className="flex items-center justify-end gap-2">
-          {/* View Button */}
+      <td className="px-6 py-4">
+        <div className="flex items-center justify-end gap-1">
           <Link
             to={`/sending-profiles/${profile.id}` as any}
-            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            className="p-2 text-muted-foreground/70 hover:text-primary hover:bg-primary/10 rounded-md transition-all"
           >
-            <ChevronRight className="h-4 w-4" />
+            <Edit className="h-4 w-4" />
           </Link>
-
-          {/* More Menu */}
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </button>
-
-            {showMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMenu(false)}
-                />
-
-                <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                  <Link
-                    to={`/sending-profiles/${profile.id}` as any}
-                    className="w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-left"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Edit className="h-3.5 w-3.5" />
-                    Edit
-                  </Link>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete?.(profile.id);
-                      setShowMenu(false);
-                    }}
-                    className="w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 text-left"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          <button
+            onClick={() => onDelete?.(profile.id)}
+            className="p-2 text-muted-foreground/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-all cursor-pointer"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
       </td>
     </tr>
@@ -127,24 +77,24 @@ function TableRow({
 
 export default function SendingProfilesTable({
   profiles = [],
-  onDelete,
+  onDelete
 }: TableProps) {
   return (
-    <div className="w-full bg-white shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-surface border border-border rounded-lg overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="h-full w-full">
+        <table className="w-full">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Identity
+            <tr className="bg-surface-subtle/80 border-b border-border/60">
+              <th className="px-6 py-4 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Profile
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell">
+              <th className="px-6 py-4 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">
                 From Email
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden sm:table-cell">
+              <th className="px-6 py-4 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
                 SMTP Config
               </th>
-              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-6 py-4 text-right text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -163,10 +113,12 @@ export default function SendingProfilesTable({
 
       {/* Empty State */}
       {profiles.length === 0 && (
-        <div className="px-2 py-12 text-center">
-          <Send className="h-12 w-12 text-gray-300 mx-auto mb-3 pl-1" />
-          <p className="text-gray-500 font-medium">No profiles found</p>
-          <p className="text-sm text-gray-400 mt-1">
+        <div className="px-6 py-12 text-center">
+          <Send className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3 pl-1" />
+          <p className="text-[14px] font-medium text-muted-foreground">
+            No profiles found
+          </p>
+          <p className="text-[13px] text-muted-foreground/70 mt-1">
             Create your first sending profile
           </p>
         </div>

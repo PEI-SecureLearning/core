@@ -1,4 +1,5 @@
 import { memo } from "react";
+import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 
 interface BasicInfoSectionProps {
     groupName: string;
@@ -13,14 +14,17 @@ function BasicInfo({
     description,
     onGroupNameChange,
     onDescriptionChange,
-}: BasicInfoSectionProps) {
+}: Readonly<BasicInfoSectionProps>) {
+
+    const isGroupNameValid = groupName.trim().length > 0;
+
     return (
-        <div className="liquid-glass-card h-full w-full p-6 relative z-10">
+        <div className="bg-surface border border-border rounded-lg h-full w-full p-6">
             <div className="w-full items-center justify-center flex flex-col">
                 {/* Group Name Input */}
                 <div className="w-full">
-                    <label htmlFor="groupName" className="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
-                        Group Name <span className="text-purple-500">*</span>
+                    <label htmlFor="groupName" className="block text-sm font-semibold text-foreground/90 mb-2 tracking-wide">
+                        Group Name <RequiredAsterisk isValid={isGroupNameValid} />
                     </label>
                     <input
                         type="text"
@@ -28,13 +32,13 @@ function BasicInfo({
                         value={groupName}
                         onChange={(e) => onGroupNameChange(e.target.value)}
                         placeholder="e.g., Marketing Team"
-                        className="liquid-glass-input w-full px-4 py-3 text-gray-800 placeholder-gray-400"
+                        className="w-full px-4 py-3 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     />
                 </div>
 
                 {/* Description Input */}
                 <div className="w-full mt-5">
-                    <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
+                    <label htmlFor="description" className="block text-sm font-semibold text-foreground/90 mb-2 tracking-wide">
                         Description
                     </label>
                     <textarea
@@ -43,10 +47,9 @@ function BasicInfo({
                         onChange={(e) => onDescriptionChange(e.target.value)}
                         rows={4}
                         placeholder="Describe the purpose of this group..."
-                        className="liquid-glass-input w-full px-4 py-3 resize-none text-gray-800 placeholder-gray-400"
+                        className="w-full px-4 py-3 rounded-md bg-surface-subtle border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none"
                     />
-                    <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                        <span className="inline-block w-1 h-1 bg-purple-400 rounded-full"></span>
+                    <p className="text-xs text-muted-foreground mt-2">
                         Help others understand what this group is for
                     </p>
                 </div>

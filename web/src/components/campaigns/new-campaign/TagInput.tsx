@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TagInputProps {
   onAdd: (tag: string) => void;
@@ -33,27 +34,16 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="p-2 rounded-full text-white flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95"
-          style={{
-            background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)',
-            boxShadow: '0 2px 8px rgba(147, 51, 234, 0.3)'
-          }}
+          className="p-2 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-all duration-150 hover:scale-105 active:scale-95 shadow-lg shadow-primary/30"
         >
           <Plus size={16} strokeWidth={2.5} />
         </button>
       ) : (
         <div
-          className="relative flex items-center rounded-full overflow-hidden"
-          style={{
-            background: 'rgba(255, 255, 255, 0.8)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(147, 51, 234, 0.3)',
-            boxShadow: '0 2px 8px rgba(147, 51, 234, 0.1)'
-          }}
+          className="relative flex items-center rounded-full overflow-hidden bg-background/80 backdrop-blur-md border border-primary/30 shadow-lg shadow-primary/10"
         >
           {/* Hashtag prefix */}
-          <span className="pl-3 text-purple-500 text-[13px] font-medium">
+          <span className="pl-3 text-primary/90 text-[13px] font-medium">
             #
           </span>
 
@@ -69,7 +59,7 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
                 setAdding(false);
               }
             }}
-            className="bg-transparent px-1.5 py-2 text-[13px] text-slate-700 placeholder:text-slate-400 outline-none w-32"
+            className="bg-transparent px-1.5 py-2 text-[13px] text-foreground/90 placeholder:text-muted-foreground/70 outline-none w-32"
             placeholder="tag name"
           />
 
@@ -78,10 +68,10 @@ const TagInput: React.FC<TagInputProps> = ({ onAdd }) => {
             type="button"
             onClick={handleAdd}
             disabled={!tempTag.trim()}
-            className="p-1.5 mr-1 rounded-full transition-all duration-150 disabled:opacity-40"
-            style={{
-              background: tempTag.trim() ? 'rgba(34, 197, 94, 0.9)' : 'rgba(148, 163, 184, 0.3)',
-            }}
+            className={cn(
+                "p-1.5 mr-1 rounded-full transition-all duration-150 disabled:opacity-40",
+                tempTag.trim() ? "bg-success text-success-foreground" : "bg-muted-foreground/30 text-muted-foreground"
+            )}
           >
             <Check size={14} strokeWidth={3} className="text-white" />
           </button>

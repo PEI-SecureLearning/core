@@ -1,0 +1,5 @@
+.dash-card-mask {
+    /* This SVG path draws the shape of the card WITH the rounded cutout */
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M 0 0 H 100 V 68 C 100 73 99 73 95 73 H 66 C 60 73 60 73 60 79 V 96 C 60 99 59 100 56 100 H 0 Z' fill='black'/%3E%3C/svg%3E");
+    mask-size: 100% 100%;
+}

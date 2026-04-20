@@ -1,0 +1,32 @@
+# Version control
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+api.egg-info
+.pytest_cache
+.coverage
+coverage.xml
+htmlcov
+
+# Virtual environment
+.venv
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Tests
+test
+
+# Docs
+README.md
+*.md

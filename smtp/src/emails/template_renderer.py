@@ -11,14 +11,20 @@ class TemplateRenderer:
 
     def load_template(self, template_id: str) -> str:
         """Load template from API."""
-        url = f"{self.api_url}/api/templates/{template_id}"
+        internal_url = f"{self.api_url}/api/internal/templates/{template_id}"
+        public_url = f"{self.api_url}/api/templates/{template_id}"
+
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(internal_url, timeout=10)
+            if response.status_code == 404:
+                response = requests.get(public_url, timeout=10)
             response.raise_for_status()
             template_out = response.json()
             return template_out["html"]
         except requests.RequestException as e:
-            raise RuntimeError(f"Failed to load template {template_id} from {url}: {e}")
+            raise RuntimeError(
+                f"Failed to load template {template_id} from {internal_url}: {e}"
+            )
 
     def render(self, template_content: str, arguments: dict[str, str]) -> str:
         """Substitute ${{key}} placeholders with values from arguments."""

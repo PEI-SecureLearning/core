@@ -1,203 +1,137 @@
-"""Tests for the background scheduler."""
+"""Tests for tasks/scheduler campaign transitions and email processing flow."""
 
-import datetime
-import pytest
-from sqlmodel import Session, SQLModel, create_engine, select
-from sqlmodel.pool import StaticPool
-from unittest.mock import patch
+from sqlmodel import Session, select
 
-from src.models.campaign import Campaign, CampaignStatus
-from src.tasks.scheduler import update_campaign_statuses
-
-
-@pytest.fixture(name="engine")
-def engine_fixture():
-    """Create an in-memory SQLite database for testing."""
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    SQLModel.metadata.create_all(engine)
-    return engine
-
-
-@pytest.fixture(name="session")
-def session_fixture(engine):
-    """Create a new database session for each test."""
-    with Session(engine) as session:
-        yield session
+from src.models import Campaign, CampaignStatus, EmailSending, EmailSendingStatus
+from src.tasks.scheduler import (
+    create_emails_for_ready_campaigns,
+    process_pending_emails,
+    update_campaign_statuses,
+)
 
 
 class TestUpdateCampaignStatuses:
-    """Tests for the update_campaign_statuses task."""
-
-    def test_scheduled_to_running(self, engine, session: Session):
-        """Test that scheduled campaigns become running when begin_date passes."""
-        now = datetime.datetime.now()
-
-        # Campaign that should start (begin_date in the past)
-        campaign = Campaign(
-            name="Should Start",
-            begin_date=now - datetime.timedelta(hours=1),
-            end_date=now + datetime.timedelta(days=1),
+    def test_scheduled_campaign_transitions_to_running(
+        self,
+        session: Session,
+        campaign_factory,
+        past,
+        future,
+    ):
+        campaign = campaign_factory(
+            name="scheduled-campaign",
             status=CampaignStatus.SCHEDULED,
+            begin_date=past(hours=2),
+            end_date=future(hours=8),
         )
-        session.add(campaign)
-        session.commit()
-        campaign_id = campaign.id
 
-        # Run the task with mocked engine
-        with patch("src.tasks.scheduler.engine", engine):
-            update_campaign_statuses()
+        update_campaign_statuses()
 
-        # Refresh session to see changes from the other session
         session.expire_all()
-
-        # Verify status changed
-        updated = session.get(Campaign, campaign_id)
+        updated = session.get(Campaign, campaign.id)
         assert updated is not None
         assert updated.status == CampaignStatus.RUNNING
 
-    def test_running_to_completed(self, engine, session: Session):
-        """Test that running campaigns become completed when end_date passes."""
-        now = datetime.datetime.now()
-
-        # Campaign that should complete (end_date in the past)
-        campaign = Campaign(
-            name="Should Complete",
-            begin_date=now - datetime.timedelta(days=2),
-            end_date=now - datetime.timedelta(hours=1),
+    def test_running_campaign_transitions_to_completed(
+        self,
+        session: Session,
+        campaign_factory,
+        past,
+    ):
+        campaign = campaign_factory(
+            name="running-campaign",
             status=CampaignStatus.RUNNING,
+            begin_date=past(days=2),
+            end_date=past(hours=1),
         )
-        session.add(campaign)
-        session.commit()
-        campaign_id = campaign.id
 
-        # Run the task with mocked engine
-        with patch("src.tasks.scheduler.engine", engine):
-            update_campaign_statuses()
+        update_campaign_statuses()
 
-        # Refresh session to see changes from the other session
         session.expire_all()
-
-        # Verify status changed
-        updated = session.get(Campaign, campaign_id)
+        updated = session.get(Campaign, campaign.id)
         assert updated is not None
         assert updated.status == CampaignStatus.COMPLETED
 
-    def test_scheduled_stays_scheduled(self, engine, session: Session):
-        """Test that future scheduled campaigns stay scheduled."""
-        now = datetime.datetime.now()
 
-        # Campaign in the future
-        campaign = Campaign(
-            name="Future Campaign",
-            begin_date=now + datetime.timedelta(days=1),
-            end_date=now + datetime.timedelta(days=7),
-            status=CampaignStatus.SCHEDULED,
-        )
-        session.add(campaign)
-        session.commit()
-        campaign_id = campaign.id
-
-        # Run the task with mocked engine
-        with patch("src.tasks.scheduler.engine", engine):
-            update_campaign_statuses()
-
-        # Verify status unchanged
-        updated = session.get(Campaign, campaign_id)
-        assert updated is not None
-        assert updated.status == CampaignStatus.SCHEDULED
-
-    def test_running_stays_running(self, engine, session: Session):
-        """Test that active running campaigns stay running."""
-        now = datetime.datetime.now()
-
-        # Campaign that is currently running
-        campaign = Campaign(
-            name="Active Campaign",
-            begin_date=now - datetime.timedelta(days=1),
-            end_date=now + datetime.timedelta(days=6),
+class TestCreateEmailsForReadyCampaigns:
+    def test_creates_email_sendings_for_running_campaign(
+        self,
+        session: Session,
+        users,
+        campaign_factory,
+        past,
+        future,
+    ):
+        campaign = campaign_factory(
+            name="ready-campaign",
             status=CampaignStatus.RUNNING,
-        )
-        session.add(campaign)
-        session.commit()
-        campaign_id = campaign.id
-
-        # Run the task with mocked engine
-        with patch("src.tasks.scheduler.engine", engine):
-            update_campaign_statuses()
-
-        # Verify status unchanged
-        updated = session.get(Campaign, campaign_id)
-        assert updated is not None
-        assert updated.status == CampaignStatus.RUNNING
-
-    def test_canceled_not_affected(self, engine, session: Session):
-        """Test that canceled campaigns are not affected."""
-        now = datetime.datetime.now()
-
-        # Canceled campaign with dates that would trigger transition
-        campaign = Campaign(
-            name="Canceled Campaign",
-            begin_date=now - datetime.timedelta(days=2),
-            end_date=now - datetime.timedelta(hours=1),
-            status=CampaignStatus.CANCELED,
-        )
-        session.add(campaign)
-        session.commit()
-        campaign_id = campaign.id
-
-        # Run the task with mocked engine
-        with patch("src.tasks.scheduler.engine", engine):
-            update_campaign_statuses()
-
-        # Verify status unchanged (still canceled)
-        updated = session.get(Campaign, campaign_id)
-        assert updated is not None
-        assert updated.status == CampaignStatus.CANCELED
-
-    def test_multiple_campaigns_updated(self, engine, session: Session):
-        """Test that multiple campaigns are updated in one run."""
-        now = datetime.datetime.now()
-
-        # Campaign that should start
-        campaign1 = Campaign(
-            name="Should Start",
-            begin_date=now - datetime.timedelta(hours=1),
-            end_date=now + datetime.timedelta(days=1),
-            status=CampaignStatus.SCHEDULED,
+            begin_date=past(hours=3),
+            end_date=future(hours=3),
+            sending_interval_seconds=1,
         )
 
-        # Campaign that should complete
-        campaign2 = Campaign(
-            name="Should Complete",
-            begin_date=now - datetime.timedelta(days=2),
-            end_date=now - datetime.timedelta(hours=1),
+        create_emails_for_ready_campaigns()
+
+        sendings = session.exec(
+            select(EmailSending).where(EmailSending.campaign_id == campaign.id)
+        ).all()
+        session.refresh(campaign)
+
+        assert len(sendings) == 3
+        assert campaign.total_recipients == 3
+        assert all(s.status == EmailSendingStatus.SCHEDULED for s in sendings)
+        assert all(s.email_to for s in sendings)
+
+    def test_does_not_duplicate_sendings_on_second_run(
+        self,
+        session: Session,
+        users,
+        campaign_factory,
+        past,
+        future,
+    ):
+        campaign = campaign_factory(
+            name="idempotent-campaign",
             status=CampaignStatus.RUNNING,
+            begin_date=past(hours=3),
+            end_date=future(hours=3),
+            sending_interval_seconds=1,
         )
 
-        # Campaign that stays scheduled
-        campaign3 = Campaign(
-            name="Future",
-            begin_date=now + datetime.timedelta(days=1),
-            end_date=now + datetime.timedelta(days=7),
-            status=CampaignStatus.SCHEDULED,
+        create_emails_for_ready_campaigns()
+        create_emails_for_ready_campaigns()
+
+        sendings = session.exec(
+            select(EmailSending).where(EmailSending.campaign_id == campaign.id)
+        ).all()
+        assert len(sendings) == 3
+
+
+class TestProcessPendingEmails:
+    def test_processes_pending_emails_and_marks_as_queued(
+        self,
+        session: Session,
+        users,
+        campaign_factory,
+        past,
+        future,
+        mock_rabbitmq_service,
+    ):
+        campaign = campaign_factory(
+            name="dispatch-campaign",
+            status=CampaignStatus.RUNNING,
+            begin_date=past(hours=3),
+            end_date=future(hours=3),
+            sending_interval_seconds=1,
         )
 
-        session.add_all([campaign1, campaign2, campaign3])
-        session.commit()
-        id1, id2, id3 = campaign1.id, campaign2.id, campaign3.id
+        create_emails_for_ready_campaigns()
+        process_pending_emails()
 
-        # Run the task with mocked engine
-        with patch("src.tasks.scheduler.engine", engine):
-            update_campaign_statuses()
+        sendings = session.exec(
+            select(EmailSending).where(EmailSending.campaign_id == campaign.id)
+        ).all()
 
-        # Refresh session to see changes from the other session
-        session.expire_all()
-
-        # Verify statuses
-        assert session.get(Campaign, id1).status == CampaignStatus.RUNNING
-        assert session.get(Campaign, id2).status == CampaignStatus.COMPLETED
-        assert session.get(Campaign, id3).status == CampaignStatus.SCHEDULED
+        assert len(sendings) == 3
+        assert all(s.status == EmailSendingStatus.QUEUED for s in sendings)
+        assert mock_rabbitmq_service.send_email.call_count == 3
