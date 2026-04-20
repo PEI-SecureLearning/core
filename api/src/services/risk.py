@@ -84,12 +84,10 @@ class RiskEvaluationService:
                     score = 0.0
                 elif s.clicked_at or s.status == EmailSendingStatus.CLICKED:
                     score = 0.25
+                elif s.reported_at or s.status == EmailSendingStatus.REPORTED:
+                    score = 1.0
                 elif s.opened_at or s.status == EmailSendingStatus.OPENED:
-                    # Check if they reported it after opening
-                    if s.reported_at or s.status == EmailSendingStatus.REPORTED:
-                        score = 1.0
-                    else:
-                        score = 0.5
+                    score = 0.5
                 else:
                     score = 0.5 # Sent but no action
                 
