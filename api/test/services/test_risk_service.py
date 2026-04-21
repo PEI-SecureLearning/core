@@ -113,7 +113,7 @@ def test_recalculate_k_factor_handles_exception_logs_error(
 
     fake_session.exec = _raise_exec
 
-    with patch("src.services.risk.logger.error") as logger_error:
+    with patch("src.services.risk.k_handler.logger.error") as logger_error:
         risk_service.recalculate_k_factor("test-user-k-error", fake_session)
         logger_error.assert_called_once()
 
@@ -280,7 +280,7 @@ def test_recalculate_e_factor_handles_exception_logs_error(
 
     fake_session.exec = _raise_exec
 
-    with patch("src.services.risk.logger.error") as logger_error:
+    with patch("src.services.risk.e_handler.logger.error") as logger_error:
         risk_service.recalculate_e_factor("test-user-e-error", fake_session)
         logger_error.assert_called_once()
 
@@ -302,7 +302,7 @@ def test_recalculate_s_factor_handles_exception_logs_error(
 ):
     with patch.object(
         risk_service, "_get_or_create_user_risk", side_effect=RuntimeError("boom")
-    ), patch("src.services.risk.logger.error") as logger_error:
+    ), patch("src.services.risk.s_handler.logger.error") as logger_error:
         risk_service.recalculate_s_factor("test-user-s-error", Session)
         logger_error.assert_called_once()
 
@@ -351,7 +351,7 @@ def test_recalculate_total_risk_handles_exception_returns_default(
 ):
     with patch.object(
         risk_service, "_get_or_create_user_risk", side_effect=RuntimeError("boom")
-    ), patch("src.services.risk.logger.error") as logger_error:
+    ), patch("src.services.risk.total_handler.logger.error") as logger_error:
         result = risk_service.recalculate_total_risk("test-user-total-error", Session)
 
     assert result == 1.0

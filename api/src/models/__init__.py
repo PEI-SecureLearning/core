@@ -76,7 +76,7 @@ from .compliance import (
     AcceptRequest,
     ComplianceStatusResponse,
 )
-from .user_progress import UserProgress, AssignmentStatus, CertificateDTO
+from .user_progress import UserProgress, AssignmentStatus, CertificateDTO, ProgressUpdate, SectionComplete
 from .org_manager import (
     OrgUserCreate,
     OrgGroupCreate,
@@ -112,7 +112,7 @@ from .course import (
     CourseOut,
     PaginatedCourses,
 )
-from .user_progress import UserProgress, AssignmentStatus
+
 
 
 __all__ = [
@@ -223,4 +223,6 @@ __all__ = [
     "UserProgress",
     "AssignmentStatus",
     "CertificateDTO",
+    "ProgressUpdate",
+    "SectionComplete",
 ]

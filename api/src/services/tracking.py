@@ -174,7 +174,6 @@ class TrackingService:
             session.commit()
             session.refresh(sending)
             
-            from src.services.risk import risk_service
             risk_service.recalculate_e_factor(sending.user_id, session)
             risk_service.recalculate_total_risk(sending.user_id, session)
 

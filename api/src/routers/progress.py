@@ -1,24 +1,14 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
-from pydantic import BaseModel
 from src.core.dependencies import SessionDep, OAuth2Scheme
 from src.core.security import Roles, Resource, Scope
+from src.models import ProgressUpdate, SectionComplete
 from src.services import progress as progress_service
 from src.services.compliance.token_helpers import decode_token_verified
 from src.services.risk import risk_service
 
 router = APIRouter(prefix="/users/{user_id}/progress", tags=["progress"])
-
-
-class ProgressUpdate(BaseModel):
-    section_id: str
-    task_id: str
-
-
-class SectionComplete(BaseModel):
-    section_id: str
-    total_sections: int
 
 
 @router.get("")
