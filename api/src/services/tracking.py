@@ -5,6 +5,7 @@ from sqlmodel import Session, select, text, update
 from src.models import Campaign, EmailSending, EmailSendingStatus
 
 from src.services import templates as TemplateService
+from src.services.risk import risk_service
 
 
 class TrackingService:
@@ -50,6 +51,9 @@ class TrackingService:
             session.commit()
             session.refresh(sending)
 
+        risk_service.recalculate_e_factor(sending.user_id, session)
+        risk_service.recalculate_total_risk(sending.user_id, session)
+
         return sending
 
     def record_click(self, tracking_token: str, session: Session) -> EmailSending:
@@ -81,6 +85,9 @@ class TrackingService:
             
         session.commit()
         session.refresh(sending)
+
+        risk_service.recalculate_e_factor(sending.user_id, session)
+        risk_service.recalculate_total_risk(sending.user_id, session)
 
         return sending
 
@@ -138,6 +145,9 @@ class TrackingService:
         session.commit()
         session.refresh(sending)
 
+        risk_service.recalculate_e_factor(sending.user_id, session)
+        risk_service.recalculate_total_risk(sending.user_id, session)
+
         return sending
 
     def record_failed(self, tracking_token: str, error_cause: str, session: Session) -> EmailSending:
@@ -150,6 +160,22 @@ class TrackingService:
             session.add(sending)
             session.commit()
             session.refresh(sending)
+
+        return sending
+
+    def record_report(self, tracking_token: str, session: Session) -> EmailSending:
+        """Record a phishing report event."""
+        sending = self._get_sending_by_token(tracking_token, session)
+
+        if sending.reported_at is None:
+            sending.reported_at = datetime.now()
+            sending.status = EmailSendingStatus.REPORTED
+            session.add(sending)
+            session.commit()
+            session.refresh(sending)
+            
+            risk_service.recalculate_e_factor(sending.user_id, session)
+            risk_service.recalculate_total_risk(sending.user_id, session)
 
         return sending
 

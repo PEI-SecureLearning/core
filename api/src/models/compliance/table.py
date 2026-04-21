@@ -18,7 +18,8 @@ class ComplianceAcceptance(SQLModel, table=True):
         description="Tenant/realm/domain identifier extracted from token",
     )
     version: str = Field(index=True, description="Hash/id of the compliance document")
-    score: int = Field(default=0, description="Last passing score percentage")
+    score: int = Field(default=0, description="Last score percentage")
+    passed: bool = Field(default=False, description="Whether the user passed this version")
     accepted_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 
 
