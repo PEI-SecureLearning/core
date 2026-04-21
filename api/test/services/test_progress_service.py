@@ -595,8 +595,12 @@ async def test_complete_section_same_section_is_idempotent(session: Session):
     )
     session.commit()
 
-    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get_course:
-        with patch("src.services.progress.get_module", new_callable=AsyncMock) as mock_get_module:
+    with patch(
+        "src.services.progress.get_course", new_callable=AsyncMock
+    ) as mock_get_course:
+        with patch(
+            "src.services.progress.get_module", new_callable=AsyncMock
+        ) as mock_get_module:
             res = await complete_section(uid, cid, "sec-1", session)
 
     assert res.completed_sections == ["sec-1"]
@@ -631,8 +635,12 @@ async def test_record_error_recomputes_score_with_total_sections(session: Sessio
     mock_module = MagicMock()
     mock_module.sections = ["sec-1", "sec-2"]
 
-    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get_course:
-        with patch("src.services.progress.get_module", new_callable=AsyncMock) as mock_get_module:
+    with patch(
+        "src.services.progress.get_course", new_callable=AsyncMock
+    ) as mock_get_course:
+        with patch(
+            "src.services.progress.get_module", new_callable=AsyncMock
+        ) as mock_get_module:
             mock_get_course.return_value = mock_course
             mock_get_module.return_value = mock_module
             res = await record_error(uid, cid, session)
@@ -645,10 +653,14 @@ async def test_record_error_recomputes_score_with_total_sections(session: Sessio
 async def test_record_error_fallback_when_course_lookup_fails(session: Session):
     uid = "u1"
     cid = "c1"
-    session.add(UserProgress(user_id=uid, course_id=cid, errors_count=1, course_score=0.0))
+    session.add(
+        UserProgress(user_id=uid, course_id=cid, errors_count=1, course_score=0.0)
+    )
     session.commit()
 
-    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get_course:
+    with patch(
+        "src.services.progress.get_course", new_callable=AsyncMock
+    ) as mock_get_course:
         mock_get_course.side_effect = Exception("lookup failed")
         res = await record_error(uid, cid, session)
 
