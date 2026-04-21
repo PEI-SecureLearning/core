@@ -26,6 +26,7 @@ from src.services.progress import (
     complete_section,
     complete_refreshment,
     mark_overdue,
+    list_certificates,
 )
 from src.models import UserProgress, AssignmentStatus
 
@@ -215,6 +216,7 @@ async def test_complete_section(session: Session):
             # Assert
             assert "sec-1" in res.completed_sections
             assert res.is_certified is True
+            assert res.expired is False
             assert res.status == AssignmentStatus.COMPLETED
             assert res.cert_expires_at is not None
 
@@ -319,6 +321,7 @@ async def test_complete_refreshment_success(session: Session):
 
             # Assert
             assert res.is_certified is True
+            assert res.expired is False
             assert res.status == AssignmentStatus.COMPLETED
 
 
@@ -395,3 +398,129 @@ async def test_complete_refreshment_fetch_error(session: Session):
             await complete_refreshment(uid, cid, session)
         assert exc.value.status_code == 400
         assert "Not all refreshment sections completed" in exc.value.detail
+
+
+@pytest.mark.anyio
+async def test_list_certificates_filters_realm_and_expired(session: Session):
+    now = datetime.utcnow()
+    session.add_all(
+        [
+            UserProgress(
+                user_id="u1",
+                course_id="c-valid",
+                is_certified=True,
+                expired=False,
+                realm_name="realm-a",
+                cert_expires_at=now + timedelta(days=10),
+                updated_at=now,
+            ),
+            UserProgress(
+                user_id="u1",
+                course_id="c-expired",
+                is_certified=True,
+                expired=True,
+                realm_name="realm-a",
+                cert_expires_at=now - timedelta(days=1),
+                updated_at=now,
+            ),
+            UserProgress(
+                user_id="u1",
+                course_id="c-other-realm",
+                is_certified=True,
+                expired=False,
+                realm_name="realm-b",
+                updated_at=now,
+            ),
+        ]
+    )
+    session.commit()
+
+    mock_course = MagicMock()
+    mock_course.title = "Security Fundamentals"
+    mock_course.cover_image = "cover-id"
+    mock_course.difficulty = "Easy"
+    mock_course.category = "Awareness"
+
+    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_course
+        result = await list_certificates(
+            user_id="u1",
+            session=session,
+            realm_name="realm-a",
+        )
+
+    assert len(result) == 1
+    assert result[0].course_id == "c-valid"
+    assert result[0].course_name == "Security Fundamentals"
+    assert result[0].realm == "realm-a"
+    assert result[0].expired is False
+
+
+@pytest.mark.anyio
+async def test_list_certificates_includes_expired_when_flag_true(session: Session):
+    now = datetime.utcnow()
+    session.add_all(
+        [
+            UserProgress(
+                user_id="u1",
+                course_id="c-valid",
+                is_certified=True,
+                expired=False,
+                realm_name="realm-a",
+                cert_expires_at=now + timedelta(days=10),
+                updated_at=now,
+            ),
+            UserProgress(
+                user_id="u1",
+                course_id="c-expired",
+                is_certified=True,
+                expired=True,
+                realm_name="realm-a",
+                cert_expires_at=now - timedelta(days=1),
+                updated_at=now,
+            ),
+        ]
+    )
+    session.commit()
+
+    mock_course = MagicMock()
+    mock_course.title = "Security Fundamentals"
+    mock_course.cover_image = "cover-id"
+    mock_course.difficulty = "Easy"
+    mock_course.category = "Awareness"
+
+    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_course
+        result = await list_certificates(
+            user_id="u1",
+            session=session,
+            realm_name="realm-a",
+            include_expired=True,
+        )
+
+    assert len(result) == 2
+    assert {item.course_id for item in result} == {"c-valid", "c-expired"}
+
+
+@pytest.mark.anyio
+async def test_list_certificates_skips_missing_course(session: Session):
+    session.add(
+        UserProgress(
+            user_id="u1",
+            course_id="missing-course",
+            is_certified=True,
+            expired=False,
+            realm_name="realm-a",
+        )
+    )
+    session.commit()
+
+    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get:
+        mock_get.side_effect = HTTPException(status_code=404, detail="Course not found")
+        result = await list_certificates(
+            user_id="u1",
+            session=session,
+            realm_name="realm-a",
+        )
+
+    assert result == []
