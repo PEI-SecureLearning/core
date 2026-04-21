@@ -37,6 +37,7 @@ from src.models import (
     Realm,
     SendingProfile,
     User,
+    UserRisk,
 )
 
 
@@ -1204,3 +1205,101 @@ class TestGetGlobalStats:
         assert result2.total_campaigns == 1
         assert result1.total_emails_scheduled == 10
         assert result2.total_emails_scheduled == 20
+
+
+class TestGetUserCampaignStats:
+    def test_returns_default_risk_when_user_risk_missing(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
+        sending = EmailSending(
+            user_id="user-default-risk",
+            scheduled_date=sample_campaign.begin_date,
+            email_to="user@example.com",
+            campaign_id=sample_campaign.id,
+            status=EmailSendingStatus.SENT,
+            sent_at=sample_campaign.begin_date,
+        )
+        session.add(sending)
+        session.commit()
+        session.refresh(sample_campaign)
+
+        result = handler.get_user_campaign_stats("user-default-risk", session)
+
+        assert result.total_campaigns == 1
+        assert result.risk_score == pytest.approx(1.0)
+        assert result.k_score == pytest.approx(0.0)
+        assert result.s_score == pytest.approx(0.5)
+        assert result.e_score == pytest.approx(0.5)
+
+    def test_status_mapping_ignored_pending_and_clicked(
+        self, handler, session: Session, sample_campaign: Campaign
+    ):
+        user_id = "user-status-map"
+        queued = EmailSending(
+            user_id=user_id,
+            scheduled_date=sample_campaign.begin_date,
+            email_to="queued@example.com",
+            campaign_id=sample_campaign.id,
+            status=EmailSendingStatus.QUEUED,
+            sent_at=sample_campaign.begin_date,
+        )
+        sent_without_timestamp = EmailSending(
+            user_id=user_id,
+            scheduled_date=sample_campaign.begin_date,
+            email_to="pending@example.com",
+            campaign_id=sample_campaign.id,
+            status=EmailSendingStatus.SENT,
+            sent_at=None,
+        )
+        clicked = EmailSending(
+            user_id=user_id,
+            scheduled_date=sample_campaign.begin_date,
+            email_to="clicked@example.com",
+            campaign_id=sample_campaign.id,
+            status=EmailSendingStatus.CLICKED,
+            sent_at=sample_campaign.begin_date,
+            clicked_at=sample_campaign.begin_date + datetime.timedelta(minutes=1),
+        )
+
+        session.add_all([queued, sent_without_timestamp, clicked])
+        session.commit()
+
+        session.add(
+            UserRisk(
+                user_id=user_id,
+                risk_score=0.42,
+                k_score=0.31,
+                s_score=0.6,
+                e_score=0.75,
+            )
+        )
+        session.commit()
+
+        result = handler.get_user_campaign_stats(user_id, session)
+
+        assert result.total_campaigns == 3
+        statuses = [c.interaction_status for c in result.campaigns]
+        assert "ignored" in statuses
+        assert "pending" in statuses
+        assert "clicked" in statuses
+        assert result.risk_score == pytest.approx(0.42)
+        assert result.k_score == pytest.approx(0.31)
+        assert result.s_score == pytest.approx(0.6)
+        assert result.e_score == pytest.approx(0.75)
+
+    def test_skips_sending_without_campaign_id(self, handler, session: Session):
+        orphan_sending = EmailSending(
+            user_id="orphan-user",
+            scheduled_date=datetime.datetime(2026, 2, 24, 10, 0),
+            email_to="orphan@example.com",
+            campaign_id=None,
+            status=EmailSendingStatus.SENT,
+            sent_at=datetime.datetime(2026, 2, 24, 10, 0),
+        )
+        session.add(orphan_sending)
+        session.commit()
+
+        result = handler.get_user_campaign_stats("orphan-user", session)
+
+        assert result.total_campaigns == 0
+        assert result.campaigns == []

@@ -27,6 +27,7 @@ from src.services.progress import (
     complete_refreshment,
     mark_overdue,
     list_certificates,
+    record_error,
 )
 from src.models import UserProgress, AssignmentStatus
 
@@ -524,3 +525,132 @@ async def test_list_certificates_skips_missing_course(session: Session):
         )
 
     assert result == []
+
+
+def test_assign_course_completed_and_not_certified_is_not_reassigned(session: Session):
+    course_id = "course-123"
+    user_id = "user-1"
+    start_date = datetime.utcnow()
+    deadline = start_date + timedelta(days=30)
+
+    session.add(
+        UserProgress(
+            user_id=user_id,
+            course_id=course_id,
+            status=AssignmentStatus.COMPLETED,
+            is_certified=False,
+            start_date=start_date - timedelta(days=10),
+            deadline=deadline - timedelta(days=10),
+        )
+    )
+    session.commit()
+
+    assigned = assign_course(
+        course_id=course_id,
+        user_ids=[user_id],
+        start_date=start_date,
+        deadline=deadline,
+        cert_valid_days=90.0,
+        session=session,
+        realm_name="realm-a",
+    )
+
+    assert assigned == []
+    rec = session.get(UserProgress, {"user_id": user_id, "course_id": course_id})
+    assert rec is not None
+    assert rec.status == AssignmentStatus.COMPLETED
+    assert rec.is_certified is False
+
+
+def test_update_progress_duplicate_task_no_double_count(session: Session):
+    uid = "u1"
+    cid = "c1"
+    session.add(
+        UserProgress(
+            user_id=uid,
+            course_id=cid,
+            progress_data={"sec-1": ["task-1"]},
+            total_completed_tasks=1,
+        )
+    )
+    session.commit()
+
+    res = update_progress(uid, cid, "sec-1", "task-1", session)
+
+    assert res.progress_data["sec-1"] == ["task-1"]
+    assert res.total_completed_tasks == 1
+
+
+@pytest.mark.anyio
+async def test_complete_section_same_section_is_idempotent(session: Session):
+    uid = "u1"
+    cid = "c1"
+    session.add(
+        UserProgress(
+            user_id=uid,
+            course_id=cid,
+            completed_sections=["sec-1"],
+            cert_valid_days=30,
+        )
+    )
+    session.commit()
+
+    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get_course:
+        with patch("src.services.progress.get_module", new_callable=AsyncMock) as mock_get_module:
+            res = await complete_section(uid, cid, "sec-1", session)
+
+    assert res.completed_sections == ["sec-1"]
+    assert mock_get_course.await_count == 0
+    assert mock_get_module.await_count == 0
+
+
+@pytest.mark.anyio
+async def test_record_error_not_found(session: Session):
+    with pytest.raises(HTTPException) as exc:
+        await record_error("none", "none", session)
+    assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_record_error_recomputes_score_with_total_sections(session: Session):
+    uid = "u1"
+    cid = "c1"
+    session.add(
+        UserProgress(
+            user_id=uid,
+            course_id=cid,
+            completed_sections=["sec-1"],
+            errors_count=0,
+            course_score=0.0,
+        )
+    )
+    session.commit()
+
+    mock_course = MagicMock()
+    mock_course.modules = ["m1"]
+    mock_module = MagicMock()
+    mock_module.sections = ["sec-1", "sec-2"]
+
+    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get_course:
+        with patch("src.services.progress.get_module", new_callable=AsyncMock) as mock_get_module:
+            mock_get_course.return_value = mock_course
+            mock_get_module.return_value = mock_module
+            res = await record_error(uid, cid, session)
+
+    assert res.errors_count == 1
+    assert res.course_score == approx((1 / (1 + 1)) + (1 / 2), abs=1e-6)
+
+
+@pytest.mark.anyio
+async def test_record_error_fallback_when_course_lookup_fails(session: Session):
+    uid = "u1"
+    cid = "c1"
+    session.add(UserProgress(user_id=uid, course_id=cid, errors_count=1, course_score=0.0))
+    session.commit()
+
+    with patch("src.services.progress.get_course", new_callable=AsyncMock) as mock_get_course:
+        mock_get_course.side_effect = Exception("lookup failed")
+        res = await record_error(uid, cid, session)
+
+    assert res.errors_count == 2
+    assert res.course_score == approx(1 / (1 + 2), abs=1e-6)
