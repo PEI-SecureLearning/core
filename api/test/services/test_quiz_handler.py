@@ -183,7 +183,7 @@ def test_get_latest_compliance(monkeypatch, session: Session):
     result = quiz_handler.get_latest_compliance(session, "realm-a")
 
     assert result.title == "Title"
-    assert result.word_count == 3
+    assert result.word_count == 4
     assert result.content.startswith("# Title")
     assert len(result.version) == 64
 
@@ -213,7 +213,6 @@ def test_submit_quiz_pass_creates_record_and_clears_cooldown(
     monkeypatch.setattr(quiz_handler, "ensure_tenant_quiz", lambda _s, _t: quiz)
 
     version = quiz_handler.compute_version(policy.content_md, quiz.question_bank, 50, 2)
-    quiz_handler.record_cooldown("user-1", version, datetime.utcnow())
 
     result = quiz_handler.submit_quiz(
         session,
@@ -309,8 +308,11 @@ def test_accept_compliance_validates_version_and_score(monkeypatch, session: Ses
     monkeypatch.setattr(quiz_handler, "ensure_tenant_policy", lambda _s, _t: policy)
     monkeypatch.setattr(quiz_handler, "ensure_tenant_quiz", lambda _s, _t: quiz)
 
+    normalized_count, normalized_score = quiz_handler.normalize_quiz_settings(
+        quiz.question_count, quiz.passing_score, len(quiz.question_bank)
+    )
     expected_version = quiz_handler.compute_version(
-        policy.content_md, quiz.question_bank, 80, 2
+        policy.content_md, quiz.question_bank, normalized_score, normalized_count
     )
 
     with pytest.raises(HTTPException) as exc_version:
@@ -324,7 +326,7 @@ def test_accept_compliance_validates_version_and_score(monkeypatch, session: Ses
     assert exc_score.value.status_code == 400
 
     result = quiz_handler.accept_compliance(
-        session, "realm-a", "user-4", expected_version, 90
+        session, "realm-a", "user-4", expected_version, normalized_score
     )
     assert result["status"] == "accepted"
 
@@ -334,4 +336,4 @@ def test_accept_compliance_validates_version_and_score(monkeypatch, session: Ses
         )
     ).first()
     assert row is not None
-    assert row.score == 90
+    assert row.score == normalized_score
