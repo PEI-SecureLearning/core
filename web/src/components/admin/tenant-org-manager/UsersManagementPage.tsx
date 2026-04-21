@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useKeycloak } from "@react-keycloak/web";
 import { Users, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import type { UserRecord, Group, BulkUser } from "./types";
 import { UserTable } from "./UserTable";
 import { UserGrid } from "./UserGrid";
@@ -10,6 +11,7 @@ import { BulkImportModal } from "./BulkImportModal";
 import { mapRole } from "./utils";
 import { userApi } from "../../../services/userApi";
 import { userGroupsApi } from "../../../services/userGroupsApi";
+import { HttpError } from "@/lib/api-client";
 
 type UsersManagementPageProps = {
     readonly initialOpenNewUserModal?: boolean;
@@ -80,6 +82,13 @@ export function UsersManagementPage({
             setUsers((prev) => prev.filter((u) => (u.id || u.username) !== id));
         } catch (err) {
             console.error("Failed to delete user", err);
+            const message =
+                err instanceof HttpError && typeof err.data?.detail === "string"
+                    ? err.data.detail
+                    : err instanceof Error
+                        ? err.message
+                        : "Failed to delete user.";
+            toast.error(message);
         } finally {
             setDeletingIds((prev) => {
                 const copy = { ...prev };
