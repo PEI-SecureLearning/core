@@ -8,55 +8,29 @@ on:
       - hotfix/**
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    environment: production
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: api
-            context: api
-            image: securelearning-api
-            target: prod
-          - name: web
-            context: web
-            image: securelearning-web
-            target: prod
-          - name: smtp
-            context: smtp
-            image: securelearning-smtp
+  api:
+    uses: ./.github/workflows/ci-api.yml
+    with:
+      environment: production
+      image_tag: latest
+      include_sha_tag: true
+      push_image: true
+    secrets: inherit
 
-    steps:
-      - uses: actions/checkout@v4
+  web:
+    uses: ./.github/workflows/ci-web.yml
+    with:
+      environment: production
+      image_tag: latest
+      include_sha_tag: true
+      push_image: true
+    secrets: inherit
 
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Compute tags
-        id: tags
-        run: |
-          set -euo pipefail
-          IMAGE="${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.image }}"
-          SHA_TAG="$(git rev-parse --short HEAD)"
-          {
-            echo "image=$IMAGE"
-            echo "sha_tag=$SHA_TAG"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Build and push ${{ matrix.name }}
-        uses: docker/build-push-action@v6
-        with:
-          context: ${{ matrix.context }}
-          target: ${{ matrix.target || '' }}
-          push: true
-          tags: |
-            ${{ steps.tags.outputs.image }}:latest
-            ${{ steps.tags.outputs.image }}:${{ steps.tags.outputs.sha_tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: ${{ matrix.name == 'web' && format('VITE_API_URL={0}\nVITE_KEYCLOAK_URL={1}\nVITE_BASE_PATH={2}\nVITE_WEB_URL={3}', vars.API_URL, vars.KEYCLOAK_URL, vars.VITE_BASE_PATH, vars.WEB_URL) || '' }}
+  smtp:
+    uses: ./.github/workflows/ci-smtp.yml
+    with:
+      environment: production
+      image_tag: latest
+      include_sha_tag: true
+      push_image: true
+    secrets: inherit
