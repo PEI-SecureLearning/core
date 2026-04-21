@@ -23,7 +23,8 @@ jobs:
           workflow: ci-api.yml
           workflow_conclusion: success
           name: api-coverage
-          path: api/
+          path: .
+          commit: ${{ github.sha }}
           if_no_artifact_found: warn
 
       - uses: SonarSource/sonarqube-scan-action@v5
