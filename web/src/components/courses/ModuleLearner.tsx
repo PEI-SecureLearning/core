@@ -21,6 +21,7 @@ import { COURSES } from "./courseData";
 import type {
   Block,
   Choice,
+  RichContentBlock,
   Section
 } from "@/components/content-manager/modules/module-creation/types";
 import { renderMarkdown } from "@/components/content-manager/modules/module-creation/utils";
@@ -51,11 +52,11 @@ function RichMediaPreview({
   block,
   token
 }: {
-  readonly block: any;
+  readonly block: RichContentBlock;
   readonly token?: string;
 }) {
-  const mediaType = block.mediaType ?? block.media_type;
-  const contentId = block.contentId ?? block.content_id ?? (block.url?.startsWith("http") ? "" : block.url);
+  const mediaType = block.mediaType;
+  const contentId = block.contentId ?? (block.url?.startsWith("http") ? "" : block.url);
 
   // If we already have a real URL, use it immediately.
   const [url, setUrl] = useState(() => (block.url?.startsWith("http") ? block.url : ""));
@@ -139,20 +140,29 @@ function QuestionBlock({
   const answered = answeredChoices[q.id];
   const typeLabel = QUESTION_TYPE_LABELS[q.type] ?? "Question";
   const choices = q.type === "true_false" ? TF_CHOICES : q.choices;
+  let shortAnswerStateClass = "border-border focus:border-primary/50";
 
-  const choiceBtnClass = (c: any) => {
+  if (answered) {
+    const isShortAnswerCorrect =
+      answered.trim().toLowerCase() === (q.answer || "").trim().toLowerCase();
+    shortAnswerStateClass = isShortAnswerCorrect
+      ? "border-emerald-500 bg-emerald-50"
+      : "border-red-400 bg-red-50";
+  }
+
+  const choiceBtnClass = (c: Choice) => {
     if (answered !== c.id) {
       return "bg-background border-border text-foreground/90 hover:bg-primary/5 hover:border-primary/30";
     }
-    const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
+    const isCorrect = c.isCorrect;
     return isCorrect
       ? "bg-green-50 border-green-400 text-green-800"
       : "bg-red-50 border-red-400 text-red-800";
   };
 
-  const choiceCircleClass = (c: any) => {
+  const choiceCircleClass = (c: Choice) => {
     if (answered !== c.id) return "border-border/60";
-    const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
+    const isCorrect = c.isCorrect;
     return isCorrect
       ? "border-green-500 bg-green-100"
       : "border-red-500 bg-red-100";
@@ -191,7 +201,7 @@ function QuestionBlock({
               onBlur={(e) => {
                 onMark(q.id, e.target.value);
               }}
-              className={`flex-1 bg-surface-subtle border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all ${answered ? (answered.trim().toLowerCase() === (q.answer || "").trim().toLowerCase() ? "border-emerald-500 bg-emerald-50" : "border-red-400 bg-red-50") : "border-border focus:border-primary/50"}`}
+              className={`flex-1 bg-surface-subtle border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all ${shortAnswerStateClass}`}
             />
             <button
               type="button"
@@ -208,7 +218,7 @@ function QuestionBlock({
           <div className="flex flex-col gap-2">
             {choices.map((c) => {
               const isSelected = answered === c.id;
-              const isCorrect = (c as any).is_correct ?? (c as any).isCorrect;
+              const isCorrect = c.isCorrect;
               return (
                 <button
                   key={c.id}
@@ -314,7 +324,7 @@ function isSectionComplete(
     }
 
     const choices = (q.type === "true_false" ? TF_CHOICES : q.choices) || [];
-    const correct = choices.find((c: any) => c.is_correct ?? (c as any).isCorrect);
+    const correct = choices.find((c: Choice) => c.isCorrect);
     return chosen === correct?.id;
   });
 }
@@ -385,7 +395,7 @@ type Props = {
 };
 
 export default function ModuleLearner({ module: mod, courseId, token, initialCompletedSections = [], onSectionComplete, onTaskComplete, isRenewalMode, onRenewalComplete, onWrongAnswer }: Props) {
-  const sections = mod.sections ?? [];
+  const sections = useMemo(() => mod.sections ?? [], [mod.sections]);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   // ── State ──
@@ -425,8 +435,11 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
   const onMark = useCallback((sectionId: string, qid: string, cid: string) => {
     // Find the question block to check correctness
     const section = sections.find(s => s.id === sectionId);
-    const qBlock = section?.blocks.find(b => b.kind === 'question' && (b as any).question?.id === qid) as any;
-    
+    const qBlock = section?.blocks?.find(
+      (b): b is Extract<Block, { kind: "question" }> =>
+        b.kind === "question" && b.question?.id === qid
+    );
+
     if (qBlock) {
       const q = qBlock.question;
       let isCorrect = false;
@@ -434,12 +447,12 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
         isCorrect = cid.trim().toLowerCase() === (q.answer || "").trim().toLowerCase();
       } else {
         const choices = (q.type === 'true_false' ? TF_CHOICES : q.choices) || [];
-        const correctChoice = choices.find((c: any) => c.is_correct ?? (c as any).isCorrect);
+        const correctChoice = choices.find((c: Choice) => c.isCorrect);
         isCorrect = cid === correctChoice?.id;
       }
 
       if (!isCorrect && onWrongAnswer) {
-         onWrongAnswer();
+        onWrongAnswer();
       }
     }
 
@@ -502,7 +515,7 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
         }, 300);
       }
     },
-    [sections]
+    [sections, onSectionComplete]
   );
 
   const skipSection = useCallback((sectionId: string) => {
@@ -525,8 +538,8 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
         {/* Row 1: back link (course title) */}
         <div className="flex items-center gap-2 min-w-0">
           <Link
-            to={"/courses/$courseId" as any}
-            params={{ courseId } as any}
+            to={"/courses/$courseId"}
+            params={{ courseId }}
             className="flex items-center gap-1 text-muted-foreground/70 hover:text-primary transition-colors text-sm font-medium shrink-0"
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
@@ -937,8 +950,8 @@ export default function ModuleLearner({ module: mod, courseId, token, initialCom
                         </p>
                         <div className="flex justify-center gap-4">
                           <Link
-                            to={"/courses/$courseId" as any}
-                            params={{ courseId } as any}
+                            to={"/courses/$courseId"}
+                            params={{ courseId }}
                             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-background text-primary font-semibold shadow-md hover:shadow-lg hover:bg-primary/10 transition-all"
                           >
                             ← Back to Course
