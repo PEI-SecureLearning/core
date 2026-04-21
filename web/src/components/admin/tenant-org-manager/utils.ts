@@ -10,3 +10,15 @@ export function mapRole(
         return "DEFAULT_USER";
     return "";
 }
+
+export function isOrgManagerRole(user: {
+    role?: string;
+    isOrgManager?: boolean;
+    is_org_manager?: boolean;
+}): boolean {
+    const normalizedRole = (user.role || "").trim().toLowerCase().replaceAll("-", "_").replaceAll(" ", "_");
+    if (normalizedRole === "org_manager") return true;
+    if (normalizedRole === "default_user" || normalizedRole === "user") return false;
+
+    return user.isOrgManager ?? user.is_org_manager ?? false;
+}

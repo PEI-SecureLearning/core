@@ -12,6 +12,7 @@ from src.models import (
 )
 from src.services.compliance.token_helpers import decode_token_verified, get_realm_from_iss
 from src.services.platform_admin.base_handler import base_handler
+from src.services.org_manager.user_handler import validate_email_domain
 
 
 class user_handler(base_handler):
@@ -30,17 +31,35 @@ class user_handler(base_handler):
         group_id: str | None = None,
     ) -> UserCreatedInRealmDTO:
         """Create a new user inside the specified Keycloak realm/tenant."""
+        username_clean = (username or "").strip()
+        name_clean = (name or "").strip()
+        email_clean = (email or "").strip().lower()
+        role_clean = (role or "").strip().upper()
+
+        validate_email_domain(email_clean, self._get_realm_domain(realm, session))
+
         temporary_password = secrets.token_urlsafe(12)
 
-        response = self.admin.add_user(
-            session,
-            realm,
-            username,
-            temporary_password,
-            full_name=name,
-            email=email,
-            role=role,
-        )
+        try:
+            response = self.admin.add_user(
+                session,
+                realm,
+                username_clean,
+                temporary_password,
+                full_name=name_clean,
+                email=email_clean,
+                role=role_clean,
+            )
+        except HTTPException as exc:
+            if exc.status_code == 409:
+                raise HTTPException(
+                    status_code=409,
+                    detail=(
+                        "A user with this username or email already exists in "
+                        "this organization."
+                    ),
+                )
+            raise
 
         user_id = None
         location = response.headers.get("Location")
@@ -58,24 +77,25 @@ class user_handler(base_handler):
                 status_code=500, detail="Failed to create user in Keycloak"
             )
 
+        self._assign_roles(realm, user_id, role_clean)
         self._ensure_realm(session, realm, f"{realm}.local")
         existing = session.get(User, user_id)
         if existing:
-            existing.email = email
-            existing.is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"
+            existing.email = email_clean
+            existing.is_org_manager = role_clean == "ORG_MANAGER"
         else:
             session.add(
                 User(
                     keycloak_id=user_id,
-                    email=email,
-                    is_org_manager=(role or "").strip().upper() == "ORG_MANAGER",
+                    email=email_clean,
+                    is_org_manager=role_clean == "ORG_MANAGER",
                 )
             )
         session.commit()
 
         return UserCreatedInRealmDTO(
             realm=realm,
-            username=username,
+            username=username_clean,
             status="created",
             temporary_password=temporary_password,
         )
@@ -148,8 +168,24 @@ class user_handler(base_handler):
 
         return self._build_current_user_profile(realm, user_id, claims, profile, {})
 
-    def delete_user_in_realm(self, realm: str, user_id: str, session: Session) -> None:
+    def delete_user_in_realm(
+        self, realm: str, user_id: str, session: Session, token: str
+    ) -> None:
         """Delete a user from the realm."""
+        try:
+            claims = decode_token_verified(token)
+            current_realm = get_realm_from_iss(claims.get("iss"))
+            current_user_id = claims.get("sub")
+
+            if current_realm == realm and current_user_id == user_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="You cannot delete your own account.",
+                )
+        except HTTPException as exc:
+            if exc.status_code != 401:
+                raise
+
         if (
             self._is_org_manager(realm, user_id)
             and self._count_org_managers(realm) <= 1
@@ -277,6 +313,38 @@ class user_handler(base_handler):
             for user in self.admin.list_users(realm)
             if self._resolve_is_org_manager(realm, user, False)
         )
+
+    def _assign_roles(self, realm: str, user_id: str, role_clean: str) -> None:
+        self.admin.assign_realm_role_to_user(realm, user_id, role_clean)
+
+        if role_clean != "ORG_MANAGER":
+            return
+
+        token = self.admin._get_admin_token()
+        client = self.admin.keycloak_client.get_client_by_client_id(
+            realm, token, "realm-management"
+        )
+        client_id = client.get("id") if client else None
+        if not client_id:
+            return
+
+        client_role = self.admin.keycloak_client.get_client_role(
+            realm, token, client_id, "realm-admin"
+        )
+        if client_role:
+            self.admin.keycloak_client.assign_client_roles(
+                realm, token, user_id, client_id, [client_role]
+            )
+
+    def _get_realm_domain(self, realm: str, session: Session) -> str | None:
+        db_realm = session.get(Realm, realm)
+        if db_realm and db_realm.domain:
+            return db_realm.domain
+
+        try:
+            return self.admin.get_domain_for_realm(realm)
+        except Exception:
+            return None
 
     def _delete_local_user(self, session: Session, user_id: str) -> None:
         db_user = session.get(User, user_id)

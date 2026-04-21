@@ -10,7 +10,7 @@ COPY pyproject.toml uv.lock /app/
 WORKDIR /app
 
 # Install dependencies (frozen, no-cache for prod optimization)
-RUN uv sync --frozen --no-cache
+RUN uv sync --no-cache
 
 # Development target: hot reload with source mount
 FROM base AS dev

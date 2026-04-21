@@ -4,6 +4,19 @@ import { toast } from "sonner";
 import RequiredAsterisk from "@/components/shared/RequiredAsterisk";
 import type { Group, CreateUserField } from "./types";
 import { userApi } from "@/services/userApi";
+import {
+    createRealmEmailDomainValidator,
+    deriveUsername,
+    getUserCreationValidation,
+    mapUserCreationErrorToField,
+    validateSelectedGroup,
+} from "./userCreationValidation";
+
+type EmailDomainValidationState =
+    | { status: "idle" }
+    | { status: "checking" }
+    | { status: "valid"; domain: string }
+    | { status: "invalid"; message: string };
 
 interface NewUserModalProps {
     realm: string;
@@ -24,12 +37,38 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         message: string;
     } | null>(null);
     const [createFieldError, setCreateFieldError] = useState<CreateUserField>(null);
+    const [emailDomainValidation, setEmailDomainValidation] = useState<EmailDomainValidationState>({ status: "idle" });
 
     const nameInputRef = useRef<HTMLInputElement>(null);
     const emailInputRef = useRef<HTMLInputElement>(null);
     const usernameInputRef = useRef<HTMLInputElement>(null);
     const roleFirstOptionRef = useRef<HTMLButtonElement>(null);
     const groupSelectRef = useRef<HTMLSelectElement>(null);
+    const validateEmailDomainAgainstRealmRef = useRef(createRealmEmailDomainValidator(realm));
+
+    const { normalized, nameError, emailError, usernameError } = getUserCreationValidation({
+        username: newUserUsername,
+        name: newUserName,
+        email: newUserEmail,
+        role: newUserRole,
+    });
+    const normalizedName = normalized.name;
+    const normalizedEmail = normalized.email;
+    const derivedUsername = deriveUsername(normalizedEmail, normalized.username);
+    const groupValidationMessage = validateSelectedGroup(
+        newUserGroupId,
+        groups.map((group) => group.id || "").filter(Boolean)
+    );
+
+    const emailErrorMessage =
+        createFieldError === "email" && createStatus?.type === "error"
+            ? createStatus.message
+            : emailError || (emailDomainValidation.status === "invalid" ? emailDomainValidation.message : null);
+
+    const usernameErrorMessage =
+        createFieldError === "username" && createStatus?.type === "error"
+            ? createStatus.message
+            : usernameError;
 
     useEffect(() => {
         if (createStatus?.type !== "error" || !createFieldError) return;
@@ -45,24 +84,64 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         target?.focus();
     }, [createStatus, createFieldError]);
 
+    useEffect(() => {
+        setEmailDomainValidation({ status: "idle" });
+        validateEmailDomainAgainstRealmRef.current = createRealmEmailDomainValidator(realm);
+    }, [realm]);
+
+    const runEmailDomainValidation = async (): Promise<string | null> => {
+        if (emailError) {
+            setEmailDomainValidation({ status: "idle" });
+            return emailError;
+        }
+
+        setEmailDomainValidation({ status: "checking" });
+        const validationMessage = await validateEmailDomainAgainstRealmRef.current(normalizedEmail);
+
+        if (validationMessage) {
+            setEmailDomainValidation({ status: "invalid", message: validationMessage });
+            return validationMessage;
+        }
+
+        setEmailDomainValidation({ status: "valid", domain: normalizedEmail.split("@")[1] });
+        return null;
+    };
+
     const handleCreateUser = async () => {
         if (!realm) {
             setCreateStatus({ type: "error", message: "Realm not resolved." });
             return;
         }
-        if (!newUserName) {
-            setCreateStatus({ type: "error", message: "Name is required." });
+        if (nameError) {
+            setCreateStatus({ type: "error", message: nameError });
             setCreateFieldError("name");
             return;
         }
-        if (!newUserEmail) {
-            setCreateStatus({ type: "error", message: "Email is required." });
+        if (emailError) {
+            setCreateStatus({ type: "error", message: emailError });
             setCreateFieldError("email");
+            return;
+        }
+        if (usernameError) {
+            setCreateStatus({ type: "error", message: usernameError });
+            setCreateFieldError("username");
             return;
         }
         if (!newUserRole) {
             setCreateStatus({ type: "error", message: "Role is required." });
             setCreateFieldError("role");
+            return;
+        }
+        if (groupValidationMessage) {
+            setCreateStatus({ type: "error", message: groupValidationMessage });
+            setCreateFieldError("group");
+            return;
+        }
+
+        const emailDomainError = await runEmailDomainValidation();
+        if (emailDomainError) {
+            setCreateStatus({ type: "error", message: emailDomainError });
+            setCreateFieldError("email");
             return;
         }
 
@@ -74,9 +153,9 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
             await userApi.createUser(
                 realm,
                 {
-                    username: newUserUsername || newUserEmail.split("@")[0],
-                    name: newUserName,
-                    email: newUserEmail,
+                    username: derivedUsername,
+                    name: normalizedName,
+                    email: normalizedEmail,
                     role: newUserRole,
                     group_id: newUserGroupId || undefined,
                 }
@@ -90,15 +169,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
             onClose();
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to create user";
-            const lowerError = errorMessage.toLowerCase();
-            let errorField: CreateUserField = null;
-            if (lowerError.includes("email")) errorField = "email";
-            else if (lowerError.includes("username")) errorField = "username";
-            else if (lowerError.includes("role")) errorField = "role";
-            else if (lowerError.includes("group")) errorField = "group";
-            else if (lowerError.includes("name")) errorField = "name";
-
-            setCreateFieldError(errorField);
+            setCreateFieldError(mapUserCreationErrorToField(errorMessage));
             setCreateStatus({ type: "error", message: errorMessage });
         } finally {
             setIsCreating(false);
@@ -154,14 +225,18 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                     }
                                 }}
                                 placeholder="John Doe"
+                                maxLength={120}
+                                aria-invalid={!!(createFieldError === "name" || (newUserName && nameError))}
                                 className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "name"
                                     ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
                                     : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                     }`}
                             />
                         </div>
-                        {createStatus?.type === "error" && createFieldError === "name" && (
-                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
+                        {((createStatus?.type === "error" && createFieldError === "name") || (!!newUserName && !!nameError)) && (
+                            <p className="mt-1.5 text-[12px] text-error">
+                                {createFieldError === "name" && createStatus?.type === "error" ? createStatus.message : nameError}
+                            </p>
                         )}
                     </div>
 
@@ -177,21 +252,29 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 value={newUserEmail}
                                 onChange={(e) => {
                                     setNewUserEmail(e.target.value);
+                                    setEmailDomainValidation({ status: "idle" });
                                     if (createFieldError === "email") {
                                         setCreateFieldError(null);
                                         setCreateStatus(null);
                                     }
                                 }}
+                                onBlur={() => {
+                                    if (!emailError) {
+                                        void runEmailDomainValidation();
+                                    }
+                                }}
                                 placeholder="john.doe@example.com"
-                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "email"
+                                aria-invalid={!!emailErrorMessage}
+                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${emailErrorMessage
                                     ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
                                     : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                     }`}
                             />
                         </div>
-                        {createStatus?.type === "error" && createFieldError === "email" && (
-                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
+                        {emailDomainValidation.status === "checking" && (
+                            <p className="mt-1.5 text-[12px] text-muted-foreground">Verifying organization domain...</p>
                         )}
+                        {emailErrorMessage && <p className="mt-1.5 text-[12px] text-error">{emailErrorMessage}</p>}
                     </div>
 
                     <div>
@@ -214,15 +297,14 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 }}
                                 placeholder="Username"
                                 maxLength={40}
-                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${createFieldError === "username"
+                                aria-invalid={!!usernameErrorMessage}
+                                className={`w-full pl-11 pr-4 py-2.5 rounded-md bg-surface-subtle text-[14px] placeholder:text-muted-foreground/70 focus:outline-none transition-all ${usernameErrorMessage
                                     ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
                                     : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                     }`}
                             />
                         </div>
-                        {createStatus?.type === "error" && createFieldError === "username" && (
-                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
-                        )}
+                        {usernameErrorMessage && <p className="mt-1.5 text-[12px] text-error">{usernameErrorMessage}</p>}
                     </div>
 
                     <div>
@@ -269,7 +351,8 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                     setCreateStatus(null);
                                 }
                             }}
-                            className={`w-full px-4 py-2.5 rounded-md bg-surface-subtle text-[14px] focus:outline-none transition-all ${createFieldError === "group"
+                            aria-invalid={!!((createFieldError === "group" && createStatus?.type === "error") || groupValidationMessage)}
+                            className={`w-full px-4 py-2.5 rounded-md bg-surface-subtle text-[14px] focus:outline-none transition-all ${(createFieldError === "group" && createStatus?.type === "error") || groupValidationMessage
                                 ? "border border-error/50 focus:ring-2 focus:ring-error/20 focus:border-error"
                                 : "border border-border focus:ring-2 focus:ring-primary/30 focus:border-primary"
                                 }`}
@@ -279,8 +362,10 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                                 <option key={g.id} value={g.id || ""}>{g.name}</option>
                             ))}
                         </select>
-                        {createStatus?.type === "error" && createFieldError === "group" && (
-                            <p className="mt-1.5 text-[12px] text-error">{createStatus.message}</p>
+                        {((createStatus?.type === "error" && createFieldError === "group") || groupValidationMessage) && (
+                            <p className="mt-1.5 text-[12px] text-error">
+                                {createFieldError === "group" && createStatus?.type === "error" ? createStatus.message : groupValidationMessage}
+                            </p>
                         )}
                     </div>
                 </div>
@@ -295,7 +380,17 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                         </button>
                         <button
                             onClick={handleCreateUser}
-                            disabled={!newUserName || !newUserEmail || !newUserRole || isCreating}
+                            disabled={
+                                !normalizedName ||
+                                !normalizedEmail ||
+                                !newUserRole ||
+                                !!nameError ||
+                                !!emailError ||
+                                !!usernameError ||
+                                !!groupValidationMessage ||
+                                emailDomainValidation.status === "checking" ||
+                                isCreating
+                            }
                             className="px-6 py-2.5 rounded-xl text-[14px] font-medium text-white bg-primary hover:bg-primary/90 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/25"
                         >
                             {isCreating ? (

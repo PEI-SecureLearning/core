@@ -8,6 +8,7 @@ class OrgManagerService(base_handler, user_handler, group_handler):
 
     def __init__(self):
         base_handler.__init__(self)
+        user_handler.__init__(self)
 
 
 _instance: OrgManagerService | None = None

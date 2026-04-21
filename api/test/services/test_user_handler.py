@@ -1,4 +1,5 @@
 import os
+import importlib
 
 os.environ.update(
     {
@@ -17,8 +18,11 @@ from unittest.mock import MagicMock, patch
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 from src.services.org_manager import OrgManagerService
+from src.services.org_manager.user_handler import validate_email_domain
 from src.models import Realm, User, UserProgress, AssignmentStatus
 from fastapi import HTTPException
+
+org_user_handler_module = importlib.import_module("src.services.org_manager.user_handler")
 
 
 @pytest.fixture(name="engine")
@@ -45,9 +49,44 @@ def mock_kc():
 
 
 @pytest.fixture
-def service(mock_kc):
+def mock_kc_admin():
+    with patch("src.services.org_manager.user_handler.get_keycloak_admin") as mock:
+        mock.return_value.get_domain_for_realm.return_value = ""
+        yield mock.return_value
+
+
+@pytest.fixture
+def service(mock_kc, mock_kc_admin):
     # OrgManagerService.__init__ calls base_handler.__init__ which calls get_keycloak_client
     return OrgManagerService()
+
+
+def test_validate_email_domain_accepts_empty_realm_domain():
+    validate_email_domain("person@outside.test", None)
+    validate_email_domain("person@outside.test", "")
+
+
+def test_validate_email_domain_accepts_case_insensitive_match():
+    validate_email_domain(" Person@Example.COM ", "example.com")
+
+
+def test_validate_email_domain_rejects_invalid_email_for_realm_domain():
+    with pytest.raises(HTTPException) as exc:
+        validate_email_domain("not-an-email", "example.com")
+
+    assert exc.value.status_code == 400
+    assert '@example.com' in exc.value.detail
+
+
+def test_validate_email_domain_rejects_domain_mismatch():
+    with pytest.raises(HTTPException) as exc:
+        validate_email_domain("person@wrong.test", "example.com")
+
+    assert exc.value.status_code == 400
+    assert (
+        'Email domain "wrong.test" does not match this organization.'
+        in exc.value.detail
+    )
 
 
 def test_list_users(service, mock_kc):
@@ -97,6 +136,44 @@ def test_create_user_success(service, mock_kc, session: Session):
     )
 
     # Verify DB
+    db_user = session.get(User, "123")
+    assert db_user is not None
+    assert db_user.email == "john.doe@test.com"
+
+
+def test_create_user_normalizes_input_before_keycloak_and_db(
+    service, mock_kc, session: Session
+):
+    realm_name = "test-realm"
+    session.add(Realm(name=realm_name, domain="test.com"))
+    session.commit()
+
+    mock_kc.create_user.return_value = MagicMock(
+        status_code=201, headers={"Location": "/u/123"}
+    )
+    mock_kc.get_realm_role.return_value = {"id": "role-id", "name": "DEFAULT_USER"}
+
+    res = service.create_user(
+        session=session,
+        realm=realm_name,
+        token="token",
+        username=" john.doe ",
+        name=" John Doe ",
+        email=" JOHN.DOE@TEST.COM ",
+        role=" default_user ",
+    )
+
+    assert res["username"] == "john.doe"
+    mock_kc.create_user.assert_called_once()
+    user_data = mock_kc.create_user.call_args.args[2]
+    assert user_data["username"] == "john.doe"
+    assert user_data["email"] == "john.doe@test.com"
+    assert user_data["firstName"] == "John"
+    assert user_data["lastName"] == "Doe"
+    mock_kc.get_realm_role.assert_called_once_with(
+        realm_name, "token", "DEFAULT_USER"
+    )
+
     db_user = session.get(User, "123")
     assert db_user is not None
     assert db_user.email == "john.doe@test.com"
@@ -196,6 +273,44 @@ def test_create_user_conflict(service, mock_kc, session):
     with pytest.raises(HTTPException) as exc:
         service.create_user(session, "r", "t", "john", "N", "j@t.com", "DEFAULT_USER")
     assert exc.value.status_code == 409
+    assert "username or email" in exc.value.detail
+
+
+def test_delete_user_rejects_self_delete(service, mock_kc, session, monkeypatch):
+    monkeypatch.setattr(
+        org_user_handler_module,
+        "decode_token_verified",
+        lambda token: {"iss": "http://idp/realms/tenant-a", "sub": "u-1"},
+    )
+    monkeypatch.setattr(
+        org_user_handler_module,
+        "get_realm_from_iss",
+        lambda issuer: "tenant-a",
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        service.delete_user("tenant-a", "token", "u-1", session)
+
+    assert exc.value.status_code == 400
+    assert exc.value.detail == "You cannot delete your own account."
+    mock_kc.delete_user.assert_not_called()
+
+
+def test_delete_user_allows_delete_when_token_validation_is_unauthorized(
+    service, mock_kc, session, monkeypatch
+):
+    def raise_unauthorized(token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    monkeypatch.setattr(
+        org_user_handler_module,
+        "decode_token_verified",
+        raise_unauthorized,
+    )
+
+    service.delete_user("tenant-a", "bad-token", "u-2", session)
+
+    mock_kc.delete_user.assert_called_once_with("tenant-a", "bad-token", "u-2")
 
 
 def test_enroll_user_already_enrolled(service, session):
