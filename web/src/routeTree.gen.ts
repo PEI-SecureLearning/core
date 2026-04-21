@@ -430,14 +430,14 @@ export interface FileRoutesByFullPath {
   '/users/edit': typeof UsersEditRoute
   '/users/new': typeof UsersNewRoute
   '/admin/': typeof AdminIndexRoute
-  '/campaigns': typeof CampaignsIndexRoute
-  '/content-manager': typeof ContentManagerIndexRoute
-  '/courses': typeof CoursesIndexRoute
-  '/phishing-kits': typeof PhishingKitsIndexRoute
-  '/sending-profiles': typeof SendingProfilesIndexRoute
-  '/tenants': typeof TenantsIndexRoute
-  '/usergroups': typeof UsergroupsIndexRoute
-  '/users': typeof UsersIndexRoute
+  '/campaigns/': typeof CampaignsIndexRoute
+  '/content-manager/': typeof ContentManagerIndexRoute
+  '/courses/': typeof CoursesIndexRoute
+  '/phishing-kits/': typeof PhishingKitsIndexRoute
+  '/sending-profiles/': typeof SendingProfilesIndexRoute
+  '/tenants/': typeof TenantsIndexRoute
+  '/usergroups/': typeof UsergroupsIndexRoute
+  '/users/': typeof UsersIndexRoute
   '/admin/tenants/$tenantId': typeof AdminTenantsTenantIdRoute
   '/admin/tenants/new-tenant': typeof AdminTenantsNewTenantRoute
   '/campaigns/$id/edit': typeof CampaignsIdEditRoute
@@ -621,14 +621,14 @@ export interface FileRouteTypes {
     | '/users/edit'
     | '/users/new'
     | '/admin/'
-    | '/campaigns'
-    | '/content-manager'
-    | '/courses'
-    | '/phishing-kits'
-    | '/sending-profiles'
-    | '/tenants'
-    | '/usergroups'
-    | '/users'
+    | '/campaigns/'
+    | '/content-manager/'
+    | '/courses/'
+    | '/phishing-kits/'
+    | '/sending-profiles/'
+    | '/tenants/'
+    | '/usergroups/'
+    | '/users/'
     | '/admin/tenants/$tenantId'
     | '/admin/tenants/new-tenant'
     | '/campaigns/$id/edit'
@@ -887,7 +887,7 @@ declare module '@tanstack/react-router' {
     '/users/': {
       id: '/users/'
       path: '/users'
-      fullPath: '/users'
+      fullPath: '/users/'
       preLoaderRoute: typeof UsersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }

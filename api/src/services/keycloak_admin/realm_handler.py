@@ -137,6 +137,7 @@ class realm_handler(base_handler):
             web_url=self.web_url,
             api_url=self.api_url,
             admin_email=admin_email,
+            smtp_password=self.smtp_password,
         )
 
         client_scopes = list(template["client_scopes"])
@@ -197,6 +198,8 @@ class realm_handler(base_handler):
             "roles": {"realm": template["realm_roles"]},
             "clients": template["clients"],
             "users": template["users"],
+            "smtpServer": template.get("smtpServer"),
+            "requiredActions": template.get("requiredActions"),
         }
 
         r = self.keycloak_client._make_request("POST", url, token, json_data=payload)

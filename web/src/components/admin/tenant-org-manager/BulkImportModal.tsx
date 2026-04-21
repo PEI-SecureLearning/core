@@ -72,7 +72,7 @@ export function BulkImportModal({
                         role: u.role,
                     }
                 );
-                updated[i] = { ...u, status: `created (pwd: ${data?.temporary_password ?? "N/A"})` };
+                updated[i] = { ...u, status: `created` };
                 if (u.groups?.length) createdUsers.push({ email: u.email, groups: u.groups });
             } catch (error) {
                 const message = error instanceof Error ? error.message : "error";
