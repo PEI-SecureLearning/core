@@ -142,3 +142,90 @@ def test_singletons():
     assert get_realm_handler() is get_realm_handler()
     assert get_user_handler() is get_user_handler()
     assert get_base_handler() is get_base_handler()
+
+def test_realm_handler_methods(mock_kc):
+    rh = realm_handler()
+    # Mock for get_realm
+    mock_kc._make_request.return_value.json.return_value = {"realm": "test", "attributes": {"tenant-domain": ["test.com"]}}
+    assert rh.get_realm("test")["realm"] == "test"
+    
+    # delete_realm
+    rh.delete_realm("test")
+    mock_kc._make_request.assert_called_with("DELETE", ANY, ANY)
+    
+    # delete_realm system
+    with pytest.raises(HTTPException) as exc:
+        rh.delete_realm("master")
+    assert exc.value.status_code == 403
+
+    # Mock for find_realm_by_domain (expects a list)
+    mock_kc._make_request.return_value.json.return_value = [{"realm": "test", "attributes": {"tenant-domain": ["test.com"]}}]
+    assert rh.find_realm_by_domain("test.com") == "test"
+    assert rh.find_realm_by_domain("other.com") is None
+
+    # list_realms
+    mock_kc._make_request.return_value.json.return_value = [
+        {"realm": "test", "id": "1", "attributes": {"tenant-domain": "test.com"}}, 
+        {"realm": "master"}
+    ]
+    with patch("src.services.keycloak_admin.feature_handler.get_feature_handler") as mock_fh:
+        mock_fh.return_value.get_realm_features.return_value = {}
+        res = rh.list_realms()
+        assert len(res) == 1
+        assert res[0]["realm"] == "test"
+        
+    # get_domain_for_realm
+    mock_kc._make_request.return_value.json.return_value = {"attributes": {"tenant-domain": "test.com"}}
+    assert rh.get_domain_for_realm("test") == "test.com"
+    
+    # update_realm_attributes
+    rh.update_realm_attributes("test", {"new": "attr"})
+    mock_kc._make_request.assert_called_with("PUT", ANY, ANY, json_data={"attributes": ANY})
+    
+    # update_realm_attributes (not a dict)
+    mock_kc._make_request.return_value.json.return_value = {"attributes": None}
+    rh.update_realm_attributes("test", {"new": "attr"})
+
+    # extract_tenant_domain (not a dict)
+    assert rh.extract_tenant_domain({"attributes": None}) is None
+    # extract_tenant_domain (no tenant-domain)
+    assert rh.extract_tenant_domain({"attributes": {}}) is None
+
+def test_user_handler_methods(mock_kc):
+    uh = user_handler()
+    
+    # list_users
+    uh.list_users("realm")
+    mock_kc.list_users.assert_called_once()
+    
+    # get_user_count
+    mock_kc._make_request.return_value.json.return_value = 5
+    assert uh.get_user_count("realm") == 5
+    
+    # delete_user
+    uh.delete_user("realm", "id")
+    mock_kc.delete_user.assert_called_once()
+
+    # get_user_realm_roles
+    uh.get_user_realm_roles("realm", "id")
+    mock_kc.get_user_realm_roles.assert_called_once()
+
+    # role assignments
+    mock_kc.get_realm_role.return_value = {"name": "role"}
+    uh.assign_realm_role_to_user("realm", "id", "role")
+    mock_kc.assign_realm_roles.assert_called_once()
+    
+    uh.remove_realm_role_from_user("realm", "id", "role")
+    mock_kc.remove_realm_roles.assert_called_once()
+    
+    # test add_user local DB interactions
+    session = MagicMock()
+    mock_kc.create_user.return_value.status_code = 201
+    mock_kc.create_user.return_value.headers = {"Location": "/123"}
+    session.get.return_value = None # user not exists
+    uh.add_user(session, "realm", "user", "pass", role="USER")
+    assert session.add.called
+    
+    session.get.return_value = MagicMock() # user exists
+    uh.add_user(session, "realm", "user", "pass", role="USER")
+    assert session.commit.called
