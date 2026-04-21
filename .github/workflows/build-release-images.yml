@@ -10,6 +10,7 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment: production
     strategy:
       fail-fast: false
       matrix:
@@ -58,4 +59,4 @@ jobs:
             ${{ steps.tags.outputs.image }}:${{ steps.tags.outputs.sha_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: ${{ matrix.name == 'web' && format('VITE_API_URL={0}\nVITE_KEYCLOAK_URL={1}\nVITE_BASE_PATH={2}\nVITE_WEB_URL={3}', secrets.VITE_API_URL, secrets.VITE_KEYCLOAK_URL, secrets.VITE_BASE_PATH, secrets.VITE_WEB_URL) || '' }}
+          build-args: ${{ matrix.name == 'web' && format('VITE_API_URL={0}\nVITE_KEYCLOAK_URL={1}\nVITE_BASE_PATH={2}\nVITE_WEB_URL={3}', vars.API_URL, vars.KEYCLOAK_URL, vars.VITE_BASE_PATH, vars.WEB_URL) || '' }}
