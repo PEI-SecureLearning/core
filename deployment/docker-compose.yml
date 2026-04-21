@@ -69,11 +69,11 @@ services:
       retries: 5
 
   garage:
-    build:
-      context: ./services/garage
-      dockerfile: Dockerfile
+    image: dxflrs/garage:76592723deb9285a071320c40842f6be61e924fd
     container_name: sl-garage
     restart: unless-stopped
+    entrypoint: ["/garage"]
+    command: ["server", "--single-node", "--default-bucket"]
     environment:
       GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET}
       GARAGE_DEFAULT_ACCESS_KEY: ${GARAGE_ACCESS_KEY_ID}
@@ -83,6 +83,7 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
+      - ./services/garage/garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
       test: [ "CMD", "/garage", "-c", "/etc/garage.toml", "status" ]
