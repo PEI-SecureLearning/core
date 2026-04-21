@@ -51,3 +51,16 @@ export interface CreateTenantUserResponse {
   status: string;
   temporary_password: string;
 }
+
+export interface UserCertificateDto {
+  user_id: string;
+  course_id: string;
+  last_emission_date: string;
+  expiration_date: string;
+  expired: boolean;
+  course_name?: string | null;
+  course_cover_image_link?: string | null;
+  difficulty?: string | null;
+  category?: string | null;
+  realm: string;
+}

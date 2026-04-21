@@ -32,6 +32,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Verify nginx config exists
+        run: |
+          set -euo pipefail
+          NGINX_CONF="deployment/${{ inputs.nginx_config || 'nginx.mednat.conf' }}"
+          if [ ! -f "$NGINX_CONF" ]; then
+            echo "Error: nginx config not found: $NGINX_CONF"
+            exit 1
+          fi
+          echo "Found: $NGINX_CONF"
+          
       - name: Generate TLS certificates
         run: |
           set -euo pipefail
@@ -43,6 +53,7 @@ jobs:
             --cert-file "${{ vars.TLS_CERT_FILE }}" \
             --key-file "${{ vars.TLS_KEY_FILE }}" \
             --days 3650
+
 
       - name: Rebuild and redeploy stack
         env:

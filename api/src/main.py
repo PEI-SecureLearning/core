@@ -10,6 +10,7 @@ from typing import Annotated
 
 from src.routers import (
     realm,
+    user,
     compliance,
     org_manager,
     campaign,
@@ -21,13 +22,18 @@ from src.routers import (
     phishing_kit,
     courses,
     progress,
+    certificates,
 )
 from src.core.db import init_db
 from src.core.mongo import close_mongo_client
 from src.core.object_storage import ensure_bucket, garage_enabled
 from src.core.settings import settings
 from src.tasks import start_scheduler, shutdown_scheduler
-from src.tasks.tracking_consumer import start_tracking_consumer, shutdown_tracking_consumer
+from src.tasks.tracking_consumer import (
+    start_tracking_consumer,
+    shutdown_tracking_consumer,
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +49,7 @@ async def lifespan(app: FastAPI):
         shutdown_scheduler()
         shutdown_tracking_consumer()
         await close_mongo_client()
+
 
 app = FastAPI(
     title="Project Template API",
@@ -67,6 +74,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get(
     "/health",
     tags=["Health"],
@@ -77,6 +85,7 @@ async def health_check():
 
 # Include routers
 app.include_router(realm.router, prefix="/api", tags=["realms"])
+app.include_router(user.router, prefix="/api", tags=["users"])
 app.include_router(compliance.router, prefix="/api", tags=["compliance"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
@@ -88,3 +97,4 @@ app.include_router(modules.router, prefix="/api", tags=["modules"])
 app.include_router(phishing_kit.router, prefix="/api", tags=["phishing-kits"])
 app.include_router(courses.router, prefix="/api", tags=["courses"])
 app.include_router(progress.router, prefix="/api", tags=["progress"])
+app.include_router(certificates.router, prefix="/api", tags=["certificates"])

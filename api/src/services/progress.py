@@ -1,7 +1,8 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 from fastapi import HTTPException
+from sqlalchemy import or_
 from datetime import datetime, timedelta
-from src.models import UserProgress, AssignmentStatus
+from src.models import UserProgress, AssignmentStatus, CertificateDTO
 import asyncio
 from src.services.courses import get_course
 from src.services.modules import get_module
@@ -37,7 +38,9 @@ def assign_course(
                 existing.deadline = deadline
                 existing.cert_valid_days = cert_valid_days
                 existing.overdue = False
+                existing.is_certified = False
                 existing.expired = False
+                existing.cert_expires_at = None
                 existing.realm_name = realm_name
                 if existing.status != AssignmentStatus.COMPLETED:
                     existing.progress_data = {}
@@ -150,6 +153,7 @@ async def complete_section(
 
         if len(progress.completed_sections) >= total_sections and total_sections > 0:
             progress.is_certified = True
+            progress.expired = False
             progress.status = AssignmentStatus.COMPLETED
             progress.cert_expires_at = datetime.utcnow() + timedelta(
                 days=progress.cert_valid_days
@@ -198,6 +202,8 @@ async def complete_refreshment(
         )
 
     progress.is_certified = True
+    progress.expired = False
+    progress.overdue = False
     progress.status = AssignmentStatus.COMPLETED
     progress.cert_expires_at = datetime.utcnow() + timedelta(
         days=progress.cert_valid_days
@@ -227,3 +233,66 @@ def mark_overdue(user_id: str, course_id: str, session: Session) -> UserProgress
     session.commit()
     session.refresh(progress)
     return progress
+
+
+async def list_certificates(
+    user_id: str,
+    session: Session,
+    realm_name: str | None = None,
+    include_expired: bool = False,
+) -> list[CertificateDTO]:
+
+    query = select(UserProgress).where(UserProgress.user_id == user_id)
+
+    if include_expired:
+        query = query.where(
+            or_(
+                col(UserProgress.is_certified) == True,
+                col(UserProgress.expired) == True,
+            )
+        )
+    else:
+        query = query.where(
+            col(UserProgress.is_certified) == True,
+            col(UserProgress.expired) == False,
+        )
+
+    if realm_name:
+        query = query.where(
+            or_(
+                col(UserProgress.realm_name) == realm_name,
+                col(UserProgress.realm_name).is_(None),
+            )
+        )
+
+    certified_progresses = session.exec(query).all()
+
+    certificates = []
+    for progress in certified_progresses:
+        try:
+            course = await get_course(progress.course_id)
+        except HTTPException:
+            # Course was deleted; skip this certificate
+            continue
+
+        # Format dates as ISO strings
+        emission_date = progress.updated_at.isoformat() if progress.updated_at else ""
+        expiration_date = (
+            progress.cert_expires_at.isoformat() if progress.cert_expires_at else ""
+        )
+
+        cert_dto = CertificateDTO(
+            user_id=progress.user_id,
+            course_id=progress.course_id,
+            last_emission_date=emission_date,
+            expiration_date=expiration_date,
+            expired=progress.expired,
+            course_name=course.title,
+            course_cover_image_link=course.cover_image,
+            difficulty=course.difficulty,
+            category=course.category,
+            realm=progress.realm_name or "",
+        )
+        certificates.append(cert_dto)
+
+    return certificates
