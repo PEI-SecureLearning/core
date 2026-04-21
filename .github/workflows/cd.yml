@@ -89,14 +89,18 @@ jobs:
           GARAGE_CONTENT_PREFIX: ${{ vars.GARAGE_CONTENT_PREFIX }}
           GARAGE_LOGOS_PREFIX: ${{ vars.GARAGE_LOGOS_PREFIX }}
           PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL }}
+          KC_HTTP_RELATIVE_PATH: ${{ vars.KC_HTTP_RELATIVE_PATH }}
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
           KC_HOSTNAME: ${{ vars.KC_HOSTNAME }}
           KC_HOSTNAME_URL: ${{ vars.KC_HOSTNAME_URL }}
           KEYCLOAK_INTERNAL_URL: ${{ vars.KEYCLOAK_INTERNAL_URL }}
+          KEYCLOAK_URL: ${{ vars.KEYCLOAK_URL }}
           API_INTERNAL_URL: ${{ vars.API_INTERNAL_URL }}
           API_URL: ${{ vars.API_URL }}
           WEB_URL: ${{ vars.WEB_URL }}
           KEYCLOAK_ISSUER_URL: ${{ vars.KEYCLOAK_ISSUER_URL }}
           NGINX_PORT: ${{ vars.NGINX_PORT }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
           TLS_CERT_FILE: ${{ vars.TLS_CERT_FILE }}
           TLS_KEY_FILE: ${{ vars.TLS_KEY_FILE }}
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
@@ -136,13 +140,17 @@ jobs:
             printf 'CLIENT_SECRET=%s\n'            "$CLIENT_SECRET"
             printf 'KC_HOSTNAME=%s\n'              "$KC_HOSTNAME"
             printf 'KC_HOSTNAME_URL=%s\n'          "$KC_HOSTNAME_URL"
+            printf 'KC_HTTP_RELATIVE_PATH=%s\n'    "$KC_HTTP_RELATIVE_PATH"
             printf 'KEYCLOAK_INTERNAL_URL=%s\n'    "$KEYCLOAK_INTERNAL_URL"
+            printf 'KEYCLOAK_URL=%s\n'             "$KEYCLOAK_URL"
             printf 'API_INTERNAL_URL=%s\n'         "$API_INTERNAL_URL"
             printf 'PUBLIC_BASE_URL=%s\n'          "$PUBLIC_BASE_URL"
+            printf 'VITE_BASE_PATH=%s\n'           "$VITE_BASE_PATH"
             printf 'API_URL=%s\n'                  "$API_URL"
             printf 'WEB_URL=%s\n'                  "$WEB_URL"
             printf 'KEYCLOAK_ISSUER_URL=%s\n'      "$KEYCLOAK_ISSUER_URL"
             printf 'NGINX_PORT=%s\n'               "$NGINX_PORT"
+            printf 'SERVER_PORT=%s\n'              "$SERVER_PORT"
             printf 'TLS_CERT_FILE=%s\n'            "$TLS_CERT_FILE"
             printf 'TLS_KEY_FILE=%s\n'             "$TLS_KEY_FILE"
             printf 'DOCKERHUB_USERNAME=%s\n'       "$DOCKERHUB_USERNAME"
