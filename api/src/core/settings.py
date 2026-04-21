@@ -24,6 +24,8 @@ class Settings(BaseSettings):
   KEYCLOAK_ISSUER_URL: str = ""
   CLIENT_SECRET: str = ""
   SMTP_PASSWORD: str = ""
+  SMTP_USER: str = ""
+  SMTP_FROM: str = ""
 
   WEB_URL: str = "http://localhost:5173"
   API_URL: str = "http://localhost:8000"

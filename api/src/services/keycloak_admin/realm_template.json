@@ -2,14 +2,14 @@
     "smtpServer": {
         "host": "smtp.gmail.com",
         "port": "587",
-        "from": "gabfacgon3@gmail.com",
+        "from": "{smtp_from}",
         "fromDisplayName": "Secure Learning Platform",
         "ssl": "false",
         "starttls": "true",
         "auth": "true",
-        "user": "gabfacgon3@gmail.com",
-        "password": "anti jdba njzf axsr",
-        "replyTo": "gabfacgon3@gmail.com"
+        "user": "{smtp_user}",
+        "password": "{smtp_password}",
+        "replyTo": "{smtp_from}"
     },
     "requiredActions": [
         {

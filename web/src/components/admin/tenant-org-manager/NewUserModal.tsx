@@ -71,7 +71,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         setCreateFieldError(null);
 
         try {
-            const data = await userApi.createUser(
+            await userApi.createUser(
                 realm,
                 {
                     username: newUserUsername || newUserEmail.split("@")[0],

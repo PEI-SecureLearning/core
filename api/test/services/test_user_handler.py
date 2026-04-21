@@ -92,6 +92,9 @@ def test_create_user_success(service, mock_kc, session: Session):
     # Assert
     assert res["status"] == "created"
     assert res["username"] == "john.doe"
+    mock_kc.execute_actions_email.assert_called_once_with(
+        realm_name, "token", "123", ["UPDATE_PASSWORD"]
+    )
 
     # Verify DB
     db_user = session.get(User, "123")

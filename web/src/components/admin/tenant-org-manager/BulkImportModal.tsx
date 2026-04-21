@@ -63,7 +63,7 @@ export function BulkImportModal({
                 continue;
             }
             try {
-                const data = await userApi.createUser(
+                await userApi.createUser(
                     realm,
                     {
                         username: u.username,
