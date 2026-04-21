@@ -3,9 +3,38 @@ from fastapi import HTTPException
 from sqlmodel import Session
 from src.models import Realm, User
 from src.models.org_manager.schemas import UserDetailsDTO, UserDetailsGroupDTO
+from src.services.compliance.token_helpers import decode_token_verified, get_realm_from_iss
+from src.services.keycloak_admin import get_keycloak_admin
+
+
+def validate_email_domain(email: str, realm_domain: str | None) -> None:
+    if not realm_domain:
+        return
+
+    email_clean = (email or "").strip().lower()
+    expected_domain = realm_domain.strip().lower()
+
+    if "@" not in email_clean:
+        raise HTTPException(
+            status_code=400,
+            detail=f'Email must be a valid address ending in "@{expected_domain}".',
+        )
+
+    email_domain = email_clean.split("@", 1)[1]
+    if email_domain != expected_domain:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f'Email domain "{email_domain}" does not match this organization. '
+                f'Use an email ending in "@{expected_domain}".'
+            ),
+        )
 
 
 class user_handler:
+
+    def __init__(self):
+        self.kc_admin = get_keycloak_admin()
 
     def list_users(self, realm: str, token: str) -> dict:
         """List users in the realm."""
@@ -78,13 +107,13 @@ class user_handler:
         """Create a new user in the realm."""
         username_clean = (username or "").strip()
         email_clean = (email or "").strip().lower()
-        role_clean = self.is_valid_role(role)
+        role_clean = (role or "").strip().upper()
+        name_clean = (name or "").strip()
 
-        self.is_valid_username(username_clean)
-        self.is_valid_email(realm, session, token, email_clean)
+        validate_email_domain(email_clean, self.get_realm_domain(realm, session))
 
         temporary_password = secrets.token_urlsafe(12)
-        first_name, last_name = self._split_name(name)
+        first_name, last_name = self._split_name(name_clean)
         user_data = self._build_user_data(
             username=username_clean,
             email=email_clean,
@@ -148,7 +177,10 @@ class user_handler:
             if exc.status_code == 409:
                 raise HTTPException(
                     status_code=409,
-                    detail="Username already exists in this organization.",
+                    detail=(
+                        "A user with this username or email already exists in "
+                        "this organization."
+                    ),
                 )
             raise
 
@@ -271,12 +303,29 @@ class user_handler:
                 return db_realm.domain
         except Exception:
             return ""
-        return ""
+
+        try:
+            return self.kc_admin.get_domain_for_realm(realm) or ""
+        except Exception:
+            return ""
 
     def delete_user(
         self, realm: str, token: str, user_id: str, session: Session
     ) -> None:
         """Delete a user from the realm."""
+        try:
+            claims = decode_token_verified(token)
+            current_realm = get_realm_from_iss(claims.get("iss"))
+            current_user_id = claims.get("sub")
+
+            if current_realm == realm and current_user_id == user_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="You cannot delete your own account.",
+                )
+        except HTTPException as exc:
+            if exc.status_code != 401:
+                raise
 
         self.kc.delete_user(realm, token, user_id)
 

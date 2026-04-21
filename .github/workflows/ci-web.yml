@@ -76,6 +76,7 @@ jobs:
   build-and-push:
     needs: check
     runs-on: ubuntu-latest
+    environment: production
     if: github.event_name == 'push'
 
     steps:
