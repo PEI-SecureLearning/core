@@ -103,6 +103,9 @@ class user_handler(base_handler):
             return r
 
         user_id = location.rstrip("/").split("/")[-1]
+        
+        # Trigger "Update Password" email
+        kc.execute_actions_email(realm_name, token, user_id, ["UPDATE_PASSWORD"])
 
         # Determine org manager flag from requested role
         is_org_manager = (role or "").strip().upper() == "ORG_MANAGER"

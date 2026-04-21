@@ -94,7 +94,7 @@ export function BulkImportModal({
             const u = updated[i];
             if (u.status !== "pending") continue;
             try {
-                const data = await userApi.createUser(
+                await userApi.createUser(
                     realm,
                     {
                         username: deriveUsername(u.email, u.username),
@@ -103,7 +103,7 @@ export function BulkImportModal({
                         role: u.role,
                     }
                 );
-                updated[i] = { ...u, status: `Created successfully. Temporary password: ${data?.temporary_password ?? "N/A"}` };
+                updated[i] = { ...u, status: `created` };
                 if (u.groups?.length) createdUsers.push({ email: u.email, groups: u.groups });
             } catch (error) {
                 updated[i] = { ...u, status: `Creation failed: ${toUserFriendlyCreationError(error)}` };

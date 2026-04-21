@@ -13,6 +13,9 @@ class base_handler:
         self.admin_secret = settings.CLIENT_SECRET
         self.web_url = settings.WEB_URL
         self.api_url = settings.API_URL
+        self.smtp_password = settings.SMTP_PASSWORD
+        self.smtp_user = settings.SMTP_USER
+        self.smtp_from = settings.SMTP_FROM
         self.keycloak_client = get_keycloak_client()
 
         if not self.keycloak_url:

@@ -150,7 +150,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
         setCreateFieldError(null);
 
         try {
-            const data = await userApi.createUser(
+            await userApi.createUser(
                 realm,
                 {
                     username: derivedUsername,
@@ -161,7 +161,7 @@ export function NewUserModal({ realm, groups, onClose, onUserCreated }: Readonly
                 }
             );
             toast.success(
-                `User created! Temporary password: ${data?.temporary_password ?? "N/A"}`,
+                `User created! Invitation email sent.`,
                 { position: "top-right" }
             );
 

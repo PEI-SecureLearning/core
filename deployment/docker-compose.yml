@@ -218,6 +218,9 @@ services:
       RABBITMQ_USER: ${RABBITMQ_API_USER}
       RABBITMQ_PASS: ${RABBITMQ_API_PASS}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+      SMTP_PASSWORD: ${KC_SMTP_PASSWORD}
+      SMTP_USER: ${KC_SMTP_USER}
+      SMTP_FROM: ${KC_SMTP_FROM}
     expose:
       - "80"
     healthcheck:

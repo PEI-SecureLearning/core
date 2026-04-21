@@ -13,6 +13,7 @@ from .realm import (
     RealmInfoResponse,
     RealmUserCreate,
     RealmGroupCreate,
+    RealmFeatureToggle,
 )
 from .user import (
     User,
@@ -165,6 +166,7 @@ __all__ = [
     "RealmInfoResponse",
     "RealmUserCreate",
     "RealmGroupCreate",
+    "RealmFeatureToggle",
     # Sending Profile
     "SendingProfile",
     "SendingProfileCreate",

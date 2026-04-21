@@ -6,6 +6,7 @@ from .schemas import (
     RealmInfoResponse,
     RealmUserCreate,
     RealmGroupCreate,
+    RealmFeatureToggle,
 )
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "RealmInfoResponse",
     "RealmUserCreate",
     "RealmGroupCreate",
+    "RealmFeatureToggle",
 ]
