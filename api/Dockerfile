@@ -4,6 +4,10 @@ FROM python:3.12-alpine AS base
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# WeasyPrint system dependencies for PDF report generation (Markdown → HTML → PDF).
+# pango + cairo replace the old pandoc + texmf-dist-latexextra stack (~1 GB saved).
+RUN apk add --no-cache pango cairo fontconfig ttf-dejavu
+
 # Copy dependency files
 COPY pyproject.toml uv.lock /app/
 
