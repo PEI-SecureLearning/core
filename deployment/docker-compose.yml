@@ -12,6 +12,11 @@ services:
     volumes:
       - ./${NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro
       - ./certs:/etc/nginx/certs:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/stub_status"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     depends_on:
       frontend:
         condition: service_healthy
