@@ -139,19 +139,46 @@ export function TenantList() {
         void deleteTenant(tenant)
     }
 
-    const toggleFeature = (tenantId: string, feature: string) => {
-        setTenants(tenants.map(t => {
+    const toggleFeature = async (tenantId: string, feature: string) => {
+        const tenant = tenants.find(t => t.id === tenantId)
+        if (!tenant) return
+
+        const currentStatus = tenant.features[feature]
+        const newStatus = !currentStatus
+
+        // Optimistically update
+        setTenants(prev => prev.map(t => {
             if (t.id === tenantId) {
                 return {
                     ...t,
                     features: {
                         ...t.features,
-                        [feature]: !t.features[feature]
+                        [feature]: newStatus
                     }
                 }
             }
             return t
         }))
+
+        try {
+            await apiClient.patch(`/realms/${tenant.realm}/features/${feature}`, { enabled: newStatus })
+            toast.success(`${formatFeatureName(feature)} ${newStatus ? 'enabled' : 'disabled'} for ${tenant.displayName}`)
+        } catch (err) {
+            // Revert on error
+            setTenants(prev => prev.map(t => {
+                if (t.id === tenantId) {
+                    return {
+                        ...t,
+                        features: {
+                            ...t.features,
+                            [feature]: currentStatus
+                        }
+                    }
+                }
+                return t
+            }))
+            toast.error(err instanceof Error ? err.message : 'Failed to toggle feature')
+        }
     }
 
     // Helper function to format feature names for display

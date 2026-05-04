@@ -233,6 +233,30 @@ def submit_quiz(
     else:
         clear_cooldown(user_id, version)
 
+    # Update or create the compliance record with the new score (even if failed)
+    stmt = select(ComplianceAcceptance).where(
+        ComplianceAcceptance.user_identifier == user_id,
+        ComplianceAcceptance.tenant == tenant,
+        ComplianceAcceptance.version == version,
+    )
+    existing = session.exec(stmt).first()
+    if existing:
+        existing.score = score_val
+        existing.passed = passed
+        existing.accepted_at = now
+        session.add(existing)
+    else:
+        record = ComplianceAcceptance(
+            user_identifier=user_id,
+            tenant=tenant,
+            version=version,
+            score=score_val,
+            passed=passed,
+            accepted_at=now,
+        )
+        session.add(record)
+    session.commit()
+
     remaining_cooldown = COOLDOWN_SECONDS if not passed else 0
 
     return SubmitResponse(

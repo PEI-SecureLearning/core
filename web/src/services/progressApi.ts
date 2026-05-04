@@ -88,3 +88,11 @@ export async function markOverdue(userId: string, courseId: string, token: strin
     if (!res.ok) throw new Error('Failed to mark course as overdue')
     return res.json()
 }
+export async function recordError(userId: string, courseId: string, token: string): Promise<UserProgress> {
+    const res = await fetch(`${API_BASE}/users/${userId}/progress/${courseId}/error`, {
+        method: 'POST',
+        headers: authHeaders(token),
+    })
+    if (!res.ok) throw new Error('Failed to record error')
+    return res.json()
+}

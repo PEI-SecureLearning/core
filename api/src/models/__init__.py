@@ -13,6 +13,7 @@ from .realm import (
     RealmInfoResponse,
     RealmUserCreate,
     RealmGroupCreate,
+    RealmFeatureToggle,
 )
 from .user import (
     User,
@@ -21,6 +22,7 @@ from .user import (
     UserListInRealmDTO,
     CurrentUserProfileDTO,
 )
+from .user_risk.table import UserRisk
 from .email_template import EmailTemplate
 from .landing_page import LandingPageTemplate
 from .phishing_kit import (
@@ -49,6 +51,8 @@ from .campaign import (
     CampaignGlobalStats,
     CampaignUpdate,
     MIN_INTERVAL_SECONDS,
+    UserCampaignStatDetail,
+    UserCampaignStatsResponse,
 )
 from .email_sending import (
     EmailSending,
@@ -73,7 +77,7 @@ from .compliance import (
     AcceptRequest,
     ComplianceStatusResponse,
 )
-from .user_progress import UserProgress, AssignmentStatus, CertificateDTO
+from .user_progress import UserProgress, AssignmentStatus, CertificateDTO, ProgressUpdate, SectionComplete
 from .org_manager import (
     OrgUserCreate,
     OrgGroupCreate,
@@ -109,7 +113,7 @@ from .course import (
     CourseOut,
     PaginatedCourses,
 )
-from .user_progress import UserProgress, AssignmentStatus
+
 
 
 __all__ = [
@@ -118,6 +122,7 @@ __all__ = [
     "UserDTO",
     "UserCreatedInRealmDTO",
     "UserListInRealmDTO",
+    "UserRisk",
     "CurrentUserProfileDTO",
     # Campaign
     "Campaign",
@@ -128,6 +133,8 @@ __all__ = [
     "CampaignDetailInfo",
     "CampaignGlobalStats",
     "MIN_INTERVAL_SECONDS",
+    "UserCampaignStatDetail",
+    "UserCampaignStatsResponse",
     "CampaignUserGroupLink",
     "CampaignPhishingKitLink",
     "CampaignSendingProfileLink",
@@ -159,6 +166,7 @@ __all__ = [
     "RealmInfoResponse",
     "RealmUserCreate",
     "RealmGroupCreate",
+    "RealmFeatureToggle",
     # Sending Profile
     "SendingProfile",
     "SendingProfileCreate",
@@ -217,4 +225,6 @@ __all__ = [
     "UserProgress",
     "AssignmentStatus",
     "CertificateDTO",
+    "ProgressUpdate",
+    "SectionComplete",
 ]

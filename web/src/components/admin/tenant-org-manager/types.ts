@@ -4,6 +4,7 @@ export interface UserRecord {
     email?: string;
     firstName?: string;
     lastName?: string;
+    role?: string;
     isOrgManager?: boolean;
     is_org_manager?: boolean;
 }

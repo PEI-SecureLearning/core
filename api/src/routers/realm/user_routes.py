@@ -95,7 +95,7 @@ def delete_user_in_realm(
     realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
 ):
     realm_service.validate_realm_access(token, realm)
-    realm_service.delete_user_in_realm(realm, user_id, session)
+    realm_service.delete_user_in_realm(realm, user_id, session, token)
     return None
 
 
@@ -109,7 +109,7 @@ def delete_user_in_own_realm(
 ):
     """Delete a user inside the caller's own Keycloak realm/tenant."""
     realm_service.validate_realm_access(token, realm)
-    realm_service.delete_user_in_realm(realm, user_id, session)
+    realm_service.delete_user_in_realm(realm, user_id, session, token)
     return None
 
 
@@ -131,5 +131,5 @@ def update_user_role_in_realm(realm: str, user_id: str, role: str, token: OAuth2
 def admin_delete_user_in_realm(
     realm: str, user_id: str, session: SessionDep, token: OAuth2Scheme
 ):
-    realm_service.delete_user_in_realm(realm, user_id, session)
+    realm_service.delete_user_in_realm(realm, user_id, session, token)
     return None

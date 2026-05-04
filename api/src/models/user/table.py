@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
     from models import EmailSending
+    from src.models.user_risk.table import UserRisk
 
 
 class User(SQLModel, table=True):
@@ -12,3 +13,4 @@ class User(SQLModel, table=True):
     is_org_manager: bool = Field(default=False, nullable=False)
 
     email_sendings: list["EmailSending"] = Relationship(back_populates="user")
+    risk: Optional["UserRisk"] = Relationship(back_populates="user")

@@ -4,6 +4,7 @@ export interface TenantUserDto {
   email?: string;
   firstName?: string;
   lastName?: string;
+  role?: string;
   is_org_manager?: boolean;
 }
 

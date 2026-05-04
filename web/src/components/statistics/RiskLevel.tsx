@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useKeycloak } from "@react-keycloak/web";
+import { fetchMyRiskStats } from "@/services/campaignsApi";
+import { Loader2 } from "lucide-react";
 
 interface RiskLevelProps {
   percentage?: number;
@@ -7,11 +10,37 @@ interface RiskLevelProps {
 }
 
 export const RiskLevel: React.FC<RiskLevelProps> = ({
-  percentage = 15,
+  percentage: initialPercentage,
   title = "Risk Level",
   className = ""
 }) => {
+  const { keycloak } = useKeycloak();
   const [isHovered, setIsHovered] = useState(false);
+  const [percentage, setPercentage] = useState(initialPercentage ?? 0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const userId = keycloak.subject;
+    if (!keycloak.authenticated || !keycloak.token || !userId) return;
+
+    async function loadRisk() {
+      try {
+        const stats = await fetchMyRiskStats(keycloak.token!);
+        // risk_score is 0-1, convert to 0-100
+        setPercentage(Math.round(stats.risk_score * 100));
+      } catch (err) {
+        console.error("Failed to load user risk stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (initialPercentage === undefined) {
+      void loadRisk();
+    } else {
+      setLoading(false);
+    }
+  }, [keycloak.authenticated, keycloak.token, initialPercentage]);
 
   const getConfig = (pct: number) => {
     if (pct <= 25)
@@ -110,61 +139,69 @@ export const RiskLevel: React.FC<RiskLevelProps> = ({
         <h3 className="text-[15px] font-semibold text-foreground">{title}</h3>
       </div>
 
-      {/* Percentage Display */}
-      <div className="flex items-baseline gap-1.5 mb-2">
-        <span
-          className={`text-4xl sm:text-5xl font-bold ${colors.text} transition-all duration-300
-            ${isHovered ? "scale-105 drop-shadow-sm" : ""}`}
-          style={{
-            display: "inline-block",
-            textShadow: isHovered ? `0 0 20px ${config.glowColor}` : "none",
-            transition: "text-shadow 0.4s ease, transform 0.3s ease"
-          }}
-        >
-          {percentage}
-        </span>
-        <span className="text-xl text-muted-foreground/70 font-medium">%</span>
-      </div>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-6">
+          <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+        </div>
+      ) : (
+        <>
+          {/* Percentage Display */}
+          <div className="flex items-baseline gap-1.5 mb-2">
+            <span
+              className={`text-4xl sm:text-5xl font-bold ${colors.text} transition-all duration-300
+                ${isHovered ? "scale-105 drop-shadow-sm" : ""}`}
+              style={{
+                display: "inline-block",
+                textShadow: isHovered ? `0 0 20px ${config.glowColor}` : "none",
+                transition: "text-shadow 0.4s ease, transform 0.3s ease"
+              }}
+            >
+              {percentage}
+            </span>
+            <span className="text-xl text-muted-foreground/70 font-medium">%</span>
+          </div>
 
-      {/* Status Badge */}
-      <div className="mb-4">
-        <span
-          className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-full border ${colors.badge}
-          transition-all duration-300 group-hover:scale-105`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
-          {config.label}
-        </span>
-      </div>
+          {/* Status Badge */}
+          <div className="mb-4">
+            <span
+              className={`inline-flex items-center gap-1.5 text-[12px] font-semibold px-2.5 py-1 rounded-full border ${colors.badge}
+              transition-all duration-300 group-hover:scale-105`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
+              {config.label}
+            </span>
+          </div>
 
-      {/* Progress Bar */}
-      <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden">
-        <div
-          className={`absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-out ${colors.bar}`}
-          style={{
-            width: `${Math.min(percentage, 100)}%`,
-            boxShadow: isHovered
-              ? `0 0 12px ${config.glowColor}, 0 0 6px ${config.glowColor}`
-              : "none",
-            backgroundSize: "200% auto",
-            animation: isHovered ? "barShimmer 1.8s linear infinite" : "none"
-          }}
-        />
-        {/* Track markers */}
-        {[25, 50, 75].map((mark) => (
-          <div
-            key={mark}
-            className="absolute top-0 bottom-0 w-px bg-background/60"
-            style={{ left: `${mark}%` }}
-          />
-        ))}
-      </div>
+          {/* Progress Bar */}
+          <div className="relative w-full h-2.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className={`absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-out ${colors.bar}`}
+              style={{
+                width: `${Math.min(percentage, 100)}%`,
+                boxShadow: isHovered
+                  ? `0 0 12px ${config.glowColor}, 0 0 6px ${config.glowColor}`
+                  : "none",
+                backgroundSize: "200% auto",
+                animation: isHovered ? "barShimmer 1.8s linear infinite" : "none"
+              }}
+            />
+            {/* Track markers */}
+            {[25, 50, 75].map((mark) => (
+              <div
+                key={mark}
+                className="absolute top-0 bottom-0 w-px bg-background/60"
+                style={{ left: `${mark}%` }}
+              />
+            ))}
+          </div>
 
-      {/* Scale labels */}
-      <div className="flex justify-between mt-1.5">
-        <span className="text-[10px] text-muted-foreground/70">0%</span>
-        <span className="text-[10px] text-muted-foreground/70">100%</span>
-      </div>
+          {/* Scale labels */}
+          <div className="flex justify-between mt-1.5">
+            <span className="text-[10px] text-muted-foreground/70">0%</span>
+            <span className="text-[10px] text-muted-foreground/70">100%</span>
+          </div>
+        </>
+      )}
     </div>
   );
 };

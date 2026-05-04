@@ -76,6 +76,15 @@ jobs:
           RABBITMQ_SMTP_PASS: ${{ secrets.RABBITMQ_SMTP_PASS }}
           KEYCLOAK_ADMIN: ${{ vars.KEYCLOAK_ADMIN }}
           KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+          KC_SMTP_HOST: ${{ vars.KC_SMTP_HOST }}
+          KC_SMTP_PORT: ${{ vars.KC_SMTP_PORT }}
+          KC_SMTP_FROM: ${{ vars.KC_SMTP_FROM }}
+          KC_SMTP_FROM_NAME: ${{ vars.KC_SMTP_FROM_NAME }}
+          KC_SMTP_AUTH: ${{ vars.KC_SMTP_AUTH }}
+          KC_SMTP_SSL: ${{ vars.KC_SMTP_SSL }}
+          KC_SMTP_STARTTLS: ${{ vars.KC_SMTP_STARTTLS }}
+          KC_SMTP_USER: ${{ vars.KC_SMTP_USER }}
+          KC_SMTP_PASSWORD: ${{ secrets.KC_SMTP_PASSWORD }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           GRAFANA_ADMIN_PASSWORD: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
           RABBITMQ_QUEUE: ${{ vars.RABBITMQ_QUEUE }}
@@ -137,6 +146,15 @@ jobs:
             printf 'RABBITMQ_SMTP_PASS=%s\n'       "$RABBITMQ_SMTP_PASS"
             printf 'KEYCLOAK_ADMIN=%s\n'           "$KEYCLOAK_ADMIN"
             printf 'KEYCLOAK_ADMIN_PASSWORD=%s\n'  "$KEYCLOAK_ADMIN_PASSWORD"
+            printf 'KC_SMTP_HOST=%s\n'             "$KC_SMTP_HOST"
+            printf 'KC_SMTP_PORT=%s\n'             "$KC_SMTP_PORT"
+            printf 'KC_SMTP_FROM=%s\n'             "$KC_SMTP_FROM"
+            printf 'KC_SMTP_FROM_NAME=%s\n'        "$KC_SMTP_FROM_NAME"
+            printf 'KC_SMTP_AUTH=%s\n'             "$KC_SMTP_AUTH"
+            printf 'KC_SMTP_SSL=%s\n'              "$KC_SMTP_SSL"
+            printf 'KC_SMTP_STARTTLS=%s\n'         "$KC_SMTP_STARTTLS"
+            printf 'KC_SMTP_USER=%s\n'             "$KC_SMTP_USER"
+            printf 'KC_SMTP_PASSWORD=%s\n'         "$KC_SMTP_PASSWORD"
             printf 'CLIENT_SECRET=%s\n'            "$CLIENT_SECRET"
             printf 'KC_HOSTNAME=%s\n'              "$KC_HOSTNAME"
             printf 'KC_HOSTNAME_URL=%s\n'          "$KC_HOSTNAME_URL"

@@ -53,6 +53,15 @@ class user_handler(base_handler):
         resp = self._make_request("GET", url, token)
         return resp.json()
 
+    def execute_actions_email(
+        self, realm: str, token: str, user_id: str, actions: list[str]
+    ) -> requests.Response:
+        """Trigger execute-actions email for a user."""
+        url = (
+            f"{self.keycloak_url}/admin/realms/{realm}/users/{user_id}/execute-actions-email"
+        )
+        return self._make_request("PUT", url, token, json_data=actions)
+
 
 _instance: user_handler | None = None
 

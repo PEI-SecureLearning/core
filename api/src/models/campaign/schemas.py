@@ -124,3 +124,21 @@ class CampaignGlobalStats(SQLModel):
     # Time-based
     avg_time_to_open_seconds: Optional[float] = None
     avg_time_to_click_seconds: Optional[float] = None
+
+
+class UserCampaignStatDetail(SQLModel):
+    """Detailed campaign interaction status for a specific user."""
+    campaign_id: int
+    campaign_name: str
+    interaction_status: str  # e.g., 'ignored', 'opened', 'clicked', 'phished', 'reported'
+    sent_at: Optional[datetime] = None
+
+
+class UserCampaignStatsResponse(SQLModel):
+    """Comprehensive breakdown of a user's campaign statistics."""
+    total_campaigns: int = 0
+    campaigns: list[UserCampaignStatDetail] = []
+    risk_score: float = 1.0
+    k_score: float = 0.0
+    s_score: float = 0.5
+    e_score: float = 0.5

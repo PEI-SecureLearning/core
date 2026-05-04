@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useKeycloak } from '@react-keycloak/web'
 import { fetchCourse, type Course } from '@/services/coursesApi'
 import { fetchModule, type Module } from '@/services/modulesApi'
-import { getCourseProgress, completeSection, updateProgress, completeRefreshment, type UserProgress } from '@/services/progressApi'
+import { getCourseProgress, completeSection, updateProgress, completeRefreshment, recordError, type UserProgress } from '@/services/progressApi'
 import ModuleLearner from '@/components/courses/ModuleLearner'
 import { toast } from 'sonner'
 
@@ -144,6 +144,17 @@ function ModuleLearnerRoute() {
         }
     };
 
+    const handleWrongAnswer = async () => {
+        if (!userId || !keycloak.token) return;
+        try {
+            await recordError(userId, courseId, keycloak.token);
+            // Optionally update local progress state if needed, 
+            // but the risk recalculation happens in background on server
+        } catch (err) {
+            console.error("Failed to record wrong answer", err);
+        }
+    };
+
     // Adapt the UI backend model to ModuleLearner's expected structure if needed
     // If renewal mode, override sections with refresh_sections
     const adaptedMod: any = {
@@ -188,6 +199,7 @@ function ModuleLearnerRoute() {
                     onTaskComplete={handleTaskComplete}
                     isRenewalMode={isRenewalMode}
                     onRenewalComplete={handleRenewalComplete}
+                    onWrongAnswer={handleWrongAnswer}
                 />
             </div>
         </div>

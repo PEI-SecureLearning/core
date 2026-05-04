@@ -33,3 +33,12 @@ def safe_realm(realm: str) -> str:
 SessionDep = Annotated[Session, Depends(get_db)]
 CurrentRealm = Annotated[str, Depends(get_current_realm)]
 SafeRealm = Annotated[str, Depends(safe_realm)]
+
+
+def get_current_user_id(access_token: OAuth2Scheme) -> str:
+    """Extract the user ID (sub) from the access token."""
+    claims = decode_token_verified(access_token)
+    return claims.get("sub")
+
+
+CurrentUserID = Annotated[str, Depends(get_current_user_id)]

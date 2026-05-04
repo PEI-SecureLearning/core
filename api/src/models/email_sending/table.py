@@ -19,6 +19,7 @@ class EmailSendingStatus(StrEnum):
     OPENED = "opened"
     CLICKED = "clicked"
     PHISHED = "phished"
+    REPORTED = "reported"
     FAILED = "failed"
 
 
@@ -33,6 +34,7 @@ class EmailSending(SQLModel, table=True):
     opened_at: Optional[datetime] = Field(default=None)
     clicked_at: Optional[datetime] = Field(default=None)
     phished_at: Optional[datetime] = Field(default=None)
+    reported_at: Optional[datetime] = Field(default=None)
     error_cause: Optional[str] = Field(default=None)
 
     campaign_id: Optional[int] = Field(default=None, foreign_key="campaign.id")

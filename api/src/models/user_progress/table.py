@@ -26,6 +26,8 @@ class UserProgress(SQLModel, table=True):
         default=[],
         sa_column=Column(JSON().with_variant(postgresql.ARRAY(String), "postgresql")),
     )
+    errors_count: int = Field(default=0)
+    course_score: float = Field(default=0.0)
     total_completed_tasks: int = Field(default=0)
     is_certified: bool = Field(default=False)
     start_date: datetime | None = Field(default=None)

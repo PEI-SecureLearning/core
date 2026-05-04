@@ -16,6 +16,22 @@ export interface Campaign {
   total_phished?: number;
 }
 
+export interface UserCampaignStatDetail {
+  campaign_id: number;
+  campaign_name: string;
+  interaction_status: string;
+  sent_at?: string | null;
+}
+
+export interface UserCampaignStatsResponse {
+  total_campaigns: number;
+  campaigns: UserCampaignStatDetail[];
+  risk_score: number;
+  k_score: number;
+  s_score: number;
+  e_score: number;
+}
+
 export interface CampaignDetail extends Campaign {
   description?: string | null;
   sending_interval_seconds: number;
@@ -244,4 +260,22 @@ export async function fetchOrgManagerCampaignSendings(
     | CampaignSendingsResponse
     | CampaignUserSending[];
   return Array.isArray(data) ? data : (data.sendings ?? []);
+}
+
+export async function fetchUserRiskStats(userId: string, token?: string) {
+  const res = await fetch(`${API_URL}/campaigns/user/${encodeURIComponent(userId)}/stats`, {
+    headers: buildHeaders(token)
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch user risk stats");
+  return res.json() as Promise<UserCampaignStatsResponse>;
+}
+
+export async function fetchMyRiskStats(token: string): Promise<UserCampaignStatsResponse> {
+  const res = await fetch(`${API_URL}/campaigns/user/me/stats`, {
+    headers: buildHeaders(token)
+  });
+
+  if (!res.ok) throw new Error("Failed to fetch my risk stats");
+  return res.json() as Promise<UserCampaignStatsResponse>;
 }

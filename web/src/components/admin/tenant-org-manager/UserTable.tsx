@@ -2,6 +2,7 @@ import { Mail, Shield, Trash2, Loader2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import type { UserRecord } from "./types";
 import { UserAvatar } from "@/components/shared/UserAvatar";
+import { isOrgManagerRole } from "./utils";
 
 interface UserTableProps {
     readonly users: UserRecord[];
@@ -11,7 +12,7 @@ interface UserTableProps {
 
 export function UserTable({ users, deletingIds, onDeleteUser }: Readonly<UserTableProps>) {
     const getRoleBadge = (user: UserRecord) => {
-        const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
+        const isOrgManager = isOrgManagerRole(user);
         if (isOrgManager) {
             return (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-primary/20 text-primary">
@@ -49,7 +50,7 @@ export function UserTable({ users, deletingIds, onDeleteUser }: Readonly<UserTab
                 <tbody className="divide-y divide-border/60">
                     {users.map((user) => {
                         const id = user.id || user.username || "";
-                        const isOrgManager = user.isOrgManager ?? user.is_org_manager ?? false;
+                        const isOrgManager = isOrgManagerRole(user);
                         const isDeleting = deletingIds[id] || false;
                         const fullName =
                             `${user.firstName || ""} ${user.lastName || ""}`.trim() ||

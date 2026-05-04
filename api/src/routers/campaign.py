@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.core.security import Roles, Resource, Scope
-from src.core.dependencies import CurrentRealm, SessionDep
+from src.core.dependencies import CurrentRealm, SessionDep, CurrentUserID
 from src.models import CampaignCreate, CampaignUpdate
+from src.models.campaign.schemas import UserCampaignStatsResponse
 from src.services.campaign import CampaignService
+from src.services.campaign.stats_handler import get_stats_handler
 
 
 router = APIRouter()
@@ -84,3 +86,27 @@ def update_campaign(
 ):
     campaign = service.update_campaign(id, campaign_update, current_realm, session)
     return {"message": f"Campaign '{campaign.name}' has been updated"}
+
+@router.get(
+    "/campaigns/user/me/stats",
+    description="Fetch detailed interaction stats about all campaigns for the current user",
+    status_code=200,
+    response_model=UserCampaignStatsResponse,
+)
+def get_my_campaign_stats(user_id: CurrentUserID, session: SessionDep):
+    handler = get_stats_handler()
+    return handler.get_user_campaign_stats(user_id, session)
+
+
+@router.get(
+    "/campaigns/user/{user_id}/stats",
+    description="Fetch detailed interaction stats about all campaigns for a specific user",
+    status_code=200,
+    response_model=UserCampaignStatsResponse,
+    dependencies=[Depends(Roles(Resource.ORG_MANAGER, Scope.VIEW))],
+)
+def get_user_campaign_stats(user_id: str, session: SessionDep):
+    handler = get_stats_handler()
+    return handler.get_user_campaign_stats(user_id, session)
+
+
