@@ -713,7 +713,7 @@
             "credentials": [
                 {
                     "type": "password",
-                    "value": "1234",
+                    "value": "{org_manager_temp_password}",
                     "temporary": true
                 }
             ],

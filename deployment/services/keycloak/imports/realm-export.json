@@ -53,7 +53,7 @@
         "credentials": [
           {
             "type": "password",
-            "value": "admin"
+            "value": "${PLATFORM_ADMIN_PASSWORD}"
           }
         ],
         "realmRoles": [
@@ -66,7 +66,7 @@
         "credentials": [
           {
             "type": "password",
-            "value": "admin"
+            "value": "${CONTENT_MANAGER_PASSWORD}"
           }
         ],
         "realmRoles": [

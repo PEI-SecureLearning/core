@@ -140,6 +140,7 @@ class realm_handler(base_handler):
             smtp_password=self.smtp_password,
             smtp_user=self.smtp_user,
             smtp_from=self.smtp_from,
+            org_manager_temp_password=self.org_manager_temp_password,
         )
 
         client_scopes = list(template["client_scopes"])
