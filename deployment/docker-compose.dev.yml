@@ -69,7 +69,7 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
-      - ./services/garage/garage.template.toml:/etc/garage.toml:ro
+      - ./services/garage/garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
       test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
