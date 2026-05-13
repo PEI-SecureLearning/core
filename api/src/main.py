@@ -12,6 +12,7 @@ from src.routers import (
     realm,
     user,
     compliance,
+    survey,
     org_manager,
     campaign,
     tracking,
@@ -87,6 +88,7 @@ async def health_check():
 app.include_router(realm.router, prefix="/api", tags=["realms"])
 app.include_router(user.router, prefix="/api", tags=["users"])
 app.include_router(compliance.router, prefix="/api", tags=["compliance"])
+app.include_router(survey.router, prefix="/api", tags=["survey"])
 app.include_router(org_manager.router, prefix="/api/org-manager", tags=["org-manager"])
 app.include_router(campaign.router, prefix="/api", tags=["campaigns"])
 app.include_router(tracking.router, prefix="/api", tags=["tracking"])

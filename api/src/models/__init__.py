@@ -15,6 +15,11 @@ from .realm import (
     RealmGroupCreate,
     RealmFeatureToggle,
 )
+from .realm_risk_configuration import (
+    RealmRiskConfiguration,
+    RealmRiskConfigurationRead,
+    RealmRiskConfigurationPatch,
+)
 from .user import (
     User,
     UserDTO,
@@ -77,7 +82,24 @@ from .compliance import (
     AcceptRequest,
     ComplianceStatusResponse,
 )
-from .user_progress import UserProgress, AssignmentStatus, CertificateDTO, ProgressUpdate, SectionComplete
+from .survey import (
+    SurveyAnswer,
+    SurveyQuestion,
+    SurveySubmissionResult,
+    SurveyTemplateOut,
+)
+from .user_progress import (
+    UserProgress,
+    AssignmentStatus,
+    CertificateDTO,
+    ProgressUpdate,
+    SectionComplete,
+)
+from .survey_response import (
+    SurveyResponse,
+    SurveyResponseCreate,
+    SurveyResponseRead,
+)
 from .org_manager import (
     OrgUserCreate,
     OrgGroupCreate,
@@ -113,8 +135,6 @@ from .course import (
     CourseOut,
     PaginatedCourses,
 )
-
-
 
 __all__ = [
     # User
@@ -167,6 +187,9 @@ __all__ = [
     "RealmUserCreate",
     "RealmGroupCreate",
     "RealmFeatureToggle",
+    "RealmRiskConfiguration",
+    "RealmRiskConfigurationRead",
+    "RealmRiskConfigurationPatch",
     # Sending Profile
     "SendingProfile",
     "SendingProfileCreate",
@@ -190,6 +213,15 @@ __all__ = [
     "SubmitResponse",
     "AcceptRequest",
     "ComplianceStatusResponse",
+    # Survey Schemas
+    "SurveyAnswer",
+    "SurveyQuestion",
+    "SurveySubmissionResult",
+    "SurveyTemplateOut",
+    # Survey Response
+    "SurveyResponse",
+    "SurveyResponseCreate",
+    "SurveyResponseRead",
     # Org Manager Schemas
     "OrgUserCreate",
     "OrgGroupCreate",

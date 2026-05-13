@@ -18,6 +18,7 @@ from src.services.risk import RiskEvaluationService
 from src.models import (
     UserRisk,
     UserProgress,
+    RealmRiskConfiguration,
     ComplianceAcceptance,
     EmailSending,
     EmailSendingStatus,
@@ -309,6 +310,7 @@ def test_recalculate_s_factor_handles_exception_logs_error(
 
 def test_recalculate_total_risk(session: Session, risk_service: RiskEvaluationService):
     user_id = "test-user-total"
+    realm_name = "tenant-a"
     risk = risk_service._get_or_create_user_risk(user_id, session)
 
     # Set controlled factors
@@ -316,34 +318,38 @@ def test_recalculate_total_risk(session: Session, risk_service: RiskEvaluationSe
     risk.s_score = 0.5
     risk.e_score = 0.5
     session.add(risk)
+    session.add(
+        UserProgress(user_id=user_id, course_id="c-total", realm_name=realm_name)
+    )
+    session.add(
+        RealmRiskConfiguration(
+            realm_name=realm_name,
+            weight_a=1.0,
+            weight_b=1.0,
+            weight_c=1.0,
+            weight_d=1.0,
+            weight_e=1.0,
+            weight_t=0.0,
+        )
+    )
     session.commit()
 
-    # Mock config weights to 1.0 and threshold to 0.0 for easy math
-    with patch("src.core.risk_config.RISK_WEIGHT_A", 1.0), patch(
-        "src.core.risk_config.RISK_WEIGHT_B", 1.0
-    ), patch("src.core.risk_config.RISK_WEIGHT_C", 1.0), patch(
-        "src.core.risk_config.RISK_WEIGHT_D", 1.0
-    ), patch(
-        "src.core.risk_config.RISK_WEIGHT_E", 1.0
-    ), patch(
-        "src.core.risk_config.RISK_WEIGHT_T", 0.0
-    ):
+    # z = (1*0.5) + (1*0.5) + (1*0.5) + (1*(0.5*0.5)) + (1*(0.5*0.5)) - 0
+    # z = 2.0
+    # C = 1 / (1 + exp(-2.0))
+    # R = 1 - C
+    import math
 
-        # z = (1*0.5) + (1*0.5) + (1*0.5) + (1*(0.5*0.5)) + (1*(0.5*0.5)) - 0
-        # z = 0.5 + 0.5 + 0.5 + 0.25 + 0.25 = 2.0
-        # C = 1 / (1 + exp(-2.0))
-        # R = 1 - C
+    expected_z = 2.0
+    expected_c = 1 / (1 + math.exp(-expected_z))
+    expected_r = 1 - expected_c
 
-        import math
+    result = risk_service.recalculate_total_risk(user_id, session)
+    updated_risk = session.get(UserRisk, user_id)
 
-        expected_z = 2.0
-        expected_c = 1 / (1 + math.exp(-expected_z))
-        expected_r = 1 - expected_c
-
-        result = risk_service.recalculate_total_risk(user_id, session)
-
-        assert result == pytest.approx(expected_r)
-        assert risk.risk_score == pytest.approx(expected_r)
+    assert result == pytest.approx(expected_r)
+    assert updated_risk is not None
+    assert updated_risk.risk_score == pytest.approx(expected_r)
 
 
 def test_recalculate_total_risk_handles_exception_returns_default(

@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from ..campaign import Campaign
     from ..phishing_kit import PhishingKit
     from ..sending_profile import SendingProfile
+    from ..realm_risk_configuration import RealmRiskConfiguration
 
 
 class Realm(SQLModel, table=True):
@@ -16,3 +17,6 @@ class Realm(SQLModel, table=True):
     campaigns: list["Campaign"] = Relationship(back_populates="realm")
     sending_profiles: list["SendingProfile"] = Relationship(back_populates="realm")
     phishing_kits: list["PhishingKit"] = Relationship(back_populates="realm")
+    risk_configuration: Optional["RealmRiskConfiguration"] = Relationship(
+        back_populates="realm"
+    )

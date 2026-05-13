@@ -56,7 +56,13 @@ def get_courses_collection() -> AsyncIOMotorCollection:
     return db[settings.MONGODB_COLLECTION_COURSES]
 
 
-async def close_mongo_client() -> None:
+def get_surveys_collection() -> AsyncIOMotorCollection:
+    client = _get_client()
+    db = client[settings.MONGODB_DB]
+    return db[settings.MONGODB_COLLECTION_SURVEYS]
+
+
+def close_mongo_client() -> None:
     """Close the Mongo client when the app shuts down."""
     global _client
     if _client is not None:
