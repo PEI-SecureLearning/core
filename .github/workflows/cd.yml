@@ -76,6 +76,9 @@ jobs:
           RABBITMQ_SMTP_PASS: ${{ secrets.RABBITMQ_SMTP_PASS }}
           KEYCLOAK_ADMIN: ${{ vars.KEYCLOAK_ADMIN }}
           KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+          PLATFORM_ADMIN_PASSWORD: ${{ secrets.PLATFORM_ADMIN_PASSWORD }}
+          CONTENT_MANAGER_PASSWORD: ${{ secrets.CONTENT_MANAGER_PASSWORD }}
+          ORG_MANAGER_TEMP_PASSWORD: ${{ secrets.ORG_MANAGER_TEMP_PASSWORD }}
           KC_SMTP_HOST: ${{ vars.KC_SMTP_HOST }}
           KC_SMTP_PORT: ${{ vars.KC_SMTP_PORT }}
           KC_SMTP_FROM: ${{ vars.KC_SMTP_FROM }}
@@ -146,6 +149,9 @@ jobs:
             printf 'RABBITMQ_SMTP_PASS=%s\n'       "$RABBITMQ_SMTP_PASS"
             printf 'KEYCLOAK_ADMIN=%s\n'           "$KEYCLOAK_ADMIN"
             printf 'KEYCLOAK_ADMIN_PASSWORD=%s\n'  "$KEYCLOAK_ADMIN_PASSWORD"
+            printf 'PLATFORM_ADMIN_PASSWORD=%s\n'  "$PLATFORM_ADMIN_PASSWORD"
+            printf 'CONTENT_MANAGER_PASSWORD=%s\n' "$CONTENT_MANAGER_PASSWORD"
+            printf 'ORG_MANAGER_TEMP_PASSWORD=%s\n' "$ORG_MANAGER_TEMP_PASSWORD"
             printf 'KC_SMTP_HOST=%s\n'             "$KC_SMTP_HOST"
             printf 'KC_SMTP_PORT=%s\n'             "$KC_SMTP_PORT"
             printf 'KC_SMTP_FROM=%s\n'             "$KC_SMTP_FROM"

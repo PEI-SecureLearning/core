@@ -26,6 +26,7 @@ class Settings(BaseSettings):
   SMTP_PASSWORD: str = ""
   SMTP_USER: str = ""
   SMTP_FROM: str = ""
+  ORG_MANAGER_TEMP_PASSWORD: str = ""
 
   WEB_URL: str = "http://localhost:5173"
   API_URL: str = "http://localhost:8000"

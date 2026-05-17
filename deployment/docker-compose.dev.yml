@@ -69,7 +69,7 @@ services:
       - "3900:3900"
       - "3901:3901"
     volumes:
-      - ./services/garage/garage.template.toml:/etc/garage.toml:ro
+      - ./services/garage/garage.toml:/etc/garage.toml:ro
       - garage_data:/var/lib/garage
     healthcheck:
       test: ["CMD", "/garage", "-c", "/etc/garage.toml", "status"]
@@ -124,6 +124,8 @@ services:
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      PLATFORM_ADMIN_PASSWORD: ${PLATFORM_ADMIN_PASSWORD}
+      CONTENT_MANAGER_PASSWORD: ${CONTENT_MANAGER_PASSWORD}
       KC_IMPORT: /opt/keycloak/data/import/
       KC_HTTP_ACCESS_LOG_ENABLED: "true"
       KC_LOG_CATEGORY_ORG_KEYCLOAK_AUTHORIZATION: DEBUG
@@ -208,6 +210,7 @@ services:
       SMTP_PASSWORD: ${KC_SMTP_PASSWORD}
       SMTP_USER: ${KC_SMTP_USER}
       SMTP_FROM: ${KC_SMTP_FROM}
+      ORG_MANAGER_TEMP_PASSWORD: ${ORG_MANAGER_TEMP_PASSWORD}
     ports:
       - "8000:8000"
     volumes:
