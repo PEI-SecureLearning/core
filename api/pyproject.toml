@@ -21,6 +21,8 @@ dependencies = [
     "pypdf",
     "cryptography>=46.0.3",
     "prometheus-fastapi-instrumentator>=0.9.0",
+    "weasyprint>=68.1",
+    "markdown>=3.10.2",
 ]
 
 [dependency-groups]

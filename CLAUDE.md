@@ -151,3 +151,6 @@ Each tenant = Keycloak realm. `realm_name` scopes all data. `CurrentRealm` dep e
 - **`Pages/` is PascalCase**, feature dirs kebab-case. Intentional.
 - **`routeTree.gen.ts` auto-generated.** Never edit manually.
 - **SMTP worker blocking pika.** Single-threaded, auto-reconnect loop.
+- **Report module** at `api/src/services/reports/`. Pipeline: `ReportBuilder → ReportSpec → ReportService → collectors → HTML sections → ReportRenderer → PdfConverter (WeasyPrint)`. Public API: `report_service.generate(spec, session)` → PDF bytes; `report_service.render_html(spec, session)` → HTML string. No HTTP endpoint yet. System deps: `pango cairo fontconfig ttf-dejavu` (Dockerfile). Full detail in `CONTEXT.md`.
+- **Risk collector is stub.** `collectors/risk.py` returns zeros. K/S/E not integrated.
+- **Report `__init__.py` eager-imports** keycloak + Settings. Anything loading the module outside a live env must use importlib to bypass — see `CONTEXT.md` bootstrap section.
