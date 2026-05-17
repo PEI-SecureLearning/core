@@ -434,7 +434,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Top SQL statement fingerprints ranked by average execution time over the selected interval.",
+      "description": "Top SQL statements ranked by average execution time over the selected interval, labeled by the first 30 characters of the normalized query text.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -522,14 +522,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (queryid, datname) (rate(pg_stat_statements_seconds_total{datname=~\"$database\"}[$__rate_interval])) / clamp_min(sum by (queryid, datname) (rate(pg_stat_statements_calls_total{datname=~\"$database\"}[$__rate_interval])), 0.001))",
+          "expr": "topk(10, sum by (queryid, query_short, datname) (label_replace(rate(pg_stat_statements_seconds_total{datname=~\"$database\"}[$__rate_interval]), \"query_short\", \"$1\", \"query\", \"^(.{0,30}).*\")) / clamp_min(sum by (queryid, query_short, datname) (label_replace(rate(pg_stat_statements_calls_total{datname=~\"$database\"}[$__rate_interval]), \"query_short\", \"$1\", \"query\", \"^(.{0,30}).*\")), 0.001))",
           "instant": false,
-          "legendFormat": "{{datname}} | {{queryid}}",
+          "legendFormat": "{{query_short}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Top Slow Queries by Average Time",
+      "title": "Average SQL Execution Time by Query",
       "type": "timeseries"
     },
     {
@@ -537,18 +537,42 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "SQL text lookup for the tracked statement fingerprints. Match the queryid here with the slow-query panels.",
+      "description": "Top SQL statements ranked by execution rate, labeled by the first 30 characters of the normalized query text. High call volume combined with the average-time panel is useful for spotting N+1 query patterns.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "calls/sec",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
             },
-            "inspect": false
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -557,9 +581,18 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "orange",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
               }
             ]
-          }
+          },
+          "unit": "reqps"
         },
         "overrides": []
       },
@@ -569,25 +602,20 @@
         "x": 12,
         "y": 16
       },
-      "id": 7,
+      "id": 8,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "sum"
+        "legend": {
+          "calcs": [
+            "lastNotNull"
           ],
-          "show": false
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "queryid"
-          }
-        ]
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "11.1.0",
       "targets": [
@@ -597,46 +625,15 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max by (queryid, query) (pg_stat_statements_query_id)",
-          "format": "table",
-          "instant": true,
-          "range": false,
+          "expr": "topk(10, sum by (queryid, query_short, datname) (label_replace(rate(pg_stat_statements_calls_total{datname=~\"$database\"}[$__rate_interval]), \"query_short\", \"$1\", \"query\", \"^(.{0,30}).*\")))",
+          "instant": false,
+          "legendFormat": "{{query_short}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Query Text by Query ID",
-      "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {
-            "mode": "columns"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "Value": true,
-              "__name__": true,
-              "instance": true,
-              "job": true,
-              "user": true
-            },
-            "indexByName": {
-              "datname": 0,
-              "queryid": 1,
-              "query": 2
-            },
-            "renameByName": {
-              "datname": "database",
-              "query": "sql",
-              "queryid": "queryid"
-            }
-          }
-        }
-      ],
-      "type": "table"
+      "title": "SQL Calls per Second by Query",
+      "type": "timeseries"
     }
   ],
   "refresh": "30s",
@@ -715,6 +712,6 @@
   "timezone": "",
   "title": "SecureLearning Performance",
   "uid": "securelearning-performance",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
