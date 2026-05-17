@@ -37,6 +37,14 @@ services:
       dockerfile: Dockerfile
     container_name: sl-db
     restart: unless-stopped
+    command:
+      [
+        "postgres",
+        "-c",
+        "shared_preload_libraries=pg_stat_statements",
+        "-c",
+        "pg_stat_statements.track=all"
+      ]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -45,7 +53,6 @@ services:
       - "5432"
     volumes:
       - db_runtime_data:/var/lib/postgresql
-      - db_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
@@ -264,7 +271,6 @@ networks:
     driver: bridge
 
 volumes:
-  db_data:
   db_runtime_data:
   garage_data:
   rabbitmq_data:
