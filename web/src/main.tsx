@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { ReactKeycloakProvider } from '@react-keycloak/web'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -10,15 +9,6 @@ import keycloak from "./keycloak"
 import { EmailEntry } from './components/EmailEntry'
 import { SimulationOops } from './components/SimulationOops'
 import { appBasePath, isAppRoute } from './lib/app-path'
-
-const isSecureContext = globalThis.isSecureContext || globalThis.location.hostname === 'localhost';
-
-const initOptions: Keycloak.KeycloakInitOptions = {
-  onLoad: "login-required",
-  pkceMethod: isSecureContext ? "S256" : undefined,
-  responseMode: "query",
-  checkLoginIframe: false,
-};
 
 // Create a new router instance
 const router = createRouter({
@@ -88,13 +78,11 @@ const App = () => {
     <>
       <AppLoader visible={isLoading} label="Connecting to SecureLearning…" />
       {!isLoading && (
-        <ReactKeycloakProvider authClient={keycloak} initOptions={initOptions} onEvent={onEvent}>
-          <ErrorBoundary>
-            <Providers>
-              <RouterProvider router={router} />
-            </Providers>
-          </ErrorBoundary>
-        </ReactKeycloakProvider>
+        <ErrorBoundary>
+          <Providers onKeycloakEvent={onEvent}>
+            <RouterProvider router={router} />
+          </Providers>
+        </ErrorBoundary>
       )}
     </>
   )
