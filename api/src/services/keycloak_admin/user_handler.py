@@ -85,7 +85,7 @@ class user_handler(base_handler):
                 {
                     "type": "password",
                     "value": password,
-                    "temporary": True,  # force user to change it on first login
+                    "temporary": False,  # force user to change it on first login
                 }
             ],
         }

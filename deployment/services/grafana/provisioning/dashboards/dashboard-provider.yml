@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: SecureLearning Observability
+    orgId: 1
+    folder: SecureLearning
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards

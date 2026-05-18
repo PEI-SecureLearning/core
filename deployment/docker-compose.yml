@@ -37,6 +37,14 @@ services:
       dockerfile: Dockerfile
     container_name: sl-db
     restart: unless-stopped
+    command:
+      [
+        "postgres",
+        "-c",
+        "shared_preload_libraries=pg_stat_statements",
+        "-c",
+        "pg_stat_statements.track=all"
+      ]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -45,7 +53,6 @@ services:
       - "5432"
     volumes:
       - db_runtime_data:/var/lib/postgresql
-      - db_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
@@ -200,8 +207,12 @@ services:
       KEYCLOAK_URL: ${KEYCLOAK_INTERNAL_URL}
       KEYCLOAK_ISSUER_URL: ${KC_HOSTNAME_URL}
       CLIENT_SECRET: ${CLIENT_SECRET}
-      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB}?authSource=${MONGO_DB}
-      MONGODB_DB: securelearning
+      MONGODB_HOST: mongo
+      MONGODB_PORT: 27017
+      MONGODB_USER: ${MONGO_USER}
+      MONGODB_PASSWORD: ${MONGO_PASSWORD}
+      MONGODB_DB: ${MONGO_DB}
+      MONGODB_AUTH_SOURCE: ${MONGO_DB}
       MONGODB_COLLECTION_TEMPLATES: templates
       FILE_STORAGE_BACKEND: ${FILE_STORAGE_BACKEND}
       GARAGE_S3_ENDPOINT: ${GARAGE_S3_ENDPOINT}
@@ -264,7 +275,6 @@ networks:
     driver: bridge
 
 volumes:
-  db_data:
   db_runtime_data:
   garage_data:
   rabbitmq_data:
