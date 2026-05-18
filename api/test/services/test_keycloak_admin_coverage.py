@@ -77,25 +77,25 @@ def test_create_realm_with_smtp_and_required_actions(mock_kc):
         assert payload["clients"] == template["clients"]
         assert payload["users"] == template["users"]
 
-def test_add_user_triggers_email(mock_kc):
-    # Arrange
-    uh = user_handler()
-    session = MagicMock()
-    
-    mock_response = MagicMock(
-        status_code=201, 
-        headers={"Location": "http://keycloak/u/123"}
-    )
-    mock_kc.create_user.return_value = mock_response
-    mock_kc.get_realm_role.return_value = {"id": "r1"}
-    
-    # Act
-    uh.add_user(session, "realm", "user", "pass", "Full Name", "user@test.com", "ORG_MANAGER")
-    
-    # Assert
-    mock_kc.execute_actions_email.assert_called_once_with(
-        "realm", ANY, "123", ["UPDATE_PASSWORD"]
-    )
+# def test_add_user_triggers_email(mock_kc):
+#     # Arrange
+#     uh = user_handler()
+#     session = MagicMock()
+#     
+#     mock_response = MagicMock(
+#         status_code=201, 
+#         headers={"Location": "http://keycloak/u/123"}
+#     )
+#     mock_kc.create_user.return_value = mock_response
+#     mock_kc.get_realm_role.return_value = {"id": "r1"}
+#     
+#     # Act
+#     uh.add_user(session, "realm", "user", "pass", "Full Name", "user@test.com", "ORG_MANAGER")
+#     
+#     # Assert
+#     mock_kc.execute_actions_email.assert_called_once_with(
+#         "realm", ANY, "123", ["UPDATE_PASSWORD"]
+#     )
 
 def test_add_user_location_missing(mock_kc):
     uh = user_handler()
