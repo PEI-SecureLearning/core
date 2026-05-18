@@ -18,6 +18,8 @@ class Settings(BaseSettings):
   POSTGRES_USER: str
   POSTGRES_PASSWORD: str = ""
   POSTGRES_DB: str = ""
+  POSTGRES_POOL_SIZE: int = 15
+  POSTGRES_MAX_OVERFLOW: int = 20
   
   # Keycloak
   KEYCLOAK_URL: str = ""
