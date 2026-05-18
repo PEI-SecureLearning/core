@@ -1,4 +1,5 @@
 import pika
+from urllib.parse import quote_plus
 
 from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,8 +32,13 @@ class Settings(BaseSettings):
   API_URL: str = "http://localhost:8000"
 
   # MongoDB
-  MONGODB_URI: str = "mongodb://template_user:template_pass@mongo:27017/securelearning?authSource=securelearning"
+  MONGODB_URI: str = ""
+  MONGODB_HOST: str = "mongo"
+  MONGODB_PORT: int = 27017
+  MONGODB_USER: str = "template_user"
+  MONGODB_PASSWORD: str = "template_pass"
   MONGODB_DB: str = "securelearning"
+  MONGODB_AUTH_SOURCE: str = ""
   MONGODB_COLLECTION_TEMPLATES: str = "templates"
   MONGODB_COLLECTION_TENANT_LOGOS: str = "tenant_logos"
   MONGODB_COLLECTION_CONTENT: str = "content_pieces"
@@ -94,5 +100,22 @@ class Settings(BaseSettings):
           port=self.POSTGRES_PORT,
           path=self.POSTGRES_DB,
         )
+
+  @computed_field
+  @property
+  def MONGODB_CONNECTION_URI(self) -> str:
+      if self.MONGODB_URI:
+          return self.MONGODB_URI
+
+      username = quote_plus(self.MONGODB_USER)
+      password = quote_plus(self.MONGODB_PASSWORD)
+      auth_source = quote_plus(self.MONGODB_AUTH_SOURCE or self.MONGODB_DB)
+      db_name = quote_plus(self.MONGODB_DB)
+
+      return (
+          f"mongodb://{username}:{password}"
+          f"@{self.MONGODB_HOST}:{self.MONGODB_PORT}/{db_name}"
+          f"?authSource={auth_source}"
+      )
   
 settings = Settings() # type: ignore
