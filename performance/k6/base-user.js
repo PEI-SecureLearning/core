@@ -28,7 +28,7 @@ export const options = {
     const scenarios = {
       current_user: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_PROFILE_RATE || 5),
+        rate: Number(__ENV.K6_PROFILE_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -38,7 +38,7 @@ export const options = {
       },
       enrolled_courses: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_ENROLLED_RATE || 5),
+        rate: Number(__ENV.K6_ENROLLED_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -48,7 +48,7 @@ export const options = {
       },
       progress_list: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_PROGRESS_RATE || 5),
+        rate: Number(__ENV.K6_PROGRESS_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -58,7 +58,7 @@ export const options = {
       },
       certificates: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_CERTIFICATES_RATE || 3),
+        rate: Number(__ENV.K6_CERTIFICATES_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -68,7 +68,7 @@ export const options = {
       },
       my_stats: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_ME_STATS_RATE || 3),
+        rate: Number(__ENV.K6_ME_STATS_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -78,7 +78,7 @@ export const options = {
       },
       compliance_status: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_COMPLIANCE_RATE || 3),
+        rate: Number(__ENV.K6_COMPLIANCE_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -88,7 +88,7 @@ export const options = {
       },
       compliance_doc: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_COMPLIANCE_DOC_RATE || 2),
+        rate: Number(__ENV.K6_COMPLIANCE_DOC_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -98,7 +98,7 @@ export const options = {
       },
       compliance_quiz: {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_COMPLIANCE_QUIZ_RATE || 2),
+        rate: Number(__ENV.K6_COMPLIANCE_QUIZ_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
@@ -111,7 +111,7 @@ export const options = {
     if (courseId) {
       scenarios.course_progress = {
         executor: "constant-arrival-rate",
-        rate: Number(__ENV.K6_COURSE_PROGRESS_RATE || 3),
+        rate: Number(__ENV.K6_COURSE_PROGRESS_RATE || 15),
         timeUnit: "1s",
         duration: __ENV.K6_DURATION || "1m",
         preAllocatedVUs: Number(__ENV.K6_PREALLOCATED_VUS || 5),
