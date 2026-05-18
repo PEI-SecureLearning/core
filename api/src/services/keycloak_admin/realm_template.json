@@ -714,7 +714,7 @@
                 {
                     "type": "password",
                     "value": "1234",
-                    "temporary": true
+                    "temporary": false
                 }
             ],
             "realmRoles": [
