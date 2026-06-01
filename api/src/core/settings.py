@@ -63,6 +63,7 @@ class Settings(BaseSettings):
   GARAGE_CONTENT_PREFIX: str = "content"
   GARAGE_LOGOS_PREFIX: str = "logos"
   GARAGE_PRESIGNED_URL_TTL_SECONDS: int = 900
+  CONTENT_PUBLIC_URL_SECRET: str = ""
 
   # RabbitMQ
   RABBITMQ_HOST: str

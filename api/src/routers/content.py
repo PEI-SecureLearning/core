@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, File, Form, UploadFile, status
+from fastapi import APIRouter, File, Form, Query, UploadFile, status
 
 from src.core.dependencies import CurrentRealm
 from src.services import content as content_service
@@ -89,6 +89,16 @@ async def download_content_file(content_piece_id: str, _: CurrentRealm):
 @router.get("/content/{content_piece_id}/file-url")
 async def get_content_file_url(content_piece_id: str, _: CurrentRealm) -> dict[str, str | None]:
     return {"url": await content_service.get_content_file_url(content_piece_id)}
+
+
+@router.get("/content-public/{content_piece_id}/file")
+async def get_public_content_file(
+    content_piece_id: str,
+    expires: Annotated[int, Query(...)],
+    sig: Annotated[str, Query(min_length=1)],
+):
+    content_service.verify_public_content_signature(content_piece_id, expires, sig)
+    return await content_service.stream_content_file(content_piece_id)
 
 
 @router.delete("/content/{content_piece_id}", status_code=status.HTTP_204_NO_CONTENT)
