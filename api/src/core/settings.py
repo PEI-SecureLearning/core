@@ -18,6 +18,8 @@ class Settings(BaseSettings):
   POSTGRES_USER: str
   POSTGRES_PASSWORD: str = ""
   POSTGRES_DB: str = ""
+  POSTGRES_POOL_SIZE: int = 15
+  POSTGRES_MAX_OVERFLOW: int = 20
   
   # Keycloak
   KEYCLOAK_URL: str = ""
@@ -61,6 +63,7 @@ class Settings(BaseSettings):
   GARAGE_CONTENT_PREFIX: str = "content"
   GARAGE_LOGOS_PREFIX: str = "logos"
   GARAGE_PRESIGNED_URL_TTL_SECONDS: int = 900
+  CONTENT_PUBLIC_URL_SECRET: str = ""
 
   # RabbitMQ
   RABBITMQ_HOST: str
