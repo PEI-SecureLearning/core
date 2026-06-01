@@ -1,9 +1,12 @@
+import hashlib
+import hmac
 from datetime import datetime, timezone
 from typing import Any, Literal
+from urllib.parse import urlencode
 from uuid import uuid4
 
 from fastapi import HTTPException, UploadFile, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from src.core.mongo import (
@@ -18,7 +21,7 @@ from src.core.object_storage import (
     delete_object,
     ensure_bucket,
     garage_enabled,
-    generate_presigned_get_url,
+    get_object,
     put_bytes,
 )
 from src.core.settings import settings
@@ -32,6 +35,7 @@ CONTENT_DIR = "content/"
 CONTENT_NOT_FOUND = "Content not found"
 FILE_NOT_FOUND = "File not found"
 FOLDER_NOT_FOUND = "Folder not found"
+PUBLIC_CONTENT_URL_TTL_SECONDS = 900
 
 
 class ContentPieceCreate(BaseModel):
@@ -176,7 +180,43 @@ def _content_file_url(file_meta: dict[str, Any] | None) -> str | None:
     if not isinstance(object_key, str) or not object_key:
         return None
 
-    return generate_presigned_get_url(bucket=settings.GARAGE_BUCKET_CONTENT, key=object_key)
+    return generate_public_content_url(file_meta.get("content_piece_id"))
+
+
+def _content_public_secret() -> str:
+    secret = settings.CONTENT_PUBLIC_URL_SECRET.strip() or settings.CLIENT_SECRET.strip()
+    if not secret:
+        raise ObjectStorageError("Content public URL secret is not configured")
+    return secret
+
+
+def _sign_public_content_url(content_piece_id: str, expires: int) -> str:
+    payload = f"{content_piece_id}:{expires}".encode()
+    return hmac.new(
+        _content_public_secret().encode(),
+        payload,
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def generate_public_content_url(content_piece_id: str | None, expires_in: int = PUBLIC_CONTENT_URL_TTL_SECONDS) -> str | None:
+    if not isinstance(content_piece_id, str) or not content_piece_id:
+        return None
+
+    expires = int(datetime.now(timezone.utc).timestamp()) + expires_in
+    sig = _sign_public_content_url(content_piece_id, expires)
+    query = urlencode({"expires": expires, "sig": sig})
+    return f"/garage/{content_piece_id}?{query}"
+
+
+def verify_public_content_signature(content_piece_id: str, expires: int, sig: str) -> None:
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+    if expires < now_ts:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Content URL expired")
+
+    expected = _sign_public_content_url(content_piece_id, expires)
+    if not hmac.compare_digest(sig, expected):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid content URL signature")
 
 
 async def _load_folders_by_id() -> dict[str, dict[str, Any]]:
@@ -217,6 +257,7 @@ def _to_content_out(
     payload["path"] = _build_folder_path(payload.get("folder_id"), folders_by_id or {})
     file_meta = payload.get("file")
     if isinstance(file_meta, dict):
+        file_meta["content_piece_id"] = payload.get("content_piece_id")
         file_meta["file_url"] = _content_file_url(file_meta) if include_file_url else None
     return ContentPieceOut.model_validate(payload)
 
@@ -559,11 +600,8 @@ async def upload_content_piece(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
 
 
-async def download_content_file(content_piece_id: str) -> RedirectResponse:
-    url = await get_content_file_url(content_piece_id)
-    if not url:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
-    return RedirectResponse(url=url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+async def download_content_file(content_piece_id: str) -> StreamingResponse:
+    return await stream_content_file(content_piece_id)
 
 
 async def get_content_file_url(content_piece_id: str) -> str | None:
@@ -580,9 +618,46 @@ async def get_content_file_url(content_piece_id: str) -> str | None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
 
     try:
+        file_meta["content_piece_id"] = content_piece_id
         return _content_file_url(file_meta)
     except ObjectStorageError as exc:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+
+
+async def stream_content_file(content_piece_id: str) -> StreamingResponse:
+    collection = get_content_collection()
+    doc = await collection.find_one(
+        {"kind": "content_piece", "content_piece_id": content_piece_id},
+        {"file": 1},
+    )
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=CONTENT_NOT_FOUND)
+
+    file_meta = doc.get("file")
+    if not isinstance(file_meta, dict):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
+
+    object_key = file_meta.get("object_key")
+    if not isinstance(object_key, str) or not object_key:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=FILE_NOT_FOUND)
+
+    content_type = file_meta.get("content_type") or "application/octet-stream"
+    filename = file_meta.get("filename") or "content"
+    size = file_meta.get("size")
+    etag = file_meta.get("etag")
+
+    try:
+        stored = await get_object(bucket=settings.GARAGE_BUCKET_CONTENT, key=object_key)
+    except ObjectStorageError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
+
+    headers = {"Content-Disposition": f'inline; filename="{filename}"'}
+    if isinstance(size, int) and size >= 0:
+        headers["Content-Length"] = str(size)
+    if isinstance(etag, str) and etag:
+        headers["ETag"] = etag
+
+    return StreamingResponse(stored.stream, media_type=content_type, headers=headers)
 
 
 async def delete_content_piece(content_piece_id: str) -> None:
