@@ -18,6 +18,7 @@ TYPE_DELAY (ms/keystroke), PACE (pause multiplier).
 from __future__ import annotations
 
 import os
+import re
 import struct
 import sys
 import time
@@ -30,6 +31,8 @@ from playwright.sync_api import Locator, Page, TimeoutError as PWTimeout, sync_p
 WEB_URL = os.getenv("WEB_URL", "http://localhost:5173").rstrip("/")
 CM_USER = os.getenv("CM_USER", "content_manager")
 CM_PASS = os.getenv("CM_PASS", "admin")
+OM_USER = os.getenv("OM_USER", "org_manager@ua.pt")
+OM_PASS = os.getenv("OM_PASS", "1234")
 HEADLESS = os.getenv("HEADLESS", "0") == "1"
 SLOWMO = int(os.getenv("SLOWMO", "500"))
 TYPE_DELAY = int(os.getenv("TYPE_DELAY", "30"))
@@ -39,7 +42,7 @@ SHOTS = Path(__file__).parent / "screenshots"
 SHOTS.mkdir(exist_ok=True)
 
 STAMP = datetime.now().strftime("%H%M%S")
-MODULE_TITLE = f"Phishing Awareness (demo {STAMP})"
+MODULE_TITLE = f"Mastering MFA (demo {STAMP})"
 COURSE_TITLE = f"Security Essentials (demo {STAMP})"
 
 
@@ -141,39 +144,65 @@ def create_module(page: Page) -> None:
     page.get_by_role("button", name="New Module").click()
     page.wait_for_selector("#module-title", timeout=15_000)
 
-    say("Fill module details")
-    type_into(page.locator("#module-title"), MODULE_TITLE)
-    page.select_option("#module-category", "Security")
-    page.get_by_role("button", name="Medium", exact=True).click()
-    type_into(page.locator("#module-duration"), "20 minutes")
-    type_into(page.locator("#module-description"),
-              "Spot phishing emails, recognise red flags, and report them safely.")
+    say("Importing rich module definition via prompt guide JSON...")
+    # Click on the Import/Export button
+    page.get_by_title("Import / Export JSON").click()
+    
+    # Wait for the storage modal import text area to appear
+    textarea = page.get_by_placeholder("Paste module JSON here...")
+    textarea.wait_for(state="visible", timeout=10_000)
+    
+    # Construct our rich and detailed JSON payload using ROBOTS.md prompt guide format
+    import json
+    mfa_module_data = {
+      "title": MODULE_TITLE,
+      "category": "Password Security",
+      "description": "Learn why passwords aren't enough and how to use MFA effectively.",
+      "estimatedTime": "10 minutes",
+      "difficulty": "Medium",
+      "sections": [
+        {
+          "id": "764b85c1-1e23-4e4b-b0f1-e3d8f36c5b91",
+          "title": "What is MFA?",
+          "blocks": [
+            {
+              "id": "d93b1d72-8f1a-4c28-9d4e-1a2b3c4d5e6f",
+              "kind": "text",
+              "content": "# Multi-Factor Authentication\n\nMFA adds a **second layer of security** to your accounts.\n\n### The Three Factors:\n1. **Something you know** (Password)\n2. **Something you have** (Phone app, security key)\n3. **Something you are** (Fingerprint, face scan)"
+            },
+            {
+              "id": "e82c2a83-9a2b-4d3c-9e5f-1a2b3c4d5e6f",
+              "kind": "question",
+              "question": {
+                "id": "f93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e6f",
+                "type": "multiple_choice",
+                "text": "Which of these is an example of 'Something you have'?",
+                "choices": [
+                  { "id": "a1b2c3d4", "text": "Your mother's maiden name", "isCorrect": False },
+                  { "id": "b2c3d4e5", "text": "A hardware security key (YubiKey)", "isCorrect": True },
+                  { "id": "c3d4e5f6", "text": "Your 8-character password", "isCorrect": False }
+                ],
+                "answer": ""
+              }
+            }
+          ]
+        }
+      ]
+    }
+    
+    # Fill the textarea with the JSON content and perform the import
+    textarea.fill(json.dumps(mfa_module_data, indent=2))
+    beat(0.8)
+    page.get_by_role("button", name="Import from Clipboard").click()
+    
+    # Wait for modal to close and the detail view to update
+    page.wait_for_selector("input[id='module-title']", timeout=10_000)
     beat()
 
     upload_cover(page, MODULE_TITLE)
-
-    say("Add a section")
-    page.get_by_role("button", name="Add Section").click()
-    section_title = page.get_by_placeholder("Section title...")
-    section_title.wait_for(timeout=10_000)
-    type_into(section_title, "Recognising a phishing email")
-    section_title.press("Enter")
     beat()
 
-    say("Add a text block")
-    page.get_by_role("button", name="Add block").first.click()
-    page.get_by_role("menuitem", name="Text").click()
-    body = page.get_by_placeholder("Write text with Markdown...")
-    body.wait_for(timeout=10_000)
-    type_into(body,
-              "## Red flags\n\n"
-              "- Urgent or threatening language\n"
-              "- Mismatched sender domains\n"
-              "- Unexpected attachments or links\n\n"
-              "**When in doubt, report it.**")
-    beat()
-
-    say("Open preview")
+    say("Open preview to verify loaded JSON layout")
     page.get_by_title("Preview Module").click()
     page.get_by_role("button", name="Close").wait_for(timeout=10_000)
     beat(2.0)
@@ -289,6 +318,122 @@ def create_course(page: Page) -> None:
     beat()
 
 
+def click_when_ready(loc: Locator, timeout_ms: int = 15_000) -> None:
+    loc.wait_for(state="visible", timeout=timeout_ms)
+    beat(0.3)
+    loc.click()
+
+
+def login_org_manager(page: Page) -> None:
+    """Sign in as Org Manager starting from the email gateway."""
+    say(f"Sign in as Org Manager: {OM_USER}")
+    page.goto(f"{WEB_URL}/", wait_until="domcontentloaded")
+    
+    email_box = page.get_by_role("textbox", name="name@company.com")
+    email_box.wait_for(state="visible", timeout=15_000)
+    type_into(email_box, OM_USER)
+    beat(0.4)
+    page.get_by_role("button").click()
+    
+    username_box = page.get_by_role("textbox", name="Username or email")
+    username_box.wait_for(state="visible", timeout=15_000)
+    type_into(username_box, "org_manager")
+    
+    password_box = page.get_by_role("textbox", name="Password")
+    type_into(password_box, OM_PASS)
+    beat(0.4)
+    page.get_by_role("button", name="Sign In").click()
+    
+    page.get_by_role("link", name="Phishing Kits").wait_for(state="visible", timeout=30_000)
+    beat()
+
+
+def create_phishing_kit(page: Page) -> None:
+    say("Flow 3 — create a Phishing Kit")
+    click_when_ready(page.get_by_role("link", name="Phishing Kits"))
+    click_when_ready(page.get_by_role("button", name="Create First Kit"))
+    
+    kit_name = page.get_by_role("textbox", name="Kit Name * More information")
+    kit_name.wait_for(state="visible", timeout=15_000)
+    type_into(kit_name, "PEI presentation")
+    
+    kit_desc = page.get_by_role("textbox", name="Description More information")
+    type_into(kit_desc, "Phishing kit for pei presentation")
+    beat(0.4)
+    page.get_by_role("button", name="Continue").click()
+    
+    click_when_ready(page.get_by_role("button", name="Lancamento das notas Email"))
+    page.get_by_role("button", name="Continue").click()
+    
+    idp_page_btn = page.get_by_role("button", name=re.compile(r"thumb-.* Preview IDP UA IDP UA page\."))
+    click_when_ready(idp_page_btn)
+    page.get_by_role("button", name="Continue").click()
+    
+    click_when_ready(page.get_by_role("combobox", name="Search profiles by name or"))
+    click_when_ready(page.get_by_role("button", name="Marketing SMTP marketing@ua."))
+    
+    page.get_by_role("button", name="Complete").click()
+    page.get_by_text("PEI presentation").wait_for(state="visible", timeout=15_000)
+    shot(page, "phishing-kit-created")
+    
+    click_when_ready(page.get_by_role("button", name="Back to Phishing Kits"))
+    beat()
+
+
+def create_phishing_campaign(page: Page) -> None:
+    say("Flow 4 — create a Phishing Campaign")
+    click_when_ready(page.get_by_role("link", name="Campaigns"))
+    click_when_ready(page.get_by_role("link", name="New Campaign"))
+    
+    camp_name = page.get_by_role("textbox", name="Campaign Name *")
+    camp_name.wait_for(state="visible", timeout=15_000)
+    type_into(camp_name, "Pei presentation")
+    page.get_by_role("button", name="Next").click()
+    
+    click_when_ready(page.get_by_role("combobox", name="Search groups..."))
+    click_when_ready(page.get_by_role("button", name="PEI /PEI"))
+    page.get_by_role("button", name="Next").click()
+    
+    click_when_ready(page.get_by_role("combobox", name="Search phishing kits by name"))
+    click_when_ready(page.get_by_role("button", name="PEI presentation Phishing kit"))
+    page.get_by_role("button", name="Next").click()
+    
+    click_when_ready(page.get_by_role("combobox", name="Search profiles by name or"))
+    click_when_ready(page.get_by_role("button", name="Marketing SMTP marketing@ua."))
+    page.get_by_role("button", name="Next").click()
+    
+    page.get_by_role("button", name="Complete").click()
+    
+    campaign_row = page.get_by_role("row", name=re.compile(r"Pei presentation Scheduled.*"))
+    campaign_row.wait_for(state="visible", timeout=15_000)
+    campaign_row.get_by_label("Campaign options").click()
+    
+    click_when_ready(page.get_by_role("link", name="View Details"))
+    page.get_by_role("heading", name="Pei presentation").wait_for(state="visible", timeout=15_000)
+    shot(page, "campaign-details")
+    beat()
+
+
+def assign_course(page: Page) -> None:
+    say("Flow 5 — assign course to groups")
+    click_when_ready(page.get_by_role("button", name="Learning"))
+    click_when_ready(page.get_by_role("link", name="Manage Courses"))
+    click_when_ready(page.get_by_role("link", name="Assign Courses"))
+    click_when_ready(page.get_by_role("button", name="Continue"))
+    
+    click_when_ready(page.locator(".w-full.h-full.flex.items-center.justify-center").first)
+    page.get_by_role("button", name="Continue").click()
+    
+    click_when_ready(page.get_by_text("5 members"))
+    click_when_ready(page.locator("div").filter(has_text=re.compile(r"^group-a2 members$")).first)
+    page.get_by_role("button", name="Continue").click()
+    
+    page.get_by_role("button", name="Complete").click()
+    page.get_by_text("assigned successfully").wait_for(state="visible", timeout=15_000)
+    shot(page, "course-assigned")
+    beat()
+
+
 def main() -> int:
     print(f"Target: {WEB_URL}")
     print(f"Module: {MODULE_TITLE}")
@@ -301,11 +446,27 @@ def main() -> int:
         page.set_default_timeout(20_000)
 
         try:
+            # --- CONTENT MANAGER FLOWS ---
             login_content_manager(page)
             create_module(page)
             preview_module_from_listing(page)
             create_course(page)
-            say("Done — both flows ran end to end.")
+            
+            # Close CM context to keep auth completely clean and isolated
+            context.close()
+            
+            # --- ORG MANAGER FLOWS ---
+            say("Switching to Org Manager flows...")
+            context = browser.new_context(viewport={"width": 1440, "height": 900})
+            page = context.new_page()
+            page.set_default_timeout(20_000)
+            
+            login_org_manager(page)
+            create_phishing_kit(page)
+            create_phishing_campaign(page)
+            assign_course(page)
+            
+            say("Done — all flows ran end to end successfully.")
             beat(2.0)
         except (PWTimeout, Exception) as err:  # noqa: BLE001
             print(f"\nFailed: {err}", file=sys.stderr)
