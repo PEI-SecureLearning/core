@@ -68,7 +68,7 @@ def main() -> int:
         state: dict = {}
 
         def open_ctx(key: str):
-            ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+            ctx = browser.new_context(viewport={"width": 1440, "height": 900}, ignore_https_errors=True)
             page = ctx.new_page()
             page.set_default_timeout(20_000)
             state[key] = ctx

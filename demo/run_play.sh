@@ -27,7 +27,7 @@ if [[ "${1:-}" == "--setup" || ! -x "$PY" ]]; then
   [[ "${1:-}" == "--setup" ]] && shift
 fi
 
-if ! curl -sf -o /dev/null --max-time 5 "$WEB_URL"; then
+if ! curl -k -sf -o /dev/null --max-time 5 "$WEB_URL"; then
   echo "✖ App not reachable at $WEB_URL"
   echo "  Start the stack:  docker compose -f $COMPOSE up -d"
   exit 1

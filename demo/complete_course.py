@@ -16,7 +16,7 @@ live_demo.py has created a course.
 
     demo/.venv/bin/python demo/complete_course.py
 
-Env: WEB_URL, REALM, ORG_USER/ORG_PASS, LEARNER_USER/LEARNER_PASS,
+Env: WEB_URL, APP_PREFIX (e.g. "/app" for mednat), REALM, ORG_USER/ORG_PASS, LEARNER_USER/LEARNER_PASS,
 LEARNER_GROUP, COURSE_PREFIX, HEADLESS, SLOWMO, TYPE_DELAY, PACE.
 """
 
@@ -32,6 +32,7 @@ import requests
 from playwright.sync_api import Locator, Page, TimeoutError as PWTimeout, sync_playwright
 
 WEB_URL = os.getenv("WEB_URL", "http://localhost:5173").rstrip("/")
+APP_PREFIX = os.getenv("APP_PREFIX", "").rstrip("/")
 API_URL = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
 KC_URL = os.getenv("KEYCLOAK_URL", "http://localhost:8080").rstrip("/")
 
@@ -185,7 +186,7 @@ def correct_answer(q: dict) -> str:
 # ── Shared login (email-entry → Keycloak) ────────────────────────────────────
 
 def login_realm_user(page: Page, kc_user: str, kc_pass: str, dest_path: str) -> None:
-    page.goto(f"{WEB_URL}{dest_path}", wait_until="domcontentloaded")
+    page.goto(f"{WEB_URL}{APP_PREFIX}{dest_path}", wait_until="domcontentloaded")
 
     # Email-entry gate: any address in the realm domain resolves the realm.
     email_box = page.get_by_placeholder("name@company.com")
@@ -218,7 +219,7 @@ def login_realm_user(page: Page, kc_user: str, kc_pass: str, dest_path: str) -> 
 
 def assign_course_via_ui(browser, course_title: str) -> None:
     say(f"Phase 1 — assign '{course_title}' as {ORG_USER}")
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900}, ignore_https_errors=True)
     page = ctx.new_page()
     page.set_default_timeout(20_000)
     try:
@@ -285,7 +286,7 @@ def answer_and_complete_section(page: Page, section: dict) -> None:
 
 def complete_course_via_ui(browser, course_title: str) -> None:
     say(f"Phase 2 — complete '{course_title}' as {LEARNER_USER}")
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900}, ignore_https_errors=True)
     page = ctx.new_page()
     page.set_default_timeout(20_000)
     try:

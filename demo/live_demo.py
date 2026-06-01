@@ -11,8 +11,8 @@ alternative). Everything else is typed/clicked at a human pace.
 
     python demo/live_demo.py
 
-Env: WEB_URL, CM_USER, CM_PASS, HEADLESS (1=hide), SLOWMO (ms/action),
-TYPE_DELAY (ms/keystroke), PACE (pause multiplier).
+Env: WEB_URL, APP_PREFIX (e.g. "/app" for mednat), CM_USER, CM_PASS,
+HEADLESS (1=hide), SLOWMO (ms/action), TYPE_DELAY (ms/keystroke), PACE (pause multiplier).
 """
 
 from __future__ import annotations
@@ -29,6 +29,7 @@ from pathlib import Path
 from playwright.sync_api import Locator, Page, TimeoutError as PWTimeout, sync_playwright
 
 WEB_URL = os.getenv("WEB_URL", "http://localhost:5173").rstrip("/")
+APP_PREFIX = os.getenv("APP_PREFIX", "").rstrip("/")
 CM_USER = os.getenv("CM_USER", "content_manager")
 CM_PASS = os.getenv("CM_PASS", "admin")
 OM_USER = os.getenv("OM_USER", "org_manager@ua.pt")
@@ -95,7 +96,7 @@ def login_content_manager(page: Page) -> None:
     """Sign in via Keycloak. /content-manager/* is an admin route, so it goes
     straight to the platform realm login (no email-entry step)."""
     say(f"Sign in as {CM_USER}")
-    page.goto(f"{WEB_URL}/content-manager/modules", wait_until="domcontentloaded")
+    page.goto(f"{WEB_URL}{APP_PREFIX}/content-manager/modules", wait_until="domcontentloaded")
 
     page.wait_for_selector("#username", timeout=30_000)
     type_into(page.locator("#username"), CM_USER)
@@ -268,7 +269,7 @@ def click_until_visible(page: Page, trigger: Locator, target: Locator, tries: in
 
 def create_course(page: Page) -> None:
     say("Flow 2 — create a course")
-    page.goto(f"{WEB_URL}/content-manager/courses", wait_until="domcontentloaded")
+    page.goto(f"{WEB_URL}{APP_PREFIX}/content-manager/courses", wait_until="domcontentloaded")
     page.get_by_role("link", name="New Course").click()
     page.wait_for_selector("#course-title", timeout=15_000)
 
@@ -323,7 +324,7 @@ def click_when_ready(loc: Locator, timeout_ms: int = 15_000) -> None:
 def login_org_manager(page: Page) -> None:
     """Sign in as Org Manager starting from the email gateway."""
     say(f"Sign in as Org Manager: {OM_USER}")
-    page.goto(f"{WEB_URL}/", wait_until="domcontentloaded")
+    page.goto(f"{WEB_URL}{APP_PREFIX}/", wait_until="domcontentloaded")
     
     email_box = page.get_by_role("textbox", name="name@company.com")
     email_box.wait_for(state="visible", timeout=15_000)
@@ -437,7 +438,7 @@ def main() -> int:
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO)
-        context = browser.new_context(viewport={"width": 1440, "height": 900})
+        context = browser.new_context(viewport={"width": 1440, "height": 900}, ignore_https_errors=True)
         page = context.new_page()
         page.set_default_timeout(20_000)
 
@@ -453,7 +454,7 @@ def main() -> int:
             
             # --- ORG MANAGER FLOWS ---
             say("Switching to Org Manager flows...")
-            context = browser.new_context(viewport={"width": 1440, "height": 900})
+            context = browser.new_context(viewport={"width": 1440, "height": 900}, ignore_https_errors=True)
             page = context.new_page()
             page.set_default_timeout(20_000)
             

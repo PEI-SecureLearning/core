@@ -98,13 +98,29 @@ demo/.venv/bin/python demo/live_demo.py
 demo/.venv/bin/python demo/complete_course.py
 ```
 
+## Running on mednat.ieeta.pt deployment
+
+The mednat deployment uses Nginx to route the frontend via `/app/` path prefix.
+Set `APP_PREFIX` and point `WEB_URL` at the deployment host:
+
+```sh
+# Local testing (headless)
+WEB_URL=https://mednat.ieeta.pt:8081 APP_PREFIX=/app HEADLESS=1 demo/.venv/bin/python demo/live_demo.py
+
+# Or via the shell script
+WEB_URL=https://mednat.ieeta.pt:8081 APP_PREFIX=/app ./demo/run.sh
+WEB_URL=https://mednat.ieeta.pt:8081 APP_PREFIX=/app ./demo/run_complete.sh
+```
+
+**Note:** HTTPS self-signed certs are natively supported. The automation scripts bypass SSL verification using `ignore_https_errors=True`.
+
 Headed and paced for an audience by default. Screenshots land in
 `demo/screenshots/`.
 
 ## Env vars
 
-Common: `WEB_URL` (`http://localhost:5173`), `HEADLESS` (`0`), `SLOWMO` (`350` ms),
-`PACE` (`1.2` s).
+Common: `WEB_URL` (`http://localhost:5173`), `APP_PREFIX` (`""` for local, `"/app"` for mednat),
+`HEADLESS` (`0`), `SLOWMO` (`350` ms), `PACE` (`1.2` s).
 
 | Script               | Var            | Default               | Notes                          |
 |----------------------|----------------|-----------------------|--------------------------------|
