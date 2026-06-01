@@ -160,13 +160,19 @@ class user_handler(base_handler):
         """Resolve current user from bearer token and return base profile info."""
         claims = decode_token_verified(token)
         realm = get_realm_from_iss(claims.get("iss"))
-        profile = self.admin.keycloak_client.get_userinfo(realm, token)
-        user_id = profile.get("sub") or claims.get("sub")
+        user_id = claims.get("sub")
 
         if not user_id:
             raise HTTPException(status_code=401, detail="Unable to resolve current user")
 
-        return self._build_current_user_profile(realm, user_id, claims, profile, {})
+        admin_user: dict = {}
+        try:
+            admin_token = self.admin._get_admin_token()
+            admin_user = self.admin.keycloak_client.get_user(realm, admin_token, user_id) or {}
+        except HTTPException:
+            admin_user = {}
+
+        return self._build_current_user_profile(realm, user_id, claims, {}, admin_user)
 
     def delete_user_in_realm(
         self, realm: str, user_id: str, session: Session, token: str
