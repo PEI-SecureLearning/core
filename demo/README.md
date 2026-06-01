@@ -53,15 +53,28 @@ created, and `complete_course.py`'s setup phase fixes up the one learner it uses
 
 ## 3. `play.py` — the playlist (recommended for a live walkthrough)
 
-Queues all three flows and plays the **next one each time you press ENTER**, so
-you can narrate between them. Flows 1–2 share one browser window (the content
-manager stays logged in across the pause); flow 3 runs as org manager then
-learner. The learner completes the very course you just built in this run.
+Queues every flow and plays the **next one each time you press ENTER**, so you
+can narrate between them. Single chained run across three actors:
+
+1. Content manager — create a module (+ preview from listing)
+2. Content manager — build a course from that module
+3. Org manager — create a phishing kit
+4. Org manager — create a phishing campaign
+5. Org manager — assign the course to the learner's group
+6. Normal user — complete the assigned course → "Module Complete!"
+
+Each actor keeps one browser context across its own ENTER pauses. The course
+built in step 2 is the one assigned in step 5 and completed in step 6.
 
 ```sh
 ./demo/run_play.sh             # headed, ENTER advances to the next flow
 AUTO=1 ./demo/run_play.sh      # play everything with no pauses (smoke test)
 ```
+
+**Run once per clean seed:** steps 3–4 use the empty-state buttons and fixed
+names ("PEI presentation"), so a second run on the same seed collides. Reseed
+(wipe volumes → `up` → `populate.py` → re-apply group memberships) before
+replaying.
 
 Without the playlist, each script just runs its own flows back-to-back with no
 stops.

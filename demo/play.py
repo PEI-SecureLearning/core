@@ -2,24 +2,30 @@
 """
 SecureLearning — demo playlist.
 
-Queues the demo flows and plays the next one each time you press ENTER, so you
+Queues every demo flow and plays the next one each time you press ENTER, so you
 can narrate between them during a live walkthrough. Reuses the flow functions
 from live_demo.py and complete_course.py (no duplicated logic).
 
 Queue:
   1. Content manager — create a module (+ preview it from the listing)
   2. Content manager — build a course from that module
-  3. Normal user      — get assigned the course and complete it
+  3. Org manager      — create a phishing kit
+  4. Org manager      — create a phishing campaign
+  5. Org manager      — assign the course to the learner's group
+  6. Normal user      — complete the assigned course
 
-Flows 1–2 share one browser window (the content manager stays logged in across
-the ENTER pause). Flow 3 runs as the org manager (assign) then the learner.
+Each actor gets its own browser context (content manager, then org manager,
+then learner), kept open across the ENTER pauses within that actor's flows.
 
 Run:
     demo/.venv/bin/python demo/play.py        # headed, waits on ENTER
     AUTO=1 demo/.venv/bin/python demo/play.py # no pauses (smoke test)
 
-Env: HEADLESS (0), SLOWMO (350 ms), plus everything live_demo.py /
+Env: HEADLESS (0), SLOWMO (500 ms), plus everything live_demo.py /
 complete_course.py accept (PACE, LEARNER_USER, COURSE_PREFIX, …).
+
+Note: the phishing kit/campaign flows expect a freshly-seeded realm (they use
+the empty-state buttons and fixed names), so run this once per clean seed.
 """
 
 from __future__ import annotations
@@ -35,6 +41,8 @@ import complete_course as cc
 HEADLESS = os.getenv("HEADLESS", "0") == "1"
 SLOWMO = int(os.getenv("SLOWMO", "500"))
 AUTO = os.getenv("AUTO", "0") == "1"
+
+COURSE_TITLE = ld.COURSE_TITLE  # the course built in flow 2, assigned/completed later
 
 
 def gate(idx: int, total: int, label: str) -> None:
@@ -53,38 +61,61 @@ def gate(idx: int, total: int, label: str) -> None:
 def main() -> int:
     print(f"Playlist target: {ld.WEB_URL}")
     print(f"Module : {ld.MODULE_TITLE}")
-    print(f"Course : {ld.COURSE_TITLE}")
+    print(f"Course : {COURSE_TITLE}")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO)
         state: dict = {}
 
-        def flow_module() -> None:
+        def open_ctx(key: str):
             ctx = browser.new_context(viewport={"width": 1440, "height": 900})
             page = ctx.new_page()
             page.set_default_timeout(20_000)
-            state["ctx"] = ctx
+            state[key] = ctx
+            return page
+
+        # ── Content manager ──────────────────────────────────────────────────
+        def flow_module() -> None:
+            page = open_ctx("cm")
             ld.login_content_manager(page)
             ld.create_module(page)
             ld.preview_module_from_listing(page)
-            state["page"] = page
+            state["cm_page"] = page
 
         def flow_course() -> None:
-            ld.create_course(state["page"])
-            state["ctx"].close()  # done with the content-manager session
+            ld.create_course(state["cm_page"])
+            state["cm"].close()  # done with the content-manager session
 
-        def flow_complete() -> None:
+        # ── Org manager ──────────────────────────────────────────────────────
+        def flow_kit() -> None:
+            page = open_ctx("om")
+            ld.login_org_manager(page)
+            ld.create_phishing_kit(page)
+            state["om_page"] = page
+
+        def flow_campaign() -> None:
+            ld.create_phishing_campaign(state["om_page"])
+            state["om"].close()  # done with this org-manager session
+
+        def flow_assign() -> None:
+            # complete_course handles learner prep + a robust, course-specific
+            # assign (its own org-manager context), then activates it.
             cc.ensure_learner_ready()
             cc.ensure_compliance_accepted()
-            title = cc.find_target_course()       # the course we just built
-            cc.assign_course_via_ui(browser, title)
+            cc.assign_course_via_ui(browser, COURSE_TITLE)
             cc.force_scheduler_tick()
-            cc.complete_course_via_ui(browser, title)
+
+        # ── Learner ──────────────────────────────────────────────────────────
+        def flow_complete() -> None:
+            cc.complete_course_via_ui(browser, COURSE_TITLE)
 
         queue = [
             ("Content manager — create a module (+ preview from listing)", flow_module),
             ("Content manager — build a course from that module", flow_course),
-            ("Normal user — get assigned the course and complete it", flow_complete),
+            ("Org manager — create a phishing kit", flow_kit),
+            ("Org manager — create a phishing campaign", flow_campaign),
+            ("Org manager — assign the course to the learner's group", flow_assign),
+            ("Normal user — complete the assigned course", flow_complete),
         ]
 
         try:

@@ -175,14 +175,10 @@ def create_module(page: Page) -> None:
               "kind": "question",
               "question": {
                 "id": "f93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e6f",
-                "type": "multiple_choice",
-                "text": "Which of these is an example of 'Something you have'?",
-                "choices": [
-                  { "id": "a1b2c3d4", "text": "Your mother's maiden name", "isCorrect": False },
-                  { "id": "b2c3d4e5", "text": "A hardware security key (YubiKey)", "isCorrect": True },
-                  { "id": "c3d4e5f6", "text": "Your 8-character password", "isCorrect": False }
-                ],
-                "answer": ""
+                "type": "short_answer",
+                "text": "What three-letter acronym describes adding a second layer of security beyond your password?",
+                "choices": [],
+                "answer": "MFA"
               }
             }
           ]

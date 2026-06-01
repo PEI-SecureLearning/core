@@ -165,6 +165,23 @@ def force_scheduler_tick() -> None:
     print(f"  scheduler tick: {r.status_code}", flush=True)
 
 
+def fetch_module(module_id: str, token: str) -> dict:
+    r = requests.get(f"{API_URL}/api/modules/{module_id}",
+                     headers={"Authorization": f"Bearer {token}"}, timeout=15)
+    r.raise_for_status()
+    return r.json()
+
+
+def correct_answer(q: dict) -> str:
+    """The text/value a learner must give to pass a question."""
+    if q.get("type") == "short_answer":
+        return q.get("answer", "")
+    for c in q.get("choices") or []:
+        if c.get("is_correct"):
+            return c.get("text", "")
+    return "True"  # true_false fallback when no choices are stored
+
+
 # ── Shared login (email-entry → Keycloak) ────────────────────────────────────
 
 def login_realm_user(page: Page, kc_user: str, kc_pass: str, dest_path: str) -> None:
@@ -232,6 +249,40 @@ def assign_course_via_ui(browser, course_title: str) -> None:
 
 # ── Phase 2: complete (learner) ──────────────────────────────────────────────
 
+def _click_first_enabled(page: Page, name: str) -> None:
+    """Click the first enabled button with this name (only the current,
+    unlocked section's 'Complete Section' is enabled)."""
+    btns = page.get_by_role("button", name=name)
+    for i in range(btns.count()):
+        if btns.nth(i).is_enabled():
+            btns.nth(i).click()
+            return
+    btns.first.click()
+
+
+def answer_and_complete_section(page: Page, section: dict) -> None:
+    """Answer every question in the section correctly, then complete it.
+    A section with questions stays locked until each is answered correctly."""
+    for block in section.get("blocks", []):
+        if block.get("kind") != "question":
+            continue
+        q = block["question"]
+        ans = correct_answer(q)
+        say(f"Answer: {(q.get('text') or '')[:60]}")
+        if q.get("type") == "short_answer":
+            type_into(page.get_by_placeholder("Your answer…"), ans)
+            page.get_by_role("button", name="Check").first.click()
+        else:
+            page.get_by_role("button", name=ans, exact=True).first.click()
+        beat(0.6)
+
+    say("Complete the section")
+    page.get_by_role("button", name="Complete Section").first.wait_for(timeout=15_000)
+    beat(0.4)
+    _click_first_enabled(page, "Complete Section")
+    beat()
+
+
 def complete_course_via_ui(browser, course_title: str) -> None:
     say(f"Phase 2 — complete '{course_title}' as {LEARNER_USER}")
     ctx = browser.new_context(viewport={"width": 1440, "height": 900})
@@ -248,13 +299,14 @@ def complete_course_via_ui(browser, course_title: str) -> None:
         say("Enter the module")
         module_link = page.locator("a[href*='/modules/']").first
         module_link.wait_for(timeout=15_000)
+        href = module_link.get_attribute("href") or ""
+        module_id = href.rsplit("/modules/", 1)[-1]
         module_link.click()
 
-        say("Complete the section")
-        complete_btn = page.get_by_role("button", name="Complete Section")
-        complete_btn.wait_for(timeout=15_000)
-        beat()
-        complete_btn.click()
+        # Pull correct answers from the API so we click the right choices.
+        module = fetch_module(module_id, _realm_token(LEARNER_USER, LEARNER_PASS))
+        for section in module.get("sections", []):
+            answer_and_complete_section(page, section)
 
         page.get_by_text("Module Complete!").wait_for(timeout=15_000)
         beat(2.0)
