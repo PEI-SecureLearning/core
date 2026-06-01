@@ -218,7 +218,7 @@ def login_realm_user(page: Page, kc_user: str, kc_pass: str, dest_path: str) -> 
 
 def assign_course_via_ui(browser, course_title: str) -> None:
     say(f"Phase 1 — assign '{course_title}' as {ORG_USER}")
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1920, "height": 1080})
     page = ctx.new_page()
     page.set_default_timeout(20_000)
     try:
@@ -269,11 +269,16 @@ def answer_and_complete_section(page: Page, section: dict) -> None:
         q = block["question"]
         ans = correct_answer(q)
         say(f"Answer: {(q.get('text') or '')[:60]}")
+        
+        # Scope locator search to the specific question box card containing this question text
+        box = page.locator("div.border").filter(has_text=q.get("text")).first
+        box.wait_for(timeout=10_000)
+        
         if q.get("type") == "short_answer":
-            type_into(page.get_by_placeholder("Your answer…"), ans)
-            page.get_by_role("button", name="Check").first.click()
+            type_into(box.get_by_placeholder("Your answer…"), ans)
+            box.get_by_role("button", name="Check").click()
         else:
-            page.get_by_role("button", name=ans, exact=True).first.click()
+            box.get_by_role("button", name=ans, exact=True).click()
         beat(0.6)
 
     say("Complete the section")
@@ -285,7 +290,7 @@ def answer_and_complete_section(page: Page, section: dict) -> None:
 
 def complete_course_via_ui(browser, course_title: str) -> None:
     say(f"Phase 2 — complete '{course_title}' as {LEARNER_USER}")
-    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    ctx = browser.new_context(viewport={"width": 1920, "height": 1080})
     page = ctx.new_page()
     page.set_default_timeout(20_000)
     try:
@@ -330,7 +335,7 @@ def main() -> int:
         return 1
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO)
+        browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO, args=["--start-maximized"])
         try:
             assign_course_via_ui(browser, course_title)
             force_scheduler_tick()

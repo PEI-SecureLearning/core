@@ -58,17 +58,32 @@ def gate(idx: int, total: int, label: str) -> None:
         pass
 
 
+def role_gate(label: str) -> None:
+    """Wait for ENTER before switching to a new actor.
+    Always blocks — never skipped, even in AUTO/demo mode."""
+    print(f"\n== Role switch: {label} ==", flush=True)
+    if not sys.stdin.isatty():
+        return
+    try:
+        if input("   Press ENTER to continue as this role  ·  q then ENTER to quit: ").strip().lower() == "q":
+            raise SystemExit(0)
+    except EOFError:
+        pass
+
+
 def main() -> int:
     print(f"Playlist target: {ld.WEB_URL}")
     print(f"Module : {ld.MODULE_TITLE}")
     print(f"Course : {COURSE_TITLE}")
 
+    role_gate("Content Manager")
+
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO)
+        browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO, args=["--start-maximized"])
         state: dict = {}
 
         def open_ctx(key: str):
-            ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+            ctx = browser.new_context(viewport={"width": 1920, "height": 1080})
             page = ctx.new_page()
             page.set_default_timeout(20_000)
             state[key] = ctx
@@ -118,8 +133,16 @@ def main() -> int:
             ("Normal user — complete the assigned course", flow_complete),
         ]
 
+        # Role-switch indices (1-based): 3 = CM -> OM, 6 = OM -> Learner
+        ROLE_SWITCHES = {
+            3: "Org Manager",
+            6: "Normal User (Learner)",
+        }
+
         try:
             for i, (label, fn) in enumerate(queue, 1):
+                if i in ROLE_SWITCHES:
+                    role_gate(ROLE_SWITCHES[i])
                 gate(i, len(queue), label)
                 fn()
             print("\nPlaylist finished — all flows played.")

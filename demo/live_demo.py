@@ -175,8 +175,37 @@ def create_module(page: Page) -> None:
               "kind": "question",
               "question": {
                 "id": "f93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e6f",
+                "type": "multiple_choice",
+                "text": "Which of these is an example of 'Something you have'?",
+                "choices": [
+                  { "id": "a1b2c3d4", "text": "Your mother's maiden name", "isCorrect": False, "is_correct": False },
+                  { "id": "b2c3d4e5", "text": "A hardware security key (YubiKey)", "isCorrect": True, "is_correct": True },
+                  { "id": "c3d4e5f6", "text": "Your 8-character password", "isCorrect": False, "is_correct": False }
+                ],
+                "answer": ""
+              }
+            },
+            {
+              "id": "a93b1d72-8f1a-4c28-9d4e-1a2b3c4d5e7a",
+              "kind": "question",
+              "question": {
+                "id": "b93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e7b",
+                "type": "multiple_choice",
+                "text": "MFA completely eliminates all risks of account takeover.",
+                "choices": [
+                  { "id": "tf-t", "text": "True", "isCorrect": False, "is_correct": False },
+                  { "id": "tf-f", "text": "False", "isCorrect": True, "is_correct": True }
+                ],
+                "answer": ""
+              }
+            },
+            {
+              "id": "c93b1d72-8f1a-4c28-9d4e-1a2b3c4d5e7c",
+              "kind": "question",
+              "question": {
+                "id": "d93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e7d",
                 "type": "short_answer",
-                "text": "What three-letter acronym describes adding a second layer of security beyond your password?",
+                "text": "What is the acronym for Multi-Factor Authentication?",
                 "choices": [],
                 "answer": "MFA"
               }
@@ -244,14 +273,16 @@ def drag(page: Page, source: Locator, target: Locator) -> None:
 
     page.mouse.move(sx, sy)
     page.mouse.down()
-    steps = 25
+    page.wait_for_timeout(500)  # Wait for @dnd-kit drag delay activation constraint
+    steps = 5
     for i in range(1, steps + 1):
         page.mouse.move(sx + (tx - sx) * i / steps, sy + (ty - sy) * i / steps)
-        page.wait_for_timeout(12)
+        page.wait_for_timeout(20)
     page.mouse.move(tx, ty)
-    page.wait_for_timeout(150)
+    page.wait_for_timeout(500)  # Wait at the destination before mouse up
     page.mouse.up()
     page.mouse.move(10, 10)
+    beat(0.5)
 
 
 def click_until_visible(page: Page, trigger: Locator, target: Locator, tries: int = 3) -> None:
@@ -282,7 +313,7 @@ def create_course(page: Page) -> None:
 
     say("Drag the module into the course")
     type_into(page.get_by_placeholder("Search modules..."), MODULE_TITLE)
-    source = page.get_by_text(MODULE_TITLE, exact=True).first
+    source = page.locator("div.cursor-grab").filter(has_text=MODULE_TITLE).first
     source.wait_for(timeout=15_000)
     target = page.get_by_text("Drop modules here")
     target.wait_for(timeout=10_000)
@@ -407,7 +438,7 @@ def create_phishing_campaign(page: Page) -> None:
     click_when_ready(page.get_by_role("link", name="View Details"))
     page.get_by_role("heading", name="Pei presentation").wait_for(state="visible", timeout=15_000)
     shot(page, "campaign-details")
-    beat()
+    beat(5.0)  # Increased observation time when showing the campaign details
 
 
 def assign_course(page: Page) -> None:
@@ -436,8 +467,8 @@ def main() -> int:
     print(f"Course: {COURSE_TITLE}")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO)
-        context = browser.new_context(viewport={"width": 1440, "height": 900})
+        browser = p.chromium.launch(headless=HEADLESS, slow_mo=SLOWMO, args=["--start-maximized"])
+        context = browser.new_context(viewport={"width": 1920, "height": 1080})
         page = context.new_page()
         page.set_default_timeout(20_000)
 
@@ -453,7 +484,7 @@ def main() -> int:
             
             # --- ORG MANAGER FLOWS ---
             say("Switching to Org Manager flows...")
-            context = browser.new_context(viewport={"width": 1440, "height": 900})
+            context = browser.new_context(viewport=None)
             page = context.new_page()
             page.set_default_timeout(20_000)
             

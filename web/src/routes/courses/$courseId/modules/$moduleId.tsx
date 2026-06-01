@@ -155,11 +155,34 @@ function ModuleLearnerRoute() {
         }
     };
 
-    // Adapt the UI backend model to ModuleLearner's expected structure if needed
-    // If renewal mode, override sections with refresh_sections
+    // Remap API snake_case fields to camelCase so ModuleLearner can evaluate
+    // correctness with c.isCorrect (the API returns is_correct, not isCorrect).
+    const mapApiSection = (s: any): any => ({
+        ...s,
+        requireCorrectAnswers: s.require_correct_answers,
+        isOptional: s.is_optional,
+        minTimeSpent: s.min_time_spent,
+        blocks: (s.blocks || []).map((b: any) => {
+            if (b.kind !== 'question') return b;
+            return {
+                ...b,
+                question: {
+                    ...b.question,
+                    choices: (b.question?.choices || []).map((c: any) => ({
+                        ...c,
+                        isCorrect: c.isCorrect ?? c.is_correct ?? false,
+                    })),
+                },
+            };
+        }),
+    });
+
+    // Adapt the UI backend model to ModuleLearner's expected structure.
+    // If renewal mode, override sections with refresh_sections.
+    const rawSections = isRenewalMode ? (mod.refresh_sections || []) : mod.sections;
     const adaptedMod: any = {
         ...mod,
-        sections: isRenewalMode ? (mod.refresh_sections || []) : mod.sections,
+        sections: rawSections.map(mapApiSection),
         estimatedTime: mod.estimated_time,
     };
 
