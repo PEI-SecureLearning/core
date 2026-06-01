@@ -74,7 +74,7 @@ class Roles:
                 signing_key.key,
                 algorithms=["RS256"],
                 issuer=issuer,
-                audience=RESOURCE_SERVER_ID,
+                audience=[RESOURCE_SERVER_ID, "master-realm", "account", "SecureLearning-admin"],
             )
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token has expired")

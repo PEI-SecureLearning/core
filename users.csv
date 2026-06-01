@@ -1,7 +1,10 @@
 username,name,email,role,groups
-ixsb,Igor Baltarejo,igorbaltarejo05@ua.pt,DEFAULT_USER,IGOR
+ixsb,Igor Baltarejo,igorbaltarejo05@ua.pt,DEFAULT_USER,"PEI,group-a"
 alice.williams,Alice Williams,alice.williams@ua.pt,DEFAULT_USER,"group-a,group-b"
 bob.miller,Bob Miller,bob.miller@ua.pt,DEFAULT_USER,group-a
 carol.jones,Carol Jones,carol.jones@ua.pt,DEFAULT_USER,
 david.smith,David Smith,david.smith@ua.pt,DEFAULT_USER,"group-admins,group-a"
-tigs,Tiago Oliveira,tiago.oliveira1@ua.pt,DEFAULT_USER,TIGS
+tigs,Tiago Oliveira,tiago.oliveira1@ua.pt,DEFAULT_USER,"PEI,group-a"
+gabriel,Gabriel Gonçalves,gabriel.f.goncalves@ua.pt,DEFAULT_USER,"PEI,group-a"
+simao,Simao Santos,simaomsantos@ua.pt,DEFAULT_USER,"PEI,group-a"
+andre,Andre Ferreira,,DEFAULT_USER,"PEI,group-a"

@@ -50,10 +50,15 @@
       {
         "username": "platform_admin",
         "enabled": true,
+        "email": "platform_admin@platform.pt",
+        "firstName": "Platform",
+        "lastName": "Admin",
+        "emailVerified": true,
         "credentials": [
           {
             "type": "password",
-            "value": "admin"
+            "value": "admin",
+            "temporary": false
           }
         ],
         "realmRoles": [
@@ -63,10 +68,15 @@
       {
         "username": "content_manager",
         "enabled": true,
+        "email": "content_manager@platform.pt",
+        "firstName": "Content",
+        "lastName": "Manager",
+        "emailVerified": true,
         "credentials": [
           {
             "type": "password",
-            "value": "admin"
+            "value": "admin",
+            "temporary": false
           }
         ],
         "realmRoles": [
@@ -79,6 +89,7 @@
         "clientId": "react-admin",
         "enabled": true,
         "publicClient": true,
+        "directAccessGrantsEnabled": true,
         "redirectUris": [
           "${WEB_URL}/*",
           "${WEB_URL}/admin/*",
