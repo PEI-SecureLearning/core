@@ -1,0 +1,34 @@
+# Dictionary containing the correct answers to the questions created in the module
+# during the live demo or play playlist.
+# This file is completely emoji-free.
+
+CORRECT_ANSWERS = {
+    "Which of these is an example of 'Something you have'?": {
+        "question_id": "f93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e6f",
+        "type": "multiple_choice",
+        "choices": {
+            "a1b2c3d4": "Your mother's maiden name",
+            "b2c3d4e5": "A hardware security key (YubiKey)",
+            "c3d4e5f6": "Your 8-character password"
+        },
+        "correct_choice_id": "b2c3d4e5",
+        "correct_answer": "A hardware security key (YubiKey)"
+    },
+    "MFA completely eliminates all risks of account takeover.": {
+        "question_id": "b93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e7b",
+        "type": "multiple_choice",
+        "choices": {
+            "tf-t": "True",
+            "tf-f": "False"
+        },
+        "correct_choice_id": "tf-f",
+        "correct_answer": "False"
+    },
+    "What is the acronym for Multi-Factor Authentication?": {
+        "question_id": "d93d3b94-0b3c-4e4d-9f6a-1a2b3c4d5e7d",
+        "type": "short_answer",
+        "choices": [],
+        "correct_choice_id": None,
+        "correct_answer": "MFA"
+    }
+}
